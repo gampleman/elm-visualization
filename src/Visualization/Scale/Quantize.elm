@@ -1,0 +1,95 @@
+module Visualization.Scale.Quantize exposing (convert, invertExtent, ticks, tickFormat, nice)
+
+import Visualization.List as List
+
+
+computeDomain : ( Float, Float ) -> List a -> List Float
+computeDomain ( mi, ma ) tail =
+    let
+        l =
+            List.length tail
+
+        step =
+            (ma - mi) / toFloat (l + 1)
+    in
+        Maybe.withDefault [ 0 ] <| List.tail <| List.range mi ma step
+
+
+convert : ( Float, Float ) -> ( a, List a ) -> Float -> a
+convert domain ( head, tail ) val =
+    let
+        last head tail =
+            case tail of
+                [] ->
+                    head
+
+                x :: xs ->
+                    last x xs
+
+        helper dom range =
+            case dom of
+                [] ->
+                    case range of
+                        [] ->
+                            last head tail
+
+                        r :: _ ->
+                            r
+
+                d :: ds ->
+                    case range of
+                        [] ->
+                            Debug.crash "Invariant breached: ran out of range"
+
+                        r :: rs ->
+                            if val > d then
+                                helper ds rs
+                            else
+                                r
+    in
+        helper (computeDomain domain tail) (head :: tail)
+
+
+invertExtent : ( Float, Float ) -> ( a, List a ) -> a -> Maybe ( Float, Float )
+invertExtent ( mi, ma ) ( head, tail ) val =
+    let
+        domain =
+            computeDomain ( mi, ma ) tail
+
+        helper domain range =
+            case range of
+                [] ->
+                    Nothing
+
+                x :: xs ->
+                    if x == val then
+                        case domain of
+                            a :: b :: _ ->
+                                Just ( a, b )
+
+                            _ ->
+                                Nothing
+                    else
+                        case domain of
+                            [] ->
+                                Nothing
+
+                            d :: ds ->
+                                helper ds xs
+    in
+        helper (mi :: domain ++ [ ma ]) (head :: tail)
+
+
+ticks : ( Float, Float ) -> ( a, List a ) -> Int -> List Float
+ticks _ =
+    Debug.crash "not implemented"
+
+
+tickFormat : ( Float, Float ) -> ( a, List a ) -> Int -> Float -> String
+tickFormat _ =
+    Debug.crash "not implemented"
+
+
+nice : ( Float, Float ) -> Int -> ( Float, Float )
+nice _ =
+    Debug.crash "not implemented"
