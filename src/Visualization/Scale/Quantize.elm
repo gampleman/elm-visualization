@@ -1,6 +1,11 @@
-module Visualization.Scale.Quantize exposing (convert, invertExtent, ticks, tickFormat, nice)
+module Visualization.Scale.Quantize exposing (convert, invertExtent, ticks, tickFormat, nice, rangeExtent)
 
 import Visualization.List as List
+
+
+rangeExtent : ( Float, Float ) -> ( a, List a ) -> ( a, a )
+rangeExtent ( mi, ma ) range =
+    ( convert ( mi, ma ) range mi, convert ( mi, ma ) range ma )
 
 
 computeDomain : ( Float, Float ) -> List a -> List Float

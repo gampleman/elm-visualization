@@ -44,6 +44,9 @@ all =
                         Scale.convert (Scale.clamp (Scale.linear domain range)) val
                 in
                     convert |> isBetween range
+        , fuzz (tuple3 ( tuple ( float, float ), tuple ( float, float ), float )) "rangeExtent returns the range" <|
+            \( domain, range, val ) ->
+                Scale.rangeExtent (Scale.linear domain range) |> Expect.equal range
           -- Clamping is not performed for inversion yet due to type constraints
           -- , fuzz (tuple3 ( tuple ( float, float ), tuple ( float, float ), float )) "clamp limits output value to the range" <|
           --     \( domain, range, val ) ->

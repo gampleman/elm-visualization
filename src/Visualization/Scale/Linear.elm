@@ -1,8 +1,13 @@
-module Visualization.Scale.Linear exposing (convert, invert, deinterpolate, ticks, tickFormat, nice)
+module Visualization.Scale.Linear exposing (convert, invert, deinterpolate, ticks, tickFormat, nice, rangeExtent)
 
 import Visualization.List as List
 import Visualization.Interpolate exposing (interpolateFloat)
 import Visualization.Scale.Internal exposing (bimap)
+
+
+rangeExtent : ( Float, Float ) -> ( Float, Float ) -> ( Float, Float )
+rangeExtent d r =
+    r
 
 
 nice ( start, stop ) count =

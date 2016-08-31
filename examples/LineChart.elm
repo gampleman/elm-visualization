@@ -1,6 +1,6 @@
 module LineChart exposing (..)
 
-import Visualization.Scale.Continuous as Scale
+import Visualization.Scale as Scale
 import Visualization.Axis as Axis
 import Visualization.List as List
 import Date
@@ -23,7 +23,11 @@ padding =
 
 
 xScale data =
-    Scale.time (Maybe.withDefault ( 1420070400000, 1420070430000 ) <| List.extent <| List.map (fst >> Date.toTime) data) ( 0, w - 2 * padding )
+    let
+        ( mi, ma ) =
+            (Maybe.withDefault ( 1420070400000, 1420070430000 ) <| List.extent <| List.map (fst >> Date.toTime) data)
+    in
+        Scale.time ( Date.fromTime mi, Date.fromTime ma ) ( 0, w - 2 * padding )
 
 
 yScale data =
@@ -33,13 +37,13 @@ yScale data =
 makePoints data =
     let
         yScaler =
-            Scale.scale <| yScale data
+            Scale.convert <| yScale data
 
         xScaler =
-            Scale.scale <| xScale data
+            Scale.convert <| xScale data
 
         buildPair ( date, count ) =
-            toString (xScaler (Date.toTime date)) ++ "," ++ toString (yScaler (toFloat count))
+            toString (xScaler date) ++ "," ++ toString (yScaler (toFloat count))
     in
         String.join " " <| List.map buildPair data
 

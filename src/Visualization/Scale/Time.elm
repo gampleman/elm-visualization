@@ -1,4 +1,4 @@
-module Visualization.Scale.Time exposing (convert, invert, ticks, tickFormat, nice)
+module Visualization.Scale.Time exposing (convert, invert, ticks, tickFormat, nice, rangeExtent)
 
 import Visualization.Interpolate exposing (interpolateFloat)
 import Date.Extra as Date exposing (range, Interval(..))
@@ -19,6 +19,11 @@ convert domain range =
 invert : ( Date, Date ) -> ( Float, Float ) -> Float -> Date
 invert domain range =
     bimap range (toTime domain) deinterpolate (\d r v -> Date.fromTime (interpolate d r v))
+
+
+rangeExtent : ( Date, Date ) -> ( Float, Float ) -> ( Float, Float )
+rangeExtent d r =
+    r
 
 
 deinterpolate =

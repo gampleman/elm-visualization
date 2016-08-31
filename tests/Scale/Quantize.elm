@@ -52,4 +52,16 @@ all =
                         , invertExtent 2 |> Expect.equal (Just ( 0.5, 0.75 ))
                         , invertExtent 3 |> Expect.equal (Just ( 0.75, 1.0 ))
                         ]
+        , test "rangeExtent returns the first and last value of the list" <|
+            \() ->
+                let
+                    rangeExtent range =
+                        Scale.rangeExtent (Scale.quantize ( 0, 1 ) range)
+                in
+                    expectAll
+                        [ rangeExtent ( A, [ B, C ] ) |> Expect.equal ( A, C )
+                        , rangeExtent ( A, [ B ] ) |> Expect.equal ( A, B )
+                        , rangeExtent ( A, [] ) |> Expect.equal ( A, A )
+                        , rangeExtent ( 0, [ 1, 2, 3, 4 ] ) |> Expect.equal ( 0, 4 )
+                        ]
         ]

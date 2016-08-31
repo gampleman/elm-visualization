@@ -1,8 +1,13 @@
-module Visualization.Scale.Log exposing (convert, invert, ticks, tickFormat, nice)
+module Visualization.Scale.Log exposing (convert, invert, ticks, tickFormat, nice, rangeExtent)
 
 import Visualization.List as List
 import Visualization.Interpolate exposing (interpolateFloat)
 import Visualization.Scale.Internal exposing (bimap)
+
+
+rangeExtent : ( Float, Float ) -> ( Float, Float ) -> ( Float, Float )
+rangeExtent d r =
+    r
 
 
 log =
