@@ -73,8 +73,11 @@ stringify item ( str, x0, y0, x1, y1, empty ) =
         append cmd values str =
             str ++ cmd ++ (String.join "," <| List.map toString values)
 
-        stringifyArc x1' y1' x2' y2' r =
+        stringifyArc x1' y1' x2' y2' radius =
             let
+                r =
+                    abs radius
+
                 epsilon =
                     1.0e-6
 
@@ -97,7 +100,7 @@ stringify item ( str, x0, y0, x1, y1, empty ) =
                     y0' - y1'
 
                 l01_2 =
-                    x01 * x01 + y01 * y01
+                    x01 ^ 2 + y01 ^ 2
 
                 x20 =
                     x2' - x0'
@@ -106,10 +109,10 @@ stringify item ( str, x0, y0, x1, y1, empty ) =
                     y2' - y0'
 
                 l21_2 =
-                    x21 * x21 + y21 * y21
+                    x21 ^ 2 + y21 ^ 2
 
                 l20_2 =
-                    x20 * x20 + y20 * y20
+                    x20 ^ 2 + y20 ^ 2
 
                 l21 =
                     sqrt l21_2
@@ -118,7 +121,7 @@ stringify item ( str, x0, y0, x1, y1, empty ) =
                     sqrt l01_2
 
                 l =
-                    r * tan (pi - acos ((l21_2 + l01_2 - l20_2) / (2 * l21 * l01)) / 2)
+                    r * tan ((pi - acos ((l21_2 + l01_2 - l20_2) / (2 * l21 * l01))) / 2)
 
                 t01 =
                     l / l01
@@ -132,7 +135,9 @@ stringify item ( str, x0, y0, x1, y1, empty ) =
                     else
                         str
             in
-                if l01_2 < epsilon then
+                if empty then
+                    ( append "M" [ x1', y1' ] str, x0, y0, x1', y1', False )
+                else if l01_2 < epsilon then
                     ( str, x0, y0, x1, y1, empty )
                     -- do nothing
                 else if not (abs (y01 * x21 - y21 * x01) > epsilon) || r == 0 then
@@ -159,8 +164,8 @@ stringify item ( str, x0, y0, x1, y1, empty ) =
                     , False
                     )
 
-        stringifyArcCustom _ =
-            Debug.crash "not implemented"
+        stringifyArcCustom _ _ _ _ _ _ =
+            ( str, x0, y0, x1, y1, empty )
     in
         case item of
             Move ( x, y ) ->
