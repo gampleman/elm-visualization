@@ -67,19 +67,30 @@ rect x y w h path =
     Rect ( x, y ) ( w, h ) :: path
 
 
+mod : Float -> Float -> Float
+mod a b =
+    let
+        frac =
+            a / b
+    in
+        (frac - toFloat (truncate frac)) * b
+
+
 stringify : PathSegment -> ( String, Float, Float, Float, Float, Bool ) -> ( String, Float, Float, Float, Float, Bool )
 stringify item ( str, x0, y0, x1, y1, empty ) =
     let
         append cmd values str =
             str ++ cmd ++ (String.join "," <| List.map toString values)
 
+        epsilon =
+            1.0e-6
+
         stringifyArc x1' y1' x2' y2' radius =
             let
+                -- TODO: Figure out how this actually works and write a lot of comments/refactor.
+                -- Currently this is a straight port from D3.
                 r =
                     abs radius
-
-                epsilon =
-                    1.0e-6
 
                 x0' =
                     x1
@@ -164,8 +175,72 @@ stringify item ( str, x0, y0, x1, y1, empty ) =
                     , False
                     )
 
-        stringifyArcCustom _ _ _ _ _ _ =
-            ( str, x0, y0, x1, y1, empty )
+        boolToFloat b =
+            if b then
+                1
+            else
+                0
+
+        stringifyArcCustom x y radius a0 a1 ccw =
+            let
+                r =
+                    abs radius
+
+                dx =
+                    r * cos a0
+
+                dy =
+                    r * sin a0
+
+                x0' =
+                    x + dx
+
+                y0' =
+                    y + dy
+
+                cw =
+                    boolToFloat (not ccw)
+
+                tau =
+                    2 * pi
+
+                da =
+                    if ccw then
+                        a0 - a1
+                    else
+                        a1 - a0
+
+                str' =
+                    if empty then
+                        append "M" [ x0', y0' ] str
+                    else if abs (x1 - x0') > epsilon || abs (y1 - y0') > epsilon then
+                        append "L" [ x0', y0' ] str
+                    else
+                        str
+            in
+                if r == 0 then
+                    -- Is this arc empty? We’re done.
+                    ( str', x0, y0, x1, y1, empty )
+                else if da > (tau - epsilon) then
+                    -- Is this a complete circle? Draw two arcs to complete the circle.
+                    ( append "A" [ r, r, 0, 1, cw, x - dx, y - dy ] str'
+                        |> append "A" [ r, r, 0, 1, cw, x0', y0' ]
+                    , x0
+                    , y0
+                    , x0'
+                    , y0'
+                    , False
+                    )
+                else
+                    let
+                        da' =
+                            if da < 0 then
+                                (mod da tau) + tau
+                            else
+                                da
+                    in
+                        -- Otherwise, draw an arc!
+                        ( append "A" [ r, r, 0, boolToFloat (da' >= pi), cw, x + r * cos a1, y + r * sin a1 ] str', x0, y0, x + r * cos a1, y + r * sin a1, False )
     in
         case item of
             Move ( x, y ) ->

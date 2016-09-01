@@ -28,7 +28,7 @@ pathEqual str path =
         normStr =
             normalize str
     in
-        Expect.equal pathStr normStr
+        Expect.equal normStr pathStr
 
 
 all : Test
