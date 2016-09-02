@@ -1,12 +1,12 @@
 module Cross exposing (main)
 
-import Visualization.Path exposing (..)
-import Svg
-import Svg.Attributes exposing (d, fill, transform)
+import Visualization.Path exposing (moveTo, lineTo, close, toAttrString)
+import Svg exposing (svg, g, path)
+import Svg.Attributes exposing (transform, d, stroke, fill, strokeLinejoin, strokeWidth)
 
 
 cross =
-    path
+    Visualization.Path.path
         |> moveTo -60 -20
         |> lineTo -20 -20
         |> lineTo -20 -60
@@ -24,6 +24,7 @@ cross =
 
 
 main =
-    Svg.svg []
-        [ Svg.g [ transform "translate(70,70)" ] [ Svg.path [ d cross, fill "#000" ] [] ]
+    svg []
+        [ g [ transform "translate(70,70)" ]
+            [ path [ d cross, stroke "#000", fill "none", strokeLinejoin "round", strokeWidth "10" ] [] ]
         ]
