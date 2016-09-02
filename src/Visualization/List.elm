@@ -5,6 +5,11 @@ module Visualization.List exposing (..)
 This module exposes functions on list which are useful for the domain of data
 visualization. Most of these work with Lists of numbers.
 
+## Statistics
+
+@docs extent, extentWith
+
+
 ## Transformations
 
 Methods for transforming arrays and for generating new arrays.
@@ -39,6 +44,16 @@ range start stop step =
         range' start []
 
 
+{-| Returns a list of approximately count + 1 uniformly-spaced, nicely-rounded
+values between start and stop (inclusive). Each value is a power of ten
+multiplied by 1, 2 or 5. Note that due to the limited precision of IEEE 754
+floating point, the returned values may not be exact decimals.
+
+Ticks are inclusive in the sense that they may include the specified start and
+stop values if (and only if) they are exact, nicely-rounded values consistent
+with the inferred step. More formally, each returned tick t satisfies
+start ≤ t and t ≤ stop.
+-}
 ticks : Float -> Float -> Int -> List Float
 ticks start stop count =
     let
@@ -54,6 +69,11 @@ ticks start stop count =
         range beg end step
 
 
+{-| Returns the difference between adjacent tick values if the same arguments
+were passed to ticks: a nicely-rounded value that is a power of ten multiplied
+by 1, 2 or 5. Note that due to the limited precision of IEEE 754 floating point,
+the returned value may not be exact decimals.
+-}
 tickStep : Float -> Float -> Int -> Float
 tickStep start stop count =
     let
@@ -82,11 +102,16 @@ tickStep start stop count =
             step2
 
 
+{-| Returns the minimum and maximum value in the given array using natural order.
+-}
 extent : List comparable -> Maybe ( comparable, comparable )
 extent =
     extentWith identity
 
 
+{-| Returns the minimum and maximum value in the given array using comparisons
+from values passed by the accessor function.
+-}
 extentWith : (a -> comparable) -> List a -> Maybe ( a, a )
 extentWith fn list =
     let

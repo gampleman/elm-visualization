@@ -271,4 +271,12 @@ all =
                     |> moveTo 150 100
                     |> rect 100 200 50 25
                     |> pathEqual "M150,100M100,200h50v25h-50Z"
+        , test "DSL and ADT definitions are equivalent" <|
+            \() ->
+                path
+                    |> moveTo 120 43
+                    |> lineTo 34 45
+                    |> arcTo 200 100 200 200 50
+                    |> close
+                    |> pathEqual (toAttrString [ Move ( 120, 43 ), Line ( 34, 45 ), Arc ( 200, 100 ) ( 200, 200 ) 50, Close ])
         ]

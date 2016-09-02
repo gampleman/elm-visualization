@@ -1,4 +1,35 @@
-module Visualization.Path exposing (..)
+module Visualization.Path exposing (PathSegment(..), path, moveTo, lineTo, close, quadraticCurveTo, bezierCurveTo, arcTo, arc, rect, toAttrString)
+
+{-| This module provides an abstraction over drawing complex paths. Currently it
+contains a function to convert this representation into a string suitable for the
+`d` attribute of the `path` SVG element. However, the ADT that powers this is
+publicly exposed and alternative renderers can be built in e.g. Canvas or WebGL.
+
+# Datatype
+
+@docs PathSegment
+
+# Converting
+
+@docs toAttrString
+
+# DSL
+
+The DSL can be used interchangebly with directly writing the datatype above.
+
+    path
+      |> moveTo 30 50
+      |> lineTo 20 70
+      |> lineTo 40 23
+      |> close
+
+Is equivalent to:
+
+    [Move (30, 50), Line (20, 70), Line (40, 23), Close]
+
+@docs path, moveTo, lineTo, close, quadraticCurveTo, bezierCurveTo, arcTo, arc, rect
+
+-}
 
 import String
 
@@ -7,6 +38,10 @@ type alias Point =
     ( Float, Float )
 
 
+{-| A list of `PathSegment`s represents a path. These are essentially drawing
+commands that are based on the Canvas API. For more information, see the DSL
+section in this module.
+-}
 type PathSegment
     = Move Point
     | Close
@@ -22,49 +57,89 @@ type alias Path =
     List PathSegment
 
 
+push : PathSegment -> Path -> Path
+push el list =
+    list ++ [ el ]
+
+
+{-| Start a new path. Equivalent to `[]`.
+-}
 path : Path
 path =
     []
 
 
+{-| Move to the specified point ⟨x, y⟩.
+-}
 moveTo : Float -> Float -> Path -> Path
-moveTo x y path =
-    Move ( x, y ) :: path
+moveTo x y =
+    push <| Move ( x, y )
 
 
+{-| Ends the current subpath and causes an automatic straight line to be drawn
+from the current point to the initial point of the current subpath.
+-}
 close : Path -> Path
-close path =
-    Close :: path
+close =
+    push Close
 
 
+{-| Draws a straight line from the current point to the specified point ⟨x, y⟩.
+-}
 lineTo : Float -> Float -> Path -> Path
-lineTo x y path =
-    Line ( x, y ) :: path
+lineTo x y =
+    push <| Line ( x, y )
 
 
+{-| Draws a quadratic Bézier segment from the current point to the specified
+point ⟨x, y⟩, with the specified control point ⟨cpx, cpy⟩.
+-}
 quadraticCurveTo : Float -> Float -> Float -> Float -> Path -> Path
-quadraticCurveTo cpx cpy x y path =
-    QuadraticCurve ( cpx, cpy ) ( x, y ) :: path
+quadraticCurveTo cpx cpy x y =
+    push <| QuadraticCurve ( cpx, cpy ) ( x, y )
 
 
+{-| Draws a cubic Bézier segment from the current point to the specified
+point ⟨x, y⟩, with the specified control points ⟨cpx1, cpy1⟩ and ⟨cpx2, cpy2⟩.
+-}
 bezierCurveTo : Float -> Float -> Float -> Float -> Float -> Float -> Path -> Path
-bezierCurveTo cpx1 cpy1 cpx2 cpy2 x y path =
-    BezierCurve ( cpx1, cpy1 ) ( cpx2, cpy2 ) ( x, y ) :: path
+bezierCurveTo cpx1 cpy1 cpx2 cpy2 x y =
+    push <| BezierCurve ( cpx1, cpy1 ) ( cpx2, cpy2 ) ( x, y )
 
 
+{-| Draws a circular arc segment with the specified radius that starts tangent
+to the line between the current point and the specified point ⟨x1, y1⟩ and ends
+tangent to the line between the specified points ⟨x1, y1⟩ and ⟨x2, y2⟩. If the
+first tangent point is not equal to the current point, a straight line is drawn
+between the current point and the first tangent point.
+-}
 arcTo : Float -> Float -> Float -> Float -> Float -> Path -> Path
-arcTo x1 y1 x2 y2 radius path =
-    Arc ( x1, y1 ) ( x2, y2 ) radius :: path
+arcTo x1 y1 x2 y2 radius =
+    push <| Arc ( x1, y1 ) ( x2, y2 ) radius
 
 
+{-| Draws a circular arc segment with the specified center ⟨x, y⟩, radius,
+startAngle and endAngle. If anticlockwise is true, the arc is drawn in the
+anticlockwise direction; otherwise, it is drawn in the clockwise direction.
+If the current point is not equal to the starting point of the arc, a straight
+line is drawn from the current point to the start of the arc.
+-}
 arc : Float -> Float -> Float -> Float -> Float -> Bool -> Path -> Path
-arc x y radius startAngle endAngle anticlockwise path =
-    ArcCustom ( x, y ) radius startAngle endAngle anticlockwise :: path
+arc x y radius startAngle endAngle anticlockwise =
+    push <| ArcCustom ( x, y ) radius startAngle endAngle anticlockwise
 
 
+{-| Creates a new subpath containing just the four points ⟨x, y⟩, ⟨x + w, y⟩,
+⟨x + w, y + h⟩, ⟨x, y + h⟩, with those four points connected by straight lines,
+and then marks the subpath as closed.
+-}
 rect : Float -> Float -> Float -> Float -> Path -> Path
-rect x y w h path =
-    Rect ( x, y ) ( w, h ) :: path
+rect x y w h =
+    push <| Rect ( x, y ) ( w, h )
+
+
+
+{- Modulus for Floats. -}
 
 
 mod : Float -> Float -> Float
@@ -282,10 +357,20 @@ stringify item ( str, x0, y0, x1, y1, empty ) =
                 )
 
 
+{-| Transforms a path to a string that can be passed into the `d` attribute of the
+`path` SVG element.
+
+    path
+        |> moveTo 100 100
+        |> arcTo 200 100 200 200 50
+        |> arc 150 150 50 0 pi False
+        |> toAttrString
+        -- "M100,100L150,100A50,50,0,0,1,200,150A50,50,0,1,1,100,150"
+-}
 toAttrString : Path -> String
 toAttrString path =
     let
         ( result, _, _, _, _, _ ) =
-            List.foldr stringify ( "", 0, 0, 0, 0, True ) path
+            List.foldl stringify ( "", 0, 0, 0, 0, True ) path
     in
         result

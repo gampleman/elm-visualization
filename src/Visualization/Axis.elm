@@ -1,10 +1,18 @@
 module Visualization.Axis exposing (..)
 
+{-| The axis component renders human-readable reference marks for scales. This
+alleviates one of the more tedious tasks in visualizing data.\
+
+@docs axis, defaultOptions, Options, Orientation, RenderableScale
+-}
+
 import Visualization.Scale as Scale exposing (Scale)
 import Svg exposing (..)
 import Svg.Attributes as Attrs exposing (..)
 
 
+{-| Where to render the Axis
+-}
 type Orientation
     = Left
     | Right
@@ -12,6 +20,12 @@ type Orientation
     | Bottom
 
 
+{-| Options for configuring the scale:
+- `orientation`: Where to render the Axis.
+- `ticks`: Optionally pass ticks (in the domain). Defaults to `Scale.ticks`.
+- `tickFormat`: A formatting function for the tick marks. Defaults to `Scale.tickFormat`.
+- `tickCount`: How many tickmarks to approximately generate. Defaults to 10.
+-}
 type alias Options a =
     { orientation : Orientation
     , ticks : Maybe (List a)
@@ -23,6 +37,8 @@ type alias Options a =
     }
 
 
+{-| Default options to use
+-}
 defaultOptions : Options a
 defaultOptions =
     { orientation = Left
@@ -35,6 +51,9 @@ defaultOptions =
     }
 
 
+{-| A type alias for the scale. Currently only continuous (including time) and
+quantize scales are supported.
+-}
 type alias RenderableScale a domain range value =
     Scale
         { a
@@ -47,6 +66,48 @@ type alias RenderableScale a domain range value =
         }
 
 
+{-| Renders an Axis based on a Scale.
+
+Regardless of orientation, axes are always rendered at the origin. To change the
+position of the axis with respect to the chart, specify a transform attribute on
+the containing element.
+
+The elements created by the axis are considered part of its public API.
+You can apply external stylesheets or modify the generated axis elements to
+customize the axis appearance. An axis consists of a path element of class
+“domain” representing the extent of the scale’s domain, followed by transformed
+g elements of class “tick” representing each of the scale’s ticks. Each tick has
+a line element to draw the tick line, and a text element for the tick label.
+For example, here is a typical bottom-oriented axis:
+
+    <g fill="none" font-size="10" font-family="sans-serif" text-anchor="middle">
+      <path class="domain" stroke="#000" d="M0.5,6V0.5H880.5V6"></path>
+      <g class="tick" opacity="1" transform="translate(0,0)">
+        <line stroke="#000" y2="6" x1="0.5" x2="0.5"></line>
+        <text fill="#000" y="9" x="0.5" dy="0.71em">0.0</text>
+      </g>
+      <g class="tick" opacity="1" transform="translate(176,0)">
+        <line stroke="#000" y2="6" x1="0.5" x2="0.5"></line>
+        <text fill="#000" y="9" x="0.5" dy="0.71em">0.2</text>
+      </g>
+      <g class="tick" opacity="1" transform="translate(352,0)">
+        <line stroke="#000" y2="6" x1="0.5" x2="0.5"></line>
+        <text fill="#000" y="9" x="0.5" dy="0.71em">0.4</text>
+      </g>
+      <g class="tick" opacity="1" transform="translate(528,0)">
+        <line stroke="#000" y2="6" x1="0.5" x2="0.5"></line>
+        <text fill="#000" y="9" x="0.5" dy="0.71em">0.6</text>
+      </g>
+      <g class="tick" opacity="1" transform="translate(704,0)">
+        <line stroke="#000" y2="6" x1="0.5" x2="0.5"></line>
+        <text fill="#000" y="9" x="0.5" dy="0.71em">0.8</text>
+      </g>
+      <g class="tick" opacity="1" transform="translate(880,0)">
+        <line stroke="#000" y2="6" x1="0.5" x2="0.5"></line>
+        <text fill="#000" y="9" x="0.5" dy="0.71em">1.0</text>
+      </g>
+    </g>
+-}
 axis : Options value -> RenderableScale a domain range value -> Svg msg
 axis opts scale =
     let

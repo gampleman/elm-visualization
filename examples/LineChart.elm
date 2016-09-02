@@ -23,43 +23,16 @@ padding =
     30
 
 
-makeXScale data =
-    let
-        ( mi, ma ) =
-            Maybe.withDefault ( Date.fromTime 1420070400000, Date.fromTime 1420070430000 ) <| List.extentWith Date.toTime <| List.map fst data
-    in
-        Scale.time ( mi, ma ) ( 0, w - 2 * padding )
-
-
-makeYScale data =
-    Scale.linear ( 0, 5 ) ( h - 2 * padding, 0 )
-
-
-
--- makePoints data =
---     let
---         yScaler =
---             Scale.convert <| yScale data
---
---         xScaler =
---             Scale.convert <| xScale data
---
---         buildPair ( date, count ) =
---             toString (xScaler date) ++ "," ++ toString (yScaler (toFloat count))
---     in
---         String.join " " <| List.map buildPair data
-
-
 view model =
     let
-        opts =
-            Axis.defaultOptions
-
         xScale =
-            makeXScale model
+            Scale.time ( Date.fromTime 1448928000000, Date.fromTime 1456790400000 ) ( 0, w - 2 * padding )
 
         yScale =
-            makeYScale model
+            Scale.linear ( 0, 5 ) ( h - 2 * padding, 0 )
+
+        opts =
+            Axis.defaultOptions
 
         xAxis =
             Axis.axis { opts | orientation = Axis.Bottom, tickCount = List.length model } xScale
