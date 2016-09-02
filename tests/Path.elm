@@ -10,7 +10,7 @@ import String
 import Result
 
 
-pathEqual : String -> Path -> Expect.Expectation
+pathEqual : String -> List PathSegment -> Expect.Expectation
 pathEqual str path =
     let
         format s =
