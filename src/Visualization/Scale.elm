@@ -1,11 +1,28 @@
-module Visualization.Scale exposing (Scale,
-  ContinousScale, linear, power, log, identity,
-  ContinousTimeScale, time,
-  SequentialScale, sequential,
-  QuantizeScale, quantize,
-  convert, invert, domain, range, rangeExtent, ticks, tickFormat, clamp, nice,
-  invertExtent
-  )
+module Visualization.Scale
+    exposing
+        ( Scale
+        , ContinuousScale
+        , linear
+        , power
+        , log
+        , identity
+        , ContinuousTimeScale
+        , time
+        , SequentialScale
+        , sequential
+        , QuantizeScale
+        , quantize
+        , convert
+        , invert
+        , domain
+        , range
+        , rangeExtent
+        , ticks
+        , tickFormat
+        , clamp
+        , nice
+        , invertExtent
+        )
 
 {-| Scales are a convenient abstraction for a fundamental task in visualization:
 mapping a dimension of abstract data to a visual representation. Although most
@@ -31,24 +48,15 @@ in an categorical scatterplot. Several built-in categorical color scales are
 also provided.
 
 Scales have no intrinsic visual representation. However, most scales can generate
-and format ticks for reference marks to aid in the construction of axes.
+and format ticks for reference marks to aid in the construction of [axes](Visualization-Axis).
 
 # General notes
 
-This API is highly polymorphic as each scale has different functions exposed.
-This is still done in a convenient and type-safe manner, however the cost is
-a certain ugliness and complexity of the type signatures. For this reason the
-supported functions are listed again for each category. It is best to ignore the
-type signatures when learning about the library.
-
 @docs Scale
 
-# Continous Scales
+# Continuous Scales
 
-Continuous scales map a continuous, quantitative input `domain` to a continuous
-output `range`. If the range is also numeric, the mapping may be inverted.
-
-@docs ContinousScale, linear, power, log, identity, ContinousTimeScale, time
+@docs ContinuousScale, linear, power, log, identity, ContinuousTimeScale, time
 
 Continuous scales support the following operations:
 
@@ -90,19 +98,24 @@ import Visualization.Scale.Sequential as Sequential
 import Visualization.Scale.Quantize as Quantize
 
 
-{-| The container type for a scale object
+{-| This API is highly polymorphic as each scale has different functions exposed.
+This is still done in a convenient and type-safe manner, however the cost is
+a certain ugliness and complexity of the type signatures. For this reason the
+supported functions are listed again for each category. It is best to ignore the
+type signatures when learning about the library.
 -}
 type Scale scaleSpec
     = Scale scaleSpec
 
 
 
--- Continous Scales
+-- Continuous Scales
 
 
-{-| Type alias for Continuous Scales
+{-| Type alias for Continuous Scales. These map a `(Float, Float)` **domain** to a
+`(Float, Float)` **range**.
 -}
-type alias ContinousScale =
+type alias ContinuousScale =
     Scale
         { domain : ( Float, Float )
         , range : ( Float, Float )
@@ -120,8 +133,11 @@ type alias ContinousScale =
 {-| Linear scales are a good default choice for continuous quantitative data
 because they preserve proportional differences. Each range value y can be
 expressed as a function of the domain value x: y = mx + b.
+
+    scale = linear ( 0, 1 ) ( 50, 100 )
+    convert scale 0.5 == 75
 -}
-linear : ( Float, Float ) -> ( Float, Float ) -> ContinousScale
+linear : ( Float, Float ) -> ( Float, Float ) -> ContinuousScale
 linear domain range =
     Scale
         { domain = domain
@@ -141,8 +157,13 @@ Each range value y can be expressed as a function of the domain value x:
 y = mx^k + b, where k is the exponent value. Power scales also support negative
 domain values, in which case the input value and the resulting output value are
 multiplied by -1.
+
+The arguments are `exponent`, `domain` and `range`.
+
+    scale = power 2 ( 0, 1 ) ( 50, 100 )
+    convert scale 0.5 = 62.5
 -}
-power : Float -> ( Float, Float ) -> ( Float, Float ) -> ContinousScale
+power : Float -> ( Float, Float ) -> ( Float, Float ) -> ContinuousScale
 power exponent =
     Debug.crash "not implemented"
 
@@ -159,8 +180,13 @@ domain has a well-defined behavior for negative values. (For a negative domain,
 input and output values are implicitly multiplied by -1.) The behavior of the
 scale is undefined if you pass a negative value to a log scale with a positive
 domain or vice versa.
+
+The arguments are `base`, `domain` and `range`.
+
+    scale = log 10 ( 10, 1000 ) ( 50, 100 )
+    convert scale 100 == 75
 -}
-log : Float -> ( Float, Float ) -> ( Float, Float ) -> ContinousScale
+log : Float -> ( Float, Float ) -> ( Float, Float ) -> ContinuousScale
 log base domain range =
     Scale
         { domain = domain
@@ -179,14 +205,14 @@ range are identical; the scale and its invert method are thus the identity funct
 These scales are occasionally useful when working with pixel coordinates, say in
 conjunction with an axis or brush.
 -}
-identity : ContinousScale
+identity : ContinuousScale
 identity =
     linear ( 0, 1 ) ( 0, 1 )
 
 
-{-| This is identical to ContinousScale, except the domain values are Dates instead of Floats
+{-| This is identical to a ContinuousScale, except the domain values are Dates instead of Floats.
 -}
-type alias ContinousTimeScale =
+type alias ContinuousTimeScale =
     Scale
         { domain : ( Date, Date )
         , range : ( Float, Float )
@@ -202,12 +228,11 @@ type alias ContinousTimeScale =
 
 
 {-| Time scales are a variant of linear scales that have a temporal domain: domain
-values are coerced to dates rather than numbers, and invert likewise returns a date.
+values are dates rather than floats, and invert likewise returns a date.
 Time scales implement ticks based on calendar intervals, taking the pain out of
 generating axes for temporal domains.
-
 -}
-time : ( Date, Date ) -> ( Float, Float ) -> ContinousTimeScale
+time : ( Date, Date ) -> ( Float, Float ) -> ContinuousTimeScale
 time domain range =
     Scale
         { domain = domain
@@ -371,21 +396,21 @@ invertExtent (Scale scale) value =
     scale.invertExtent scale.domain scale.range value
 
 
-{-| Retrieve the domain of the scale
+{-| Retrieve the domain of the scale.
 -}
 domain : Scale { a | domain : domain } -> domain
 domain (Scale scale) =
     scale.domain
 
 
-{-| Retrieve the scale of the range
+{-| Retrieve the range of the scale.
 -}
 range : Scale { a | range : range } -> range
 range (Scale options) =
     options.range
 
 
-{-| Retrieve the minimum and maximum elements from the range
+{-| Retrieve the minimum and maximum elements from the range.
 -}
 rangeExtent : Scale { a | rangeExtent : domain -> range -> ( b, b ), domain : domain, range : range } -> ( b, b )
 rangeExtent (Scale options) =
@@ -398,20 +423,23 @@ rangeExtent (Scale options) =
 --     Scale { scale | range = scale.rangeRound scale.range }
 
 
-{-| Returns approximately count representative values from the scale’s domain.
-A good default value for count is 10. The returned tick values are uniformly spaced,
+{-| The second argument controls approximately how many representative values from
+the scale’s domain to return. A good default value 10. The returned tick values are uniformly spaced,
 have human-readable values (such as multiples of powers of 10), and are guaranteed
 to be within the extent of the domain. Ticks are often used to display reference
 lines, or tick marks, in conjunction with the visualized data. The specified count
 is only a hint; the scale may return more or fewer values depending on the domain.
+
+    scale = linear ( 10, 100 ) ( 50, 100 )
+    ticks scale 10 == [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 -}
 ticks : Scale { a | ticks : domain -> Int -> List ticks, domain : domain } -> Int -> List ticks
 ticks (Scale scale) count =
     scale.ticks scale.domain count
 
 
-{-| A number format function suitable for displaying a tick value, automatically c
-omputing the appropriate precision based on the fixed interval between tick values.
+{-| A number format function suitable for displaying a tick value, automatically
+computing the appropriate precision based on the fixed interval between tick values.
 The specified count should have the same value as the count that is used to generate the tick values.
 -}
 tickFormat : Scale { a | tickFormat : domain -> Int -> value -> String, domain : domain, convert : domain -> range -> value -> b } -> Int -> value -> String
@@ -427,6 +455,10 @@ tickFormat (Scale opts) =
 
 {-| Enables clamping on the domain, meaning the return value of the scale is
 always within the scale’s range.
+
+    scale = linear ( 10, 100 ) ( 50, 100 )
+    convert scale 1 == 45
+    convert (clamp scale) 1 == 50
 -}
 clamp : Scale { a | convert : ( Float, Float ) -> range -> Float -> result } -> Scale { a | convert : ( Float, Float ) -> range -> Float -> result }
 clamp (Scale ({ convert } as scale)) =
@@ -438,7 +470,10 @@ clamp (Scale ({ convert } as scale)) =
 
 
 {-| Returns a new scale which extends the domain so that it lands on round values.
-The count argument is the same as you would pass to ticks.
+The second argument is the same as you would pass to ticks.
+
+    scale = linear ( 0.5, 99 ) ( 50, 100 )
+    domain (nice scale 10) == (0, 100)
 -}
 nice : Scale { a | nice : domain -> Int -> domain, domain : domain } -> Int -> Scale { a | nice : domain -> Int -> domain, domain : domain }
 nice (Scale ({ nice, domain } as options)) count =
