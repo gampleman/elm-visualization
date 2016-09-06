@@ -1,12 +1,12 @@
 module Cross exposing (main)
 
-import Visualization.Path exposing (moveTo, lineTo, close, toAttrString)
+import Visualization.Path exposing (begin, moveTo, lineTo, close, toAttrString)
 import Svg exposing (svg, g, path)
 import Svg.Attributes exposing (transform, d, stroke, fill, strokeLinejoin, strokeWidth)
 
 
 cross =
-    Visualization.Path.path
+    begin
         |> moveTo -60 -20
         |> lineTo -20 -20
         |> lineTo -20 -60

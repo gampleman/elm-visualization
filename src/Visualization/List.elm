@@ -1,18 +1,16 @@
 module Visualization.List exposing (..)
 
-{-| Visualization List Utilities
-
-This module exposes functions on list which are useful for the domain of data
+{-| This module exposes functions on list which are useful for the domain of data
 visualization. Most of these work with Lists of numbers.
 
-## Statistics
+# Statistics
 
 @docs extent, extentWith
 
 
-## Transformations
+# Transformations
 
-Methods for transforming arrays and for generating new arrays.
+Methods for transforming list and for generating new lists.
 
 @docs ticks, tickStep, range
 -}
@@ -44,8 +42,8 @@ range start stop step =
         range' start []
 
 
-{-| Returns a list of approximately count + 1 uniformly-spaced, nicely-rounded
-values between start and stop (inclusive). Each value is a power of ten
+{-| Returns a list of approximately n + 1 uniformly-spaced, nicely-rounded
+values between a start and stop value (inclusive). Each value is a power of ten
 multiplied by 1, 2 or 5. Note that due to the limited precision of IEEE 754
 floating point, the returned values may not be exact decimals.
 
@@ -53,6 +51,10 @@ Ticks are inclusive in the sense that they may include the specified start and
 stop values if (and only if) they are exact, nicely-rounded values consistent
 with the inferred step. More formally, each returned tick t satisfies
 start ≤ t and t ≤ stop.
+
+    ticks 1.9 6.4 10 == [2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6]
+
+    ticks 1.9 6 5 == [2, 3, 4, 5, 6]
 -}
 ticks : Float -> Float -> Int -> List Float
 ticks start stop count =
@@ -70,9 +72,13 @@ ticks start stop count =
 
 
 {-| Returns the difference between adjacent tick values if the same arguments
-were passed to ticks: a nicely-rounded value that is a power of ten multiplied
+were passed to `ticks`: a nicely-rounded value that is a power of ten multiplied
 by 1, 2 or 5. Note that due to the limited precision of IEEE 754 floating point,
 the returned value may not be exact decimals.
+
+    tickStep 1.9 6.4 10 == 0.5
+
+    tickStep 1.9 6 5 == 1
 -}
 tickStep : Float -> Float -> Int -> Float
 tickStep start stop count =
@@ -102,7 +108,7 @@ tickStep start stop count =
             step2
 
 
-{-| Returns the minimum and maximum value in the given array using natural order.
+{-| Returns the minimum and maximum value in the list.
 -}
 extent : List comparable -> Maybe ( comparable, comparable )
 extent =
@@ -111,6 +117,16 @@ extent =
 
 {-| Returns the minimum and maximum value in the given array using comparisons
 from values passed by the accessor function.
+
+    data =
+      [ {name = "John Smith", age = 32 }
+      , {name = "Mark Luther", age = 45 }
+      , {name = "Cory Jones", age = 26 }
+      ]
+
+    extentWith .age data == Just ({name = "Cory Jones", age = 26 }
+                                , {name = "Mark Luther", age = 45 })
+
 -}
 extentWith : (a -> comparable) -> List a -> Maybe ( a, a )
 extentWith fn list =

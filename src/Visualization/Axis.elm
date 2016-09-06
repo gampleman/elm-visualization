@@ -1,7 +1,7 @@
 module Visualization.Axis exposing (..)
 
 {-| The axis component renders human-readable reference marks for scales. This
-alleviates one of the more tedious tasks in visualizing data.\
+alleviates one of the more tedious tasks in visualizing data.
 
 @docs axis, defaultOptions, Options, Orientation, RenderableScale
 -}
@@ -11,8 +11,7 @@ import Svg exposing (..)
 import Svg.Attributes as Attrs exposing (..)
 
 
-{-| Where to render the Axis
--}
+{-| -}
 type Orientation
     = Left
     | Right
@@ -66,7 +65,14 @@ type alias RenderableScale a domain range value =
         }
 
 
-{-| Renders an Axis based on a Scale.
+{-| Renders an Axis based on a [Scale](Visualization-Scale).
+
+    view =
+      svg []
+        [ g [class "axis", transform "translate(0, 300)"]
+          [ Axis.axis Axis.defaultOptions myScale
+          ]
+        [
 
 Regardless of orientation, axes are always rendered at the origin. To change the
 position of the axis with respect to the chart, specify a transform attribute on
@@ -108,7 +114,10 @@ For example, here is a typical bottom-oriented axis:
       </g>
     </g>
 -}
-axis : Options value -> RenderableScale a domain range value -> Svg msg
+axis :
+    Options value
+    -> RenderableScale a domain range value
+    -> Svg msg
 axis opts scale =
     let
         ticks =

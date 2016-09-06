@@ -1,4 +1,11 @@
-module Visualization.Scale exposing (..)
+module Visualization.Scale exposing (Scale,
+  ContinousScale, linear, power, log, identity,
+  ContinousTimeScale, time,
+  SequentialScale, sequential,
+  QuantizeScale, quantize,
+  convert, invert, domain, range, rangeExtent, ticks, tickFormat, clamp, nice,
+  invertExtent
+  )
 
 {-| Scales are a convenient abstraction for a fundamental task in visualization:
 mapping a dimension of abstract data to a visual representation. Although most

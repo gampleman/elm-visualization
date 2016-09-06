@@ -1,13 +1,15 @@
-module Visualization.Path exposing (PathSegment(..), path, moveTo, lineTo, close, quadraticCurveTo, bezierCurveTo, arcTo, arc, rect, toAttrString)
+module Visualization.Path exposing (PathSegment(..), Path, begin, moveTo, lineTo, close, quadraticCurveTo, bezierCurveTo, arcTo, arc, rect, toAttrString)
 
 {-| This module provides an abstraction over drawing complex paths. Currently it
 contains a function to convert this representation into a string suitable for the
 `d` attribute of the `path` SVG element. However, the ADT that powers this is
 publicly exposed and alternative renderers can be built in e.g. Canvas or WebGL.
 
+The functions here are modeled after the [Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#Paths).
+
 # Datatype
 
-@docs PathSegment
+@docs PathSegment, Path
 
 # Converting
 
@@ -17,7 +19,7 @@ publicly exposed and alternative renderers can be built in e.g. Canvas or WebGL.
 
 The DSL can be used interchangebly with directly writing the datatype above.
 
-    path
+    begin
       |> moveTo 30 50
       |> lineTo 20 70
       |> lineTo 40 23
@@ -27,7 +29,7 @@ Is equivalent to:
 
     [Move (30, 50), Line (20, 70), Line (40, 23), Close]
 
-@docs path, moveTo, lineTo, close, quadraticCurveTo, bezierCurveTo, arcTo, arc, rect
+@docs begin, moveTo, lineTo, close, quadraticCurveTo, bezierCurveTo, arcTo, arc, rect
 
 -}
 
@@ -53,6 +55,7 @@ type PathSegment
     | Rect Point ( Float, Float )
 
 
+{-| -}
 type alias Path =
     List PathSegment
 
@@ -64,8 +67,8 @@ push el list =
 
 {-| Start a new path. Equivalent to `[]`.
 -}
-path : Path
-path =
+begin : Path
+begin =
     []
 
 
@@ -93,6 +96,8 @@ lineTo x y =
 
 {-| Draws a quadratic Bézier segment from the current point to the specified
 point ⟨x, y⟩, with the specified control point ⟨cpx, cpy⟩.
+
+    quadraticCurveTo cpx cpy x y
 -}
 quadraticCurveTo : Float -> Float -> Float -> Float -> Path -> Path
 quadraticCurveTo cpx cpy x y =
@@ -101,6 +106,8 @@ quadraticCurveTo cpx cpy x y =
 
 {-| Draws a cubic Bézier segment from the current point to the specified
 point ⟨x, y⟩, with the specified control points ⟨cpx1, cpy1⟩ and ⟨cpx2, cpy2⟩.
+
+    bezierCurveTo cpx1 cpy1 cpx2 cpy2 x y
 -}
 bezierCurveTo : Float -> Float -> Float -> Float -> Float -> Float -> Path -> Path
 bezierCurveTo cpx1 cpy1 cpx2 cpy2 x y =
@@ -112,6 +119,8 @@ to the line between the current point and the specified point ⟨x1, y1⟩ and e
 tangent to the line between the specified points ⟨x1, y1⟩ and ⟨x2, y2⟩. If the
 first tangent point is not equal to the current point, a straight line is drawn
 between the current point and the first tangent point.
+
+     arcTo x1 y1 x2 y2 radius
 -}
 arcTo : Float -> Float -> Float -> Float -> Float -> Path -> Path
 arcTo x1 y1 x2 y2 radius =
@@ -123,6 +132,8 @@ startAngle and endAngle. If anticlockwise is true, the arc is drawn in the
 anticlockwise direction; otherwise, it is drawn in the clockwise direction.
 If the current point is not equal to the starting point of the arc, a straight
 line is drawn from the current point to the start of the arc.
+
+    arc x y radius startAngle endAngle anticlockwise
 -}
 arc : Float -> Float -> Float -> Float -> Float -> Bool -> Path -> Path
 arc x y radius startAngle endAngle anticlockwise =
@@ -132,6 +143,8 @@ arc x y radius startAngle endAngle anticlockwise =
 {-| Creates a new subpath containing just the four points ⟨x, y⟩, ⟨x + w, y⟩,
 ⟨x + w, y + h⟩, ⟨x, y + h⟩, with those four points connected by straight lines,
 and then marks the subpath as closed.
+
+    rect x y w h
 -}
 rect : Float -> Float -> Float -> Float -> Path -> Path
 rect x y w h =
