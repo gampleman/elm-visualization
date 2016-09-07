@@ -42,7 +42,7 @@ view model =
 
         points =
             List.map (\( x, y ) -> Just ( Scale.convert xScale x, Scale.convert yScale y )) model
-                |> Shape.line Shape.linearCurve
+                |> Shape.line Shape.monotoneInXCurve
     in
         svg [ width (toString w ++ "px"), height (toString h ++ "px") ]
             [ g [ transform ("translate(" ++ toString padding ++ ", " ++ toString (h - padding) ++ ")") ]
