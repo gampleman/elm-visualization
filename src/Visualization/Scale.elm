@@ -3,7 +3,7 @@ module Visualization.Scale
         ( Scale
         , ContinuousScale
         , linear
-        , power
+          -- , power
         , log
         , identity
         , ContinuousTimeScale
@@ -56,7 +56,7 @@ and format ticks for reference marks to aid in the construction of [axes](Visual
 
 # Continuous Scales
 
-@docs ContinuousScale, linear, power, log, identity, ContinuousTimeScale, time
+@docs ContinuousScale, linear, log, identity, ContinuousTimeScale, time
 
 Continuous scales support the following operations:
 
@@ -151,21 +151,22 @@ linear domain range =
         }
 
 
-{-| Power scales are similar to linear scales, except an exponential transform
-is applied to the input domain value before the output range value is computed.
-Each range value y can be expressed as a function of the domain value x:
-y = mx^k + b, where k is the exponent value. Power scales also support negative
-domain values, in which case the input value and the resulting output value are
-multiplied by -1.
 
-The arguments are `exponent`, `domain` and `range`.
-
-    scale = power 2 ( 0, 1 ) ( 50, 100 )
-    convert scale 0.5 = 62.5
--}
-power : Float -> ( Float, Float ) -> ( Float, Float ) -> ContinuousScale
-power exponent =
-    Debug.crash "not implemented"
+-- {-| Power scales are similar to linear scales, except an exponential transform
+-- is applied to the input domain value before the output range value is computed.
+-- Each range value y can be expressed as a function of the domain value x:
+-- y = mx^k + b, where k is the exponent value. Power scales also support negative
+-- domain values, in which case the input value and the resulting output value are
+-- multiplied by -1.
+--
+-- The arguments are `exponent`, `domain` and `range`.
+--
+--     scale = power 2 ( 0, 1 ) ( 50, 100 )
+--     convert scale 0.5 = 62.5
+-- -}
+-- power : Float -> ( Float, Float ) -> ( Float, Float ) -> ContinuousScale
+-- power exponent =
+--     Debug.crash "not implemented"
 
 
 {-| Log scales are similar to linear scales, except a logarithmic transform is
