@@ -1,4 +1,4 @@
-module Visualization.Shape exposing (line, linearCurve, monotoneInXCurve, Curve)
+module Visualization.Shape exposing (line, area, linearCurve, monotoneInXCurve, Curve)
 
 {-| Visualizations typically consist of discrete graphical marks, such as symbols,
 arcs, lines and areas. While the rectangles of a bar chart may be easy enough to
@@ -10,7 +10,7 @@ variety of shape generators for your convenience.
 
 # Lines
 
-@docs line
+@docs line, area
 
 # Curves
 
@@ -30,10 +30,24 @@ into drawing commands.
 -}
 type Curve
     = Line (List Point)
+    | Area (List ( Point, Point ))
 
 
+applyRecursivelyForArea : (Curve -> List PathSegment) -> List ( Point, Point ) -> List PathSegment
+applyRecursivelyForArea fn points =
+    let
+        points0 =
+            List.map fst points
 
--- | Area (List Point) (List Point)
+        points1 =
+            List.reverse <| List.map snd points
+    in
+        case ( fn (Line points1), points1 ) of
+            ( _ :: tail, ( x, y ) :: _ ) ->
+                (fn (Line points0) |> Path.lineTo x y) ++ (tail |> Path.close)
+
+            _ ->
+                []
 
 
 {-| Produces a polyline through the specified points.
@@ -46,6 +60,9 @@ linearCurve part =
 
         Line (point :: points) ->
             Path.Move point :: List.map Path.Line points
+
+        Area points ->
+            applyRecursivelyForArea linearCurve points
 
 
 {-| Produces a cubic spline that [preserves monotonicity](http://adsabs.harvard.edu/full/1990A%26A...239..443S)
@@ -97,6 +114,9 @@ monotoneInXCurve part =
 
             Line (point0 :: point1 :: points) ->
                 finalize <| List.foldl helper ( point0, point1, Nothing, [ Path.Move point0 ] ) points
+
+            Area points ->
+                applyRecursivelyForArea monotoneInXCurve points
 
 
 sign : Float -> Float
@@ -163,6 +183,20 @@ Points accepted are `Maybe`s, Nothing represent gaps in the data and correspondi
 gaps will be rendered in the line.
 
 **Note:** A single point (surrounded by Nothing) may not be visible.
+
+Usually you will need to convert your data into a format supported by this function.
+For example, if your data is a `List (Date, Float)`, you might use something like:
+
+    lineGenerator : ( Date, Float ) -> Maybe ( Float, Float )
+    lineGenerator ( x, y ) =
+        Just ( Scale.convert xScale x, Scale.convert yScale y )
+
+    linePath : List (Date, Float) -> String
+    linePath data =
+        List.map lineGenerator data
+            |> Shape.line Shape.linearCurve
+
+where `xScale` and `yScale` would be appropriate `Scale`s.
 -}
 line : (Curve -> List PathSegment) -> List (Maybe Point) -> String
 line curve data =
@@ -180,5 +214,52 @@ line curve data =
 
                 ( Just p0, Just p1, l ) ->
                     ( Just p1, Line [ p1 ] :: l )
+    in
+        toAttrString <| List.concatMap curve <| snd <| List.foldr makeCurves ( Nothing, [] ) data
+
+
+{-| The area generator produces an area, as in an area chart. An area is defined
+by two bounding lines, either splines or polylines. Typically, the two lines
+share the same x-values (x0 = x1), differing only in y-value (y0 and y1);
+most commonly, y0 is defined as a constant representing zero. The first line
+(the topline) is defined by x1 and y1 and is rendered first; the second line
+(the baseline) is defined by x0 and y0 and is rendered second, with the points
+in reverse order. With a `linearCurve` curve, this produces a clockwise polygon.
+
+The data attribute you pass in should be a `[Just ((x0, y0), (x1, y1))]`. Passing
+in `Nothing` represents gaps in the data and corresponding gaps in the area will
+be rendered.
+
+Usually you will need to convert your data into a format supported by this function.
+For example, if your data is a `List (Date, Float)`, you might use something like:
+
+    areaGenerator : ( Date, Float ) -> Maybe ( ( Float, Float ), ( Float, Float ) )
+    areaGenerator ( x, y ) =
+        Just ( ( Scale.convert xScale x, fst (Scale.rangeExtent yScale) ),
+               ( Scale.convert xScale x, Scale.convert yScale y ) )
+
+    areaPath : List (Date, Float) -> String
+    areaPath data =
+        List.map areaGenerator data
+            |> Shape.area Shape.linearCurve
+
+where `xScale` and `yScale` would be appropriate `Scale`s.
+-}
+area : (Curve -> List PathSegment) -> List (Maybe ( Point, Point )) -> String
+area curve data =
+    let
+        makeCurves datum ( prev, list ) =
+            case ( prev, datum, list ) of
+                ( _, Nothing, l ) ->
+                    ( Nothing, l )
+
+                ( Nothing, Just pair, l ) ->
+                    ( Just pair, Area [ pair ] :: l )
+
+                ( Just p0, Just p1, (Area ps) :: l ) ->
+                    ( Just p1, Area (p1 :: ps) :: l )
+
+                ( Just p0, Just p1, l ) ->
+                    ( Just p1, Area [ p1 ] :: l )
     in
         toAttrString <| List.concatMap curve <| snd <| List.foldr makeCurves ( Nothing, [] ) data

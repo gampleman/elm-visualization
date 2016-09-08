@@ -25,7 +25,7 @@ the dimensions of a plot.
 A thin layer that gives a simple DSL for drawing paths.
 
 ~~~elm
-path = begin
+myPath = begin
        |> moveTo 10 30
        |> lineTo 40 50
        |> arcTo 20 30 12 43 (pi / 2)
@@ -53,3 +53,13 @@ A bag of list processing methods that encapsulate common algorithms.
 Currently, it is almost a straight port of parts of the [D3](https://github.com/d3/d3) library
 by [Mike Bostock](https://bost.ocks.org/mike/). However since Elm provides a
 great DOM abstraction already, selections are not part of this library.
+
+## Contributing
+
+This library is still under active development, so please submit feature requests
+iff you are also willing to implement them. Bug reports are welcome.
+
+Some things worth working on:
+
+- [ ] Scales have a number of stubs in them for other scale types.
+- [ ] Shape could do with more line generators.
