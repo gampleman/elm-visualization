@@ -1,6 +1,6 @@
 {
     "version": "1.0.0",
-    "summary": "A visualization package for Elm (D3-like)",
+    "summary": "A data visualization package for Elm",
     "repository": "https://github.com/gampleman/elm-visualization.git",
     "license": "MIT",
     "source-directories": [
