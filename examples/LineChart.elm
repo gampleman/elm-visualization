@@ -1,5 +1,9 @@
 module LineChart exposing (..)
 
+{-| This module shows how to build a simple line and area chart using some of
+the primitives provided in this library.
+-}
+
 import Visualization.Scale as Scale exposing (ContinuousScale, ContinuousTimeScale)
 import Visualization.Axis as Axis
 import Visualization.List as List
@@ -13,12 +17,12 @@ import String
 
 w : Float
 w =
-    600
+    900
 
 
 h : Float
 h =
-    350
+    450
 
 
 padding : Float

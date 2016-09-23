@@ -72,7 +72,11 @@ begin =
     []
 
 
-{-| Move to the specified point ⟨x, y⟩.
+{-| Move to the specified point ⟨x, y⟩ and start a new subpath.
+
+**Note:** In SVG having multiple `moveTo` commands following each other draws
+an implicit path between them. Do not rely on this behavior, in the future this
+may be removed.
 -}
 moveTo : Float -> Float -> Path -> Path
 moveTo x y =
