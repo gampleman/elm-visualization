@@ -1,4 +1,4 @@
-module Visualization.Shape exposing (line, area, linearCurve, monotoneInXCurve, Curve, pie, Arc, arc, centroid, customPie)
+module Visualization.Shape exposing (line, area, linearCurve, monotoneInXCurve, Curve, pie, Arc, arc, centroid, defaultPieConfig, PieConfig)
 
 {-| Visualizations typically consist of discrete graphical marks, such as symbols,
 arcs, lines and areas. While the rectangles of a bar chart may be easy enough to
@@ -383,35 +383,35 @@ centroid arcData =
         ( cos a * r, sin a * r )
 
 
-pie : Float -> Float -> Float -> List Float -> List Arc
-pie inner outer padding =
-    customPie
-        { startAngle = 0
-        , endAngle = 2 * pi
-        , padAngle = padding
-        , sortingFn = Basics.compare
-        , valueFn = identity
-        , innerRadius = always inner
-        , outerRadius = always outer
-        , cornerRadius = always 0
-        , padRadius = 0
-        }
-
-
-customPie :
+type alias PieConfig a =
     { startAngle : Float
     , endAngle : Float
     , padAngle : Float
     , sortingFn : a -> a -> Order
     , valueFn : a -> Float
-    , innerRadius : a -> Float
-    , outerRadius : a -> Float
-    , cornerRadius : a -> Float
+    , innerRadius : Float
+    , outerRadius : Float
+    , cornerRadius : Float
     , padRadius : Float
     }
-    -> List a
-    -> List Arc
-customPie settings data =
+
+
+defaultPieConfig : PieConfig Float
+defaultPieConfig =
+    { startAngle = 0
+    , endAngle = 2 * pi
+    , padAngle = 0
+    , sortingFn = Basics.compare
+    , valueFn = identity
+    , innerRadius = 0
+    , outerRadius = 100
+    , cornerRadius = 0
+    , padRadius = 0
+    }
+
+
+pie : PieConfig a -> List a -> List Arc
+pie settings data =
     let
         sum =
             List.foldr (\a b -> settings.valueFn a + b) 0 data
@@ -431,7 +431,7 @@ customPie settings data =
                   )
 
         sortedIndices =
-            List.map fst << List.sortWith (\a b -> settings.sortingFn (snd a) (snd b)) << List.indexedMap (,)
+            List.map fst << List.sortWith (\( _, a ) ( _, b ) -> settings.sortingFn a b) << List.indexedMap (,)
 
         dataArray =
             Array.fromList data
@@ -447,9 +447,9 @@ customPie settings data =
                 value =
                     settings.valueFn el
             in
-                { innerRadius = settings.innerRadius el
-                , outerRadius = settings.outerRadius el
-                , cornerRadius = settings.cornerRadius el
+                { innerRadius = settings.innerRadius
+                , outerRadius = settings.outerRadius
+                , cornerRadius = settings.cornerRadius
                 , startAngle = angle
                 , endAngle =
                     angle
@@ -479,7 +479,7 @@ customPie settings data =
                 ( r.endAngle, Dict.insert index r result )
     in
         sortedIndices data
-            |> List.foldr helper ( settings.startAngle, Dict.empty )
+            |> List.foldl helper ( settings.startAngle, Dict.empty )
             |> snd
             |> Dict.values
 
