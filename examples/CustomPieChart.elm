@@ -8,7 +8,7 @@ import Array exposing (Array)
 import Svg exposing (Svg, svg, g, path, text', text)
 import Svg.Attributes exposing (transform, d, style, dy, width, height, textAnchor)
 import Html.App
-import Html exposing (div, input, label, br, h2)
+import Html exposing (Html, div, input, label, br, h2)
 import Html.Attributes exposing (type', value, step)
 import Html.Events exposing (onInput)
 import String
@@ -51,6 +51,12 @@ type Msg
     | UpdateLabelPosition String
 
 
+type alias Model =
+    { config : ChartConfig
+    , data : List ( String, Float )
+    }
+
+
 drawChart : ChartConfig -> List ( String, Float ) -> Svg msg
 drawChart config model =
     let
@@ -85,6 +91,7 @@ drawChart config model =
             ]
 
 
+update : Msg -> Model -> Model
 update msg model =
     let
         config =
@@ -107,6 +114,7 @@ update msg model =
                 { model | config = { config | labelPosition = Result.withDefault 0 <| String.toFloat amount } }
 
 
+view : Model -> Html Msg
 view model =
     div [ style "display: flex;  justify-content: space-around" ]
         [ drawChart model.config model.data
@@ -161,6 +169,7 @@ model =
     }
 
 
+main : Program Never
 main =
     Html.App.beginnerProgram
         { model = model
