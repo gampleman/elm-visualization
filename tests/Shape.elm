@@ -2,7 +2,7 @@ module Shape exposing (all)
 
 import Test exposing (..)
 import Expect
-import Visualization.Shape as Shape
+import Visualization.Shape as Shape exposing (defaultPieConfig)
 import Visualization.Path exposing (PathSegment(..))
 import Fuzz exposing (..)
 import Helper exposing (isAbout, isBetween, expectAll, pathEqual)
@@ -13,6 +13,7 @@ all =
     describe "Shape"
         [ arcTest
         , centroidTest
+        , pieTest
         ]
 
 
@@ -45,6 +46,45 @@ myRound n =
 
 tupleMap f ( a, b ) =
     ( f a, f b )
+
+
+pieTest : Test
+pieTest =
+    describe "Pie"
+        [ test "pie defaultPieConfig returns default pie data" <|
+            \() ->
+                Shape.pie defaultPieConfig [ 1, 2, 3 ]
+                    |> Expect.equal
+                        [ { defaultArc | startAngle = 0, endAngle = pi / 3 }
+                        , { defaultArc | startAngle = pi / 3, endAngle = pi }
+                        , { defaultArc | startAngle = pi, endAngle = 2 * pi }
+                        ]
+        , test "pie treats negative numbers as zero" <|
+            \() ->
+                Shape.pie Shape.defaultPieConfig [ 1, 0, -1 ]
+                    |> Expect.equal
+                        [ { defaultArc | startAngle = 0, endAngle = 2 * pi }
+                        , { defaultArc | startAngle = 0, endAngle = 0 }
+                        , { defaultArc | startAngle = 0, endAngle = 0 }
+                        ]
+        , test "restricts |endAngle - startAngle| to τ" <|
+            \() ->
+                expectAll
+                    [ Shape.pie { defaultPieConfig | endAngle = 7 } [ 1, 2 ]
+                        |> Expect.equal
+                            [ { defaultArc | startAngle = 0, endAngle = 2 * pi / 3 }
+                            , { defaultArc | startAngle = 2 * pi / 3, endAngle = 2 * pi }
+                            ]
+                    ]
+        , test "padAngle = δ observes the specified pad angle" <|
+            \() ->
+                Shape.pie { defaultPieConfig | padAngle = 0.1 } [ 1, 2, 3 ]
+                    |> Expect.equal
+                        [ { defaultArc | startAngle = 0, endAngle = pi / 3 + 0.05, padAngle = 0.1 }
+                        , { defaultArc | startAngle = pi / 3 + 0.05, endAngle = pi + 0.05 + 0.0000000000000004, padAngle = 0.1 }
+                        , { defaultArc | startAngle = pi + 0.05 + 0.0000000000000004, endAngle = 2 * pi, padAngle = 0.1 }
+                        ]
+        ]
 
 
 centroidTest : Test
