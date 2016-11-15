@@ -9329,8 +9329,8 @@ var _gampleman$elm_visualization$Visualization_Scale_Linear$ticks = F2(
 	});
 var _gampleman$elm_visualization$Visualization_Scale_Linear$deinterpolate = F3(
 	function (a, b, x) {
-		var b_ = b - a;
-		return _elm_lang$core$Native_Utils.eq(b_, 0) ? 0 : ((x - a) / b_);
+		var normalizedB = b - a;
+		return _elm_lang$core$Native_Utils.eq(normalizedB, 0) ? 0 : ((x - a) / normalizedB);
 	});
 var _gampleman$elm_visualization$Visualization_Scale_Linear$invert = F2(
 	function (domain, range) {
@@ -11244,29 +11244,19 @@ var _gampleman$elm_visualization$Visualization_Scale_Time$findInterval = F2(
 				return {ctor: '_Tuple2', _0: _justinmimbs$elm_date_extra$Date_Extra$Year, _1: 1};
 			} else {
 				if (((_p3._0.ctor === '_Tuple2') && (_p3._1.ctor === '::')) && (_p3._1._0.ctor === '_Tuple2')) {
-					var _p8 = _p3._1._0._1;
-					var _p7 = _p3._0._1;
-					var _p6 = _p3._1._0._0;
-					var _p5 = _p3._0._0;
-					var ratio_ = A2(
-						_elm_lang$core$Debug$log,
-						'ratio\'',
-						(_p8 * _gampleman$elm_visualization$Visualization_Scale_Time$timeLength(_p6)) / target);
-					var ratio = A2(
-						_elm_lang$core$Debug$log,
-						'ratio',
-						target / (_p7 * _gampleman$elm_visualization$Visualization_Scale_Time$timeLength(_p5)));
-					var _p4 = A2(
-						_elm_lang$core$Debug$log,
-						'interval, step',
-						{ctor: '_Tuple2', _0: _p5, _1: _p7});
+					var _p7 = _p3._1._0._1;
+					var _p6 = _p3._0._1;
+					var _p5 = _p3._1._0._0;
+					var _p4 = _p3._0._0;
+					var ratio_ = (_p7 * _gampleman$elm_visualization$Visualization_Scale_Time$timeLength(_p5)) / target;
+					var ratio = target / (_p6 * _gampleman$elm_visualization$Visualization_Scale_Time$timeLength(_p4));
 					if (_elm_lang$core$Native_Utils.cmp(ratio, ratio_) < 0) {
-						return {ctor: '_Tuple2', _0: _p5, _1: _p7};
+						return {ctor: '_Tuple2', _0: _p4, _1: _p6};
 					} else {
 						var _v2 = target,
 							_v3 = {
 							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: _p6, _1: _p8},
+							_0: {ctor: '_Tuple2', _0: _p5, _1: _p7},
 							_1: _p3._1._1
 						};
 						target = _v2;
@@ -11361,12 +11351,12 @@ var _gampleman$elm_visualization$Visualization_Scale_Time$rangeExtent = F2(
 	function (d, r) {
 		return r;
 	});
-var _gampleman$elm_visualization$Visualization_Scale_Time$toTime = function (_p9) {
-	var _p10 = _p9;
+var _gampleman$elm_visualization$Visualization_Scale_Time$toTime = function (_p8) {
+	var _p9 = _p8;
 	return {
 		ctor: '_Tuple2',
-		_0: _elm_lang$core$Date$toTime(_p10._0),
-		_1: _elm_lang$core$Date$toTime(_p10._1)
+		_0: _elm_lang$core$Date$toTime(_p9._0),
+		_1: _elm_lang$core$Date$toTime(_p9._1)
 	};
 };
 var _gampleman$elm_visualization$Visualization_Scale_Time$convert = F2(
@@ -11400,13 +11390,13 @@ var _gampleman$elm_visualization$Visualization_Scale_Time$invert = F2(
 	});
 var _gampleman$elm_visualization$Visualization_Scale_Time$ticks = F2(
 	function (domain, count) {
-		var _p11 = _gampleman$elm_visualization$Visualization_Scale_Time$toTime(domain);
-		var start = _p11._0;
-		var end = _p11._1;
+		var _p10 = _gampleman$elm_visualization$Visualization_Scale_Time$toTime(domain);
+		var start = _p10._0;
+		var end = _p10._1;
 		var target = _elm_lang$core$Basics$abs(start - end) / _elm_lang$core$Basics$toFloat(count);
-		var _p12 = A2(_gampleman$elm_visualization$Visualization_Scale_Time$findInterval, target, _gampleman$elm_visualization$Visualization_Scale_Time$tickIntervals);
-		var interval = _p12._0;
-		var step = _p12._1;
+		var _p11 = A2(_gampleman$elm_visualization$Visualization_Scale_Time$findInterval, target, _gampleman$elm_visualization$Visualization_Scale_Time$tickIntervals);
+		var interval = _p11._0;
+		var step = _p11._1;
 		return A4(
 			_justinmimbs$elm_date_extra$Date_Extra$range,
 			interval,
@@ -11416,12 +11406,12 @@ var _gampleman$elm_visualization$Visualization_Scale_Time$ticks = F2(
 	});
 var _gampleman$elm_visualization$Visualization_Scale_Time$nice = F2(
 	function (domain, count) {
-		var _p13 = _gampleman$elm_visualization$Visualization_Scale_Time$toTime(domain);
-		var start = _p13._0;
-		var end = _p13._1;
+		var _p12 = _gampleman$elm_visualization$Visualization_Scale_Time$toTime(domain);
+		var start = _p12._0;
+		var end = _p12._1;
 		var target = _elm_lang$core$Basics$abs(start - end) / _elm_lang$core$Basics$toFloat(count);
-		var _p14 = A2(_gampleman$elm_visualization$Visualization_Scale_Time$findInterval, target, _gampleman$elm_visualization$Visualization_Scale_Time$tickIntervals);
-		var interval = _p14._0;
+		var _p13 = A2(_gampleman$elm_visualization$Visualization_Scale_Time$findInterval, target, _gampleman$elm_visualization$Visualization_Scale_Time$tickIntervals);
+		var interval = _p13._0;
 		return {
 			ctor: '_Tuple2',
 			_0: A2(
