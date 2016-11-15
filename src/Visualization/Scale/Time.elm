@@ -109,21 +109,18 @@ findInterval target intervals =
         [] ->
             ( Year, 1 )
 
-        ( interval, step ) :: ( interval', step' ) :: xs ->
+        ( interval, step ) :: ( interval_, step_ ) :: xs ->
             let
-                _ =
-                    Debug.log "interval, step" <| ( interval, step )
-
                 ratio =
-                    Debug.log "ratio" <| target / (step * timeLength interval)
+                    target / (step * timeLength interval)
 
-                ratio' =
-                    Debug.log "ratio'" <| (step' * timeLength interval') / target
+                ratio_ =
+                    (step_ * timeLength interval_) / target
             in
-                if ratio < ratio' then
+                if ratio < ratio_ then
                     ( interval, step )
                 else
-                    findInterval target (( interval', step' ) :: xs)
+                    findInterval target (( interval_, step_ ) :: xs)
 
         x :: xs ->
             x

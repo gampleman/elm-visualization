@@ -143,13 +143,12 @@ hue-6-2: #c18401
         <pre><code class="elm"><span class="hljs-keyword">module</span> Curves <span class="hljs-keyword">exposing</span> (main)
 
 
-<span class="hljs-keyword">import</span> Html.App <span class="hljs-keyword">as</span> App
 <span class="hljs-keyword">import</span> Html <span class="hljs-keyword">exposing</span> (div, p, a)
 <span class="hljs-keyword">import</span> Html.Attributes <span class="hljs-keyword">exposing</span> (href)
 <span class="hljs-keyword">import</span> Html.Events <span class="hljs-keyword">exposing</span> (onClick)
 <span class="hljs-keyword">import</span> Visualization.Scale <span class="hljs-keyword">as</span> Scale <span class="hljs-keyword">exposing</span> (<span class="hljs-type">ContinuousScale</span>)
 <span class="hljs-keyword">import</span> Visualization.Shape <span class="hljs-keyword">as</span> Shape
-<span class="hljs-keyword">import</span> Svg <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Svg</span>, svg, rect, path, g, line, text, text')
+<span class="hljs-keyword">import</span> Svg <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Svg</span>, svg, rect, path, g, line, text, text_)
 <span class="hljs-keyword">import</span> Svg.Attributes <span class="hljs-keyword">exposing</span> (..)
 <span class="hljs-keyword">import</span> Visualization.Path
 
@@ -236,7 +235,7 @@ hue-6-2: #c18401
 
 <span class="hljs-title">drawLegend</span> : <span class="hljs-type">Int</span> -&gt; ( <span class="hljs-type">String</span>, <span class="hljs-type">Curve</span>, <span class="hljs-type">String</span> ) -&gt; <span class="hljs-type">Svg</span> msg
 <span class="hljs-title">drawLegend</span> index ( name, curve, color ) =
-    text' [ style (<span class="hljs-string">"color: "</span> ++ color ++ <span class="hljs-string">"; font-family: monospace"</span>), x (toString padding), y (toString (toFloat index * <span class="hljs-number">20</span> + padding)) ] [ text name ]
+    text_ [ style (<span class="hljs-string">"color: "</span> ++ color ++ <span class="hljs-string">"; font-family: monospace"</span>), x (toString padding), y (toString (toFloat index * <span class="hljs-number">20</span> + padding)) ] [ text name ]
 
 
 <span class="hljs-title">view</span> : <span class="hljs-type">Msg</span> -&gt; <span class="hljs-type">Svg</span> <span class="hljs-type">Msg</span>
@@ -288,9 +287,9 @@ hue-6-2: #c18401
     | <span class="hljs-type">MonotoneInX</span>
 
 
-<span class="hljs-title">main</span> : <span class="hljs-type">Program</span> <span class="hljs-type">Never</span>
+<span class="hljs-title">main</span> : <span class="hljs-type">Program</span> <span class="hljs-type">Never</span> <span class="hljs-type">Msg</span> <span class="hljs-type">Msg</span>
 <span class="hljs-title">main</span> =
-    <span class="hljs-type">App</span>.beginnerProgram { model = <span class="hljs-type">Linear</span>, view = view, update = (\msg model -&gt; msg) }
+    <span class="hljs-type">Html</span>.beginnerProgram { model = <span class="hljs-type">Linear</span>, view = view, update = (\msg model -&gt; msg) }
 </code></pre>
       
     </main>

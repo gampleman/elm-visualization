@@ -5,7 +5,7 @@ module PadAngle exposing (main)
 
 import Visualization.Shape as Shape exposing (defaultPieConfig, Arc)
 import Array exposing (Array)
-import Svg exposing (Svg, svg, g, path, text', text)
+import Svg exposing (Svg, svg, g, path, text_, text)
 import Svg.Attributes exposing (transform, d, style, dy, width, height, textAnchor)
 
 

@@ -35,13 +35,13 @@ invert domain range =
 
 deinterpolate a b x =
     let
-        b' =
+        normalizedB =
             b - a
     in
-        if b' == 0 then
+        if normalizedB == 0 then
             0
         else
-            (x - a) / b'
+            (x - a) / normalizedB
 
 
 ticks ( start, end ) count =

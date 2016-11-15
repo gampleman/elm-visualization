@@ -33,13 +33,19 @@ predictable if they are.
 range : number -> number -> number -> List number
 range start stop step =
     let
-        range' s list =
-            if s + step > stop then
-                list ++ [ s ]
-            else
-                range' (s + step) (list ++ [ s ])
+        helper s list =
+            -- TODO: this is borked in elm 0.18.0, the code should look like
+            -- if s + step > stop then
+            let
+                gt n =
+                    n > 0
+            in
+                if gt (s + step - stop) then
+                    list ++ [ s ]
+                else
+                    helper (s + step) (list ++ [ s ])
     in
-        range' start []
+        helper start []
 
 
 {-| Returns a list of approximately n + 1 uniformly-spaced, nicely-rounded

@@ -6,7 +6,7 @@ charts, but it should contain all the tools to make building such charts relativ
 easy. The advantage is that you are free to design and build data visualizations
 that uniquely suite your needs.
 
-[![PadAngle](http://code.gampleman.eu/elm-visualization/PadAngle/preview.png) ![Plus](http://code.gampleman.eu/elm-visualization/Cross/preview.png) ![LineChart](http://code.gampleman.eu/elm-visualization/LineChart/preview.png)](http://code.gampleman.eu/elm-visualization/)
+[![PadAngle](http://code.gampleman.eu/elm-visualization/PadAngle/preview.png) ![Plus](http://code.gampleman.eu/elm-visualization/Cross/preview.png) ![LineChart](http://code.gampleman.eu/elm-visualization/LineChart/preview.png) ![LineChart](http://code.gampleman.eu/elm-visualization/Curves/preview.png)](http://code.gampleman.eu/elm-visualization/)
 
 ## What's included?
 

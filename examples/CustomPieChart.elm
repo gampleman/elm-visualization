@@ -5,11 +5,10 @@ module CustomPieChart exposing (main)
 
 import Visualization.Shape as Shape exposing (defaultPieConfig)
 import Array exposing (Array)
-import Svg exposing (Svg, svg, g, path, text', text)
+import Svg exposing (Svg, svg, g, path, text_, text)
 import Svg.Attributes exposing (transform, d, style, dy, width, height, textAnchor)
-import Html.App
 import Html exposing (Html, div, input, label, br, h2)
-import Html.Attributes exposing (type', value, step)
+import Html.Attributes exposing (type_, value, step)
 import Html.Events exposing (onInput)
 import String
 
@@ -62,7 +61,7 @@ drawChart config model =
     let
         pieData =
             model
-                |> List.map snd
+                |> List.map Tuple.second
                 |> Shape.pie
                     { defaultPieConfig
                         | innerRadius = config.innerRadius
@@ -76,7 +75,7 @@ drawChart config model =
             path [ d (Shape.arc datum), style ("fill:" ++ (Maybe.withDefault "#000" <| Array.get index colors) ++ "; stroke: #fff;") ] []
 
         makeLabel slice ( label, value ) =
-            text'
+            text_
                 [ transform ("translate" ++ toString (Shape.centroid { slice | innerRadius = config.labelPosition, outerRadius = config.labelPosition }))
                 , dy ".35em"
                 , textAnchor "middle"
@@ -121,23 +120,23 @@ view model =
         , div []
             [ h2 [] [ text "Pie Configuration" ]
             , label [] [ text "Outer Radius" ]
-            , input [ type' "range", onInput UpdateOuterRadius, value (toString model.config.outerRadius), Html.Attributes.min "0", Html.Attributes.max (toString radius) ] []
+            , input [ type_ "range", onInput UpdateOuterRadius, value (toString model.config.outerRadius), Html.Attributes.min "0", Html.Attributes.max (toString radius) ] []
             , text (toString model.config.outerRadius)
             , br [] []
             , label [] [ text "Inner Radius" ]
-            , input [ type' "range", onInput UpdateInnerRadius, value (toString model.config.innerRadius), Html.Attributes.min "0", Html.Attributes.max (toString radius) ] []
+            , input [ type_ "range", onInput UpdateInnerRadius, value (toString model.config.innerRadius), Html.Attributes.min "0", Html.Attributes.max (toString radius) ] []
             , text (toString model.config.innerRadius)
             , br [] []
             , label [] [ text "Pad Angle" ]
-            , input [ type' "range", onInput UpdatePadAngle, value (toString model.config.padAngle), Html.Attributes.min "0", Html.Attributes.max "0.8", step "0.01" ] []
+            , input [ type_ "range", onInput UpdatePadAngle, value (toString model.config.padAngle), Html.Attributes.min "0", Html.Attributes.max "0.8", step "0.01" ] []
             , text (toString model.config.padAngle)
             , br [] []
             , label [] [ text "Corner Radius" ]
-            , input [ type' "range", onInput UpdateCornerRadius, value (toString model.config.cornerRadius), Html.Attributes.min "0", Html.Attributes.max "20", step "0.25" ] []
+            , input [ type_ "range", onInput UpdateCornerRadius, value (toString model.config.cornerRadius), Html.Attributes.min "0", Html.Attributes.max "20", step "0.25" ] []
             , text (toString model.config.cornerRadius)
             , br [] []
             , label [] [ text "Label Position" ]
-            , input [ type' "range", onInput UpdateLabelPosition, value (toString model.config.labelPosition), Html.Attributes.min "0", Html.Attributes.max (toString radius) ] []
+            , input [ type_ "range", onInput UpdateLabelPosition, value (toString model.config.labelPosition), Html.Attributes.min "0", Html.Attributes.max (toString radius) ] []
             , text (toString model.config.labelPosition)
             , br [] []
             ]
@@ -169,9 +168,9 @@ model =
     }
 
 
-main : Program Never
+main : Program Never { config : ChartConfig, data : List ( String, Float ) } Msg
 main =
-    Html.App.beginnerProgram
+    Html.beginnerProgram
         { model = model
         , update = update
         , view = view

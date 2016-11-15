@@ -1,6 +1,6 @@
 module Visualization.Scale.Quantize exposing (convert, invertExtent, ticks, tickFormat, nice, rangeExtent)
 
-import Visualization.List as List
+import Visualization.List as VList
 
 
 rangeExtent : ( Float, Float ) -> ( a, List a ) -> ( a, a )
@@ -17,7 +17,7 @@ computeDomain ( mi, ma ) tail =
         step =
             (ma - mi) / toFloat (l + 1)
     in
-        Maybe.withDefault [ 0 ] <| List.tail <| List.range mi ma step
+        Maybe.withDefault [ 0 ] <| List.tail <| VList.range mi ma step
 
 
 convert : ( Float, Float ) -> ( a, List a ) -> Float -> a

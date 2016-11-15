@@ -5,7 +5,7 @@ module PieChart exposing (main)
 
 import Visualization.Shape as Shape exposing (defaultPieConfig)
 import Array exposing (Array)
-import Svg exposing (Svg, svg, g, path, text', text)
+import Svg exposing (Svg, svg, g, path, text_, text)
 import Svg.Attributes exposing (transform, d, style, dy, width, height, textAnchor)
 
 
@@ -33,13 +33,13 @@ view : List ( String, Float ) -> Svg msg
 view model =
     let
         pieData =
-            model |> List.map snd |> Shape.pie { defaultPieConfig | outerRadius = radius }
+            model |> List.map Tuple.second |> Shape.pie { defaultPieConfig | outerRadius = radius }
 
         makeSlice index datum =
             path [ d (Shape.arc datum), style ("fill:" ++ (Maybe.withDefault "#000" <| Array.get index colors) ++ "; stroke: #fff;") ] []
 
         makeLabel slice ( label, value ) =
-            text'
+            text_
                 [ transform ("translate" ++ toString (Shape.centroid { slice | innerRadius = radius - 40, outerRadius = radius - 40 }))
                 , dy ".35em"
                 , textAnchor "middle"

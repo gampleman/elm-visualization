@@ -145,7 +145,7 @@ hue-6-2: #c18401
 
 <span class="hljs-keyword">import</span> Visualization.Shape <span class="hljs-keyword">as</span> Shape <span class="hljs-keyword">exposing</span> (defaultPieConfig)
 <span class="hljs-keyword">import</span> Array <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Array</span>)
-<span class="hljs-keyword">import</span> Svg <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Svg</span>, svg, g, path, text', text)
+<span class="hljs-keyword">import</span> Svg <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Svg</span>, svg, g, path, text_, text)
 <span class="hljs-keyword">import</span> Svg.Attributes <span class="hljs-keyword">exposing</span> (transform, d, style, dy, width, height, textAnchor)
 
 
@@ -173,13 +173,13 @@ hue-6-2: #c18401
 <span class="hljs-title">view</span> model =
     <span class="hljs-keyword">let</span>
         pieData =
-            model |&gt; <span class="hljs-type">List</span>.map snd |&gt; <span class="hljs-type">Shape</span>.pie { defaultPieConfig | outerRadius = radius }
+            model |&gt; <span class="hljs-type">List</span>.map <span class="hljs-type">Tuple</span>.second |&gt; <span class="hljs-type">Shape</span>.pie { defaultPieConfig | outerRadius = radius }
 
         makeSlice index datum =
             path [ d (<span class="hljs-type">Shape</span>.arc datum), style (<span class="hljs-string">"fill:"</span> ++ (<span class="hljs-type">Maybe</span>.withDefault <span class="hljs-string">"#000"</span> &lt;| <span class="hljs-type">Array</span>.get index colors) ++ <span class="hljs-string">"; stroke: #fff;"</span>) ] []
 
         makeLabel slice ( label, value ) =
-            text'
+            text_
                 [ transform (<span class="hljs-string">"translate"</span> ++ toString (<span class="hljs-type">Shape</span>.centroid { slice | innerRadius = radius - <span class="hljs-number">40</span>, outerRadius = radius - <span class="hljs-number">40</span> }))
                 , dy <span class="hljs-string">".35em"</span>
                 , textAnchor <span class="hljs-string">"middle"</span>

@@ -177,39 +177,39 @@ stringify item ( str, x0, y0, x1, y1, empty ) =
         epsilon =
             1.0e-6
 
-        stringifyArc x1' y1' x2' y2' radius =
+        stringifyArc x1_ y1_ x2_ y2_ radius =
             let
                 -- TODO: Figure out how this actually works and write a lot of comments/refactor.
                 -- Currently this is a straight port from D3.
                 r =
                     abs radius
 
-                x0' =
+                x0_ =
                     x1
 
-                y0' =
+                y0_ =
                     y1
 
                 x21 =
-                    x2' - x1'
+                    x2_ - x1_
 
                 y21 =
-                    y2' - y1'
+                    y2_ - y1_
 
                 x01 =
-                    x0' - x1'
+                    x0_ - x1_
 
                 y01 =
-                    y0' - y1'
+                    y0_ - y1_
 
                 l01_2 =
                     x01 ^ 2 + y01 ^ 2
 
                 x20 =
-                    x2' - x0'
+                    x2_ - x0_
 
                 y20 =
-                    y2' - y0'
+                    y2_ - y0_
 
                 l21_2 =
                     x21 ^ 2 + y21 ^ 2
@@ -232,19 +232,19 @@ stringify item ( str, x0, y0, x1, y1, empty ) =
                 t21 =
                     l / l21
 
-                str' =
+                str_ =
                     if abs (t01 - 1) > epsilon then
-                        append "L" [ x1' + t01 * x01, y1' + t01 * y01 ] str
+                        append "L" [ x1_ + t01 * x01, y1_ + t01 * y01 ] str
                     else
                         str
             in
                 if empty then
-                    ( append "M" [ x1', y1' ] str, x0, y0, x1', y1', False )
+                    ( append "M" [ x1_, y1_ ] str, x0, y0, x1_, y1_, False )
                 else if l01_2 < epsilon then
                     ( str, x0, y0, x1, y1, empty )
                     -- do nothing
                 else if not (abs (y01 * x21 - y21 * x01) > epsilon) || r == 0 then
-                    ( append "L" [ x1', y1' ] str, x0, y0, x1', y1', False )
+                    ( append "L" [ x1_, y1_ ] str, x0, y0, x1_, y1_, False )
                 else
                     ( append "A"
                         [ r
@@ -256,14 +256,14 @@ stringify item ( str, x0, y0, x1, y1, empty ) =
                            else
                             0
                           )
-                        , x1' + t21 * x21
-                        , y1' + t21 * y21
+                        , x1_ + t21 * x21
+                        , y1_ + t21 * y21
                         ]
-                        str'
+                        str_
                     , x0
                     , y0
-                    , x1' + t21 * x21
-                    , y1' + t21 * y21
+                    , x1_ + t21 * x21
+                    , y1_ + t21 * y21
                     , False
                     )
 
@@ -284,10 +284,10 @@ stringify item ( str, x0, y0, x1, y1, empty ) =
                 dy =
                     r * sin a0
 
-                x0' =
+                x0_ =
                     x + dx
 
-                y0' =
+                y0_ =
                     y + dy
 
                 cw =
@@ -302,37 +302,37 @@ stringify item ( str, x0, y0, x1, y1, empty ) =
                     else
                         a1 - a0
 
-                str' =
+                str_ =
                     if empty then
-                        append "M" [ x0', y0' ] str
-                    else if abs (x1 - x0') > epsilon || abs (y1 - y0') > epsilon then
-                        append "L" [ x0', y0' ] str
+                        append "M" [ x0_, y0_ ] str
+                    else if abs (x1 - x0_) > epsilon || abs (y1 - y0_) > epsilon then
+                        append "L" [ x0_, y0_ ] str
                     else
                         str
             in
                 if r == 0 then
                     -- Is this arc empty? We’re done.
-                    ( str', x0, y0, x1, y1, empty )
+                    ( str_, x0, y0, x1, y1, empty )
                 else if da > (tau - epsilon) then
                     -- Is this a complete circle? Draw two arcs to complete the circle.
-                    ( append "A" [ r, r, 0, 1, cw, x - dx, y - dy ] str'
-                        |> append "A" [ r, r, 0, 1, cw, x0', y0' ]
+                    ( append "A" [ r, r, 0, 1, cw, x - dx, y - dy ] str_
+                        |> append "A" [ r, r, 0, 1, cw, x0_, y0_ ]
                     , x0
                     , y0
-                    , x0'
-                    , y0'
+                    , x0_
+                    , y0_
                     , False
                     )
                 else
                     let
-                        da' =
+                        da_ =
                             if da < 0 then
                                 (mod da tau) + tau
                             else
                                 da
                     in
                         -- Otherwise, draw an arc!
-                        ( append "A" [ r, r, 0, boolToFloat (da' >= pi), cw, x + r * cos a1, y + r * sin a1 ] str', x0, y0, x + r * cos a1, y + r * sin a1, False )
+                        ( append "A" [ r, r, 0, boolToFloat (da_ >= pi), cw, x + r * cos a1, y + r * sin a1 ] str_, x0, y0, x + r * cos a1, y + r * sin a1, False )
     in
         case item of
             Move ( x, y ) ->
@@ -354,8 +354,8 @@ stringify item ( str, x0, y0, x1, y1, empty ) =
             BezierCurve ( cpx1, cpy1 ) ( cpx2, cpy2 ) ( x, y ) ->
                 ( append "C" [ cpx1, cpy1, cpx2, cpy2, x, y ] str, x0, y0, x, y, False )
 
-            Arc ( x1', y1' ) ( x2', y2' ) radius ->
-                stringifyArc x1' y1' x2' y2' radius
+            Arc ( x1_, y1_ ) ( x2_, y2_ ) radius ->
+                stringifyArc x1_ y1_ x2_ y2_ radius
 
             ArcCustom ( x, y ) radius startAngle endAngle anticlockwise ->
                 stringifyArcCustom x y radius startAngle endAngle anticlockwise

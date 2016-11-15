@@ -145,11 +145,10 @@ hue-6-2: #c18401
 
 <span class="hljs-keyword">import</span> Visualization.Shape <span class="hljs-keyword">as</span> Shape <span class="hljs-keyword">exposing</span> (defaultPieConfig)
 <span class="hljs-keyword">import</span> Array <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Array</span>)
-<span class="hljs-keyword">import</span> Svg <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Svg</span>, svg, g, path, text', text)
+<span class="hljs-keyword">import</span> Svg <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Svg</span>, svg, g, path, text_, text)
 <span class="hljs-keyword">import</span> Svg.Attributes <span class="hljs-keyword">exposing</span> (transform, d, style, dy, width, height, textAnchor)
-<span class="hljs-keyword">import</span> Html.App
 <span class="hljs-keyword">import</span> Html <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Html</span>, div, input, label, br, h2)
-<span class="hljs-keyword">import</span> Html.Attributes <span class="hljs-keyword">exposing</span> (type', value, step)
+<span class="hljs-keyword">import</span> Html.Attributes <span class="hljs-keyword">exposing</span> (type_, value, step)
 <span class="hljs-keyword">import</span> Html.Events <span class="hljs-keyword">exposing</span> (onInput)
 <span class="hljs-keyword">import</span> String
 
@@ -202,7 +201,7 @@ hue-6-2: #c18401
     <span class="hljs-keyword">let</span>
         pieData =
             model
-                |&gt; <span class="hljs-type">List</span>.map snd
+                |&gt; <span class="hljs-type">List</span>.map <span class="hljs-type">Tuple</span>.second
                 |&gt; <span class="hljs-type">Shape</span>.pie
                     { defaultPieConfig
                         | innerRadius = config.innerRadius
@@ -216,7 +215,7 @@ hue-6-2: #c18401
             path [ d (<span class="hljs-type">Shape</span>.arc datum), style (<span class="hljs-string">"fill:"</span> ++ (<span class="hljs-type">Maybe</span>.withDefault <span class="hljs-string">"#000"</span> &lt;| <span class="hljs-type">Array</span>.get index colors) ++ <span class="hljs-string">"; stroke: #fff;"</span>) ] []
 
         makeLabel slice ( label, value ) =
-            text'
+            text_
                 [ transform (<span class="hljs-string">"translate"</span> ++ toString (<span class="hljs-type">Shape</span>.centroid { slice | innerRadius = config.labelPosition, outerRadius = config.labelPosition }))
                 , dy <span class="hljs-string">".35em"</span>
                 , textAnchor <span class="hljs-string">"middle"</span>
@@ -261,23 +260,23 @@ hue-6-2: #c18401
         , div []
             [ h2 [] [ text <span class="hljs-string">"Pie Configuration"</span> ]
             , label [] [ text <span class="hljs-string">"Outer Radius"</span> ]
-            , input [ <span class="hljs-keyword">type</span>' "range", onInput <span class="hljs-type">UpdateOuterRadius</span>, value (toString model.config.outerRadius), <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.min "0", <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.max (toString radius) ] []
+            , input [ type_ "range", onInput <span class="hljs-type">UpdateOuterRadius</span>, value (toString model.config.outerRadius), <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.min "0", <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.max (toString radius) ] []
             , text (toString model.config.outerRadius)
             , br [] []
             , label [] [ text <span class="hljs-string">"Inner Radius"</span> ]
-            , input [ <span class="hljs-keyword">type</span>' "range", onInput <span class="hljs-type">UpdateInnerRadius</span>, value (toString model.config.innerRadius), <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.min "0", <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.max (toString radius) ] []
+            , input [ type_ "range", onInput <span class="hljs-type">UpdateInnerRadius</span>, value (toString model.config.innerRadius), <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.min "0", <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.max (toString radius) ] []
             , text (toString model.config.innerRadius)
             , br [] []
             , label [] [ text <span class="hljs-string">"Pad Angle"</span> ]
-            , input [ <span class="hljs-keyword">type</span>' "range", onInput <span class="hljs-type">UpdatePadAngle</span>, value (toString model.config.padAngle), <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.min "0", <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.max "0.8", step "0.01" ] []
+            , input [ type_ "range", onInput <span class="hljs-type">UpdatePadAngle</span>, value (toString model.config.padAngle), <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.min "0", <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.max "0.8", step "0.01" ] []
             , text (toString model.config.padAngle)
             , br [] []
             , label [] [ text <span class="hljs-string">"Corner Radius"</span> ]
-            , input [ <span class="hljs-keyword">type</span>' "range", onInput <span class="hljs-type">UpdateCornerRadius</span>, value (toString model.config.cornerRadius), <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.min "0", <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.max "20", step "0.25" ] []
+            , input [ type_ "range", onInput <span class="hljs-type">UpdateCornerRadius</span>, value (toString model.config.cornerRadius), <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.min "0", <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.max "20", step "0.25" ] []
             , text (toString model.config.cornerRadius)
             , br [] []
             , label [] [ text <span class="hljs-string">"Label Position"</span> ]
-            , input [ <span class="hljs-keyword">type</span>' "range", onInput <span class="hljs-type">UpdateLabelPosition</span>, value (toString model.config.labelPosition), <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.min "0", <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.max (toString radius) ] []
+            , input [ type_ "range", onInput <span class="hljs-type">UpdateLabelPosition</span>, value (toString model.config.labelPosition), <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.min "0", <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.max (toString radius) ] []
             , text (toString model.config.labelPosition)
             , br [] []
             ]
@@ -309,9 +308,9 @@ hue-6-2: #c18401
     }
 
 
-<span class="hljs-title">main</span> : <span class="hljs-type">Program</span> <span class="hljs-type">Never</span>
+<span class="hljs-title">main</span> : <span class="hljs-type">Program</span> <span class="hljs-type">Never</span> { config : <span class="hljs-type">ChartConfig</span>, data : <span class="hljs-type">List</span> ( <span class="hljs-type">String</span>, <span class="hljs-type">Float</span> ) } <span class="hljs-type">Msg</span>
 <span class="hljs-title">main</span> =
-    <span class="hljs-type">Html</span>.<span class="hljs-type">App</span>.beginnerProgram
+    <span class="hljs-type">Html</span>.beginnerProgram
         { model = model
         , update = update
         , view = view

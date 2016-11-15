@@ -133,10 +133,10 @@ axis opts scale =
             Scale.rangeExtent scale
 
         range0 =
-            fst rangeExtent + 0.5
+            Tuple.first rangeExtent + 0.5
 
         range1 =
-            snd rangeExtent + 0.5
+            Tuple.second rangeExtent + 0.5
 
         position =
             Scale.convert scale
@@ -153,7 +153,7 @@ axis opts scale =
         translateY point =
             "translate(0, " ++ toString (position point) ++ ")"
 
-        ( k, dy', textAnchorPosition, translate, ( x, y, x1, x2, y1, y2 ) ) =
+        ( k, dy_, textAnchorPosition, translate, ( x, y, x1, x2, y1, y2 ) ) =
             case opts.orientation of
                 Left ->
                     ( -1, "0.32em", "end", translateY, horizontalAttrs )
@@ -170,7 +170,7 @@ axis opts scale =
         drawTick tick =
             g [ class "tick", transform (translate tick) ]
                 [ line [ stroke "#000", x2 (k * opts.tickSizeInner), y1 0.5, y2 0.5 ] []
-                , text' [ fill "#000", x (k * spacing), y 0.5, dy dy' ] [ text (format tick) ]
+                , text_ [ fill "#000", x (k * spacing), y 0.5, dy dy_ ] [ text (format tick) ]
                 ]
 
         domainLine =

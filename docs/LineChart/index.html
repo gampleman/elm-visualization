@@ -195,7 +195,7 @@ the primitives provided in this library.</p>
 
         areaGenerator : ( <span class="hljs-type">Date</span>, <span class="hljs-type">Float</span> ) -&gt; <span class="hljs-type">Maybe</span> ( ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> ), ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> ) )
         areaGenerator ( x, y ) =
-            <span class="hljs-type">Just</span> ( ( <span class="hljs-type">Scale</span>.convert xScale x, fst (<span class="hljs-type">Scale</span>.rangeExtent yScale) ), ( <span class="hljs-type">Scale</span>.convert xScale x, <span class="hljs-type">Scale</span>.convert yScale y ) )
+            <span class="hljs-type">Just</span> ( ( <span class="hljs-type">Scale</span>.convert xScale x, <span class="hljs-type">Tuple</span>.first (<span class="hljs-type">Scale</span>.rangeExtent yScale) ), ( <span class="hljs-type">Scale</span>.convert xScale x, <span class="hljs-type">Scale</span>.convert yScale y ) )
 
         lineGenerator : ( <span class="hljs-type">Date</span>, <span class="hljs-type">Float</span> ) -&gt; <span class="hljs-type">Maybe</span> ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> )
         lineGenerator ( x, y ) =

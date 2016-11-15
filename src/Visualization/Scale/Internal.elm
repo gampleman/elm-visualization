@@ -2,10 +2,10 @@ module Visualization.Scale.Internal exposing (bimap)
 
 
 bimap :
-    ( comparable, comparable )
-    -> ( comparable', comparable' )
-    -> (comparable -> comparable -> a -> b)
-    -> (comparable' -> comparable' -> b -> c)
+    ( comparable0, comparable0 )
+    -> ( comparable1, comparable1 )
+    -> (comparable0 -> comparable0 -> a -> b)
+    -> (comparable1 -> comparable1 -> b -> c)
     -> (a -> c)
 bimap ( d0, d1 ) ( r0, r1 ) deinterpolate reinterpolate =
     let

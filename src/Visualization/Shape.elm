@@ -606,7 +606,7 @@ pie settings data =
                   )
 
         sortedIndices =
-            List.map fst << List.sortWith (\( _, a ) ( _, b ) -> settings.sortingFn a b) << List.indexedMap (,)
+            List.map Tuple.first << List.sortWith (\( _, a ) ( _, b ) -> settings.sortingFn a b) << List.indexedMap (,)
 
         dataArray =
             Array.fromList data
@@ -655,7 +655,7 @@ pie settings data =
     in
         sortedIndices data
             |> List.foldl helper ( settings.startAngle, Dict.empty )
-            |> snd
+            |> Tuple.second
             |> Dict.values
 
 
@@ -679,10 +679,10 @@ applyRecursivelyForArea : (Curve -> List PathSegment) -> List ( Point, Point ) -
 applyRecursivelyForArea fn points =
     let
         points0 =
-            List.map fst points
+            List.map Tuple.first points
 
         points1 =
-            List.reverse <| List.map snd points
+            List.reverse <| List.map Tuple.second points
     in
         case ( fn (Line points1), points1 ) of
             ( _ :: tail, ( x, y ) :: _ ) ->
@@ -746,8 +746,8 @@ monotoneInXCurve part =
                         Nothing ->
                             slope2 ( x0, y0 ) ( x1, y1 ) t1
 
-                        Just t0' ->
-                            t0'
+                        Just t0actual ->
+                            t0actual
             in
                 ( ( x1, y1 ), ( x, y ), Just t1, point ( x0, y0 ) ( x1, y1 ) t0 t1 path )
     in
@@ -861,7 +861,7 @@ line curve data =
                 ( Just p0, Just p1, l ) ->
                     ( Just p1, Line [ p1 ] :: l )
     in
-        toAttrString <| List.concatMap curve <| snd <| List.foldr makeCurves ( Nothing, [] ) data
+        toAttrString <| List.concatMap curve <| Tuple.second <| List.foldr makeCurves ( Nothing, [] ) data
 
 
 {-| The area generator produces an area, as in an area chart. An area is defined
@@ -881,7 +881,7 @@ For example, if your data is a `List (Date, Float)`, you might use something lik
 
     areaGenerator : ( Date, Float ) -> Maybe ( ( Float, Float ), ( Float, Float ) )
     areaGenerator ( x, y ) =
-        Just ( ( Scale.convert xScale x, fst (Scale.rangeExtent yScale) ),
+        Just ( ( Scale.convert xScale x, Tuple.first (Scale.rangeExtent yScale) ),
                ( Scale.convert xScale x, Scale.convert yScale y ) )
 
     areaPath : List (Date, Float) -> String
@@ -908,4 +908,4 @@ area curve data =
                 ( Just p0, Just p1, l ) ->
                     ( Just p1, Area [ p1 ] :: l )
     in
-        toAttrString <| List.concatMap curve <| snd <| List.foldr makeCurves ( Nothing, [] ) data
+        toAttrString <| List.concatMap curve <| Tuple.second <| List.foldr makeCurves ( Nothing, [] ) data

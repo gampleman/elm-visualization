@@ -55,7 +55,7 @@ view model =
 
         areaGenerator : ( Date, Float ) -> Maybe ( ( Float, Float ), ( Float, Float ) )
         areaGenerator ( x, y ) =
-            Just ( ( Scale.convert xScale x, fst (Scale.rangeExtent yScale) ), ( Scale.convert xScale x, Scale.convert yScale y ) )
+            Just ( ( Scale.convert xScale x, Tuple.first (Scale.rangeExtent yScale) ), ( Scale.convert xScale x, Scale.convert yScale y ) )
 
         lineGenerator : ( Date, Float ) -> Maybe ( Float, Float )
         lineGenerator ( x, y ) =

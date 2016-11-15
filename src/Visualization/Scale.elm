@@ -464,10 +464,10 @@ always within the scale’s range.
 clamp : Scale { a | convert : ( Float, Float ) -> range -> Float -> result } -> Scale { a | convert : ( Float, Float ) -> range -> Float -> result }
 clamp (Scale ({ convert } as scale)) =
     let
-        convert' ( mi, ma ) range value =
+        convert_ ( mi, ma ) range value =
             convert ( mi, ma ) range <| Basics.clamp (min mi ma) (max mi ma) value
     in
-        Scale { scale | convert = convert' }
+        Scale { scale | convert = convert_ }
 
 
 {-| Returns a new scale which extends the domain so that it lands on round values.

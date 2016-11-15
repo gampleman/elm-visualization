@@ -6,11 +6,11 @@ import Axis
 import Path
 import Test
 import Shape
-import Test.Runner.Node exposing (run)
+import Test.Runner.Node exposing (run, TestProgram)
 import Json.Encode exposing (Value)
 
 
-main : Program Never
+main : TestProgram
 main =
     run emit <| Test.concat [ Scale.Linear.all, Scale.Quantize.all, Axis.all, Path.all, Shape.all ]
 

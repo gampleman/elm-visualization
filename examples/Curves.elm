@@ -3,13 +3,12 @@ module Curves exposing (main)
 {-| Here we demonstrate the various curve functions provided.
 -}
 
-import Html.App as App
 import Html exposing (div, p, a)
 import Html.Attributes exposing (href)
 import Html.Events exposing (onClick)
 import Visualization.Scale as Scale exposing (ContinuousScale)
 import Visualization.Shape as Shape
-import Svg exposing (Svg, svg, rect, path, g, line, text, text')
+import Svg exposing (Svg, svg, rect, path, g, line, text, text_)
 import Svg.Attributes exposing (..)
 import Visualization.Path
 
@@ -96,7 +95,7 @@ drawCurve ( name, curve, color ) =
 
 drawLegend : Int -> ( String, Curve, String ) -> Svg msg
 drawLegend index ( name, curve, color ) =
-    text' [ style ("color: " ++ color ++ "; font-family: monospace"), x (toString padding), y (toString (toFloat index * 20 + padding)) ] [ text name ]
+    text_ [ style ("color: " ++ color ++ "; font-family: monospace"), x (toString padding), y (toString (toFloat index * 20 + padding)) ] [ text name ]
 
 
 view : Msg -> Svg Msg
@@ -148,6 +147,6 @@ type Msg
     | MonotoneInX
 
 
-main : Program Never
+main : Program Never Msg Msg
 main =
-    App.beginnerProgram { model = Linear, view = view, update = (\msg model -> msg) }
+    Html.beginnerProgram { model = Linear, view = view, update = (\msg model -> msg) }
