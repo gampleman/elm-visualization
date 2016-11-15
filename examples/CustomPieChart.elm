@@ -1,4 +1,4 @@
-module PieChart exposing (main)
+module CustomPieChart exposing (main)
 
 {-| An example showing how to render a basic pie chart.
 -}

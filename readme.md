@@ -6,21 +6,23 @@ charts, but it should contain all the tools to make building such charts relativ
 easy. The advantage is that you are free to design and build data visualizations
 that uniquely suite your needs.
 
+[![PadAngle](http://code.gampleman.eu/elm-visualization/PadAngle/preview.png) ![Plus](http://code.gampleman.eu/elm-visualization/Cross/preview.png) ![LineChart](http://code.gampleman.eu/elm-visualization/LineChart/preview.png)](http://code.gampleman.eu/elm-visualization/)
+
 ## What's included?
 
-### [Scales](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization.Scale)
+### [Scales](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization-Scale)
 
 Most of the time you have data that has properties that you want to display on the
 screen, however these properties typically aren't in pixels. Scales solve this \
 fundamental problem by giving you convenient ways to transform raw data into positions,
 sizes, colors, labels and other ways to display data.
 
-### [Axis](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization.Axis)
+### [Axis](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization-Axis)
 
 A component that allows you to visualize a Scale. Those little ticks that describe
 the dimensions of a plot.
 
-### [Paths](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization.Path)
+### [Paths](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization-Path)
 
 A thin layer that gives a simple DSL for drawing paths.
 
@@ -32,7 +34,7 @@ myPath = begin
        |> close
 ~~~
 
-### [Shapes](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization.Shape)
+### [Shapes](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization-Shape)
 
 This module gives you ways to draw some fundamental shapes used in data visualization.
 
@@ -44,7 +46,7 @@ path [d (Shape.line Shape.monotoneInXCurve dataPoints), stroke "2", fill "none"]
 
 Done.
 
-### [Utilities](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization.List)
+### [Utilities](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization-List)
 
 A bag of list processing methods that encapsulate common algorithms.
 

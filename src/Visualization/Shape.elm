@@ -20,6 +20,8 @@ variety of shape generators for your convenience.
 
 # Lines
 
+[![Line Chart](http://code.gampleman.eu/elm-visualization/LineChart/preview.png)](http://code.gampleman.eu/elm-visualization/LineChart/)
+
 @docs line, area
 
 # Curves
@@ -663,6 +665,10 @@ type alias Point =
 
 {-| A curve is represented as a list of points, which a curve function can turn
 into drawing commands.
+
+*Note*: The intention is to eventually open this type so that custom curves may
+be implemented, but I will first implement a number of curves to make sure the
+type makes sense.
 -}
 type Curve
     = Line (List Point)
@@ -687,6 +693,8 @@ applyRecursivelyForArea fn points =
 
 
 {-| Produces a polyline through the specified points.
+
+[![linearCurve](http://code.gampleman.eu/elm-visualization/Curves/linearCurve.png)](http://code.gampleman.eu/elm-visualization/Curves/)
 -}
 linearCurve : Curve -> List PathSegment
 linearCurve part =
@@ -707,6 +715,8 @@ in y, assuming monotonicity in x, as proposed by Steffen in
 “a smooth curve with continuous first-order derivatives that passes through any
 given set of data points without spurious oscillations. Local extrema can occur
 only at grid points where they are given by the data, but not in between two adjacent grid points.”
+
+[![monotoneInXCurve](http://code.gampleman.eu/elm-visualization/Curves/monotoneInXCurve.png)](http://code.gampleman.eu/elm-visualization/Curves/)
 -}
 monotoneInXCurve : Curve -> List PathSegment
 monotoneInXCurve part =
