@@ -6,6 +6,7 @@ import Graph exposing (Edge, Graph, Node, NodeId)
 import Html
 import Html.Events exposing (on)
 import Json.Decode as Decode
+import Miserables exposing (miserablesGraph)
 import Mouse exposing (Position)
 import Svg exposing (..)
 import Svg.Attributes as Attr exposing (..)
@@ -13,18 +14,21 @@ import Time exposing (Time)
 import Visualization.Force as Force
 
 
-main =
-    Html.program
-        { init = init
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
-        }
+screenWidth : Float
+screenWidth =
+    990
 
 
+screenHeight : Float
+screenHeight =
+    450
 
--- list of nodes
--- MODEL
+
+type Msg
+    = DragStart NodeId Position
+    | DragAt Position
+    | DragEnd Position
+    | Tick Time
 
 
 type alias Model =
@@ -44,35 +48,28 @@ type alias Drag =
 init : ( Model, Cmd Msg )
 init =
     let
-        nodes =
-            Force.initialPositions
-                [ Force.entity "Node 1"
-                , Force.entity "Node 2"
-                , Force.entity "Node 3"
-                , Force.entity "Node 3"
-                , Force.entity "Node 3"
-                , Force.entity "Node 3"
-                , Force.entity "Node 3"
-                , Force.entity "Node 3"
-                , Force.entity "Node 3"
-                , Force.entity "Node 3"
-                ]
-
         graph =
-            Graph.fromNodeLabelsAndEdgePairs nodes [ ( 0, 1 ), ( 0, 2 ), ( 1, 5 ) ]
+            Graph.mapContexts
+                (\({ node } as ctx) ->
+                    { ctx | node = { label = Force.entity node.id node.label, id = node.id } }
+                )
+                miserablesGraph
+
+        dict =
+            graphToDict graph
+
+        links =
+            graph
+                |> Graph.edges
+                |> List.map (\{ from, to } -> { source = from, target = to })
+
+        forces =
+            [ Force.links links
+            , Force.manyBody dict
+            , Force.center (screenWidth / 2) (screenHeight / 2)
+            ]
     in
-        ( Model Nothing graph (Force.simulation [ Force.Center 100 100 ]), Cmd.none )
-
-
-
--- UPDATE
-
-
-type Msg
-    = DragStart NodeId Position
-    | DragAt Position
-    | DragEnd Position
-    | Tick Time
+        ( Model Nothing graph (Force.simulation forces), Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -118,21 +115,25 @@ dictToGraph d g =
 updateHelp : Msg -> Model -> Model
 updateHelp msg ({ drag, graph, simulation } as model) =
     case msg of
-        Tick _ ->
+        Tick t ->
             let
                 ( newState, dict ) =
                     Force.tick simulation (graphToDict graph)
             in
-                Model drag (dictToGraph dict graph) newState
+                case drag of
+                    Nothing ->
+                        Model drag (dictToGraph dict graph) newState
 
-        -- model
+                    Just { current, index } ->
+                        Model drag (Graph.update index (Maybe.map (updateNode current)) (dictToGraph dict graph)) newState
+
         DragStart index xy ->
             Model (Just (Drag xy xy index)) graph simulation
 
         DragAt xy ->
             case drag of
                 Just { start, index } ->
-                    Model (Just (Drag start xy index)) (Graph.update index (Maybe.map (updateNode xy)) graph) simulation
+                    Model (Just (Drag start xy index)) (Graph.update index (Maybe.map (updateNode xy)) graph) (Force.reheat simulation)
 
                 Nothing ->
                     Model Nothing graph simulation
@@ -146,22 +147,19 @@ updateHelp msg ({ drag, graph, simulation } as model) =
                     Model Nothing graph simulation
 
 
-
--- SUBSCRIPTIONS
-
-
 subscriptions : Model -> Sub Msg
 subscriptions model =
     case model.drag of
         Nothing ->
-            AnimationFrame.diffs Tick
+            -- This allows us to save resources, as if the simulation is done, there is no point in subscribing
+            -- to the rAF.
+            if Force.isCompleted model.simulation then
+                Sub.none
+            else
+                AnimationFrame.times Tick
 
         Just _ ->
-            Sub.batch [ Mouse.moves DragAt, Mouse.ups DragEnd, AnimationFrame.diffs Tick ]
-
-
-
--- VIEW
+            Sub.batch [ Mouse.moves DragAt, Mouse.ups DragEnd, AnimationFrame.times Tick ]
 
 
 onMouseDown : NodeId -> Attribute Msg
@@ -172,15 +170,14 @@ onMouseDown index =
 linkElement graph edge =
     let
         source =
-            Maybe.withDefault (Force.entity "") <| Maybe.map (.node >> .label) <| Graph.get edge.from graph
+            Maybe.withDefault (Force.entity 0 "") <| Maybe.map (.node >> .label) <| Graph.get edge.from graph
 
         target =
-            Maybe.withDefault (Force.entity "") <| Maybe.map (.node >> .label) <| Graph.get edge.to graph
+            Maybe.withDefault (Force.entity 0 "") <| Maybe.map (.node >> .label) <| Graph.get edge.to graph
     in
         line
             [ strokeWidth "1"
-              --(toString (sqrt link.value))
-            , stroke "#000"
+            , stroke "#aaa"
             , x1 (toString source.x)
             , y1 (toString source.y)
             , x2 (toString target.x)
@@ -191,15 +188,13 @@ linkElement graph edge =
 
 nodeElement node =
     circle
-        [ r "5"
+        [ r "2.5"
         , fill "#000"
-          -- , fill (computeColor node.group)
-          -- , Attr.title node.id
         , onMouseDown node.id
         , cx (toString node.label.x)
         , cy (toString node.label.y)
         ]
-        []
+        [ Svg.title [] [ text node.label.value ] ]
 
 
 view : Model -> Svg Msg
@@ -210,5 +205,11 @@ view model =
         ]
 
 
-computeColor a =
-    "#000"
+main : Program Never Model Msg
+main =
+    Html.program
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
