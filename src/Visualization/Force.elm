@@ -15,6 +15,15 @@ module Visualization.Force
         , Force
         )
 
+{-| This module implements a velocity Verlet numerical integrator for simulating physical forces on particles.
+The simulation is simplified: it assumes a constant unit time step *Δt = 1* for each step, and a constant unit
+mass *m = 1* for all particles. As a result, a force *F* acting on a particle is equivalent to a constant
+acceleration *a* over the time interval *Δt*, and can be simulated simply by adding to the particle’s velocity,
+which is then added to the particle’s position.
+
+In the domain of information visualization, physical simulations are useful for studying networks and hierarchies!
+-}
+
 import Dict exposing (Dict)
 import Time exposing (Time)
 
@@ -57,111 +66,95 @@ entity index a =
         }
 
 
-applyForce :
-    Float
-    -> Force comparable
-    -> ( Dict comparable (Entity a), List (Force comparable) )
-    -> ( Dict comparable (Entity a), List (Force comparable) )
-applyForce alpha force ( entities, forces ) =
-    let
-        ( newEntities, newForce ) =
-            case force of
-                Center x y ->
-                    let
-                        ( sumx, sumy ) =
-                            Dict.foldr (\_ ent ( sx, sy ) -> ( sx + ent.x, sy + ent.y )) ( 0, 0 ) entities
+applyForce : Float -> Force comparable -> Dict comparable (Entity a) -> Dict comparable (Entity a)
+applyForce alpha force entities =
+    case force of
+        Center x y ->
+            let
+                ( sumx, sumy ) =
+                    Dict.foldr (\_ ent ( sx, sy ) -> ( sx + ent.x, sy + ent.y )) ( 0, 0 ) entities
 
-                        n =
-                            toFloat <| Dict.size entities
+                n =
+                    toFloat <| Dict.size entities
 
-                        sx =
-                            sumx / n - x
+                sx =
+                    sumx / n - x
 
-                        sy =
-                            sumy / n - y
-                    in
-                        ( Dict.map (\_ ent -> { ent | x = ent.x - sx, y = ent.y - sy }) entities, Center x y )
+                sy =
+                    sumy / n - y
+            in
+                Dict.map (\_ ent -> { ent | x = ent.x - sx, y = ent.y - sy }) entities
 
-                Collision float collisionParamidDict ->
-                    Debug.crash "not implemented"
+        Collision float collisionParamidDict ->
+            Debug.crash "not implemented"
 
-                Links iterations links ->
-                    let
-                        nents =
-                            List.foldl
-                                (\{ source, target, distance, strength, bias } ents ->
-                                    case ( Dict.get source ents, Dict.get target ents ) of
-                                        ( Just sourceNode, Just targetNode ) ->
-                                            let
-                                                x =
-                                                    targetNode.x + targetNode.vx - sourceNode.x - sourceNode.vx
+        Links iterations links ->
+            List.foldl
+                (\{ source, target, distance, strength, bias } ents ->
+                    case ( Dict.get source ents, Dict.get target ents ) of
+                        ( Just sourceNode, Just targetNode ) ->
+                            let
+                                x =
+                                    targetNode.x + targetNode.vx - sourceNode.x - sourceNode.vx
 
-                                                y =
-                                                    targetNode.y + targetNode.vy - sourceNode.y - sourceNode.vy
+                                y =
+                                    targetNode.y + targetNode.vy - sourceNode.y - sourceNode.vy
 
-                                                d =
-                                                    sqrt (x ^ 2 + y ^ 2)
+                                d =
+                                    sqrt (x ^ 2 + y ^ 2)
 
-                                                l =
-                                                    (d - distance) / d * alpha * strength
-                                            in
-                                                ents
-                                                    |> Dict.update target (Maybe.map (\sn -> { sn | vx = sn.vx - x * l * bias, vy = sn.vy - y * l * bias }))
-                                                    |> Dict.update source (Maybe.map (\tn -> { tn | vx = tn.vx + x * l * (1 - bias), vy = tn.vy + y * l * (1 - bias) }))
+                                l =
+                                    (d - distance) / d * alpha * strength
+                            in
+                                ents
+                                    |> Dict.update target (Maybe.map (\sn -> { sn | vx = sn.vx - x * l * bias, vy = sn.vy - y * l * bias }))
+                                    |> Dict.update source (Maybe.map (\tn -> { tn | vx = tn.vx + x * l * (1 - bias), vy = tn.vy + y * l * (1 - bias) }))
 
-                                        otherwise ->
-                                            ents
-                                )
-                                entities
-                                links
-                    in
-                        ( nents, Links iterations links )
+                        otherwise ->
+                            ents
+                )
+                entities
+                links
 
-                ManyBody theta distanceMin2 distanceMax2 entityStrengths ->
-                    -- TODO: optimize performance with quadtree implementation
-                    let
-                        ents =
-                            Dict.map
-                                (\key opEntity ->
-                                    Dict.foldr
-                                        (\key2 entity2 entity ->
-                                            if key /= key2 then
-                                                let
-                                                    x =
-                                                        entity2.x - entity.x
+        ManyBody theta distanceMin2 distanceMax2 entityStrengths ->
+            -- TODO: optimize performance with quadtree implementation
+            Dict.map
+                (\key opEntity ->
+                    Dict.foldr
+                        (\key2 entity2 entity ->
+                            if key /= key2 then
+                                let
+                                    x =
+                                        entity2.x - entity.x
 
-                                                    y =
-                                                        entity2.y - entity.y
+                                    y =
+                                        entity2.y - entity.y
 
-                                                    l =
-                                                        x ^ 2 + y ^ 2
+                                    l =
+                                        x ^ 2 + y ^ 2
 
-                                                    strength =
-                                                        Dict.get key2 entityStrengths
-                                                            |> Maybe.map .strength
-                                                            |> Maybe.withDefault 0
+                                    strength =
+                                        Dict.get key2 entityStrengths
+                                            |> Maybe.map .strength
+                                            |> Maybe.withDefault 0
 
-                                                    w =
-                                                        strength * alpha / l
-                                                in
-                                                    { entity | vx = entity.vx + x * w, vy = entity.vy + y * w }
-                                            else
-                                                entity
-                                        )
-                                        opEntity
-                                        entities
-                                )
-                                entities
-                    in
-                        ( ents, ManyBody theta distanceMin2 distanceMax2 entityStrengths )
+                                    w =
+                                        strength * alpha / l
+                                in
+                                    { entity | vx = entity.vx + x * w, vy = entity.vy + y * w }
+                            else
+                                entity
+                        )
+                        opEntity
+                        entities
+                )
+                entities
 
-                X directionalParamidDict ->
-                    Debug.crash "not implemented"
+        X directionalParamidDict ->
+            Debug.crash "not implemented"
 
-                Y directionalParamidDict ->
-                    Debug.crash "not implemented"
-    in
-        ( newEntities, newForce :: forces )
+        Y directionalParamidDict ->
+            Debug.crash "not implemented"
 
 
 tick : State comparable -> Dict comparable (Entity a) -> ( State comparable, Dict comparable (Entity a) )
@@ -170,8 +163,8 @@ tick (State state) nodes =
         alpha =
             state.alpha + (state.alphaTarget - state.alpha) * state.alphaDecay
 
-        ( newNodes, newForces ) =
-            List.foldr (applyForce alpha) ( nodes, [] ) state.forces
+        newNodes =
+            List.foldr (applyForce alpha) nodes state.forces
 
         updateEntity _ ent =
             { ent
@@ -181,7 +174,7 @@ tick (State state) nodes =
                 , vy = ent.vy * state.velocityDecay
             }
     in
-        ( State { state | alpha = alpha, forces = newForces }, Dict.map updateEntity newNodes )
+        ( State { state | alpha = alpha }, Dict.map updateEntity newNodes )
 
 
 simulation : List (Force comparable) -> State comparable

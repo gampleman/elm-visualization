@@ -1,5 +1,9 @@
 module ForceDirectedGraph exposing (main)
 
+{-| This demonstrates laying out the characters in Les Miserables
+based on their co-occurence in a scene. Try dragging the nodes!
+-}
+
 import AnimationFrame
 import Dict exposing (Dict)
 import Graph exposing (Edge, Graph, Node, NodeId)
@@ -11,7 +15,7 @@ import Mouse exposing (Position)
 import Svg exposing (..)
 import Svg.Attributes as Attr exposing (..)
 import Time exposing (Time)
-import Visualization.Force as Force
+import Visualization.Force as Force exposing (Entity, State)
 
 
 screenWidth : Float
@@ -21,7 +25,7 @@ screenWidth =
 
 screenHeight : Float
 screenHeight =
-    450
+    504
 
 
 type Msg
@@ -199,7 +203,7 @@ nodeElement node =
 
 view : Model -> Svg Msg
 view model =
-    svg [ width "100%", height "100%" ]
+    svg [ width (toString screenWidth ++ "px"), height (toString screenHeight ++ "px") ]
         [ g [ class "links" ] <| List.map (linkElement model.graph) <| Graph.edges model.graph
         , g [ class "nodes" ] <| List.map nodeElement <| Graph.nodes model.graph
         ]

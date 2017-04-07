@@ -1,4 +1,4 @@
-module LineChart exposing (..)
+module LineChart exposing (main)
 
 {-| This module shows how to build a simple line and area chart using some of
 the primitives provided in this library.
