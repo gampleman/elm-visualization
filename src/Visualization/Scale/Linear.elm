@@ -2,7 +2,7 @@ module Visualization.Scale.Linear exposing (convert, invert, deinterpolate, tick
 
 import Visualization.List as List
 import Visualization.Interpolate exposing (interpolateFloat)
-import Visualization.Scale.Internal exposing (bimap)
+import Visualization.Scale.Internal as Internal exposing (bimap)
 
 
 rangeExtent : ( Float, Float ) -> ( Float, Float ) -> ( Float, Float )
@@ -10,19 +10,10 @@ rangeExtent d r =
     r
 
 
-nice ( start, stop ) count =
-    let
-        step0 =
-            List.tickStep start stop count
-
-        step1 =
-            List.tickStep (toFloat (floor (start / step0)) * step0) (toFloat (ceiling (stop / step0)) * step0) count
-    in
-        ( toFloat (floor (start / step1)) * step1, toFloat (ceiling (stop / step1)) * step1 )
+nice = Internal.nice
 
 
-tickFormat _ _ =
-    toString
+tickFormat = Internal.tickFormat
 
 
 convert domain range =
@@ -44,8 +35,7 @@ deinterpolate a b x =
             (x - a) / normalizedB
 
 
-ticks ( start, end ) count =
-    List.ticks start end count
+ticks = Internal.ticks
 
 
 interpolate =
