@@ -13,6 +13,7 @@ module Visualization.Force
         , Entity
         , State
         , Force
+        , computeSimulation
         )
 
 {-| This module implements a velocity Verlet numerical integrator for simulating physical forces on particles.
@@ -22,6 +23,7 @@ acceleration *a* over the time interval *Δt*, and can be simulated simply by ad
 which is then added to the particle’s position.
 
 In the domain of information visualization, physical simulations are useful for studying networks and hierarchies!
+
 -}
 
 import Dict exposing (Dict)
@@ -45,6 +47,18 @@ initialRadius =
 
 initialAngle =
     pi * (3 - sqrt 5)
+
+
+computeSimulation : State comparable -> Dict comparable (Entity a) -> Dict comparable (Entity a)
+computeSimulation state entities =
+    if isCompleted state then
+        entities
+    else
+        let
+            ( newState, newEntities ) =
+                tick state entities
+        in
+            computeSimulation newState newEntities
 
 
 entity : Int -> a -> Entity a
