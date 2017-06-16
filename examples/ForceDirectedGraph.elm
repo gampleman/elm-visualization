@@ -5,17 +5,16 @@ based on their co-occurence in a scene. Try dragging the nodes!
 -}
 
 import AnimationFrame
-import Dict exposing (Dict)
-import Graph exposing (Edge, Graph, Node, NodeId)
+import Graph exposing (Edge, Graph, Node, NodeContext, NodeId)
 import Html
 import Html.Events exposing (on)
 import Json.Decode as Decode
-import Miserables exposing (miserablesGraph)
 import Mouse exposing (Position)
+import NetworkGraphs exposing (miserablesGraph)
 import Svg exposing (..)
 import Svg.Attributes as Attr exposing (..)
 import Time exposing (Time)
-import Visualization.Force as Force exposing (Entity, State)
+import Visualization.Force as Force exposing (State)
 
 
 screenWidth : Float
@@ -37,7 +36,7 @@ type Msg
 
 type alias Model =
     { drag : Maybe Drag
-    , graph : Graph (Force.Entity String) ()
+    , graph : Graph Entity ()
     , simulation : Force.State NodeId
     }
 
@@ -47,6 +46,10 @@ type alias Drag =
     , current : Position
     , index : NodeId
     }
+
+
+type alias Entity =
+    Force.Entity NodeId { value : String }
 
 
 init : ( Model, Cmd Msg )
@@ -59,9 +62,6 @@ init =
                 )
                 miserablesGraph
 
-        dict =
-            graphToDict graph
-
         links =
             graph
                 |> Graph.edges
@@ -69,29 +69,23 @@ init =
 
         forces =
             [ Force.links links
-            , Force.manyBody dict
+            , Force.manyBody <| List.map .id <| Graph.nodes graph
             , Force.center (screenWidth / 2) (screenHeight / 2)
             ]
     in
         ( Model Nothing graph (Force.simulation forces), Cmd.none )
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    ( updateHelp msg model, Cmd.none )
-
-
+updateNode : Position -> NodeContext Entity () -> NodeContext Entity ()
 updateNode pos nodeCtx =
     let
         nodeValue =
             nodeCtx.node.label
-
-        node =
-            nodeCtx.node
     in
-        { nodeCtx | node = { node | label = { nodeValue | x = toFloat pos.x, y = toFloat pos.y } } }
+        updateContextWithValue nodeCtx { nodeValue | x = toFloat pos.x, y = toFloat pos.y }
 
 
+updateContextWithValue : NodeContext Entity () -> Entity -> NodeContext Entity ()
 updateContextWithValue nodeCtx value =
     let
         node =
@@ -100,36 +94,29 @@ updateContextWithValue nodeCtx value =
         { nodeCtx | node = { node | label = value } }
 
 
-graphToDict : Graph (Force.Entity String) () -> Dict NodeId (Force.Entity String)
-graphToDict =
-    Graph.fold (\{ node } d -> Dict.insert node.id node.label d) Dict.empty
-
-
-dictToGraph : Dict NodeId (Force.Entity String) -> Graph (Force.Entity String) () -> Graph (Force.Entity String) ()
-dictToGraph d g =
+updateGraphWithList : Graph Entity () -> List Entity -> Graph Entity ()
+updateGraphWithList =
     let
-        updateH nodeCtx =
-            Dict.get nodeCtx.node.id d
-                |> Maybe.withDefault (nodeCtx.node.label)
-                |> updateContextWithValue nodeCtx
+        graphUpdater value =
+            Maybe.map (\ctx -> updateContextWithValue ctx value)
     in
-        Graph.mapContexts updateH g
+        List.foldr (\node graph -> Graph.update node.id (graphUpdater node) graph)
 
 
-updateHelp : Msg -> Model -> Model
-updateHelp msg ({ drag, graph, simulation } as model) =
+update : Msg -> Model -> Model
+update msg ({ drag, graph, simulation } as model) =
     case msg of
         Tick t ->
             let
-                ( newState, dict ) =
-                    Force.tick simulation (graphToDict graph)
+                ( newState, list ) =
+                    Force.tick simulation <| List.map .label <| Graph.nodes graph
             in
                 case drag of
                     Nothing ->
-                        Model drag (dictToGraph dict graph) newState
+                        Model drag (updateGraphWithList graph list) newState
 
                     Just { current, index } ->
-                        Model drag (Graph.update index (Maybe.map (updateNode current)) (dictToGraph dict graph)) newState
+                        Model drag (Graph.update index (Maybe.map (updateNode current)) (updateGraphWithList graph list)) newState
 
         DragStart index xy ->
             Model (Just (Drag xy xy index)) graph simulation
@@ -137,7 +124,9 @@ updateHelp msg ({ drag, graph, simulation } as model) =
         DragAt xy ->
             case drag of
                 Just { start, index } ->
-                    Model (Just (Drag start xy index)) (Graph.update index (Maybe.map (updateNode xy)) graph) (Force.reheat simulation)
+                    Model (Just (Drag start xy index))
+                        (Graph.update index (Maybe.map (updateNode xy)) graph)
+                        (Force.reheat simulation)
 
                 Nothing ->
                     Model Nothing graph simulation
@@ -214,6 +203,6 @@ main =
     Html.program
         { init = init
         , view = view
-        , update = update
+        , update = \msg model -> ( update msg model, Cmd.none )
         , subscriptions = subscriptions
         }

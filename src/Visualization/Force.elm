@@ -30,14 +30,13 @@ import Dict exposing (Dict)
 import Time exposing (Time)
 
 
-type alias Entity a =
-    { x : Float
-    , y : Float
-    , vx : Float
-    , vy : Float
-    , fx : Maybe Float
-    , fy : Maybe Float
-    , value : a
+type alias Entity comparable a =
+    { a
+        | x : Float
+        , y : Float
+        , vx : Float
+        , vy : Float
+        , id : comparable
     }
 
 
@@ -49,7 +48,9 @@ initialAngle =
     pi * (3 - sqrt 5)
 
 
-computeSimulation : State comparable -> Dict comparable (Entity a) -> Dict comparable (Entity a)
+{-| This will run the entire simulation until it is completed and then returns the entities.
+-}
+computeSimulation : State comparable -> List (Entity comparable a) -> List (Entity comparable a)
 computeSimulation state entities =
     if isCompleted state then
         entities
@@ -61,7 +62,7 @@ computeSimulation state entities =
             computeSimulation newState newEntities
 
 
-entity : Int -> a -> Entity a
+entity : Int -> a -> Entity Int { value : a }
 entity index a =
     let
         radius =
@@ -74,13 +75,12 @@ entity index a =
         , y = radius * sin angle
         , vx = 0.0
         , vy = 0.0
-        , fx = Nothing
-        , fy = Nothing
+        , id = index
         , value = a
         }
 
 
-applyForce : Float -> Force comparable -> Dict comparable (Entity a) -> Dict comparable (Entity a)
+applyForce : Float -> Force comparable -> Dict comparable (Entity comparable a) -> Dict comparable (Entity comparable a)
 applyForce alpha force entities =
     case force of
         Center x y ->
@@ -171,16 +171,19 @@ applyForce alpha force entities =
             Debug.crash "not implemented"
 
 
-tick : State comparable -> Dict comparable (Entity a) -> ( State comparable, Dict comparable (Entity a) )
+tick : State comparable -> List (Entity comparable a) -> ( State comparable, List (Entity comparable a) )
 tick (State state) nodes =
     let
         alpha =
             state.alpha + (state.alphaTarget - state.alpha) * state.alphaDecay
 
-        newNodes =
-            List.foldr (applyForce alpha) nodes state.forces
+        dictNodes =
+            List.foldl (\node -> Dict.insert node.id node) Dict.empty nodes
 
-        updateEntity _ ent =
+        newNodes =
+            List.foldl (applyForce alpha) dictNodes state.forces
+
+        updateEntity ent =
             { ent
                 | x = ent.x + ent.vx * state.velocityDecay
                 , vx = ent.vx * state.velocityDecay
@@ -188,7 +191,7 @@ tick (State state) nodes =
                 , vy = ent.vy * state.velocityDecay
             }
     in
-        ( State { state | alpha = alpha }, Dict.map updateEntity newNodes )
+        ( State { state | alpha = alpha }, List.map updateEntity <| Dict.values newNodes )
 
 
 simulation : List (Force comparable) -> State comparable
@@ -264,14 +267,14 @@ center =
     Center
 
 
-manyBody : Dict comparable a -> Force comparable
+manyBody : List comparable -> Force comparable
 manyBody =
     manyBodyStrength -30
 
 
-manyBodyStrength : Float -> Dict comparable a -> Force comparable
+manyBodyStrength : Float -> List comparable -> Force comparable
 manyBodyStrength strength =
-    ManyBody 0.9 1 (1 / 0) << Dict.map (\_ _ -> { strength = strength })
+    ManyBody 0.9 1 (1 / 0) << Dict.fromList << List.map (\key -> ( key, { strength = strength } ))
 
 
 links : List { source : comparable, target : comparable } -> Force comparable
