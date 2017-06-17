@@ -50,8 +50,7 @@ defaultOptions =
     }
 
 
-{-| A type alias for the scale. Currently only continuous (including time) and
-quantize scales are supported.
+{-| A type alias for the scale. Currently only continuous (including time) scales are supported.
 -}
 type alias RenderableScale a domain range value =
     Scale
