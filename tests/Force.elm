@@ -1,5 +1,6 @@
-module Force exposing (entityTest)
+module Force exposing (entityTest, integrationTest)
 
+import Array
 import Expect
 import Test exposing (..)
 import Visualization.Force as Force
@@ -36,3 +37,51 @@ entityTest =
                           }
                         ]
         ]
+
+
+integrationTest : Test
+integrationTest =
+    test "computeSimulation with a few forces computes a triangle" <|
+        \() ->
+            let
+                entities =
+                    List.indexedMap Force.entity [ (), (), () ]
+
+                forces =
+                    [ Force.manyBody <| List.map .id entities
+                    , Force.links [ ( 0, 1 ), ( 1, 2 ), ( 2, 0 ) ]
+                    , Force.center 0.0 0.0
+                    ]
+
+                simulation =
+                    Force.simulation forces
+
+                forceMaybe m =
+                    case m of
+                        Just x ->
+                            x
+
+                        Nothing ->
+                            Debug.crash "Forced a nothing"
+
+                dist n1 n2 =
+                    sqrt ((n1.x - n2.x) ^ 2 + (n1.y - n2.y) ^ 2)
+
+                computeDistances array =
+                    let
+                        n0 =
+                            forceMaybe <| Array.get 0 array
+
+                        n1 =
+                            forceMaybe <| Array.get 1 array
+
+                        n2 =
+                            forceMaybe <| Array.get 2 array
+                    in
+                        [ dist n0 n1, dist n1 n2, dist n2 n0 ]
+            in
+                Force.computeSimulation simulation entities
+                    |> Array.fromList
+                    |> computeDistances
+                    |> List.map round
+                    |> Expect.equal [ 34, 34, 34 ]
