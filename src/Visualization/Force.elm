@@ -5,6 +5,7 @@ module Visualization.Force
         , simulation
         , isCompleted
         , reheat
+        , iterations
         , center
         , manyBody
         , manyBodyStrength
@@ -24,11 +25,30 @@ which is then added to the particle’s position.
 
 In the domain of information visualization, physical simulations are useful for studying networks and hierarchies!
 
+
+## Simulation
+
+@docs Entity, entity, simulation, State, isCompleted, reheat, iterations, computeSimulation, tick
+
+
+## Forces
+
+@docs Force, center, links, customLinks, manyBody, manyBodyStrength
+
 -}
 
 import Dict exposing (Dict)
 
 
+{-| Visualization.Force needs to compute and update positions and velocities on any objects that it is simulating.
+However, you can use your own data structure to manage these, as long as the individual objects expose the necessary
+properties. Therefore this type alias is an extensible record allowing you to avoid excessive nesting.
+
+The `id` property must be unique among objects, otherwise some of the colliding objects will be ignored by the simulation.
+
+Also take care when initializing the positions so that the points don't overlap.
+
+-}
 type alias Entity comparable a =
     { a
         | x : Float
@@ -47,7 +67,11 @@ initialAngle =
     pi * (3 - sqrt 5)
 
 
-{-| This will run the entire simulation until it is completed and then returns the entities.
+{-| This will run the entire simulation until it is completed and then returns the entities. Essentially keeps calling
+`tick` until the simulation is done.
+
+Note that computing these is fairly computationally expensive and may freeze the UI for a while if the dataset is large.
+
 -}
 computeSimulation : State comparable -> List (Entity comparable a) -> List (Entity comparable a)
 computeSimulation state entities =
@@ -61,6 +85,9 @@ computeSimulation state entities =
             computeSimulation newState newEntities
 
 
+{-| This is a conveninence function for wrapping data up as Entities. The initial position of entities is arranged
+in a [phylotaxic pattern](http://code.gampleman.eu/elm-visualization/Petals/).
+-}
 entity : Int -> a -> Entity Int { value : a }
 entity index a =
     let
@@ -170,6 +197,8 @@ applyForce alpha force entities =
             Debug.crash "not implemented"
 
 
+{-| Advances the simulation a single tick, returning both updated entities and a new State of the simulation.
+-}
 tick : State comparable -> List (Entity comparable a) -> ( State comparable, List (Entity comparable a) )
 tick (State state) nodes =
     let
@@ -193,6 +222,8 @@ tick (State state) nodes =
         ( State { state | alpha = alpha }, List.map updateEntity <| Dict.values newNodes )
 
 
+{-| Create a new simulation by passing a list of forces.
+-}
 simulation : List (Force comparable) -> State comparable
 simulation forces =
     State
@@ -205,16 +236,34 @@ simulation forces =
         }
 
 
-isCompleted : State comparable -> Bool
-isCompleted (State { alpha, minAlpha }) =
-    alpha <= minAlpha
+{-| You can set this to control how quickly the simulation should converge. The default value is 300 iterations.
+
+Lower number of iterations will produce a layout quicker, but risk getting stuck in a local minimum. Higher values take
+longer, but typically produce better results.
+
+-}
+iterations : Int -> State comparable -> State comparable
+iterations iterations (State config) =
+    State { config | alphaDecay = 1 - config.minAlpha ^ (1 / toFloat iterations) }
 
 
+{-| Resets the computation. This is useful if you need to change the parameters at runtime, such as the position or
+velocity of nodes during a drag operation.
+-}
 reheat : State comparable -> State comparable
 reheat (State config) =
     State { config | alpha = 1.0 }
 
 
+{-| Has the simulation stopped?
+-}
+isCompleted : State comparable -> Bool
+isCompleted (State { alpha, minAlpha }) =
+    alpha <= minAlpha
+
+
+{-| This holds internal state of the simulation.
+-}
 type State comparable
     = State
         { forces : List (Force comparable)
@@ -252,6 +301,10 @@ type alias DirectionalParam =
     }
 
 
+{-| A force modifies nodes’ positions or velocities; in this context, a force can apply a classical physical force such
+as electrical charge or gravity, or it can resolve a geometric constraint, such as keeping nodes within a bounding box
+or keeping linked nodes a fixed distance apart.
+-}
 type Force comparable
     = Center Float Float
     | Collision Float (Dict comparable CollisionParam)
@@ -261,28 +314,56 @@ type Force comparable
     | Y (Dict comparable DirectionalParam)
 
 
+{-| The centering force translates nodes uniformly so that the mean position of all nodes (the center of mass) is at
+the given position ⟨x,y⟩. This force modifies the positions of nodes on each application; it does not modify velocities,
+as doing so would typically cause the nodes to overshoot and oscillate around the desired center. This force helps keep
+nodes in the center of the viewport, and it does not distort their relative positions.
+-}
 center : Float -> Float -> Force comparable
 center =
     Center
 
 
+{-| The many-body (or n-body) force applies mutually amongst all nodes. It can be used to simulate gravity (attraction)
+if the strength is positive, or electrostatic charge (repulsion) if the strength is negative.
+
+Unlike links, which only affect two linked nodes, the charge force is global: it affects all nodes whose ids are passed
+to it.
+
+The default strength is -30 simulating a repulsing charge.
+
+-}
 manyBody : List comparable -> Force comparable
 manyBody =
     manyBodyStrength -30
 
 
+{-| This allows you to specify the strength of the many-body force.
+-}
 manyBodyStrength : Float -> List comparable -> Force comparable
 manyBodyStrength strength =
     ManyBody 0.9 1 (1 / 0) << Dict.fromList << List.map (\key -> ( key, { strength = strength } ))
 
 
-links : List { source : comparable, target : comparable } -> Force comparable
+{-| The link force pushes linked nodes together or apart according to the desired link distance. The strength of the
+force is proportional to the difference between the linked nodes’ distance and the target distance, similar to a spring
+force.
+
+The link distance here is 30, the strength of the force is proportional to the number of links on each side of the
+present link, according to the formule: `1 / min (count souce) (count target)` where `count` if a function that counts
+links connected to those nodes.
+
+-}
+links : List ( comparable, comparable ) -> Force comparable
 links =
-    List.map (\{ source, target } -> { source = source, target = target, distance = 30, strength = Nothing }) >> customLinks
+    List.map (\( source, target ) -> { source = source, target = target, distance = 30, strength = Nothing }) >> customLinks 1
 
 
-customLinks : List { source : comparable, target : comparable, distance : Float, strength : Maybe Float } -> Force comparable
-customLinks list =
+{-| Allows you to specify the link distance and optionally the strength. You must also specify the iterations count,
+however this parameter is currently ignored (so set it to 1). This will change in a future release.
+-}
+customLinks : Int -> List { source : comparable, target : comparable, distance : Float, strength : Maybe Float } -> Force comparable
+customLinks iterations list =
     let
         counts =
             List.foldr
@@ -309,4 +390,4 @@ customLinks list =
                     , bias = count source / (count source + count target)
                     }
                 )
-            |> Links 1
+            |> Links iterations

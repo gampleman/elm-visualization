@@ -51,7 +51,7 @@ init =
                 |> List.map (\{ from, to } -> { source = from, target = to, distance = 30, strength = Nothing })
 
         forces =
-            [ Force.customLinks links
+            [ Force.customLinks 1 links
             , Force.manyBodyStrength -30 <| List.map .id <| Graph.nodes graph
             , Force.center (screenWidth / 2) (screenHeight / 2)
             ]

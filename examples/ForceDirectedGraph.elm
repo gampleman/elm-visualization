@@ -62,13 +62,11 @@ init =
                 )
                 miserablesGraph
 
-        links =
-            graph
-                |> Graph.edges
-                |> List.map (\{ from, to } -> { source = from, target = to })
+        link { from, to } =
+            ( from, to )
 
         forces =
-            [ Force.links links
+            [ Force.links <| List.map link <| Graph.edges graph
             , Force.manyBody <| List.map .id <| Graph.nodes graph
             , Force.center (screenWidth / 2) (screenHeight / 2)
             ]
