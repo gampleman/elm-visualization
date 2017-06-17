@@ -16,7 +16,7 @@ import Visualization.Shape as Shape
 
 w : Float
 w =
-    500
+    900
 
 
 h : Float
@@ -26,7 +26,7 @@ h =
 
 padding : Float
 padding =
-    100
+    60
 
 
 series =
@@ -46,19 +46,6 @@ series =
       , color = "#e7969c"
       , accessor = .assault
       }
-
-    --   { label = "Burglary"
-    --   , color = "#393b79"
-    --   , accessor = .burglary
-    --   }
-    -- , { label = "Larceny"
-    --   , color = "#5254a3"
-    --   , accessor = .larceny
-    --   }
-    -- , { label = "Car Theft"
-    --   , color = "#6b6ecf"
-    --   , accessor = .motorTheft
-    --   }
     ]
 
 
@@ -84,7 +71,7 @@ view model =
 
         yScale : ContinuousScale
         yScale =
-            Scale.nice (Scale.linear ( 0, List.map (values >> List.maximum >> Maybe.withDefault 0 >> toFloat) model |> List.maximum |> Maybe.withDefault 0 ) ( h - 2 * padding, 0 )) 5
+            Scale.nice (Scale.linear ( 0, List.map (values >> List.maximum >> Maybe.withDefault 0 >> toFloat) model |> List.maximum |> Maybe.withDefault 0 ) ( h - 2 * padding, 0 )) 4
 
         opts : Axis.Options a
         opts =
@@ -92,7 +79,7 @@ view model =
 
         xAxis : Svg msg
         xAxis =
-            Axis.axis { opts | orientation = Axis.Bottom, tickCount = 6 } xScale
+            Axis.axis { opts | orientation = Axis.Bottom, tickCount = 10 } xScale
 
         yAxis : Svg msg
         yAxis =
@@ -104,8 +91,7 @@ view model =
 
         line : (CrimeRate -> Int) -> String
         line accessor =
-            List.map accessor model
-                |> zip (List.map .year model)
+            List.map (\i -> ( .year i, accessor i )) model
                 |> List.map lineGenerator
                 |> Shape.line Shape.monotoneInXCurve
     in
@@ -113,7 +99,7 @@ view model =
             [ g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString (h - padding) ++ ")") ]
                 [ xAxis ]
             , g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString padding ++ ")") ]
-                [ yAxis ]
+                [ yAxis, text_ [ fontFamily "sans-serif", fontSize "10", x "5", y "5" ] [ text "Occurences" ] ]
             , g [ transform ("translate(" ++ toString padding ++ ", " ++ toString padding ++ ")"), class "series" ]
                 (List.map (\{ accessor, color } -> Svg.path [ d (line accessor), stroke color, strokeWidth "3px", fill "none" ] []) series)
             , g [ fontFamily "sans-serif", fontSize "10" ]
@@ -129,19 +115,6 @@ view model =
                 , text_ [ fontFamily "sans-serif", fontSize "10", textAnchor "end", dy "1em" ] [ text "Source: fbi.gov" ]
                 ]
             ]
-
-
-zip : List a -> List b -> List ( a, b )
-zip xs ys =
-    case ( xs, ys ) of
-        ( _, [] ) ->
-            []
-
-        ( [], _ ) ->
-            []
-
-        ( x :: xs, y :: ys ) ->
-            ( x, y ) :: zip xs ys
 
 
 main =

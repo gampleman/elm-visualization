@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>CrimeViz Example</title>
+    <style media="screen">
+      body {
+        font-family: Helvetica, sans-serif;
+        display: flex;
+      }
+      main {
+        order: 1;
+      }
+      aside {
+        width: 300px;
+      }
+      aside ul {
+        padding: 0;
+      }
+      aside li {
+        list-style-type: none;
+        margin: 10px;
+      }
+      aside li.active a {
+        text-decoration: none;
+      }
+      iframe {
+        border: 1px solid black;
+      }
+      hr:first-of-type {
+        display: none;
+      }
+      /*
+
+Atom One Light by Daniel Gamage
+Original One Light Syntax theme from https://github.com/atom/one-light-syntax
+
+base:    #fafafa
+mono-1:  #383a42
+mono-2:  #686b77
+mono-3:  #a0a1a7
+hue-1:   #0184bb
+hue-2:   #4078f2
+hue-3:   #a626a4
+hue-4:   #50a14f
+hue-5:   #e45649
+hue-5-2: #c91243
+hue-6:   #986801
+hue-6-2: #c18401
+
+*/
+
+.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0.5em;
+  color: #383a42;
+  background: #fafafa;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #a0a1a7;
+  font-style: italic;
+}
+
+.hljs-doctag,
+.hljs-keyword,
+.hljs-formula {
+  color: #a626a4;
+}
+
+.hljs-section,
+.hljs-name,
+.hljs-selector-tag,
+.hljs-deletion,
+.hljs-subst {
+  color: #e45649;
+}
+
+.hljs-literal {
+  color: #0184bb;
+}
+
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-attribute,
+.hljs-meta-string {
+  color: #50a14f;
+}
+
+.hljs-built_in,
+.hljs-class .hljs-title {
+  color: #c18401;
+}
+
+.hljs-attr,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-type,
+.hljs-selector-class,
+.hljs-selector-attr,
+.hljs-selector-pseudo,
+.hljs-number {
+  color: #986801;
+}
+
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link,
+.hljs-meta,
+.hljs-selector-id,
+.hljs-title {
+  color: #4078f2;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
+
+.hljs-link {
+  text-decoration: underline;
+}
+
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>CrimeViz</h1>
+
+      <iframe src="iframe.html" width="990" height="504" frameborder="1"></iframe>
+
+      
+        <hr />
+        <h3>CrimeViz</h3>
+        <div class="description"><p> This module shows how to build a simple line and area chart using some of
+the primitives provided in this library.</p>
+</div>
+        <pre><code class="elm"><span class="hljs-keyword">module</span> CrimeViz <span class="hljs-keyword">exposing</span> (main)
+
+
+<span class="hljs-keyword">import</span> Date
+<span class="hljs-keyword">import</span> SampleData <span class="hljs-keyword">exposing</span> (<span class="hljs-type">CrimeRate</span>, crimeRates)
+<span class="hljs-keyword">import</span> Svg <span class="hljs-keyword">exposing</span> (..)
+<span class="hljs-keyword">import</span> Svg.Attributes <span class="hljs-keyword">exposing</span> (..)
+<span class="hljs-keyword">import</span> Visualization.Axis <span class="hljs-keyword">as</span> Axis
+<span class="hljs-keyword">import</span> Visualization.List <span class="hljs-keyword">as</span> List
+<span class="hljs-keyword">import</span> Visualization.Scale <span class="hljs-keyword">as</span> Scale <span class="hljs-keyword">exposing</span> (<span class="hljs-type">ContinuousScale</span>)
+<span class="hljs-keyword">import</span> Visualization.Shape <span class="hljs-keyword">as</span> Shape
+
+
+<span class="hljs-title">w</span> : <span class="hljs-type">Float</span>
+<span class="hljs-title">w</span> =
+    <span class="hljs-number">900</span>
+
+
+<span class="hljs-title">h</span> : <span class="hljs-type">Float</span>
+<span class="hljs-title">h</span> =
+    <span class="hljs-number">450</span>
+
+
+<span class="hljs-title">padding</span> : <span class="hljs-type">Float</span>
+<span class="hljs-title">padding</span> =
+    <span class="hljs-number">60</span>
+
+
+<span class="hljs-title">series</span> =
+    [ { label = <span class="hljs-string">"Murder"</span>
+      , color = <span class="hljs-string">"#843c39"</span>
+      , accessor = .murder
+      }
+    , { label = <span class="hljs-string">"Rape"</span>
+      , color = <span class="hljs-string">"#ad494a"</span>
+      , accessor = .rape
+      }
+    , { label = <span class="hljs-string">"Robbery"</span>
+      , color = <span class="hljs-string">"#d6616b"</span>
+      , accessor = .robbery
+      }
+    , { label = <span class="hljs-string">"Assault"</span>
+      , color = <span class="hljs-string">"#e7969c"</span>
+      , accessor = .assault
+      }
+    ]
+
+
+<span class="hljs-title">view</span> : <span class="hljs-type">List</span> <span class="hljs-type">CrimeRate</span> -&gt; <span class="hljs-type">Svg</span> msg
+<span class="hljs-title">view</span> model =
+    <span class="hljs-keyword">let</span>
+        accessors : <span class="hljs-type">List</span> (<span class="hljs-type">CrimeRate</span> -&gt; <span class="hljs-type">Int</span>)
+        accessors =
+            <span class="hljs-type">List</span>.map .accessor series
+
+        last =
+            <span class="hljs-type">List</span>.reverse model |&gt; <span class="hljs-type">List</span>.head |&gt; <span class="hljs-type">Maybe</span>.withDefault (<span class="hljs-type">CrimeRate</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span>)
+
+        first =
+            <span class="hljs-type">List</span>.head model |&gt; <span class="hljs-type">Maybe</span>.withDefault (<span class="hljs-type">CrimeRate</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span>)
+
+        values i =
+            <span class="hljs-type">List</span>.map (\a -&gt; a i) accessors
+
+        xScale : <span class="hljs-type">ContinuousScale</span>
+        xScale =
+            <span class="hljs-type">Scale</span>.linear (<span class="hljs-type">List</span>.map (.year &gt;&gt; toFloat) model |&gt; <span class="hljs-type">List</span>.extent |&gt; <span class="hljs-type">Maybe</span>.withDefault ( <span class="hljs-number">1900</span>, <span class="hljs-number">1901</span> )) ( <span class="hljs-number">0</span>, w - <span class="hljs-number">2</span> * padding )
+
+        yScale : <span class="hljs-type">ContinuousScale</span>
+        yScale =
+            <span class="hljs-type">Scale</span>.nice (<span class="hljs-type">Scale</span>.linear ( <span class="hljs-number">0</span>, <span class="hljs-type">List</span>.map (values &gt;&gt; <span class="hljs-type">List</span>.maximum &gt;&gt; <span class="hljs-type">Maybe</span>.withDefault <span class="hljs-number">0</span> &gt;&gt; toFloat) model |&gt; <span class="hljs-type">List</span>.maximum |&gt; <span class="hljs-type">Maybe</span>.withDefault <span class="hljs-number">0</span> ) ( h - <span class="hljs-number">2</span> * padding, <span class="hljs-number">0</span> )) <span class="hljs-number">4</span>
+
+        opts : <span class="hljs-type">Axis</span>.<span class="hljs-type">Options</span> a
+        opts =
+            <span class="hljs-type">Axis</span>.defaultOptions
+
+        xAxis : <span class="hljs-type">Svg</span> msg
+        xAxis =
+            <span class="hljs-type">Axis</span>.axis { opts | orientation = <span class="hljs-type">Axis</span>.<span class="hljs-type">Bottom</span>, tickCount = <span class="hljs-number">10</span> } xScale
+
+        yAxis : <span class="hljs-type">Svg</span> msg
+        yAxis =
+            <span class="hljs-type">Axis</span>.axis { opts | orientation = <span class="hljs-type">Axis</span>.<span class="hljs-type">Left</span>, ticks = <span class="hljs-type">Just</span> (<span class="hljs-type">List</span>.map toFloat (values first)) } yScale
+
+        lineGenerator : ( <span class="hljs-type">Int</span>, <span class="hljs-type">Int</span> ) -&gt; <span class="hljs-type">Maybe</span> ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> )
+        lineGenerator ( x, y ) =
+            <span class="hljs-type">Just</span> ( <span class="hljs-type">Scale</span>.convert xScale (toFloat x), <span class="hljs-type">Scale</span>.convert yScale (toFloat y) )
+
+        line : (<span class="hljs-type">CrimeRate</span> -&gt; <span class="hljs-type">Int</span>) -&gt; <span class="hljs-type">String</span>
+        line accessor =
+            <span class="hljs-type">List</span>.map (\i -&gt; ( .year i, accessor i )) model
+                |&gt; <span class="hljs-type">List</span>.map lineGenerator
+                |&gt; <span class="hljs-type">Shape</span>.line <span class="hljs-type">Shape</span>.monotoneInXCurve
+    <span class="hljs-keyword">in</span>
+        svg [ width (toString w ++ <span class="hljs-string">"px"</span>), height (toString h ++ <span class="hljs-string">"px"</span>) ]
+            [ g [ transform (<span class="hljs-string">"translate("</span> ++ toString (padding - <span class="hljs-number">1</span>) ++ <span class="hljs-string">", "</span> ++ toString (h - padding) ++ <span class="hljs-string">")"</span>) ]
+                [ xAxis ]
+            , g [ transform (<span class="hljs-string">"translate("</span> ++ toString (padding - <span class="hljs-number">1</span>) ++ <span class="hljs-string">", "</span> ++ toString padding ++ <span class="hljs-string">")"</span>) ]
+                [ yAxis, text_ [ fontFamily <span class="hljs-string">"sans-serif"</span>, fontSize <span class="hljs-string">"10"</span>, x <span class="hljs-string">"5"</span>, y <span class="hljs-string">"5"</span> ] [ text <span class="hljs-string">"Occurences"</span> ] ]
+            , g [ transform (<span class="hljs-string">"translate("</span> ++ toString padding ++ <span class="hljs-string">", "</span> ++ toString padding ++ <span class="hljs-string">")"</span>), class <span class="hljs-string">"series"</span> ]
+                (<span class="hljs-type">List</span>.map (\{ accessor, color } -&gt; <span class="hljs-type">Svg</span>.path [ d (line accessor), stroke color, strokeWidth <span class="hljs-string">"3px"</span>, fill <span class="hljs-string">"none"</span> ] []) series)
+            , g [ fontFamily <span class="hljs-string">"sans-serif"</span>, fontSize <span class="hljs-string">"10"</span> ]
+                (<span class="hljs-type">List</span>.map
+                    (\{ accessor, color, label } -&gt;
+                        g [ transform (<span class="hljs-string">"translate("</span> ++ toString (w - padding + <span class="hljs-number">10</span>) ++ <span class="hljs-string">", "</span> ++ toString (padding + <span class="hljs-type">Scale</span>.convert yScale (toFloat (accessor last))) ++ <span class="hljs-string">")"</span>) ]
+                            [ text_ [ fill color ] [ text label ] ]
+                    )
+                    series
+                )
+            , g [ transform (<span class="hljs-string">"translate("</span> ++ toString (w - padding) ++ <span class="hljs-string">", "</span> ++ toString (padding + <span class="hljs-number">20</span>) ++ <span class="hljs-string">")"</span>) ]
+                [ text_ [ fontFamily <span class="hljs-string">"sans-serif"</span>, fontSize <span class="hljs-string">"20"</span>, textAnchor <span class="hljs-string">"end"</span> ] [ text <span class="hljs-string">"Violent Crime in the US"</span> ]
+                , text_ [ fontFamily <span class="hljs-string">"sans-serif"</span>, fontSize <span class="hljs-string">"10"</span>, textAnchor <span class="hljs-string">"end"</span>, dy <span class="hljs-string">"1em"</span> ] [ text <span class="hljs-string">"Source: fbi.gov"</span> ]
+                ]
+            ]
+
+
+<span class="hljs-title">main</span> =
+    view crimeRates
+</code></pre>
+      
+        <hr />
+        <h3></h3>
+        <div class="description"></div>
+        <pre><code class="elm"></code></pre>
+      
+    </main>
+    <aside>
+      <h2>Examples</h2>
+      <ul>
+        
+          <li >
+            <a href="../Background">Background</a>
+          </li>
+        
+          <li >
+            <a href="../Centroid">Centroid</a>
+          </li>
+        
+          <li >
+            <a href="../CornerRadius">CornerRadius</a>
+          </li>
+        
+          <li class="active">
+            <a href="../CrimeViz">CrimeViz</a>
+          </li>
+        
+          <li >
+            <a href="../Cross">Cross</a>
+          </li>
+        
+          <li >
+            <a href="../Curves">Curves</a>
+          </li>
+        
+          <li >
+            <a href="../CustomPieChart">CustomPieChart</a>
+          </li>
+        
+          <li >
+            <a href="../ForceDirectedGraph">ForceDirectedGraph</a>
+          </li>
+        
+          <li >
+            <a href="../LineChart">LineChart</a>
+          </li>
+        
+          <li >
+            <a href="../PadAngle">PadAngle</a>
+          </li>
+        
+          <li >
+            <a href="../Petals">Petals</a>
+          </li>
+        
+          <li >
+            <a href="../PieChart">PieChart</a>
+          </li>
+        
+      </ul>
+    </aside>
+  </body>
+</html>

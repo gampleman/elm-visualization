@@ -144,15 +144,13 @@ the primitives provided in this library.</p>
         <pre><code class="elm"><span class="hljs-keyword">module</span> LineChart <span class="hljs-keyword">exposing</span> (main)
 
 
-<span class="hljs-keyword">import</span> Visualization.Scale <span class="hljs-keyword">as</span> Scale <span class="hljs-keyword">exposing</span> (<span class="hljs-type">ContinuousScale</span>, <span class="hljs-type">ContinuousTimeScale</span>)
-<span class="hljs-keyword">import</span> Visualization.Axis <span class="hljs-keyword">as</span> Axis
-<span class="hljs-keyword">import</span> Visualization.List <span class="hljs-keyword">as</span> List
-<span class="hljs-keyword">import</span> Visualization.Shape <span class="hljs-keyword">as</span> Shape
-<span class="hljs-keyword">import</span> Date
+<span class="hljs-keyword">import</span> Date <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Date</span>)
 <span class="hljs-keyword">import</span> Svg <span class="hljs-keyword">exposing</span> (..)
 <span class="hljs-keyword">import</span> Svg.Attributes <span class="hljs-keyword">exposing</span> (..)
-<span class="hljs-keyword">import</span> Date <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Date</span>)
-<span class="hljs-keyword">import</span> String
+<span class="hljs-keyword">import</span> Visualization.Axis <span class="hljs-keyword">as</span> Axis <span class="hljs-keyword">exposing</span> (defaultOptions)
+<span class="hljs-keyword">import</span> Visualization.List <span class="hljs-keyword">as</span> List
+<span class="hljs-keyword">import</span> Visualization.Scale <span class="hljs-keyword">as</span> Scale <span class="hljs-keyword">exposing</span> (<span class="hljs-type">ContinuousScale</span>, <span class="hljs-type">ContinuousTimeScale</span>)
+<span class="hljs-keyword">import</span> Visualization.Shape <span class="hljs-keyword">as</span> Shape
 
 
 <span class="hljs-title">w</span> : <span class="hljs-type">Float</span>
@@ -170,57 +168,65 @@ the primitives provided in this library.</p>
     <span class="hljs-number">30</span>
 
 
+<span class="hljs-title">xScale</span> : <span class="hljs-type">ContinuousTimeScale</span>
+<span class="hljs-title">xScale</span> =
+    <span class="hljs-type">Scale</span>.time ( <span class="hljs-type">Date</span>.fromTime <span class="hljs-number">1448928000000</span>, <span class="hljs-type">Date</span>.fromTime <span class="hljs-number">1456790400000</span> ) ( <span class="hljs-number">0</span>, w - <span class="hljs-number">2</span> * padding )
+
+
+<span class="hljs-title">yScale</span> : <span class="hljs-type">ContinuousScale</span>
+<span class="hljs-title">yScale</span> =
+    <span class="hljs-type">Scale</span>.linear ( <span class="hljs-number">0</span>, <span class="hljs-number">5</span> ) ( h - <span class="hljs-number">2</span> * padding, <span class="hljs-number">0</span> )
+
+
+<span class="hljs-title">xAxis</span> : <span class="hljs-type">List</span> ( <span class="hljs-type">Date</span>, <span class="hljs-type">Float</span> ) -&gt; <span class="hljs-type">Svg</span> msg
+<span class="hljs-title">xAxis</span> model =
+    <span class="hljs-type">Axis</span>.axis { defaultOptions | orientation = <span class="hljs-type">Axis</span>.<span class="hljs-type">Bottom</span>, tickCount = <span class="hljs-type">List</span>.length model } xScale
+
+
+<span class="hljs-title">yAxis</span> : <span class="hljs-type">Svg</span> msg
+<span class="hljs-title">yAxis</span> =
+    <span class="hljs-type">Axis</span>.axis { defaultOptions | orientation = <span class="hljs-type">Axis</span>.<span class="hljs-type">Left</span>, tickCount = <span class="hljs-number">5</span> } yScale
+
+
+<span class="hljs-title">transformToLineData</span> : ( <span class="hljs-type">Date</span>, <span class="hljs-type">Float</span> ) -&gt; <span class="hljs-type">Maybe</span> ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> )
+<span class="hljs-title">transformToLineData</span> ( x, y ) =
+    <span class="hljs-type">Just</span> ( <span class="hljs-type">Scale</span>.convert xScale x, <span class="hljs-type">Scale</span>.convert yScale y )
+
+
+<span class="hljs-title">tranfromToAreaData</span> : ( <span class="hljs-type">Date</span>, <span class="hljs-type">Float</span> ) -&gt; <span class="hljs-type">Maybe</span> ( ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> ), ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> ) )
+<span class="hljs-title">tranfromToAreaData</span> ( x, y ) =
+    <span class="hljs-type">Just</span>
+        ( ( <span class="hljs-type">Scale</span>.convert xScale x, <span class="hljs-type">Tuple</span>.first (<span class="hljs-type">Scale</span>.rangeExtent yScale) )
+        , ( <span class="hljs-type">Scale</span>.convert xScale x, <span class="hljs-type">Scale</span>.convert yScale y )
+        )
+
+
+<span class="hljs-title">line</span> : <span class="hljs-type">List</span> ( <span class="hljs-type">Date</span>, <span class="hljs-type">Float</span> ) -&gt; <span class="hljs-type">Attribute</span> msg
+<span class="hljs-title">line</span> model =
+    <span class="hljs-type">List</span>.map transformToLineData model
+        |&gt; <span class="hljs-type">Shape</span>.line <span class="hljs-type">Shape</span>.monotoneInXCurve
+        |&gt; d
+
+
+<span class="hljs-title">area</span> : <span class="hljs-type">List</span> ( <span class="hljs-type">Date</span>, <span class="hljs-type">Float</span> ) -&gt; <span class="hljs-type">Attribute</span> msg
+<span class="hljs-title">area</span> model =
+    <span class="hljs-type">List</span>.map tranfromToAreaData model
+        |&gt; <span class="hljs-type">Shape</span>.area <span class="hljs-type">Shape</span>.monotoneInXCurve
+        |&gt; d
+
+
 <span class="hljs-title">view</span> : <span class="hljs-type">List</span> ( <span class="hljs-type">Date</span>, <span class="hljs-type">Float</span> ) -&gt; <span class="hljs-type">Svg</span> msg
 <span class="hljs-title">view</span> model =
-    <span class="hljs-keyword">let</span>
-        xScale : <span class="hljs-type">ContinuousTimeScale</span>
-        xScale =
-            <span class="hljs-type">Scale</span>.time ( <span class="hljs-type">Date</span>.fromTime <span class="hljs-number">1448928000000</span>, <span class="hljs-type">Date</span>.fromTime <span class="hljs-number">1456790400000</span> ) ( <span class="hljs-number">0</span>, w - <span class="hljs-number">2</span> * padding )
-
-        yScale : <span class="hljs-type">ContinuousScale</span>
-        yScale =
-            <span class="hljs-type">Scale</span>.linear ( <span class="hljs-number">0</span>, <span class="hljs-number">5</span> ) ( h - <span class="hljs-number">2</span> * padding, <span class="hljs-number">0</span> )
-
-        opts : <span class="hljs-type">Axis</span>.<span class="hljs-type">Options</span> a
-        opts =
-            <span class="hljs-type">Axis</span>.defaultOptions
-
-        xAxis : <span class="hljs-type">Svg</span> msg
-        xAxis =
-            <span class="hljs-type">Axis</span>.axis { opts | orientation = <span class="hljs-type">Axis</span>.<span class="hljs-type">Bottom</span>, tickCount = <span class="hljs-type">List</span>.length model } xScale
-
-        yAxis : <span class="hljs-type">Svg</span> msg
-        yAxis =
-            <span class="hljs-type">Axis</span>.axis { opts | orientation = <span class="hljs-type">Axis</span>.<span class="hljs-type">Left</span>, tickCount = <span class="hljs-number">5</span> } yScale
-
-        areaGenerator : ( <span class="hljs-type">Date</span>, <span class="hljs-type">Float</span> ) -&gt; <span class="hljs-type">Maybe</span> ( ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> ), ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> ) )
-        areaGenerator ( x, y ) =
-            <span class="hljs-type">Just</span> ( ( <span class="hljs-type">Scale</span>.convert xScale x, <span class="hljs-type">Tuple</span>.first (<span class="hljs-type">Scale</span>.rangeExtent yScale) ), ( <span class="hljs-type">Scale</span>.convert xScale x, <span class="hljs-type">Scale</span>.convert yScale y ) )
-
-        lineGenerator : ( <span class="hljs-type">Date</span>, <span class="hljs-type">Float</span> ) -&gt; <span class="hljs-type">Maybe</span> ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> )
-        lineGenerator ( x, y ) =
-            <span class="hljs-type">Just</span> ( <span class="hljs-type">Scale</span>.convert xScale x, <span class="hljs-type">Scale</span>.convert yScale y )
-
-        area : <span class="hljs-type">String</span>
-        area =
-            <span class="hljs-type">List</span>.map areaGenerator model
-                |&gt; <span class="hljs-type">Shape</span>.area <span class="hljs-type">Shape</span>.monotoneInXCurve
-
-        line : <span class="hljs-type">String</span>
-        line =
-            <span class="hljs-type">List</span>.map lineGenerator model
-                |&gt; <span class="hljs-type">Shape</span>.line <span class="hljs-type">Shape</span>.monotoneInXCurve
-    <span class="hljs-keyword">in</span>
-        svg [ width (toString w ++ <span class="hljs-string">"px"</span>), height (toString h ++ <span class="hljs-string">"px"</span>) ]
-            [ g [ transform (<span class="hljs-string">"translate("</span> ++ toString (padding - <span class="hljs-number">1</span>) ++ <span class="hljs-string">", "</span> ++ toString (h - padding) ++ <span class="hljs-string">")"</span>) ]
-                [ xAxis ]
-            , g [ transform (<span class="hljs-string">"translate("</span> ++ toString (padding - <span class="hljs-number">1</span>) ++ <span class="hljs-string">", "</span> ++ toString padding ++ <span class="hljs-string">")"</span>) ]
-                [ yAxis ]
-            , g [ transform (<span class="hljs-string">"translate("</span> ++ toString padding ++ <span class="hljs-string">", "</span> ++ toString padding ++ <span class="hljs-string">")"</span>), class <span class="hljs-string">"series"</span> ]
-                [ <span class="hljs-type">Svg</span>.path [ d area, stroke <span class="hljs-string">"none"</span>, strokeWidth <span class="hljs-string">"3px"</span>, fill <span class="hljs-string">"rgba(255, 0, 0, 0.54)"</span> ] []
-                , <span class="hljs-type">Svg</span>.path [ d line, stroke <span class="hljs-string">"red"</span>, strokeWidth <span class="hljs-string">"3px"</span>, fill <span class="hljs-string">"none"</span> ] []
-                ]
+    svg [ width (toString w ++ <span class="hljs-string">"px"</span>), height (toString h ++ <span class="hljs-string">"px"</span>) ]
+        [ g [ transform (<span class="hljs-string">"translate("</span> ++ toString (padding - <span class="hljs-number">1</span>) ++ <span class="hljs-string">", "</span> ++ toString (h - padding) ++ <span class="hljs-string">")"</span>) ]
+            [ xAxis model ]
+        , g [ transform (<span class="hljs-string">"translate("</span> ++ toString (padding - <span class="hljs-number">1</span>) ++ <span class="hljs-string">", "</span> ++ toString padding ++ <span class="hljs-string">")"</span>) ]
+            [ yAxis ]
+        , g [ transform (<span class="hljs-string">"translate("</span> ++ toString padding ++ <span class="hljs-string">", "</span> ++ toString padding ++ <span class="hljs-string">")"</span>), class <span class="hljs-string">"series"</span> ]
+            [ <span class="hljs-type">Svg</span>.path [ area model, stroke <span class="hljs-string">"none"</span>, strokeWidth <span class="hljs-string">"3px"</span>, fill <span class="hljs-string">"rgba(255, 0, 0, 0.54)"</span> ] []
+            , <span class="hljs-type">Svg</span>.path [ line model, stroke <span class="hljs-string">"red"</span>, strokeWidth <span class="hljs-string">"3px"</span>, fill <span class="hljs-string">"none"</span> ] []
             ]
+        ]
 
 
 
@@ -238,10 +244,13 @@ the primitives provided in this library.</p>
 
 
 <span class="hljs-title">model</span> =
-    [ ( <span class="hljs-type">Date</span>.fromTime <span class="hljs-number">1448928000000</span>, <span class="hljs-number">2</span> )
+    [ ( <span class="hljs-type">Date</span>.fromTime <span class="hljs-number">1448928000000</span>, <span class="hljs-number">2.5</span> )
     , ( <span class="hljs-type">Date</span>.fromTime <span class="hljs-number">1451606400000</span>, <span class="hljs-number">2</span> )
+    , ( <span class="hljs-type">Date</span>.fromTime <span class="hljs-number">1452211200000</span>, <span class="hljs-number">3.5</span> )
+    , ( <span class="hljs-type">Date</span>.fromTime <span class="hljs-number">1452816000000</span>, <span class="hljs-number">2</span> )
+    , ( <span class="hljs-type">Date</span>.fromTime <span class="hljs-number">1453420800000</span>, <span class="hljs-number">3</span> )
     , ( <span class="hljs-type">Date</span>.fromTime <span class="hljs-number">1454284800000</span>, <span class="hljs-number">1</span> )
-    , ( <span class="hljs-type">Date</span>.fromTime <span class="hljs-number">1456790400000</span>, <span class="hljs-number">1</span> )
+    , ( <span class="hljs-type">Date</span>.fromTime <span class="hljs-number">1456790400000</span>, <span class="hljs-number">1.2</span> )
     ]
 </code></pre>
       
@@ -260,6 +269,10 @@ the primitives provided in this library.</p>
         
           <li >
             <a href="../CornerRadius">CornerRadius</a>
+          </li>
+        
+          <li >
+            <a href="../CrimeViz">CrimeViz</a>
           </li>
         
           <li >
