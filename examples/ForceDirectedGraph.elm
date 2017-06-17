@@ -10,7 +10,7 @@ import Html
 import Html.Events exposing (on)
 import Json.Decode as Decode
 import Mouse exposing (Position)
-import NetworkGraphs exposing (miserablesGraph)
+import SampleData exposing (miserablesGraph)
 import Svg exposing (..)
 import Svg.Attributes as Attr exposing (..)
 import Time exposing (Time)

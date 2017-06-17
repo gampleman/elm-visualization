@@ -8,7 +8,7 @@ import Color.Convert exposing (colorToCssRgb)
 import Graph exposing (Edge, Graph, Node, NodeId)
 import IntDict
 import List exposing (range)
-import NetworkGraphs exposing (miserablesGraph, pollbooksGraph)
+import SampleData exposing (miserablesGraph)
 import Svg exposing (..)
 import Svg.Attributes as Attr exposing (..)
 import Visualization.Force as Force exposing (State)
