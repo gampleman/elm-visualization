@@ -30,6 +30,45 @@ padding =
     30
 
 
+xScale : ContinuousTimeScale
+xScale =
+    Scale.time ( Date.fromTime 1448928000000, Date.fromTime 1456790400000 ) ( 0, w )
+
+
+yScale : ContinuousScale
+yScale =
+    Scale.linear ( 0, 5 ) ( h, 0 )
+
+
+xAxis : Svg msg
+xAxis =
+    Axis.axis { defaultOptions | orientation = Axis.Bottom } xScale
+
+
+yAxis : Svg msg
+yAxis =
+    Axis.axis { defaultOptions | orientation = Axis.Left, tickCount = 5 } yScale
+
+
+transformToLineData : ( Date, Float ) -> Maybe ( Float, Float )
+transformToLineData ( x, y ) =
+    Just ( Scale.convert xScale x, Scale.convert yScale y )
+
+
+line : List ( Date, Float ) -> String
+line model =
+    List.map transformToLineData model
+        |> Shape.line Shape.monotoneInXCurve
+
+
+view : List ( Date, Float ) -> Svg msg
+view model =
+    svg [ width (toString w ++ "px"), height (toString h ++ "px") ]
+        [ g [ transform ("translate(0, " ++ toString (h) ++ ")") ]
+            [ xAxis ]
+        , g [] [ yAxis ]
+        , Svg.path [ d line, stroke "red", strokeWidth "3px", fill "none" ] []
+        ]
 view : List ( Date, Float ) -> Svg msg
 view model =
     let
