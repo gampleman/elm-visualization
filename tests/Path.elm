@@ -16,7 +16,7 @@ pathEqual a b =
 
 all : Test
 all =
-    describe "Path"
+    describe "path "
         [ test "moveTo appends a M command" <|
             \() ->
                 expectAll
@@ -65,12 +65,6 @@ all =
                     |> moveTo 150 50
                     |> quadraticCurveTo 100 50 200 100
                     |> pathEqual "M150,50Q100,50,200,100"
-        , test "bezierCurveTo appends a C command" <|
-            \() ->
-                begin
-                    |> moveTo 150 50
-                    |> bezierCurveTo 100 50 0 24 200 100
-                    |> pathEqual "M150,50C100,50,0,24,200,100"
         , test "bezierCurveTo appends a C command" <|
             \() ->
                 begin

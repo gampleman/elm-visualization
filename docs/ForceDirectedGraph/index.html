@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>ForceDirectedGraph Example</title>
+    <style media="screen">
+      body {
+        font-family: Helvetica, sans-serif;
+        display: flex;
+      }
+      main {
+        order: 1;
+      }
+      aside {
+        width: 300px;
+      }
+      aside ul {
+        padding: 0;
+      }
+      aside li {
+        list-style-type: none;
+        margin: 10px;
+      }
+      aside li.active a {
+        text-decoration: none;
+      }
+      iframe {
+        border: 1px solid black;
+      }
+      hr:first-of-type {
+        display: none;
+      }
+      /*
+
+Atom One Light by Daniel Gamage
+Original One Light Syntax theme from https://github.com/atom/one-light-syntax
+
+base:    #fafafa
+mono-1:  #383a42
+mono-2:  #686b77
+mono-3:  #a0a1a7
+hue-1:   #0184bb
+hue-2:   #4078f2
+hue-3:   #a626a4
+hue-4:   #50a14f
+hue-5:   #e45649
+hue-5-2: #c91243
+hue-6:   #986801
+hue-6-2: #c18401
+
+*/
+
+.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0.5em;
+  color: #383a42;
+  background: #fafafa;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #a0a1a7;
+  font-style: italic;
+}
+
+.hljs-doctag,
+.hljs-keyword,
+.hljs-formula {
+  color: #a626a4;
+}
+
+.hljs-section,
+.hljs-name,
+.hljs-selector-tag,
+.hljs-deletion,
+.hljs-subst {
+  color: #e45649;
+}
+
+.hljs-literal {
+  color: #0184bb;
+}
+
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-attribute,
+.hljs-meta-string {
+  color: #50a14f;
+}
+
+.hljs-built_in,
+.hljs-class .hljs-title {
+  color: #c18401;
+}
+
+.hljs-attr,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-type,
+.hljs-selector-class,
+.hljs-selector-attr,
+.hljs-selector-pseudo,
+.hljs-number {
+  color: #986801;
+}
+
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link,
+.hljs-meta,
+.hljs-selector-id,
+.hljs-title {
+  color: #4078f2;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
+
+.hljs-link {
+  text-decoration: underline;
+}
+
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>ForceDirectedGraph</h1>
+
+      <iframe src="iframe.html" width="990" height="504" frameborder="1"></iframe>
+
+      
+        <hr />
+        <h3>ForceDirectedGraph</h3>
+        <div class="description"><p> This demonstrates laying out the characters in Les Miserables
+based on their co-occurence in a scene. Try dragging the nodes!</p>
+</div>
+        <pre><code class="elm"><span class="hljs-keyword">module</span> ForceDirectedGraph <span class="hljs-keyword">exposing</span> (main)
+
+
+<span class="hljs-keyword">import</span> AnimationFrame
+<span class="hljs-keyword">import</span> Graph <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Edge</span>, <span class="hljs-type">Graph</span>, <span class="hljs-type">Node</span>, <span class="hljs-type">NodeContext</span>, <span class="hljs-type">NodeId</span>)
+<span class="hljs-keyword">import</span> Html
+<span class="hljs-keyword">import</span> Html.Events <span class="hljs-keyword">exposing</span> (on)
+<span class="hljs-keyword">import</span> Json.Decode <span class="hljs-keyword">as</span> Decode
+<span class="hljs-keyword">import</span> Mouse <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Position</span>)
+<span class="hljs-keyword">import</span> NetworkGraphs <span class="hljs-keyword">exposing</span> (miserablesGraph)
+<span class="hljs-keyword">import</span> Svg <span class="hljs-keyword">exposing</span> (..)
+<span class="hljs-keyword">import</span> Svg.Attributes <span class="hljs-keyword">as</span> Attr <span class="hljs-keyword">exposing</span> (..)
+<span class="hljs-keyword">import</span> Time <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Time</span>)
+<span class="hljs-keyword">import</span> Visualization.Force <span class="hljs-keyword">as</span> Force <span class="hljs-keyword">exposing</span> (<span class="hljs-type">State</span>)
+
+
+<span class="hljs-title">screenWidth</span> : <span class="hljs-type">Float</span>
+<span class="hljs-title">screenWidth</span> =
+    <span class="hljs-number">990</span>
+
+
+<span class="hljs-title">screenHeight</span> : <span class="hljs-type">Float</span>
+<span class="hljs-title">screenHeight</span> =
+    <span class="hljs-number">504</span>
+
+
+<span class="hljs-keyword">type</span> <span class="hljs-type">Msg</span>
+    = <span class="hljs-type">DragStart</span> <span class="hljs-type">NodeId</span> <span class="hljs-type">Position</span>
+    | <span class="hljs-type">DragAt</span> <span class="hljs-type">Position</span>
+    | <span class="hljs-type">DragEnd</span> <span class="hljs-type">Position</span>
+    | <span class="hljs-type">Tick</span> <span class="hljs-type">Time</span>
+
+
+<span class="hljs-keyword">type</span> <span class="hljs-keyword">alias</span> <span class="hljs-type">Model</span> =
+    { drag : <span class="hljs-type">Maybe</span> <span class="hljs-type">Drag</span>
+    , graph : <span class="hljs-type">Graph</span> <span class="hljs-type">Entity</span> ()
+    , simulation : <span class="hljs-type">Force</span>.<span class="hljs-type">State</span> <span class="hljs-type">NodeId</span>
+    }
+
+
+<span class="hljs-keyword">type</span> <span class="hljs-keyword">alias</span> <span class="hljs-type">Drag</span> =
+    { start : <span class="hljs-type">Position</span>
+    , current : <span class="hljs-type">Position</span>
+    , index : <span class="hljs-type">NodeId</span>
+    }
+
+
+<span class="hljs-keyword">type</span> <span class="hljs-keyword">alias</span> <span class="hljs-type">Entity</span> =
+    <span class="hljs-type">Force</span>.<span class="hljs-type">Entity</span> <span class="hljs-type">NodeId</span> { value : <span class="hljs-type">String</span> }
+
+
+<span class="hljs-title">init</span> : ( <span class="hljs-type">Model</span>, <span class="hljs-type">Cmd</span> <span class="hljs-type">Msg</span> )
+<span class="hljs-title">init</span> =
+    <span class="hljs-keyword">let</span>
+        graph =
+            <span class="hljs-type">Graph</span>.mapContexts
+                (\({ node } <span class="hljs-keyword">as</span> ctx) -&gt;
+                    { ctx | node = { label = <span class="hljs-type">Force</span>.entity node.id node.label, id = node.id } }
+                )
+                miserablesGraph
+
+        link { from, to } =
+            ( from, to )
+
+        forces =
+            [ <span class="hljs-type">Force</span>.links &lt;| <span class="hljs-type">List</span>.map link &lt;| <span class="hljs-type">Graph</span>.edges graph
+            , <span class="hljs-type">Force</span>.manyBody &lt;| <span class="hljs-type">List</span>.map .id &lt;| <span class="hljs-type">Graph</span>.nodes graph
+            , <span class="hljs-type">Force</span>.center (screenWidth / <span class="hljs-number">2</span>) (screenHeight / <span class="hljs-number">2</span>)
+            ]
+    <span class="hljs-keyword">in</span>
+        ( <span class="hljs-type">Model</span> <span class="hljs-type">Nothing</span> graph (<span class="hljs-type">Force</span>.simulation forces), <span class="hljs-type">Cmd</span>.none )
+
+
+<span class="hljs-title">updateNode</span> : <span class="hljs-type">Position</span> -&gt; <span class="hljs-type">NodeContext</span> <span class="hljs-type">Entity</span> () -&gt; <span class="hljs-type">NodeContext</span> <span class="hljs-type">Entity</span> ()
+<span class="hljs-title">updateNode</span> pos nodeCtx =
+    <span class="hljs-keyword">let</span>
+        nodeValue =
+            nodeCtx.node.label
+    <span class="hljs-keyword">in</span>
+        updateContextWithValue nodeCtx { nodeValue | x = toFloat pos.x, y = toFloat pos.y }
+
+
+<span class="hljs-title">updateContextWithValue</span> : <span class="hljs-type">NodeContext</span> <span class="hljs-type">Entity</span> () -&gt; <span class="hljs-type">Entity</span> -&gt; <span class="hljs-type">NodeContext</span> <span class="hljs-type">Entity</span> ()
+<span class="hljs-title">updateContextWithValue</span> nodeCtx value =
+    <span class="hljs-keyword">let</span>
+        node =
+            nodeCtx.node
+    <span class="hljs-keyword">in</span>
+        { nodeCtx | node = { node | label = value } }
+
+
+<span class="hljs-title">updateGraphWithList</span> : <span class="hljs-type">Graph</span> <span class="hljs-type">Entity</span> () -&gt; <span class="hljs-type">List</span> <span class="hljs-type">Entity</span> -&gt; <span class="hljs-type">Graph</span> <span class="hljs-type">Entity</span> ()
+<span class="hljs-title">updateGraphWithList</span> =
+    <span class="hljs-keyword">let</span>
+        graphUpdater value =
+            <span class="hljs-type">Maybe</span>.map (\ctx -&gt; updateContextWithValue ctx value)
+    <span class="hljs-keyword">in</span>
+        <span class="hljs-type">List</span>.foldr (\node graph -&gt; <span class="hljs-type">Graph</span>.update node.id (graphUpdater node) graph)
+
+
+<span class="hljs-title">update</span> : <span class="hljs-type">Msg</span> -&gt; <span class="hljs-type">Model</span> -&gt; <span class="hljs-type">Model</span>
+<span class="hljs-title">update</span> msg ({ drag, graph, simulation } <span class="hljs-keyword">as</span> model) =
+    <span class="hljs-keyword">case</span> msg <span class="hljs-keyword">of</span>
+        <span class="hljs-type">Tick</span> t -&gt;
+            <span class="hljs-keyword">let</span>
+                ( newState, list ) =
+                    <span class="hljs-type">Force</span>.tick simulation &lt;| <span class="hljs-type">List</span>.map .label &lt;| <span class="hljs-type">Graph</span>.nodes graph
+            <span class="hljs-keyword">in</span>
+                <span class="hljs-keyword">case</span> drag <span class="hljs-keyword">of</span>
+                    <span class="hljs-type">Nothing</span> -&gt;
+                        <span class="hljs-type">Model</span> drag (updateGraphWithList graph list) newState
+
+                    <span class="hljs-type">Just</span> { current, index } -&gt;
+                        <span class="hljs-type">Model</span> drag (<span class="hljs-type">Graph</span>.update index (<span class="hljs-type">Maybe</span>.map (updateNode current)) (updateGraphWithList graph list)) newState
+
+        <span class="hljs-type">DragStart</span> index xy -&gt;
+            <span class="hljs-type">Model</span> (<span class="hljs-type">Just</span> (<span class="hljs-type">Drag</span> xy xy index)) graph simulation
+
+        <span class="hljs-type">DragAt</span> xy -&gt;
+            <span class="hljs-keyword">case</span> drag <span class="hljs-keyword">of</span>
+                <span class="hljs-type">Just</span> { start, index } -&gt;
+                    <span class="hljs-type">Model</span> (<span class="hljs-type">Just</span> (<span class="hljs-type">Drag</span> start xy index))
+                        (<span class="hljs-type">Graph</span>.update index (<span class="hljs-type">Maybe</span>.map (updateNode xy)) graph)
+                        (<span class="hljs-type">Force</span>.reheat simulation)
+
+                <span class="hljs-type">Nothing</span> -&gt;
+                    <span class="hljs-type">Model</span> <span class="hljs-type">Nothing</span> graph simulation
+
+        <span class="hljs-type">DragEnd</span> xy -&gt;
+            <span class="hljs-keyword">case</span> drag <span class="hljs-keyword">of</span>
+                <span class="hljs-type">Just</span> { start, index } -&gt;
+                    <span class="hljs-type">Model</span> <span class="hljs-type">Nothing</span> (<span class="hljs-type">Graph</span>.update index (<span class="hljs-type">Maybe</span>.map (updateNode xy)) graph) simulation
+
+                <span class="hljs-type">Nothing</span> -&gt;
+                    <span class="hljs-type">Model</span> <span class="hljs-type">Nothing</span> graph simulation
+
+
+<span class="hljs-title">subscriptions</span> : <span class="hljs-type">Model</span> -&gt; <span class="hljs-type">Sub</span> <span class="hljs-type">Msg</span>
+<span class="hljs-title">subscriptions</span> model =
+    <span class="hljs-keyword">case</span> model.drag <span class="hljs-keyword">of</span>
+        <span class="hljs-type">Nothing</span> -&gt;
+            <span class="hljs-comment">-- This allows us to save resources, as if the simulation is done, there is no point in subscribing</span>
+            <span class="hljs-comment">-- to the rAF.</span>
+            <span class="hljs-keyword">if</span> <span class="hljs-type">Force</span>.isCompleted model.simulation <span class="hljs-keyword">then</span>
+                <span class="hljs-type">Sub</span>.none
+            <span class="hljs-keyword">else</span>
+                <span class="hljs-type">AnimationFrame</span>.times <span class="hljs-type">Tick</span>
+
+        <span class="hljs-type">Just</span> _ -&gt;
+            <span class="hljs-type">Sub</span>.batch [ <span class="hljs-type">Mouse</span>.moves <span class="hljs-type">DragAt</span>, <span class="hljs-type">Mouse</span>.ups <span class="hljs-type">DragEnd</span>, <span class="hljs-type">AnimationFrame</span>.times <span class="hljs-type">Tick</span> ]
+
+
+<span class="hljs-title">onMouseDown</span> : <span class="hljs-type">NodeId</span> -&gt; <span class="hljs-type">Attribute</span> <span class="hljs-type">Msg</span>
+<span class="hljs-title">onMouseDown</span> index =
+    on <span class="hljs-string">"mousedown"</span> (<span class="hljs-type">Decode</span>.map (<span class="hljs-type">DragStart</span> index) <span class="hljs-type">Mouse</span>.position)
+
+
+<span class="hljs-title">linkElement</span> graph edge =
+    <span class="hljs-keyword">let</span>
+        source =
+            <span class="hljs-type">Maybe</span>.withDefault (<span class="hljs-type">Force</span>.entity <span class="hljs-number">0</span> <span class="hljs-string">""</span>) &lt;| <span class="hljs-type">Maybe</span>.map (.node &gt;&gt; .label) &lt;| <span class="hljs-type">Graph</span>.get edge.from graph
+
+        target =
+            <span class="hljs-type">Maybe</span>.withDefault (<span class="hljs-type">Force</span>.entity <span class="hljs-number">0</span> <span class="hljs-string">""</span>) &lt;| <span class="hljs-type">Maybe</span>.map (.node &gt;&gt; .label) &lt;| <span class="hljs-type">Graph</span>.get edge.to graph
+    <span class="hljs-keyword">in</span>
+        line
+            [ strokeWidth <span class="hljs-string">"1"</span>
+            , stroke <span class="hljs-string">"#aaa"</span>
+            , x1 (toString source.x)
+            , y1 (toString source.y)
+            , x2 (toString target.x)
+            , y2 (toString target.y)
+            ]
+            []
+
+
+<span class="hljs-title">nodeElement</span> node =
+    circle
+        [ r <span class="hljs-string">"2.5"</span>
+        , fill <span class="hljs-string">"#000"</span>
+        , onMouseDown node.id
+        , cx (toString node.label.x)
+        , cy (toString node.label.y)
+        ]
+        [ <span class="hljs-type">Svg</span>.title [] [ text node.label.value ] ]
+
+
+<span class="hljs-title">view</span> : <span class="hljs-type">Model</span> -&gt; <span class="hljs-type">Svg</span> <span class="hljs-type">Msg</span>
+<span class="hljs-title">view</span> model =
+    svg [ width (toString screenWidth ++ <span class="hljs-string">"px"</span>), height (toString screenHeight ++ <span class="hljs-string">"px"</span>) ]
+        [ g [ class <span class="hljs-string">"links"</span> ] &lt;| <span class="hljs-type">List</span>.map (linkElement model.graph) &lt;| <span class="hljs-type">Graph</span>.edges model.graph
+        , g [ class <span class="hljs-string">"nodes"</span> ] &lt;| <span class="hljs-type">List</span>.map nodeElement &lt;| <span class="hljs-type">Graph</span>.nodes model.graph
+        ]
+
+
+<span class="hljs-title">main</span> : <span class="hljs-type">Program</span> <span class="hljs-type">Never</span> <span class="hljs-type">Model</span> <span class="hljs-type">Msg</span>
+<span class="hljs-title">main</span> =
+    <span class="hljs-type">Html</span>.program
+        { init = init
+        , view = view
+        , update = \msg model -&gt; ( update msg model, <span class="hljs-type">Cmd</span>.none )
+        , subscriptions = subscriptions
+        }
+</code></pre>
+      
+        <hr />
+        <h3></h3>
+        <div class="description"></div>
+        <pre><code class="elm"></code></pre>
+      
+    </main>
+    <aside>
+      <h2>Examples</h2>
+      <ul>
+        
+          <li >
+            <a href="../Background">Background</a>
+          </li>
+        
+          <li >
+            <a href="../Centroid">Centroid</a>
+          </li>
+        
+          <li >
+            <a href="../CornerRadius">CornerRadius</a>
+          </li>
+        
+          <li >
+            <a href="../Cross">Cross</a>
+          </li>
+        
+          <li >
+            <a href="../Curves">Curves</a>
+          </li>
+        
+          <li >
+            <a href="../CustomPieChart">CustomPieChart</a>
+          </li>
+        
+          <li class="active">
+            <a href="../ForceDirectedGraph">ForceDirectedGraph</a>
+          </li>
+        
+          <li >
+            <a href="../LineChart">LineChart</a>
+          </li>
+        
+          <li >
+            <a href="../PadAngle">PadAngle</a>
+          </li>
+        
+          <li >
+            <a href="../Petals">Petals</a>
+          </li>
+        
+          <li >
+            <a href="../PieChart">PieChart</a>
+          </li>
+        
+      </ul>
+    </aside>
+  </body>
+</html>

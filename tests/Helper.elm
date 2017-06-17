@@ -55,14 +55,4 @@ isBetween ( b, c ) a =
 
 expectAll : List Expectation -> Expectation
 expectAll expectations =
-    case expectations of
-        [] ->
-            Expect.pass
-
-        x :: xs ->
-            case Expect.getFailure x of
-                Nothing ->
-                    expectAll xs
-
-                Just _ ->
-                    x
+    Expect.all (List.map always expectations) ()

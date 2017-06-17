@@ -1,4 +1,4 @@
-module Shape exposing (all)
+module Shape exposing (arcTest, pieTest, centroidTest)
 
 import Test exposing (..)
 import Expect
@@ -6,15 +6,6 @@ import Visualization.Shape as Shape exposing (defaultPieConfig)
 import Visualization.Path exposing (PathSegment(..))
 import Fuzz exposing (..)
 import Helper exposing (isAbout, isBetween, expectAll, pathEqual)
-
-
-all : Test
-all =
-    describe "Shape"
-        [ arcTest
-        , centroidTest
-        , pieTest
-        ]
 
 
 defaultArc =
@@ -164,8 +155,9 @@ arcTest =
                         |> Shape.arc
                         |> pathEqual "M0,100A100,100,0,1,0,0,-100A100,100,0,1,0,0,100Z"
                     ]
-          -- Note: The outer ring starts and ends at θ₀, but the inner ring starts and ends at θ₁.
-          -- Note: The outer ring is clockwise, but the inner ring is anticlockwise.
+
+        -- Note: The outer ring starts and ends at θ₀, but the inner ring starts and ends at θ₁.
+        -- Note: The outer ring is clockwise, but the inner ring is anticlockwise.
         , test "arc {innerRadius = r₀, outerRadius = r₁, startAngle = θ₀, endAngle = θ₁} renders a clockwise annulus if r₀ > 0, r₁ > 0 and θ₀ - θ₁ ≥ τ" <|
             \() ->
                 expectAll
@@ -185,8 +177,9 @@ arcTest =
                         |> Shape.arc
                         |> pathEqual "M0,100A100,100,0,1,1,0,-100A100,100,0,1,1,0,100M0,-50A50,50,0,1,0,0,50A50,50,0,1,0,0,-50Z"
                     ]
-          -- Note: The outer ring starts and ends at θ₀, but the inner ring starts and ends at θ₁.
-          -- Note: The outer ring is anticlockwise, but the inner ring is clockwise.
+
+        -- Note: The outer ring starts and ends at θ₀, but the inner ring starts and ends at θ₁.
+        -- Note: The outer ring is anticlockwise, but the inner ring is clockwise.
         , test "arc {innerRadius = r₀, outerRadius = r₁, startAngle = θ₀, endAngle = θ₁} renders an anticlockwise annulus if r₀ > 0, r₁ > 0 and θ₁ - θ₀ ≥ τ" <|
             \() ->
                 expectAll
@@ -252,7 +245,8 @@ arcTest =
                         , { param | startAngle = -2 * pi, endAngle = -7 * pi / 2 } |> Shape.arc |> pathEqual "M0,-100A100,100,0,1,0,100,0L0,0Z"
                         , { param | startAngle = pi, endAngle = -pi / 2 } |> Shape.arc |> pathEqual "M0,100A100,100,0,1,0,-100,0L0,0Z"
                         ]
-          -- Note: The outer ring is clockwise, but the inner ring is anticlockwise.
+
+        -- Note: The outer ring is clockwise, but the inner ring is anticlockwise.
         , test "arc {innerRadius = r₀, outerRadius = r₁, startAngle = θ₀, endAngle = θ₁} renders a small clockwise annular sector if r₀ > 0, r₁ > 0 and π > θ₁ - θ₀ ≥ 0" <|
             \() ->
                 let
@@ -264,7 +258,8 @@ arcTest =
                         , { param | startAngle = 2 * pi, endAngle = 5 * pi / 2 } |> Shape.arc |> pathEqual "M0,-100A100,100,0,0,1,100,0L50,0A50,50,0,0,0,0,-50Z"
                         , { param | startAngle = -pi, endAngle = -pi / 2 } |> Shape.arc |> pathEqual "M0,100A100,100,0,0,1,-100,0L-50,0A50,50,0,0,0,0,50Z"
                         ]
-          -- Note: The outer ring is anticlockwise, but the inner ring is clockwise.
+
+        -- Note: The outer ring is anticlockwise, but the inner ring is clockwise.
         , test "arc {innerRadius = r₀, outerRadius = r₁, startAngle = θ₀, endAngle = θ₁} renders a small anticlockwise annular sector if r₀ > 0, r₁ > 0 and π > θ₀ - θ₁ ≥ 0" <|
             \() ->
                 let
@@ -276,7 +271,8 @@ arcTest =
                         , { param | startAngle = -2 * pi, endAngle = -5 * pi / 2 } |> Shape.arc |> pathEqual "M0,-100A100,100,0,0,0,-100,0L-50,0A50,50,0,0,1,0,-50Z"
                         , { param | startAngle = pi, endAngle = pi / 2 } |> Shape.arc |> pathEqual "M0,100A100,100,0,0,0,100,0L50,0A50,50,0,0,1,0,50Z"
                         ]
-          -- Note: The outer ring is clockwise, but the inner ring is anticlockwise.
+
+        -- Note: The outer ring is clockwise, but the inner ring is anticlockwise.
         , test "arc {innerRadius = r₀, outerRadius = r₁, startAngle = θ₀, endAngle = θ₁} renders a large clockwise annular sector if r₀ > 0, r₁ > 0 and τ > θ₁ - θ₀ ≥ π" <|
             \() ->
                 let
@@ -288,7 +284,8 @@ arcTest =
                         , { param | startAngle = 2 * pi, endAngle = 7 * pi / 2 } |> Shape.arc |> pathEqual "M0,-100A100,100,0,1,1,-100,0L-50,0A50,50,0,1,0,0,-50Z"
                         , { param | startAngle = -pi, endAngle = pi / 2 } |> Shape.arc |> pathEqual "M0,100A100,100,0,1,1,100,0L50,0A50,50,0,1,0,0,50Z"
                         ]
-          -- Note: The outer ring is anticlockwise, but the inner ring is clockwise.
+
+        -- Note: The outer ring is anticlockwise, but the inner ring is clockwise.
         , test "arc {innerRadius = r₀, outerRadius = r₁, startAngle = θ₀, endAngle = θ₁} renders a large anticlockwise annular sector if r₀ > 0, r₁ > 0 and τ > θ₀ - θ₁ ≥ π" <|
             \() ->
                 let
@@ -336,8 +333,9 @@ arcTest =
                         , { param | startAngle = pi, endAngle = -pi } |> Shape.arc |> pathEqual "M0,100A100,100,0,1,0,0,-100A100,100,0,1,0,0,100Z"
                         , { param | startAngle = 3 * pi, endAngle = 0 } |> Shape.arc |> pathEqual "M0,100A100,100,0,1,0,0,-100A100,100,0,1,0,0,100Z"
                         ]
-          -- Note: The outer ring starts and ends at θ₀, but the inner ring starts and ends at θ₁.
-          -- Note: The outer ring is clockwise, but the inner ring is anticlockwise.
+
+        -- Note: The outer ring starts and ends at θ₀, but the inner ring starts and ends at θ₁.
+        -- Note: The outer ring is clockwise, but the inner ring is anticlockwise.
         , test "arc {innerRadius = r₀, outerRadius = r₁, startAngle = θ₀, endAngle = θ₁, cornerRadius = rᵧ} renders a clockwise annulus if r₀ > 0, r₁ > 0 and θ₀ - θ₁ ≥ τ" <|
             \() ->
                 let
@@ -351,8 +349,9 @@ arcTest =
                         , { param | startAngle = -pi, endAngle = pi } |> Shape.arc |> pathEqual "M0,100A100,100,0,1,1,0,-100A100,100,0,1,1,0,100M0,50A50,50,0,1,0,0,-50A50,50,0,1,0,0,50Z"
                         , { param | startAngle = -3 * pi, endAngle = 0 } |> Shape.arc |> pathEqual "M0,100A100,100,0,1,1,0,-100A100,100,0,1,1,0,100M0,-50A50,50,0,1,0,0,50A50,50,0,1,0,0,-50Z"
                         ]
-          -- Note: The outer ring starts and ends at θ₀, but the inner ring starts and ends at θ₁.
-          -- Note: The outer ring is anticlockwise, but the inner ring is clockwise.
+
+        -- Note: The outer ring starts and ends at θ₀, but the inner ring starts and ends at θ₁.
+        -- Note: The outer ring is anticlockwise, but the inner ring is clockwise.
         , test "arc {innerRadius = r₀, outerRadius = r₁, startAngle = θ₀, endAngle = θ₁, cornerRadius = rᵧ} renders an anticlockwise annulus if r₀ > 0, r₁ > 0 and θ₁ - θ₀ ≥ τ" <|
             \() ->
                 let
@@ -410,7 +409,8 @@ arcTest =
                         , { param | startAngle = -2 * pi, endAngle = -7 * pi / 2 } |> Shape.arc |> pathEqual "M0,-94.868330A5,5,0,0,0,-5.263158,-99.861400A100,100,0,1,0,99.861400,5.263158A5,5,0,0,0,94.868330,0L0,0Z"
                         , { param | startAngle = pi, endAngle = -pi / 2 } |> Shape.arc |> pathEqual "M0,94.868330A5,5,0,0,0,5.263158,99.861400A100,100,0,1,0,-99.861400,-5.263158A5,5,0,0,0,-94.868330,0L0,0Z"
                         ]
-          -- Note: The outer ring is clockwise, but the inner ring is anticlockwise.
+
+        -- Note: The outer ring is clockwise, but the inner ring is anticlockwise.
         , test "arc {innerRadius = r₀, outerRadius = r₁, startAngle = θ₀, endAngle = θ₁, cornerRadius = rᵧ} renders a small clockwise annular sector if r₀ > 0, r₁ > 0 and π > θ₁ - θ₀ ≥ 0" <|
             \() ->
                 let
@@ -422,7 +422,8 @@ arcTest =
                         , { param | startAngle = 2 * pi, endAngle = 5 * pi / 2 } |> Shape.arc |> pathEqual "M0,-94.868330A5,5,0,0,1,5.263158,-99.861400A100,100,0,0,1,99.861400,-5.263158A5,5,0,0,1,94.868330,0L54.772256,0A5,5,0,0,1,49.792960,-4.545455A50,50,0,0,0,4.545455,-49.792960A5,5,0,0,1,0,-54.772256Z"
                         , { param | startAngle = -pi, endAngle = -pi / 2 } |> Shape.arc |> pathEqual "M0,94.868330A5,5,0,0,1,-5.263158,99.861400A100,100,0,0,1,-99.861400,5.263158A5,5,0,0,1,-94.868330,0L-54.772256,0A5,5,0,0,1,-49.792960,4.545455A50,50,0,0,0,-4.545455,49.792960A5,5,0,0,1,0,54.772256Z"
                         ]
-          -- Note: The outer ring is anticlockwise, but the inner ring is clockwise.
+
+        -- Note: The outer ring is anticlockwise, but the inner ring is clockwise.
         , test "arc {innerRadius = r₀, outerRadius = r₁, startAngle = θ₀, endAngle = θ₁, cornerRadius = rᵧ} renders a small anticlockwise annular sector if r₀ > 0, r₁ > 0 and π > θ₀ - θ₁ ≥ 0" <|
             \() ->
                 let
@@ -434,7 +435,8 @@ arcTest =
                         , { param | startAngle = -2 * pi, endAngle = -5 * pi / 2 } |> Shape.arc |> pathEqual "M0,-94.868330A5,5,0,0,0,-5.263158,-99.861400A100,100,0,0,0,-99.861400,-5.263158A5,5,0,0,0,-94.868330,0L-54.772256,0A5,5,0,0,0,-49.792960,-4.545455A50,50,0,0,1,-4.545455,-49.792960A5,5,0,0,0,0,-54.772256Z"
                         , { param | startAngle = pi, endAngle = pi / 2 } |> Shape.arc |> pathEqual "M0,94.868330A5,5,0,0,0,5.263158,99.861400A100,100,0,0,0,99.861400,5.263158A5,5,0,0,0,94.868330,0L54.772256,0A5,5,0,0,0,49.792960,4.545455A50,50,0,0,1,4.545455,49.792960A5,5,0,0,0,0,54.772256Z"
                         ]
-          -- Note: The outer ring is clockwise, but the inner ring is anticlockwise.
+
+        -- Note: The outer ring is clockwise, but the inner ring is anticlockwise.
         , test "arc {innerRadius = r₀, outerRadius = r₁, startAngle = θ₀, endAngle = θ₁, cornerRadius = rᵧ} renders a large clockwise annular sector if r₀ > 0, r₁ > 0 and τ > θ₁ - θ₀ ≥ π" <|
             \() ->
                 let
@@ -446,7 +448,8 @@ arcTest =
                         , { param | startAngle = 2 * pi, endAngle = 7 * pi / 2 } |> Shape.arc |> pathEqual "M0,-94.868330A5,5,0,0,1,5.263158,-99.861400A100,100,0,1,1,-99.861400,5.263158A5,5,0,0,1,-94.868330,0L-54.772256,0A5,5,0,0,1,-49.792960,4.545455A50,50,0,1,0,4.545455,-49.792960A5,5,0,0,1,0,-54.772256Z"
                         , { param | startAngle = -pi, endAngle = pi / 2 } |> Shape.arc |> pathEqual "M0,94.868330A5,5,0,0,1,-5.263158,99.861400A100,100,0,1,1,99.861400,-5.263158A5,5,0,0,1,94.868330,0L54.772256,0A5,5,0,0,1,49.792960,-4.545455A50,50,0,1,0,-4.545455,49.792960A5,5,0,0,1,0,54.772256Z"
                         ]
-          -- Note: The outer ring is anticlockwise, but the inner ring is clockwise.
+
+        -- Note: The outer ring is anticlockwise, but the inner ring is clockwise.
         , test "arc {innerRadius = r₀, outerRadius = r₁, startAngle = θ₀, endAngle = θ₁, cornerRadius = rᵧ} renders a large anticlockwise annular sector if r₀ > 0, r₁ > 0 and τ > θ₀ - θ₁ ≥ π" <|
             \() ->
                 let
@@ -476,7 +479,8 @@ arcTest =
                 in
                     expectAll
                         [ { param | innerRadius = 10, outerRadius = 100 } |> Debug.log "param" |> Shape.arc |> pathEqual "M0,-41.421356A41.421356,41.421356,0,1,1,41.421356,0L24.142136,0A24.142136,24.142136,0,0,1,0,-24.142136Z"
-                          --, { param | innerRadius = 100, outerRadius = 10 } |> Shape.arc |> pathEqual "M0,-41.421356A41.421356,41.421356,0,1,1,41.421356,0L24.142136,0A24.142136,24.142136,0,0,1,0,-24.142136Z"
+
+                        --, { param | innerRadius = 100, outerRadius = 10 } |> Shape.arc |> pathEqual "M0,-41.421356A41.421356,41.421356,0,1,1,41.421356,0L24.142136,0A24.142136,24.142136,0,0,1,0,-24.142136Z"
                         ]
         , test "arc {innerRadius = 0, outerRadius = 0, startAngle = 0, endAngle = τ, padAngle = δ} does not pad a point" <|
             \() ->
