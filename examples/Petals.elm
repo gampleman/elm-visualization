@@ -1,5 +1,8 @@
 module Petals exposing (main)
 
+{-| Based on the arrangement of petals in a sunflower. Demonstrates the initial layout of Force.entity.
+-}
+
 import Color.Convert exposing (colorToCssRgb)
 import Html
 import Svg exposing (Svg, svg, circle)

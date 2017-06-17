@@ -1,5 +1,8 @@
 module Background exposing (main)
 
+{-| Part of a composition used for the background of my Elm Europe talk.
+-}
+
 import Color exposing (Color)
 import Color.Convert exposing (colorToCssRgb)
 import Graph exposing (Edge, Graph, Node, NodeId)

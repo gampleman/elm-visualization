@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Background Example</title>
+    <style media="screen">
+      body {
+        font-family: Helvetica, sans-serif;
+        display: flex;
+      }
+      main {
+        order: 1;
+      }
+      aside {
+        width: 300px;
+      }
+      aside ul {
+        padding: 0;
+      }
+      aside li {
+        list-style-type: none;
+        margin: 10px;
+      }
+      aside li.active a {
+        text-decoration: none;
+      }
+      iframe {
+        border: 1px solid black;
+      }
+      hr:first-of-type {
+        display: none;
+      }
+      /*
+
+Atom One Light by Daniel Gamage
+Original One Light Syntax theme from https://github.com/atom/one-light-syntax
+
+base:    #fafafa
+mono-1:  #383a42
+mono-2:  #686b77
+mono-3:  #a0a1a7
+hue-1:   #0184bb
+hue-2:   #4078f2
+hue-3:   #a626a4
+hue-4:   #50a14f
+hue-5:   #e45649
+hue-5-2: #c91243
+hue-6:   #986801
+hue-6-2: #c18401
+
+*/
+
+.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0.5em;
+  color: #383a42;
+  background: #fafafa;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #a0a1a7;
+  font-style: italic;
+}
+
+.hljs-doctag,
+.hljs-keyword,
+.hljs-formula {
+  color: #a626a4;
+}
+
+.hljs-section,
+.hljs-name,
+.hljs-selector-tag,
+.hljs-deletion,
+.hljs-subst {
+  color: #e45649;
+}
+
+.hljs-literal {
+  color: #0184bb;
+}
+
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-attribute,
+.hljs-meta-string {
+  color: #50a14f;
+}
+
+.hljs-built_in,
+.hljs-class .hljs-title {
+  color: #c18401;
+}
+
+.hljs-attr,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-type,
+.hljs-selector-class,
+.hljs-selector-attr,
+.hljs-selector-pseudo,
+.hljs-number {
+  color: #986801;
+}
+
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link,
+.hljs-meta,
+.hljs-selector-id,
+.hljs-title {
+  color: #4078f2;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
+
+.hljs-link {
+  text-decoration: underline;
+}
+
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Background</h1>
+
+      <iframe src="iframe.html" width="990" height="504" frameborder="1"></iframe>
+
+      
+        <hr />
+        <h3>Background</h3>
+        <div class="description"><p> Part of a composition used for the background of my Elm Europe talk.</p>
+</div>
+        <pre><code class="elm"><span class="hljs-keyword">module</span> Background <span class="hljs-keyword">exposing</span> (main)
+
+
+<span class="hljs-keyword">import</span> Color <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Color</span>)
+<span class="hljs-keyword">import</span> Color.Convert <span class="hljs-keyword">exposing</span> (colorToCssRgb)
+<span class="hljs-keyword">import</span> Graph <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Edge</span>, <span class="hljs-type">Graph</span>, <span class="hljs-type">Node</span>, <span class="hljs-type">NodeId</span>)
+<span class="hljs-keyword">import</span> IntDict
+<span class="hljs-keyword">import</span> List <span class="hljs-keyword">exposing</span> (range)
+<span class="hljs-keyword">import</span> NetworkGraphs <span class="hljs-keyword">exposing</span> (miserablesGraph, pollbooksGraph)
+<span class="hljs-keyword">import</span> Svg <span class="hljs-keyword">exposing</span> (..)
+<span class="hljs-keyword">import</span> Svg.Attributes <span class="hljs-keyword">as</span> Attr <span class="hljs-keyword">exposing</span> (..)
+<span class="hljs-keyword">import</span> Visualization.Force <span class="hljs-keyword">as</span> Force <span class="hljs-keyword">exposing</span> (<span class="hljs-type">State</span>)
+<span class="hljs-keyword">import</span> Visualization.Scale <span class="hljs-keyword">as</span> Scale <span class="hljs-keyword">exposing</span> (<span class="hljs-type">SequentialScale</span>)
+
+
+<span class="hljs-title">screenWidth</span> : <span class="hljs-type">Float</span>
+<span class="hljs-title">screenWidth</span> =
+    <span class="hljs-number">990</span>
+
+
+<span class="hljs-title">screenHeight</span> : <span class="hljs-type">Float</span>
+<span class="hljs-title">screenHeight</span> =
+    <span class="hljs-number">504</span>
+
+
+<span class="hljs-title">colorScale</span> : <span class="hljs-type">SequentialScale</span> <span class="hljs-type">Color</span>
+<span class="hljs-title">colorScale</span> =
+    <span class="hljs-type">Scale</span>.sequential ( <span class="hljs-number">200</span>, <span class="hljs-number">700</span> ) <span class="hljs-type">Scale</span>.viridisInterpolator
+
+
+<span class="hljs-keyword">type</span> <span class="hljs-keyword">alias</span> <span class="hljs-type">CustomNode</span> =
+    { rank : <span class="hljs-type">Int</span>, name : <span class="hljs-type">String</span> }
+
+
+<span class="hljs-keyword">type</span> <span class="hljs-keyword">alias</span> <span class="hljs-type">Entity</span> =
+    <span class="hljs-type">Force</span>.<span class="hljs-type">Entity</span> <span class="hljs-type">NodeId</span> { value : <span class="hljs-type">CustomNode</span> }
+
+
+<span class="hljs-title">init</span> : <span class="hljs-type">Graph</span> <span class="hljs-type">Entity</span> ()
+<span class="hljs-title">init</span> =
+    <span class="hljs-keyword">let</span>
+        graph =
+            <span class="hljs-type">Graph</span>.mapContexts
+                (\({ node, incoming, outgoing } <span class="hljs-keyword">as</span> ctx) -&gt;
+                    { ctx | node = { label = <span class="hljs-type">Force</span>.entity node.id (<span class="hljs-type">CustomNode</span> (<span class="hljs-type">IntDict</span>.size incoming + <span class="hljs-type">IntDict</span>.size outgoing) node.label), id = node.id } }
+                )
+                miserablesGraph
+
+        links =
+            graph
+                |&gt; <span class="hljs-type">Graph</span>.edges
+                |&gt; <span class="hljs-type">List</span>.map (\{ from, to } -&gt; { source = from, target = to, distance = <span class="hljs-number">30</span>, strength = <span class="hljs-type">Nothing</span> })
+
+        forces =
+            [ <span class="hljs-type">Force</span>.customLinks <span class="hljs-number">1</span> links
+            , <span class="hljs-type">Force</span>.manyBodyStrength <span class="hljs-number">-30</span> &lt;| <span class="hljs-type">List</span>.map .id &lt;| <span class="hljs-type">Graph</span>.nodes graph
+            , <span class="hljs-type">Force</span>.center (screenWidth / <span class="hljs-number">2</span>) (screenHeight / <span class="hljs-number">2</span>)
+            ]
+    <span class="hljs-keyword">in</span>
+        updateGraphWithList graph (<span class="hljs-type">Force</span>.computeSimulation (<span class="hljs-type">Force</span>.simulation forces) &lt;| <span class="hljs-type">List</span>.map .label &lt;| <span class="hljs-type">Graph</span>.nodes graph)
+
+
+<span class="hljs-title">updateGraphWithList</span> : <span class="hljs-type">Graph</span> <span class="hljs-type">Entity</span> () -&gt; <span class="hljs-type">List</span> <span class="hljs-type">Entity</span> -&gt; <span class="hljs-type">Graph</span> <span class="hljs-type">Entity</span> ()
+<span class="hljs-title">updateGraphWithList</span> =
+    <span class="hljs-keyword">let</span>
+        graphUpdater value =
+            <span class="hljs-type">Maybe</span>.map (\ctx -&gt; updateContextWithValue ctx value)
+    <span class="hljs-keyword">in</span>
+        <span class="hljs-type">List</span>.foldr (\node graph -&gt; <span class="hljs-type">Graph</span>.update node.id (graphUpdater node) graph)
+
+
+<span class="hljs-title">updateContextWithValue</span> nodeCtx value =
+    <span class="hljs-keyword">let</span>
+        node =
+            nodeCtx.node
+    <span class="hljs-keyword">in</span>
+        { nodeCtx | node = { node | label = value } }
+
+
+<span class="hljs-title">linkElement</span> : <span class="hljs-type">Graph</span> <span class="hljs-type">Entity</span> () -&gt; <span class="hljs-type">Edge</span> () -&gt; <span class="hljs-type">Svg</span> msg
+<span class="hljs-title">linkElement</span> graph edge =
+    <span class="hljs-keyword">let</span>
+        retrieveEntity =
+            <span class="hljs-type">Maybe</span>.withDefault (<span class="hljs-type">Force</span>.entity <span class="hljs-number">0</span> (<span class="hljs-type">CustomNode</span> <span class="hljs-number">0</span> <span class="hljs-string">""</span>)) &lt;&lt; <span class="hljs-type">Maybe</span>.map (.node &gt;&gt; .label)
+
+        source =
+            retrieveEntity &lt;| <span class="hljs-type">Graph</span>.get edge.from graph
+
+        target =
+            retrieveEntity &lt;| <span class="hljs-type">Graph</span>.get edge.to graph
+    <span class="hljs-keyword">in</span>
+        line
+            [ strokeWidth <span class="hljs-string">"1"</span>
+            , stroke &lt;| colorToCssRgb &lt;| <span class="hljs-type">Scale</span>.convert colorScale source.x
+            , x1 (toString source.x)
+            , y1 (toString source.y)
+            , x2 (toString target.x)
+            , y2 (toString target.y)
+            ]
+            []
+
+
+<span class="hljs-title">hexagon</span> ( x, y ) size attrs =
+    <span class="hljs-keyword">let</span>
+        angle =
+            <span class="hljs-number">2</span> * pi / <span class="hljs-number">6</span>
+
+        p =
+            range <span class="hljs-number">0</span> <span class="hljs-number">6</span>
+                |&gt; <span class="hljs-type">List</span>.map toFloat
+                |&gt; <span class="hljs-type">List</span>.map (\a -&gt; ( x + (cos (a * angle)) * size, y + (sin (a * angle)) * size ))
+                |&gt; <span class="hljs-type">List</span>.map (\( x, y ) -&gt; toString x ++ <span class="hljs-string">","</span> ++ toString y)
+                |&gt; <span class="hljs-type">String</span>.join <span class="hljs-string">" "</span>
+                |&gt; points
+    <span class="hljs-keyword">in</span>
+        polygon
+            (p :: attrs)
+
+
+<span class="hljs-title">nodeSize</span> size node =
+    hexagon ( node.x, node.y )
+        size
+        [ fill &lt;| colorToCssRgb &lt;| <span class="hljs-type">Scale</span>.convert colorScale node.x
+        ]
+        [ <span class="hljs-type">Svg</span>.title [] [ text node.value.name ] ]
+
+
+<span class="hljs-title">nodeElement</span> node =
+    <span class="hljs-keyword">if</span> node.label.value.rank &lt; <span class="hljs-number">5</span> <span class="hljs-keyword">then</span>
+        nodeSize <span class="hljs-number">4</span> node.label
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> node.label.value.rank &lt; <span class="hljs-number">9</span> <span class="hljs-keyword">then</span>
+        nodeSize <span class="hljs-number">7</span> node.label
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> node.label.value.rank % <span class="hljs-number">2</span> == <span class="hljs-number">0</span> <span class="hljs-keyword">then</span>
+        g []
+            [ nodeSize <span class="hljs-number">9</span> node.label
+            , circle
+                [ r <span class="hljs-string">"12"</span>
+                , cx &lt;| toString node.label.x
+                , cy &lt;| toString node.label.y
+                , fill <span class="hljs-string">"none"</span>
+                , stroke &lt;| colorToCssRgb &lt;| <span class="hljs-type">Scale</span>.convert colorScale node.label.x
+                ]
+                []
+            ]
+    <span class="hljs-keyword">else</span>
+        nodeSize <span class="hljs-number">10</span> node.label
+
+
+<span class="hljs-title">view</span> model =
+    svg [ width (toString screenWidth ++ <span class="hljs-string">"px"</span>), height (toString screenHeight ++ <span class="hljs-string">"px"</span>) ]
+        [ g [ class <span class="hljs-string">"links"</span> ] &lt;| <span class="hljs-type">List</span>.map (linkElement model) &lt;| <span class="hljs-type">Graph</span>.edges model
+        , g [ class <span class="hljs-string">"nodes"</span> ] &lt;| <span class="hljs-type">List</span>.map nodeElement &lt;| <span class="hljs-type">Graph</span>.nodes model
+        ]
+
+
+<span class="hljs-title">main</span> =
+    init |&gt; view
+</code></pre>
+      
+        <hr />
+        <h3></h3>
+        <div class="description"></div>
+        <pre><code class="elm"></code></pre>
+      
+    </main>
+    <aside>
+      <h2>Examples</h2>
+      <ul>
+        
+          <li class="active">
+            <a href="../Background">Background</a>
+          </li>
+        
+          <li >
+            <a href="../Centroid">Centroid</a>
+          </li>
+        
+          <li >
+            <a href="../CornerRadius">CornerRadius</a>
+          </li>
+        
+          <li >
+            <a href="../Cross">Cross</a>
+          </li>
+        
+          <li >
+            <a href="../Curves">Curves</a>
+          </li>
+        
+          <li >
+            <a href="../CustomPieChart">CustomPieChart</a>
+          </li>
+        
+          <li >
+            <a href="../ForceDirectedGraph">ForceDirectedGraph</a>
+          </li>
+        
+          <li >
+            <a href="../LineChart">LineChart</a>
+          </li>
+        
+          <li >
+            <a href="../PadAngle">PadAngle</a>
+          </li>
+        
+          <li >
+            <a href="../Petals">Petals</a>
+          </li>
+        
+          <li >
+            <a href="../PieChart">PieChart</a>
+          </li>
+        
+      </ul>
+    </aside>
+  </body>
+</html>
