@@ -1,4 +1,4 @@
-module QuadTree exposing (all)
+module QuadTree exposing (insertTest)
 
 import Test exposing (..)
 import Expect
@@ -7,11 +7,16 @@ import Fuzz exposing (..)
 import Helper exposing (isAbout, isBetween, expectAll)
 
 
-all : Test
-all =
-    describe "QuadTree"
-        [--insertTest
-        ]
+insertTest =
+    skip <|
+        describe "insert"
+            [ fuzz2 (quadtree point) point "increments the length" <|
+                \tree val ->
+                    QuadTree.insert val tree
+                        |> QuadTree.length
+                        |> Expect.equal
+                            (QuadTree.length tree + 1)
+            ]
 
 
 quadtree : Fuzzer (Pointed a) -> Fuzzer (QuadTree () (Pointed a))
@@ -28,15 +33,3 @@ point =
             }
     in
         Fuzz.map2 makePoint (floatRange 0.0 10.0) (floatRange 0.0 10.0)
-
-
-insertTest : Test
-insertTest =
-    describe "insert"
-        [ fuzz2 (quadtree point) point "increments the length" <|
-            \tree val ->
-                QuadTree.insert val tree
-                    |> QuadTree.length
-                    |> Expect.equal
-                        (QuadTree.length tree + 1)
-        ]
