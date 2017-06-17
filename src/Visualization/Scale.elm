@@ -22,6 +22,7 @@ module Visualization.Scale
         , clamp
         , nice
         , invertExtent
+        , viridisInterpolator
         )
 
 {-| Scales are a convenient abstraction for a fundamental task in visualization:
@@ -50,9 +51,11 @@ also provided.
 Scales have no intrinsic visual representation. However, most scales can generate
 and format ticks for reference marks to aid in the construction of [axes](Visualization-Axis).
 
+
 # General notes
 
 @docs Scale
+
 
 # Continuous Scales
 
@@ -62,17 +65,19 @@ Continuous scales support the following operations:
 
 @docs convert, invert, domain, range, rangeExtent, ticks, tickFormat, clamp, nice
 
+
 # Sequential Scales
 
 Sequential scales are similar to continuous scales in that they map a continuous,
 numeric input domain to a continuous output range. However, unlike continuous
 scales, the output range of a sequential scale is fixed by its interpolator function.
 
-@docs SequentialScale, sequential
+@docs SequentialScale, sequential, viridisInterpolator
 
 Sequential scales support the following operations:
 
 @docs convert, domain, rangeExtent
+
 
 # Quantize Scales
 
@@ -90,12 +95,14 @@ Quantize scales support the following operations:
 
 -}
 
+import Color exposing (Color)
 import Date exposing (Date)
+import Visualization.Scale.ColorInterpolators as ColorInterpolators
 import Visualization.Scale.Linear as Linear
 import Visualization.Scale.Log as Log
-import Visualization.Scale.Time as Time
-import Visualization.Scale.Sequential as Sequential
 import Visualization.Scale.Quantize as Quantize
+import Visualization.Scale.Sequential as Sequential
+import Visualization.Scale.Time as Time
 
 
 {-| This API is highly polymorphic as each scale has different functions exposed.
@@ -122,7 +129,8 @@ type alias ContinuousScale =
         , convert : ( Float, Float ) -> ( Float, Float ) -> Float -> Float
         , invert :
             ( Float, Float ) -> ( Float, Float ) -> Float -> Float
-            -- , rangeRound : ( Float, Float ) -> ( Float, Float )
+
+        -- , rangeRound : ( Float, Float ) -> ( Float, Float )
         , ticks : ( Float, Float ) -> Int -> List Float
         , tickFormat : ( Float, Float ) -> Int -> Float -> String
         , nice : ( Float, Float ) -> Int -> ( Float, Float )
@@ -136,6 +144,7 @@ expressed as a function of the domain value x: y = mx + b.
 
     scale = linear ( 0, 1 ) ( 50, 100 )
     convert scale 0.5 == 75
+
 -}
 linear : ( Float, Float ) -> ( Float, Float ) -> ContinuousScale
 linear domain range =
@@ -186,6 +195,7 @@ The arguments are `base`, `domain` and `range`.
 
     scale = log 10 ( 10, 1000 ) ( 50, 100 )
     convert scale 100 == 75
+
 -}
 log : Float -> ( Float, Float ) -> ( Float, Float ) -> ContinuousScale
 log base domain range =
@@ -220,7 +230,8 @@ type alias ContinuousTimeScale =
         , convert : ( Date, Date ) -> ( Float, Float ) -> Date -> Float
         , invert :
             ( Date, Date ) -> ( Float, Float ) -> Float -> Date
-            -- , rangeRound : ( Float, Float ) -> ( Float, Float )
+
+        -- , rangeRound : ( Float, Float ) -> ( Float, Float )
         , ticks : ( Date, Date ) -> Int -> List Date
         , tickFormat : ( Date, Date ) -> Int -> Date -> String
         , nice : ( Date, Date ) -> Int -> ( Date, Date )
@@ -274,6 +285,12 @@ sequential domain interpolator =
         }
 
 
+{-| -}
+viridisInterpolator : Float -> Color
+viridisInterpolator =
+    ColorInterpolators.viridis
+
+
 
 -- Quantize Scales
 
@@ -285,7 +302,8 @@ type alias QuantizeScale a =
         { domain : ( Float, Float )
         , range :
             ( a, List a )
-            -- non-empty list
+
+        -- non-empty list
         , convert : ( Float, Float ) -> ( a, List a ) -> Float -> a
         , invertExtent : ( Float, Float ) -> ( a, List a ) -> a -> Maybe ( Float, Float )
         , ticks : ( Float, Float ) -> ( a, List a ) -> Int -> List Float
@@ -433,6 +451,7 @@ is only a hint; the scale may return more or fewer values depending on the domai
 
     scale = linear ( 10, 100 ) ( 50, 100 )
     ticks scale 10 == [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+
 -}
 ticks : Scale { a | ticks : domain -> Int -> List ticks, domain : domain } -> Int -> List ticks
 ticks (Scale scale) count =
@@ -460,6 +479,7 @@ always within the scale’s range.
     scale = linear ( 10, 100 ) ( 50, 100 )
     convert scale 1 == 45
     convert (clamp scale) 1 == 50
+
 -}
 clamp : Scale { a | convert : ( Float, Float ) -> range -> Float -> result } -> Scale { a | convert : ( Float, Float ) -> range -> Float -> result }
 clamp (Scale ({ convert } as scale)) =
@@ -475,6 +495,7 @@ The second argument is the same as you would pass to ticks.
 
     scale = linear ( 0.5, 99 ) ( 50, 100 )
     domain (nice scale 10) == (0, 100)
+
 -}
 nice : Scale { a | nice : domain -> Int -> domain, domain : domain } -> Int -> Scale { a | nice : domain -> Int -> domain, domain : domain }
 nice (Scale ({ nice, domain } as options)) count =
