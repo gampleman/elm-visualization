@@ -1,9 +1,11 @@
 module Petals exposing (main)
 
+import Color.Convert exposing (colorToCssRgb)
 import Html
-import Svg exposing (..)
-import Svg.Attributes as Attr exposing (..)
+import Svg exposing (Svg, svg, circle)
+import Svg.Attributes exposing (width, height, viewBox, cx, cy, r, fill)
 import Visualization.Force as Force
+import Visualization.Scale as Scale
 
 
 screenWidth : Float
@@ -16,13 +18,21 @@ screenHeight =
     504
 
 
+color : Int -> String
+color =
+    colorToCssRgb << Scale.convert (Scale.sequential ( 0, 360 ) Scale.viridisInterpolator) << toFloat
+
+
 makePetal : Int -> Svg msg
 makePetal i =
     let
         { x, y } =
-            Force.entity i i
+            Force.entity i ()
+
+        angle =
+            floor (toFloat i * (3 - sqrt 5) * pi * 180 - sqrt (toFloat i) * 4) % 360
     in
-        circle [ cx (toString x), cy (toString y), r "3" ] []
+        circle [ cx (toString x), cy (toString y), r "5", fill (color angle) ] []
 
 
 view : List Int -> Svg msg
@@ -32,4 +42,4 @@ view model =
 
 
 main =
-    view <| List.range 1 100
+    view <| List.range 1 10000

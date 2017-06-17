@@ -27,7 +27,6 @@ In the domain of information visualization, physical simulations are useful for 
 -}
 
 import Dict exposing (Dict)
-import Time exposing (Time)
 
 
 type alias Entity comparable a =
@@ -66,7 +65,7 @@ entity : Int -> a -> Entity Int { value : a }
 entity index a =
     let
         radius =
-            toFloat index * initialRadius
+            sqrt (toFloat index) * initialRadius
 
         angle =
             toFloat index * initialAngle
