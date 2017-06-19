@@ -7,13 +7,16 @@ publicly exposed and alternative renderers can be built in e.g. Canvas or WebGL.
 
 The functions here are modeled after the [Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#Paths).
 
+
 # Datatype
 
 @docs PathSegment, Path
 
+
 # Converting
 
 @docs toAttrString
+
 
 # DSL
 
@@ -27,7 +30,7 @@ The DSL can be used interchangebly with directly writing the datatype above.
 
 Is equivalent to:
 
-    [Move (30, 50), Line (20, 70), Line (40, 23), Close]
+    --> [Move (30, 50), Line (20, 70), Line (40, 23), Close]
 
 @docs begin, moveTo, lineTo, close, quadraticCurveTo, bezierCurveTo, arcTo, arc, rect
 
@@ -77,6 +80,7 @@ begin =
 **Note:** In SVG having multiple `moveTo` commands following each other draws
 an implicit path between them. Do not rely on this behavior, in the future this
 may be removed.
+
 -}
 moveTo : Float -> Float -> Path -> Path
 moveTo x y =
@@ -102,6 +106,7 @@ lineTo x y =
 point ⟨x, y⟩, with the specified control point ⟨cpx, cpy⟩.
 
     quadraticCurveTo cpx cpy x y
+
 -}
 quadraticCurveTo : Float -> Float -> Float -> Float -> Path -> Path
 quadraticCurveTo cpx cpy x y =
@@ -112,6 +117,7 @@ quadraticCurveTo cpx cpy x y =
 point ⟨x, y⟩, with the specified control points ⟨cpx1, cpy1⟩ and ⟨cpx2, cpy2⟩.
 
     bezierCurveTo cpx1 cpy1 cpx2 cpy2 x y
+
 -}
 bezierCurveTo : Float -> Float -> Float -> Float -> Float -> Float -> Path -> Path
 bezierCurveTo cpx1 cpy1 cpx2 cpy2 x y =
@@ -125,6 +131,7 @@ first tangent point is not equal to the current point, a straight line is drawn
 between the current point and the first tangent point.
 
      arcTo x1 y1 x2 y2 radius
+
 -}
 arcTo : Float -> Float -> Float -> Float -> Float -> Path -> Path
 arcTo x1 y1 x2 y2 radius =
@@ -138,6 +145,7 @@ If the current point is not equal to the starting point of the arc, a straight
 line is drawn from the current point to the start of the arc.
 
     arc x y radius startAngle endAngle anticlockwise
+
 -}
 arc : Float -> Float -> Float -> Float -> Float -> Bool -> Path -> Path
 arc x y radius startAngle endAngle anticlockwise =
@@ -149,6 +157,7 @@ arc x y radius startAngle endAngle anticlockwise =
 and then marks the subpath as closed.
 
     rect x y w h
+
 -}
 rect : Float -> Float -> Float -> Float -> Path -> Path
 rect x y w h =
@@ -377,12 +386,13 @@ stringify item ( str, x0, y0, x1, y1, empty ) =
 {-| Transforms a path to a string that can be passed into the `d` attribute of the
 `path` SVG element.
 
-    path
+    begin
         |> moveTo 100 100
         |> arcTo 200 100 200 200 50
         |> arc 150 150 50 0 pi False
         |> toAttrString
-        -- "M100,100L150,100A50,50,0,0,1,200,150A50,50,0,1,1,100,150"
+        --> "M100,100L150,100A50,50,0,0,1,200,150A50,50,0,1,1,100,150"
+
 -}
 toAttrString : Path -> String
 toAttrString path =

@@ -33,7 +33,7 @@ precision =
 
 
 isAbout a b =
-    if round (a * precision) == round (b * precision) then
+    if truncate ((a - b) * precision) == 0 then
         Expect.pass
     else
         Expect.equal a b
@@ -56,3 +56,8 @@ isBetween ( b, c ) a =
 expectAll : List Expectation -> Expectation
 expectAll expectations =
     Expect.all (List.map always expectations) ()
+
+
+expectMember : List a -> a -> Expectation
+expectMember list item =
+    Expect.true "expectMember" <| List.member item list

@@ -1,0 +1,8 @@
+{
+  "root": "../src",
+  "tests" : [
+    "Visualization.List",
+    "Visualization.Path",
+    "Visualization.Scale"
+  ]
+}

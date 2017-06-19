@@ -23,6 +23,7 @@ module Visualization.Scale
         , nice
         , invertExtent
         , viridisInterpolator
+        , ordinal
         )
 
 {-| Scales are a convenient abstraction for a fundamental task in visualization:
@@ -100,6 +101,7 @@ import Date exposing (Date)
 import Visualization.Scale.ColorInterpolators as ColorInterpolators
 import Visualization.Scale.Linear as Linear
 import Visualization.Scale.Log as Log
+import Visualization.Scale.Ordinal as Ordinal
 import Visualization.Scale.Quantize as Quantize
 import Visualization.Scale.Sequential as Sequential
 import Visualization.Scale.Time as Time
@@ -142,8 +144,9 @@ type alias ContinuousScale =
 because they preserve proportional differences. Each range value y can be
 expressed as a function of the domain value x: y = mx + b.
 
+    scale : ContinuousScale
     scale = linear ( 0, 1 ) ( 50, 100 )
-    convert scale 0.5 == 75
+    convert scale 0.5 --> 75
 
 -}
 linear : ( Float, Float ) -> ( Float, Float ) -> ContinuousScale
@@ -170,8 +173,9 @@ linear domain range =
 --
 -- The arguments are `exponent`, `domain` and `range`.
 --
+--     scale : ContinuousScale
 --     scale = power 2 ( 0, 1 ) ( 50, 100 )
---     convert scale 0.5 = 62.5
+--     convert scale 0.5 == 62.5
 -- -}
 -- power : Float -> ( Float, Float ) -> ( Float, Float ) -> ContinuousScale
 -- power exponent =
@@ -193,8 +197,9 @@ domain or vice versa.
 
 The arguments are `base`, `domain` and `range`.
 
+    scale : ContinuousScale
     scale = log 10 ( 10, 1000 ) ( 50, 100 )
-    convert scale 100 == 75
+    convert scale 100 --> 75
 
 -}
 log : Float -> ( Float, Float ) -> ( Float, Float ) -> ContinuousScale
@@ -359,7 +364,70 @@ quantize domain range =
 --
 -- type alias OrdinalScale a b =
 --     Scale Ordinal (List a) (List b)
---
+
+
+type alias OrdinalScale a b =
+    Scale
+        { domain : List a
+        , range : List b
+        , convert : List a -> List b -> a -> Maybe b
+        }
+
+
+type alias ImplicitOrdinalScale a b =
+    Scale
+        { domain : List a
+        , range : ( b, List b )
+        , convert : List a -> ( b, List b ) -> a -> ( b, OrdinalScale a b )
+        }
+
+
+ordinalImplicit : List a -> ( b, List b ) -> ImplicitOrdinalScale a b
+ordinalImplicit domain range =
+    Scale
+        { domain = domain
+        , range = range
+        , convert = \a -> Debug.crash "not implemented"
+        }
+
+
+ordinal : List a -> List b -> OrdinalScale a b
+ordinal domain range =
+    Scale
+        { domain = domain
+        , range = range
+        , convert = Ordinal.convert
+        }
+
+
+type alias BandScale a =
+    Scale
+        { domain : List a
+        , range : ( Float, Float )
+        , convert : List a -> ( Float, Float ) -> a -> Float
+
+        -- , rangeRound : ( Float, Float ) -> ( Float, Float )
+        }
+
+
+type alias BandConfig =
+    { paddingInner : Float
+    , paddingOuter : Float
+    , align : Float
+    }
+
+
+defaultBandConfig : BandConfig
+defaultBandConfig =
+    { paddingInner = 0.0, paddingOuter = 0.0, align = 0.5 }
+
+
+band : BandConfig -> List a -> ( Float, Float ) -> BandScale a
+band band aList ( float, float2 ) =
+    Debug.crash "not implemented"
+
+
+
 --
 -- ordinal : List a -> List b -> OrdinalScale a b
 -- ordinal domain =
@@ -449,8 +517,9 @@ to be within the extent of the domain. Ticks are often used to display reference
 lines, or tick marks, in conjunction with the visualized data. The specified count
 is only a hint; the scale may return more or fewer values depending on the domain.
 
+    scale : ContinuousScale
     scale = linear ( 10, 100 ) ( 50, 100 )
-    ticks scale 10 == [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    ticks scale 10 --> [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 
 -}
 ticks : Scale { a | ticks : domain -> Int -> List ticks, domain : domain } -> Int -> List ticks
@@ -476,9 +545,11 @@ tickFormat (Scale opts) =
 {-| Enables clamping on the domain, meaning the return value of the scale is
 always within the scale’s range.
 
+    scale : ContinuousScale
     scale = linear ( 10, 100 ) ( 50, 100 )
-    convert scale 1 == 45
-    convert (clamp scale) 1 == 50
+    convert scale 1 --> 45
+
+    convert (clamp scale) 1 --> 50
 
 -}
 clamp : Scale { a | convert : ( Float, Float ) -> range -> Float -> result } -> Scale { a | convert : ( Float, Float ) -> range -> Float -> result }
@@ -493,8 +564,9 @@ clamp (Scale ({ convert } as scale)) =
 {-| Returns a new scale which extends the domain so that it lands on round values.
 The second argument is the same as you would pass to ticks.
 
+    scale : ContinuousScale
     scale = linear ( 0.5, 99 ) ( 50, 100 )
-    domain (nice scale 10) == (0, 100)
+    domain (nice scale 10) --> (0, 100)
 
 -}
 nice : Scale { a | nice : domain -> Int -> domain, domain : domain } -> Int -> Scale { a | nice : domain -> Int -> domain, domain : domain }

@@ -3,6 +3,7 @@ module Visualization.List exposing (..)
 {-| This module exposes functions on list which are useful for the domain of data
 visualization. Most of these work with Lists of numbers.
 
+
 # Statistics
 
 @docs extent, extentWith
@@ -13,6 +14,7 @@ visualization. Most of these work with Lists of numbers.
 Methods for transforming list and for generating new lists.
 
 @docs ticks, tickStep, range
+
 -}
 
 
@@ -29,6 +31,7 @@ contain an infinite number of values, an empty range is returned.
 
 The arguments are not required to be integers; however, the results are more
 predictable if they are.
+
 -}
 range : number -> number -> number -> List number
 range start stop step =
@@ -58,9 +61,10 @@ stop values if (and only if) they are exact, nicely-rounded values consistent
 with the inferred step. More formally, each returned tick t satisfies
 start ≤ t and t ≤ stop.
 
-    ticks 1.9 6.4 10 == [2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6]
+    ticks 1.9 6.4 10 --> [2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6]
 
-    ticks 1.9 6 5 == [2, 3, 4, 5, 6]
+    ticks 1.9 6 5 --> [2, 3, 4, 5, 6]
+
 -}
 ticks : Float -> Float -> Int -> List Float
 ticks start stop count =
@@ -82,9 +86,10 @@ were passed to `ticks`: a nicely-rounded value that is a power of ten multiplied
 by 1, 2 or 5. Note that due to the limited precision of IEEE 754 floating point,
 the returned value may not be exact decimals.
 
-    tickStep 1.9 6.4 10 == 0.5
+    tickStep 1.9 6.4 10 --> 0.5
 
-    tickStep 1.9 6 5 == 1
+    tickStep 1.9 6 5 --> 1
+
 -}
 tickStep : Float -> Float -> Int -> Float
 tickStep start stop count =
@@ -124,14 +129,16 @@ extent =
 {-| Returns the minimum and maximum value in the given array using comparisons
 from values passed by the accessor function.
 
+    data : List { name : String, age : Int}
     data =
       [ {name = "John Smith", age = 32 }
       , {name = "Mark Luther", age = 45 }
       , {name = "Cory Jones", age = 26 }
       ]
 
-    extentWith .age data == Just ({name = "Cory Jones", age = 26 }
-                                , {name = "Mark Luther", age = 45 })
+    extentWith .age data
+    --> Just ({name = "Cory Jones", age = 26 }
+    -->      , {name = "Mark Luther", age = 45 })
 
 -}
 extentWith : (a -> comparable) -> List a -> Maybe ( a, a )
