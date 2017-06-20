@@ -306,8 +306,8 @@ type alias QuantizeScale a =
         -- non-empty list
         , convert : ( Float, Float ) -> ( a, List a ) -> Float -> a
         , invertExtent : ( Float, Float ) -> ( a, List a ) -> a -> Maybe ( Float, Float )
-        , ticks : ( Float, Float ) -> ( a, List a ) -> Int -> List Float
-        , tickFormat : ( Float, Float ) -> ( a, List a ) -> Int -> Float -> String
+        , ticks : ( Float, Float ) -> Int -> List Float
+        , tickFormat : ( Float, Float ) -> Int -> Float -> String
         , nice : ( Float, Float ) -> Int -> ( Float, Float )
         , rangeExtent : ( Float, Float ) -> ( a, List a ) -> ( a, a )
         }
