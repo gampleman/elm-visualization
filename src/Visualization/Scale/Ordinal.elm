@@ -1,7 +1,6 @@
 module Visualization.Scale.Ordinal exposing (convert)
 
 import Dict exposing (Dict)
-import Svg.Attributes exposing (y)
 
 
 convert : List a -> List b -> a -> Maybe b

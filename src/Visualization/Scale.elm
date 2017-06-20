@@ -23,7 +23,19 @@ module Visualization.Scale
         , nice
         , invertExtent
         , viridisInterpolator
+        , infernoInterpolator
+        , magmaInterpolator
+        , plasmaInterpolator
+        , OrdinalScale
         , ordinal
+        , BandScale
+        , band
+        , bandwitdh
+        , defaultBandConfig
+        , category10
+        , category20a
+        , category20b
+        , category20c
         )
 
 {-| Scales are a convenient abstraction for a fundamental task in visualization:
@@ -73,11 +85,18 @@ Sequential scales are similar to continuous scales in that they map a continuous
 numeric input domain to a continuous output range. However, unlike continuous
 scales, the output range of a sequential scale is fixed by its interpolator function.
 
-@docs SequentialScale, sequential, viridisInterpolator
+@docs SequentialScale, sequential
 
 Sequential scales support the following operations:
 
 @docs convert, domain, rangeExtent
+
+
+### Interpolator functions
+
+Here are a few pre-built interpolator functions you can use with sequential scales:
+
+@docs viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator
 
 
 # Quantize Scales
@@ -94,11 +113,49 @@ Quantize scales support the following operations:
 
 @docs convert, invertExtent, domain, range, rangeExtent, ticks, tickFormat, nice
 
+
+# Ordinal Scales
+
+Unlike continuous scales, ordinal scales have a discrete domain and range. For
+example, an ordinal scale might map a set of named categories to a set of colors,
+or determine the horizontal positions of columns in a column chart.
+
+@docs OrdinalScale, ordinal
+
+Ordinal scales support the following operations:
+
+@docs convert
+
+Note that convert returns a Maybe for Ordinal scales. It is up to you to handle
+potentially missing values in the domain.
+
+@docs domain, range
+
+Here are a few color schemes that you can use with ordinal scales to
+support categorical data:
+
+@docs category10, category20a, category20b, category20c
+
+
+# Band Scales
+
+Band scales are like ordinal scales except the output range is continuous and
+numeric. Discrete output values are automatically computed by the scale by
+dividing the continuous range into uniform bands. Band scales are typically used
+for bar charts with an ordinal or categorical dimension.
+
+@docs BandScale, band, BandConfig, defaultBandConfig
+
+Band scales support the following operations:
+
+@docs convert, domain, range, bandwidth
+
 -}
 
 import Color exposing (Color)
 import Date exposing (Date)
-import Visualization.Scale.ColorInterpolators as ColorInterpolators
+import Visualization.Scale.Band as Band exposing (bandwitdh)
+import Visualization.Scale.Colors as Colors
 import Visualization.Scale.Linear as Linear
 import Visualization.Scale.Log as Log
 import Visualization.Scale.Ordinal as Ordinal
@@ -270,7 +327,8 @@ time domain range =
 -- Sequential Scales
 
 
-{-| Type alias for sequential scales
+{-| Type alias for sequential scales. This transforms a continuous `(Float, Float)`
+domain to an arbitrary range `a` defined by the interpolator function `Float -> a`.
 -}
 type alias SequentialScale a =
     Scale
@@ -280,7 +338,8 @@ type alias SequentialScale a =
         }
 
 
-{-| -}
+{-| Construct a sequential scale.
+-}
 sequential : ( Float, Float ) -> (Float -> a) -> SequentialScale a
 sequential domain interpolator =
     Scale
@@ -290,17 +349,64 @@ sequential domain interpolator =
         }
 
 
-{-| -}
+{-| ![Viridis](http://code.gampleman.eu/elm-visualization/misc/viridis.png)
+
+Given a number t in the range [0,1], returns the corresponding
+color from the “viridis” perceptually-uniform color scheme designed
+by [van der Walt, Smith and Firing](https://bids.github.io/colormap/)
+for matplotlib, represented as a core Color value.
+
+-}
 viridisInterpolator : Float -> Color
 viridisInterpolator =
-    ColorInterpolators.viridis
+    Colors.viridis
+
+
+{-| ![Inferno](http://code.gampleman.eu/elm-visualization/misc/inferno.png)
+
+Given a number t in the range [0,1], returns the corresponding
+color from the “inferno” perceptually-uniform color scheme designed
+by [van der Walt, Smith and Firing](https://bids.github.io/colormap/)
+for matplotlib, represented as a core Color value.
+
+-}
+infernoInterpolator : Float -> Color
+infernoInterpolator =
+    Colors.inferno
+
+
+{-| ![magma](http://code.gampleman.eu/elm-visualization/misc/magme.png)
+
+Given a number t in the range [0,1], returns the corresponding
+color from the “magma” perceptually-uniform color scheme designed
+by [van der Walt, Smith and Firing](https://bids.github.io/colormap/)
+for matplotlib, represented as a core Color value.
+
+-}
+magmaInterpolator : Float -> Color
+magmaInterpolator =
+    Colors.magma
+
+
+{-| ![Plasma](http://code.gampleman.eu/elm-visualization/misc/plasma.png)
+
+Given a number t in the range [0,1], returns the corresponding
+color from the “plasma” perceptually-uniform color scheme designed
+by [van der Walt, Smith and Firing](https://bids.github.io/colormap/)
+for matplotlib, represented as a core Color value.
+
+-}
+plasmaInterpolator : Float -> Color
+plasmaInterpolator =
+    Colors.plasma
 
 
 
 -- Quantize Scales
 
 
-{-| Type alias for quantize scales
+{-| Type alias for quantize scales. These transform a `(Float, Float)` domain
+to an arbitrary non-empty list `(a, List a)`.
 -}
 type alias QuantizeScale a =
     Scale
@@ -318,7 +424,9 @@ type alias QuantizeScale a =
         }
 
 
-{-| -}
+{-| Constructs a new quantize scale. The range for these is a
+non-empty list represented as a `(head, tail)` tuple.
+-}
 quantize : ( Float, Float ) -> ( a, List a ) -> QuantizeScale a
 quantize domain range =
     Scale
@@ -357,15 +465,12 @@ quantize domain range =
 -- threshold domain =
 --     Debug.crash "not implemented"
 --
---
---
--- -- Ordinal Scales
---
---
--- type alias OrdinalScale a b =
---     Scale Ordinal (List a) (List b)
 
 
+{-| Type alias for ordinal scales. These transform an arbitrary
+`List a` domain to an arbitrary list `List b`, where the mapping
+is based on order.
+-}
 type alias OrdinalScale a b =
     Scale
         { domain : List a
@@ -391,6 +496,8 @@ ordinalImplicit domain range =
         }
 
 
+{-| Constructs an ordinal scale.
+-}
 ordinal : List a -> List b -> OrdinalScale a b
 ordinal domain range =
     Scale
@@ -400,16 +507,47 @@ ordinal domain range =
         }
 
 
+{-| Type alias for a band scale. These transform an arbitrary `List a`
+to a continous (Float, Float) by uniformely partitioning the range.
+-}
 type alias BandScale a =
     Scale
         { domain : List a
         , range : ( Float, Float )
         , convert : List a -> ( Float, Float ) -> a -> Float
+        , bandwitdh : Float
 
         -- , rangeRound : ( Float, Float ) -> ( Float, Float )
         }
 
 
+{-| Configuration options for deciding how bands are partioned,
+
+
+### `.paddingInner : Float`
+
+The inner padding determines the ratio (so the value must be in
+the range [0, 1]) of the range that is reserved for blank space
+between bands.
+
+
+### `.paddingOuter : Float`
+
+The outer padding determines the ratio (so the value must be in
+the range [0, 1]) of the range that is reserved for blank space
+before the first band and after the last band.
+
+
+### `.align : Float`
+
+The alignment determines how any leftover unused space in the range
+is distributed. A value of 0.5 indicates that the leftover space
+should be equally distributed before the first band and after the last
+band; i.e., the bands should be centered within the range. A value
+of 0 or 1 may be used to shift the bands to one side, say to position
+them adjacent to an axis.
+
+-}
 type alias BandConfig =
     { paddingInner : Float
     , paddingOuter : Float
@@ -417,36 +555,42 @@ type alias BandConfig =
     }
 
 
+{-| Creates some reasonable defaults for a BandConfig:
+
+    defaultBandConfig --> { paddingInner = 0.0, paddingOuter = 0.0, align = 0.5 }
+
+-}
 defaultBandConfig : BandConfig
 defaultBandConfig =
     { paddingInner = 0.0, paddingOuter = 0.0, align = 0.5 }
 
 
+{-| Constructs a band scale.
+-}
 band : BandConfig -> List a -> ( Float, Float ) -> BandScale a
-band band aList ( float, float2 ) =
-    Debug.crash "not implemented"
+band config domain range =
+    Scale
+        { domain = domain
+        , range = range
+        , convert = Band.convert config
+        , bandwitdh = Band.bandwitdh config domain range
+        }
+
+
+{-| Returns the width of a band in a band scale.
+
+    scale : BandScale String
+    scale = band ["a", "b", "c"] (0, 120)
+
+    bandwitdh scale --> 40
+
+-}
+bandwitdh : Scale { scale | bandwitdh : Float } -> Float
+bandwitdh (Scale { bandwitdh }) =
+    bandwitdh
 
 
 
---
--- ordinal : List a -> List b -> OrdinalScale a b
--- ordinal domain =
---     Debug.crash "not implemented"
---
---
---
--- -- Band Scales
---
---
--- type alias BandScale a =
---     Scale Ordinal (List a) ( Float, Float )
---
---
--- band : List a -> ( Float, Float ) -> BandScale a
--- band a =
---     Debug.crash "not implemented"
---
---
 -- point : List a -> ( Float, Float ) -> BandScale a
 -- point a =
 --     Debug.crash "not implemented"
@@ -572,3 +716,44 @@ The second argument is the same as you would pass to ticks.
 nice : Scale { a | nice : domain -> Int -> domain, domain : domain } -> Int -> Scale { a | nice : domain -> Int -> domain, domain : domain }
 nice (Scale ({ nice, domain } as options)) count =
     Scale { options | domain = nice domain count }
+
+
+{-| ![category10](http://code.gampleman.eu/elm-visualization/misc/category10.png)
+
+A list of ten categorical colors
+
+-}
+category10 : List Color
+category10 =
+    Color.cat10
+
+
+{-| ![category20a](http://code.gampleman.eu/elm-visualization/misc/category20a.png)
+
+A list of twenty categorical colors
+
+-}
+category20a : List Color
+category20a =
+    Color.cat20a
+
+
+{-| ![category20b](http://code.gampleman.eu/elm-visualization/misc/category20b.png)
+
+A list of twenty categorical colors
+
+-}
+category20b : List Color
+category20b =
+    Color.cat20b
+
+
+{-| ![category20c](http://code.gampleman.eu/elm-visualization/misc/category20c.png)
+
+A list of twenty categorical colors. This color scale includes color
+specifications and designs developed by Cynthia Brewer (colorbrewer2.org).
+
+-}
+category20c : List Color
+category20c =
+    Color.cat20c

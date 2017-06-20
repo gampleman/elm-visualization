@@ -1,6 +1,7 @@
 module Visualization.Scale.Quantize exposing (convert, invertExtent, ticks, tickFormat, nice, rangeExtent)
 
 import Visualization.List as VList
+import Visualization.Scale.Linear as Linear
 
 
 rangeExtent : ( Float, Float ) -> ( a, List a ) -> ( a, a )
@@ -86,15 +87,15 @@ invertExtent ( mi, ma ) ( head, tail ) val =
 
 
 ticks : ( Float, Float ) -> ( a, List a ) -> Int -> List Float
-ticks _ =
-    Debug.crash "not implemented"
+ticks ( start, end ) domain count =
+    VList.ticks start end count
 
 
 tickFormat : ( Float, Float ) -> ( a, List a ) -> Int -> Float -> String
-tickFormat _ =
-    Debug.crash "not implemented"
+tickFormat _ _ _ =
+    toString
 
 
 nice : ( Float, Float ) -> Int -> ( Float, Float )
-nice _ =
-    Debug.crash "not implemented"
+nice =
+    Linear.nice

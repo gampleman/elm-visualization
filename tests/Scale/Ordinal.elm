@@ -2,15 +2,19 @@ module Scale.Ordinal exposing (convert)
 
 import Expect
 import Fuzz exposing (..)
-import Helper exposing (expectAll, isAbout, isBetween)
-import Html.Attributes exposing (value)
+import Helper exposing (expectMember)
 import Test exposing (..)
 import Visualization.Scale as Scale
 
 
-elementInList : Fuzz a -> Fuzz ( a, List a )
+elementInList : Fuzzer a -> Fuzzer ( a, List a )
 elementInList fuzzer =
-    Fuzz.map3 (\( prefix, item, postfix ) -> List.concat [ prefix, [ item ], postfix ]) (list fuzzer) fuzzer (list fuzzer)
+    Fuzz.map3 (\prefix item postfix -> ( item, List.concat [ prefix, [ item ], postfix ] )) (list fuzzer) fuzzer (list fuzzer)
+
+
+nonEmptyList : Fuzzer a -> Fuzzer (List a)
+nonEmptyList fuzzer =
+    Fuzz.map2 (\head tail -> head :: tail) fuzzer (list fuzzer)
 
 
 convert : Test
@@ -32,13 +36,21 @@ convert =
                 in
                     Scale.convert scale 3
                         |> Expect.equal (Just "a")
-        , fuzz2 (elementInList int) (list string) "converted value is a valid domain" <|
+        , fuzz2 (elementInList int) (nonEmptyList string) "converted value is a valid domain" <|
             \( value, domain ) range ->
                 let
                     scale =
                         Scale.ordinal domain range
                 in
                     Scale.convert scale value
-                        |> Maybe.map (Expect.member range)
+                        |> Maybe.map (expectMember range)
                         |> Maybe.withDefault (Expect.fail "was nothing")
+        , fuzz2 (list int) int "if range is empty returns Nothing" <|
+            \domain value ->
+                let
+                    scale =
+                        Scale.ordinal domain []
+                in
+                    Scale.convert scale value
+                        |> Expect.equal Nothing
         ]
