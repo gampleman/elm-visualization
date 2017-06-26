@@ -1,4 +1,4 @@
-module Visualization.List exposing (..)
+module Visualization.List exposing (range, ticks, tickStep, extent, extentWith)
 
 {-| This module exposes functions on list which are useful for the domain of data
 visualization. Most of these work with Lists of numbers.
@@ -29,26 +29,81 @@ included in the result. If `step` is positive, the last element is the largest
 the smallest `start + i * step` greater than `stop`. If the returned list would
 contain an infinite number of values, an empty range is returned.
 
-The arguments are not required to be integers; however, the results are more
+The arguments are not required to be whole numbers; however, the results are more
 predictable if they are.
+
+Differences from [List.range from the standard library](http://package.elm-lang.org/packages/elm-lang/core/5.1.1/List#range):
+
+  - `List.range` is inclusive, meaning that the stop value will be included in the result
+  - `List.range` only supports `Int`, whereas this supports any number types
+  - `List.range` supports only increasing intervals (i.e. `List.range 3 1 == []` vs. `range 3 1 -1 == [3, 2]`).
+  - `List.range` doesn't allow for specifying the step value
+  - `List.range` is most likely faster
 
 -}
 range : number -> number -> number -> List number
-range start stop step =
+range begin end step =
+    if gt (end - begin) && gt step then
+        rangePositive begin end step
+    else if gt (begin - end) && gt -step then
+        rangeNegative begin end step
+    else
+        []
+
+
+gt n =
+    n > 0
+
+
+rangePositive begin stop step =
     let
         helper s list =
-            -- TODO: this is borked in elm 0.18.0, the code should look like
-            -- if s + step > stop then
-            let
-                gt n =
-                    n > 0
-            in
-                if gt (s + step - stop) then
-                    list ++ [ s ]
-                else
-                    helper (s + step) (list ++ [ s ])
+            if s == stop then
+                list
+            else if gt (s + step - stop) then
+                s :: list
+            else
+                helper (s + step) (s :: list)
     in
-        helper start []
+        helper begin [] |> List.reverse
+
+
+rangeNegative begin stop step =
+    let
+        helper s list =
+            if s == stop then
+                list
+            else if gt (stop - (s + step)) then
+                s :: list
+            else
+                helper (s + step) (s :: list)
+    in
+        helper begin [] |> List.reverse
+
+
+
+{-
+   -- This a more efficient and correct version, however it assumes the arguments are Floats:
+
+   range : Float -> Float -> Float -> List Float
+   range start stop step =
+       let
+           n =
+               (stop - start)
+                   / step
+                   |> ceiling
+                   -- get rid of NaN
+                   |> Bitwise.or 0
+                   |> max 0
+
+           helper i list =
+               if i >= 0 then
+                   helper (i - 1) <| start + step * i :: list
+               else
+                   list
+       in
+           helper (n - 1) []
+-}
 
 
 {-| Returns a list of approximately n + 1 uniformly-spaced, nicely-rounded

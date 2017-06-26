@@ -30,12 +30,14 @@ module Visualization.Scale
         , ordinal
         , BandScale
         , band
-        , bandwitdh
+        , bandwidth
         , defaultBandConfig
         , category10
         , category20a
         , category20b
         , category20c
+        , BandConfig
+        , toRenderable
         )
 
 {-| Scales are a convenient abstraction for a fundamental task in visualization:
@@ -154,7 +156,7 @@ Band scales support the following operations:
 
 import Color exposing (Color)
 import Date exposing (Date)
-import Visualization.Scale.Band as Band exposing (bandwitdh)
+import Visualization.Scale.Band as Band
 import Visualization.Scale.Colors as Colors
 import Visualization.Scale.Linear as Linear
 import Visualization.Scale.Log as Log
@@ -515,9 +517,7 @@ type alias BandScale a =
         { domain : List a
         , range : ( Float, Float )
         , convert : List a -> ( Float, Float ) -> a -> Float
-        , bandwitdh : Float
-
-        -- , rangeRound : ( Float, Float ) -> ( Float, Float )
+        , bandwidth : Float
         }
 
 
@@ -573,7 +573,7 @@ band config domain range =
         { domain = domain
         , range = range
         , convert = Band.convert config
-        , bandwitdh = Band.bandwitdh config domain range
+        , bandwidth = Band.bandwidth config domain range
         }
 
 
@@ -582,12 +582,34 @@ band config domain range =
     scale : BandScale String
     scale = band ["a", "b", "c"] (0, 120)
 
-    bandwitdh scale --> 40
+    bandwidth scale --> 40
 
 -}
-bandwitdh : Scale { scale | bandwitdh : Float } -> Float
-bandwitdh (Scale { bandwitdh }) =
-    bandwitdh
+bandwidth : Scale { scale | bandwidth : Float } -> Float
+bandwidth (Scale { bandwidth }) =
+    bandwidth
+
+
+toRenderable :
+    BandScale a
+    ->
+        Scale
+            { ticks : List a -> Int -> List a
+            , domain : List a
+            , tickFormat : List a -> Int -> a -> String
+            , convert : List a -> ( Float, Float ) -> a -> Float
+            , range : ( Float, Float )
+            , rangeExtent : List a -> ( Float, Float ) -> ( Float, Float )
+            }
+toRenderable (Scale { domain, range, convert, bandwidth }) =
+    Scale
+        { ticks = \domain _ -> domain
+        , domain = domain
+        , tickFormat = \_ _ -> toString
+        , convert = \domain range value -> convert domain range value + max (bandwidth - 1) 0 / 2
+        , range = range
+        , rangeExtent = \_ range -> range
+        }
 
 
 
@@ -725,7 +747,7 @@ A list of ten categorical colors
 -}
 category10 : List Color
 category10 =
-    Color.cat10
+    Colors.cat10
 
 
 {-| ![category20a](http://code.gampleman.eu/elm-visualization/misc/category20a.png)
@@ -735,7 +757,7 @@ A list of twenty categorical colors
 -}
 category20a : List Color
 category20a =
-    Color.cat20a
+    Colors.cat20a
 
 
 {-| ![category20b](http://code.gampleman.eu/elm-visualization/misc/category20b.png)
@@ -745,7 +767,7 @@ A list of twenty categorical colors
 -}
 category20b : List Color
 category20b =
-    Color.cat20b
+    Colors.cat20b
 
 
 {-| ![category20c](http://code.gampleman.eu/elm-visualization/misc/category20c.png)
@@ -756,4 +778,4 @@ specifications and designs developed by Cynthia Brewer (colorbrewer2.org).
 -}
 category20c : List Color
 category20c =
-    Color.cat20c
+    Colors.cat20c

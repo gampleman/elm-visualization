@@ -57,7 +57,7 @@ convert =
                         [ domain
                             |> List.map (Scale.convert scale)
                             |> Expect.equal [ 80, 40, 0 ]
-                        , Scale.bandwitdh scale
+                        , Scale.bandwidth scale
                             |> Expect.equal 40
                         ]
         ]

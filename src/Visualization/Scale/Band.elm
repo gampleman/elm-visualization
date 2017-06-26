@@ -1,11 +1,26 @@
-module Visualization.Scale.Band exposing (convert, bandwitdh)
+module Visualization.Scale.Band exposing (convert, bandwidth)
 
 import Json.Decode exposing (index)
 
 
-bandwitdh : { paddingInner : Float, paddingOuter : Float, align : Float } -> List a -> ( Float, Float ) -> Float
-bandwitdh { paddingInner, paddingOuter, align } domain ( d0, d1 ) =
+type alias Config =
+    { paddingInner : Float, paddingOuter : Float, align : Float }
+
+
+normalizeConfig : Config -> Config
+normalizeConfig { paddingInner, paddingOuter, align } =
+    { paddingInner = clamp 0 1 paddingInner
+    , paddingOuter = clamp 0 1 paddingOuter
+    , align = clamp 0 1 align
+    }
+
+
+bandwidth : Config -> List a -> ( Float, Float ) -> Float
+bandwidth cfg domain ( d0, d1 ) =
     let
+        { paddingInner, paddingOuter, align } =
+            normalizeConfig cfg
+
         ( start, stop ) =
             if d0 < d1 then
                 ( d0, d1 )
@@ -21,34 +36,40 @@ bandwitdh { paddingInner, paddingOuter, align } domain ( d0, d1 ) =
         step * (1 - paddingInner)
 
 
-convert : { paddingInner : Float, paddingOuter : Float, align : Float } -> List a -> ( Float, Float ) -> a -> Float
-convert { paddingInner, paddingOuter, align } domain ( start, stop ) value =
+computePositions index cfg n ( start, stop ) =
+    let
+        { paddingInner, paddingOuter, align } =
+            normalizeConfig cfg
+
+        step =
+            (stop - start) / max 1 (n - paddingInner + paddingOuter * 2)
+
+        start2 =
+            start + (stop - start - step * (n - paddingInner)) * align
+    in
+        ( start2, step )
+
+
+convert : Config -> List a -> ( Float, Float ) -> a -> Float
+convert cfg domain ( start, stop ) value =
     case indexOf value domain of
         Just index ->
-            if start < stop then
-                let
-                    n =
-                        toFloat <| List.length domain
-
-                    step =
-                        (stop - start) / max 1 (n - paddingInner + paddingOuter * 2)
-
-                    start2 =
-                        start + (stop - start - step * (n - paddingInner)) * align
-                in
-                    start + step * index
-            else
-                let
-                    n =
-                        toFloat <| List.length domain
-
-                    step =
-                        (start - stop) / max 1 (n - paddingInner + paddingOuter * 2)
-
-                    stop2 =
-                        stop + (start - stop - step * (n - paddingInner)) * align
-                in
-                    stop2 + step * (n - index - 1)
+            let
+                n =
+                    toFloat <| List.length domain
+            in
+                if start < stop then
+                    let
+                        ( start2, step ) =
+                            computePositions index cfg n ( start, stop )
+                    in
+                        start2 + step * index
+                else
+                    let
+                        ( stop2, step ) =
+                            computePositions index cfg n ( stop, start )
+                    in
+                        stop2 + step * (n - index - 1)
 
         Nothing ->
             0 / 0

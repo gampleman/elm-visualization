@@ -1,4 +1,4 @@
-module Visualization.Scale.ColorInterpolators exposing (viridis)
+module Visualization.Scale.Colors exposing (viridis, plasma, inferno, magma, cat10, cat20a, cat20b, cat20c)
 
 import Array exposing (Array)
 import Color exposing (Color, rgb, black)
