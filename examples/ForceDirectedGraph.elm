@@ -181,6 +181,8 @@ nodeElement node =
     circle
         [ r "2.5"
         , fill "#000"
+        , stroke "transparent"
+        , strokeWidth "7px"
         , onMouseDown node.id
         , cx (toString node.label.x)
         , cy (toString node.label.y)

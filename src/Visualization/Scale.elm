@@ -150,7 +150,7 @@ for bar charts with an ordinal or categorical dimension.
 
 Band scales support the following operations:
 
-@docs convert, domain, range, bandwidth
+@docs convert, domain, range, bandwidth, toRenderable
 
 -}
 
@@ -590,6 +590,10 @@ bandwidth (Scale { bandwidth }) =
     bandwidth
 
 
+{-| This converts a BandScale into a [RenderableScale](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization-Axis#RenderableScale)
+suitable for rendering Axes. This has the same domain and range, but the convert output is shifted by half a `bandwidth`
+in order for ticks and labels to align nicely.
+-}
 toRenderable :
     BandScale a
     ->
