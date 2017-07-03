@@ -1,4 +1,4 @@
-<img src="http://code.gampleman.eu/elm-visualization/misc/Logo@2x.png" alt="Elm-visualization" style="max-width: 100%" />
+<h1><img src="http://code.gampleman.eu/elm-visualization/misc/Logo@2x.png" alt="Elm-visualization" srcset="http://code.gampleman.eu/elm-visualization/misc/Logo@2x.png, http://code.gampleman.eu/elm-visualization/misc/Logo@2x.png 2x" style="max-width: 100%" /></h1>
 
 
 [Docs](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/) | [Examples](http://code.gampleman.eu/elm-visualization/) | [GitHub](https://github.com/gampleman/elm-visualization) | [Changelog](https://github.com/gampleman/elm-visualization/releases)
