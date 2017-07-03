@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Petals Example</title>
+    <title>BarChart Example</title>
     <style media="screen">
       body {
         font-family: Helvetica, sans-serif;
@@ -131,62 +131,107 @@ hue-6-2: #c18401
   </head>
   <body>
     <main>
-      <h1>Petals</h1>
+      <h1>BarChart</h1>
 
       <iframe src="iframe.html" width="990" height="504" frameborder="1"></iframe>
 
       
         <hr />
-        <h3>Petals</h3>
-        <div class="description"><p> Based on the arrangement of petals in a sunflower. Demonstrates the initial layout of Force.entity.</p>
+        <h3>BarChart</h3>
+        <div class="description"><p> This module shows how to build a simple bar chart.</p>
 </div>
-        <pre><code class="elm"><span class="hljs-keyword">module</span> Petals <span class="hljs-keyword">exposing</span> (main)
+        <pre><code class="elm">module LineChart exposing (main)
 
 
-<span class="hljs-keyword">import</span> Color.Convert <span class="hljs-keyword">exposing</span> (colorToCssRgb)
-<span class="hljs-keyword">import</span> Html
-<span class="hljs-keyword">import</span> Svg <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Svg</span>, svg, circle)
-<span class="hljs-keyword">import</span> Svg.Attributes <span class="hljs-keyword">exposing</span> (width, height, viewBox, cx, cy, r, fill)
-<span class="hljs-keyword">import</span> Visualization.Force <span class="hljs-keyword">as</span> Force
-<span class="hljs-keyword">import</span> Visualization.Scale <span class="hljs-keyword">as</span> Scale
+import Date exposing (Date)
+import Date.Extra as Date
+import Svg exposing (..)
+import Svg.Attributes exposing (..)
+import Visualization.Axis as Axis exposing (defaultOptions)
+import Visualization.Scale as Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
+import SampleData exposing (timeSeries)
 
 
-<span class="hljs-title">screenWidth</span> : <span class="hljs-type">Float</span>
-<span class="hljs-title">screenWidth</span> =
-    <span class="hljs-number">990</span>
+w : Float
+w =
+    900
 
 
-<span class="hljs-title">screenHeight</span> : <span class="hljs-type">Float</span>
-<span class="hljs-title">screenHeight</span> =
-    <span class="hljs-number">504</span>
+h : Float
+h =
+    450
 
 
-<span class="hljs-title">color</span> : <span class="hljs-type">Int</span> -&gt; <span class="hljs-type">String</span>
-<span class="hljs-title">color</span> =
-    colorToCssRgb &lt;&lt; <span class="hljs-type">Scale</span>.convert (<span class="hljs-type">Scale</span>.sequential ( <span class="hljs-number">0</span>, <span class="hljs-number">360</span> ) <span class="hljs-type">Scale</span>.viridisInterpolator) &lt;&lt; toFloat
+padding : Float
+padding =
+    30
 
 
-<span class="hljs-title">makePetal</span> : <span class="hljs-type">Int</span> -&gt; <span class="hljs-type">Svg</span> msg
-<span class="hljs-title">makePetal</span> i =
-    <span class="hljs-keyword">let</span>
-        { x, y } =
-            <span class="hljs-type">Force</span>.entity i ()
-
-        angle =
-            floor (toFloat i * (<span class="hljs-number">3</span> - sqrt <span class="hljs-number">5</span>) * pi * <span class="hljs-number">180</span> - sqrt (toFloat i) * <span class="hljs-number">4</span>) % <span class="hljs-number">360</span>
-    <span class="hljs-keyword">in</span>
-        circle [ cx (toString x), cy (toString y), r <span class="hljs-string">"5"</span>, fill (color angle) ] []
+xScale : List ( Date, Float ) -&gt; BandScale Date
+xScale model =
+    Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } (List.map Tuple.first model) ( 0, w - 2 * padding )
 
 
-<span class="hljs-title">view</span> : <span class="hljs-type">List</span> <span class="hljs-type">Int</span> -&gt; <span class="hljs-type">Svg</span> msg
-<span class="hljs-title">view</span> model =
-    svg [ width (toString screenWidth ++ <span class="hljs-string">"px"</span>), height (toString screenHeight ++ <span class="hljs-string">"px"</span>), viewBox <span class="hljs-string">"-500 -500 1000 1000"</span> ] &lt;|
-        <span class="hljs-type">List</span>.map makePetal model
+yScale : ContinuousScale
+yScale =
+    Scale.linear ( 0, 5 ) ( h - 2 * padding, 0 )
 
 
-<span class="hljs-title">main</span> =
-    view &lt;| <span class="hljs-type">List</span>.range <span class="hljs-number">1</span> <span class="hljs-number">10000</span>
+xAxis : List ( Date, Float ) -&gt; Svg msg
+xAxis model =
+    Axis.axis { defaultOptions | orientation = Axis.Bottom, tickFormat = Just (Date.toFormattedString "dd MMM") } (Scale.toRenderable (xScale model))
+
+
+yAxis : Svg msg
+yAxis =
+    Axis.axis { defaultOptions | orientation = Axis.Left, tickCount = 5 } yScale
+
+
+column : BandScale Date -&gt; ( Date, Float ) -&gt; Svg msg
+column xScale ( date, value ) =
+    g [ class "column" ]
+        [ rect
+            [ x &lt;| toString &lt;| Scale.convert xScale date
+            , y &lt;| toString &lt;| h - Scale.convert yScale value - 2 * padding
+            , width &lt;| toString &lt;| Scale.bandwidth xScale
+            , height &lt;| toString &lt;| Scale.convert yScale value
+            ]
+            []
+        , text_
+            [ x &lt;| toString &lt;| Scale.convert (Scale.toRenderable xScale) date
+            , y &lt;| toString &lt;| h - Scale.convert yScale value - 2 * padding - 5
+            , textAnchor "middle"
+            ]
+            [ text &lt;| toString value ]
+        ]
+
+
+view : List ( Date, Float ) -&gt; Svg msg
+view model =
+    svg [ width (toString w ++ "px"), height (toString h ++ "px") ]
+        [ Svg.style [] [ text """
+            .column rect { fill: rgba(118, 214, 78, 0.8); }
+            .column text { display: none; }
+            .column:hover rect { fill: rgb(118, 214, 78); }
+            .column:hover text { display: inline; }
+          """ ]
+        , g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString (h - padding) ++ ")") ]
+            [ xAxis model ]
+        , g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString padding ++ ")") ]
+            [ yAxis ]
+        , g [ transform ("translate(" ++ toString padding ++ ", " ++ toString padding ++ ")"), class "series" ] &lt;|
+            List.map (column (xScale model)) model
+        ]
+
+
+main =
+    view timeSeries
 </code></pre>
+      
+        <hr />
+        <h3></h3>
+        <div class="description"></div>
+        <pre><code class="elm"></code></pre>
       
     </main>
     <aside>
@@ -197,7 +242,7 @@ hue-6-2: #c18401
             <a href="../Background">Background</a>
           </li>
         
-          <li >
+          <li class="active">
             <a href="../BarChart">BarChart</a>
           </li>
         
@@ -241,7 +286,7 @@ hue-6-2: #c18401
             <a href="../PadAngle">PadAngle</a>
           </li>
         
-          <li class="active">
+          <li >
             <a href="../Petals">Petals</a>
           </li>
         

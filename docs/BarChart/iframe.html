@@ -18383,1306 +18383,6 @@ var _user$project$Visualization_Axis$axis = F2(
 				_1: A2(_elm_lang$core$List$map, drawTick, ticks)
 			});
 	});
-var _user$project$Visualization_Path$mod = F2(
-	function (a, b) {
-		var frac = a / b;
-		return (frac - _elm_lang$core$Basics$toFloat(
-			_elm_lang$core$Basics$truncate(frac))) * b;
-	});
-var _user$project$Visualization_Path$stringify = F2(
-	function (item, _p0) {
-		var _p1 = _p0;
-		var _p19 = _p1._4;
-		var _p18 = _p1._2;
-		var _p17 = _p1._3;
-		var _p16 = _p1._1;
-		var _p15 = _p1._0;
-		var _p14 = _p1._5;
-		var boolToFloat = function (b) {
-			return b ? 1 : 0;
-		};
-		var epsilon = 1.0e-6;
-		var append = F3(
-			function (cmd, values, str) {
-				return A2(
-					_elm_lang$core$Basics_ops['++'],
-					str,
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						cmd,
-						A2(
-							_elm_lang$core$String$join,
-							',',
-							A2(_elm_lang$core$List$map, _elm_lang$core$Basics$toString, values))));
-			});
-		var stringifyArc = F5(
-			function (x1_, y1_, x2_, y2_, radius) {
-				var y21 = y2_ - y1_;
-				var x21 = x2_ - x1_;
-				var l21_2 = Math.pow(x21, 2) + Math.pow(y21, 2);
-				var l21 = _elm_lang$core$Basics$sqrt(l21_2);
-				var y0_ = _p19;
-				var y01 = y0_ - y1_;
-				var y20 = y2_ - y0_;
-				var x0_ = _p17;
-				var x01 = x0_ - x1_;
-				var l01_2 = Math.pow(x01, 2) + Math.pow(y01, 2);
-				var l01 = _elm_lang$core$Basics$sqrt(l01_2);
-				var x20 = x2_ - x0_;
-				var l20_2 = Math.pow(x20, 2) + Math.pow(y20, 2);
-				var r = _elm_lang$core$Basics$abs(radius);
-				var l = r * _elm_lang$core$Basics$tan(
-					(_elm_lang$core$Basics$pi - _elm_lang$core$Basics$acos(((l21_2 + l01_2) - l20_2) / ((2 * l21) * l01))) / 2);
-				var t01 = l / l01;
-				var str_ = (_elm_lang$core$Native_Utils.cmp(
-					_elm_lang$core$Basics$abs(t01 - 1),
-					epsilon) > 0) ? A3(
-					append,
-					'L',
-					{
-						ctor: '::',
-						_0: x1_ + (t01 * x01),
-						_1: {
-							ctor: '::',
-							_0: y1_ + (t01 * y01),
-							_1: {ctor: '[]'}
-						}
-					},
-					_p15) : _p15;
-				var t21 = l / l21;
-				return _p14 ? {
-					ctor: '_Tuple6',
-					_0: A3(
-						append,
-						'M',
-						{
-							ctor: '::',
-							_0: x1_,
-							_1: {
-								ctor: '::',
-								_0: y1_,
-								_1: {ctor: '[]'}
-							}
-						},
-						_p15),
-					_1: _p16,
-					_2: _p18,
-					_3: x1_,
-					_4: y1_,
-					_5: false
-				} : ((_elm_lang$core$Native_Utils.cmp(l01_2, epsilon) < 0) ? {ctor: '_Tuple6', _0: _p15, _1: _p16, _2: _p18, _3: _p17, _4: _p19, _5: _p14} : (((!(_elm_lang$core$Native_Utils.cmp(
-					_elm_lang$core$Basics$abs((y01 * x21) - (y21 * x01)),
-					epsilon) > 0)) || _elm_lang$core$Native_Utils.eq(r, 0)) ? {
-					ctor: '_Tuple6',
-					_0: A3(
-						append,
-						'L',
-						{
-							ctor: '::',
-							_0: x1_,
-							_1: {
-								ctor: '::',
-								_0: y1_,
-								_1: {ctor: '[]'}
-							}
-						},
-						_p15),
-					_1: _p16,
-					_2: _p18,
-					_3: x1_,
-					_4: y1_,
-					_5: false
-				} : {
-					ctor: '_Tuple6',
-					_0: A3(
-						append,
-						'A',
-						{
-							ctor: '::',
-							_0: r,
-							_1: {
-								ctor: '::',
-								_0: r,
-								_1: {
-									ctor: '::',
-									_0: 0,
-									_1: {
-										ctor: '::',
-										_0: 0,
-										_1: {
-											ctor: '::',
-											_0: (_elm_lang$core$Native_Utils.cmp(y01 * x20, x01 * y20) > 0) ? 1 : 0,
-											_1: {
-												ctor: '::',
-												_0: x1_ + (t21 * x21),
-												_1: {
-													ctor: '::',
-													_0: y1_ + (t21 * y21),
-													_1: {ctor: '[]'}
-												}
-											}
-										}
-									}
-								}
-							}
-						},
-						str_),
-					_1: _p16,
-					_2: _p18,
-					_3: x1_ + (t21 * x21),
-					_4: y1_ + (t21 * y21),
-					_5: false
-				}));
-			});
-		var stringifyArcCustom = F6(
-			function (x, y, radius, a0, a1, ccw) {
-				var da = ccw ? (a0 - a1) : (a1 - a0);
-				var tau = 2 * _elm_lang$core$Basics$pi;
-				var cw = boolToFloat(!ccw);
-				var r = _elm_lang$core$Basics$abs(radius);
-				var dx = r * _elm_lang$core$Basics$cos(a0);
-				var x0_ = x + dx;
-				var dy = r * _elm_lang$core$Basics$sin(a0);
-				var y0_ = y + dy;
-				var str_ = _p14 ? A3(
-					append,
-					'M',
-					{
-						ctor: '::',
-						_0: x0_,
-						_1: {
-							ctor: '::',
-							_0: y0_,
-							_1: {ctor: '[]'}
-						}
-					},
-					_p15) : (((_elm_lang$core$Native_Utils.cmp(
-					_elm_lang$core$Basics$abs(_p17 - x0_),
-					epsilon) > 0) || (_elm_lang$core$Native_Utils.cmp(
-					_elm_lang$core$Basics$abs(_p19 - y0_),
-					epsilon) > 0)) ? A3(
-					append,
-					'L',
-					{
-						ctor: '::',
-						_0: x0_,
-						_1: {
-							ctor: '::',
-							_0: y0_,
-							_1: {ctor: '[]'}
-						}
-					},
-					_p15) : _p15);
-				if (_elm_lang$core$Native_Utils.eq(r, 0)) {
-					return {ctor: '_Tuple6', _0: str_, _1: _p16, _2: _p18, _3: _p17, _4: _p19, _5: _p14};
-				} else {
-					if (_elm_lang$core$Native_Utils.cmp(da, tau - epsilon) > 0) {
-						return {
-							ctor: '_Tuple6',
-							_0: A3(
-								append,
-								'A',
-								{
-									ctor: '::',
-									_0: r,
-									_1: {
-										ctor: '::',
-										_0: r,
-										_1: {
-											ctor: '::',
-											_0: 0,
-											_1: {
-												ctor: '::',
-												_0: 1,
-												_1: {
-													ctor: '::',
-													_0: cw,
-													_1: {
-														ctor: '::',
-														_0: x0_,
-														_1: {
-															ctor: '::',
-															_0: y0_,
-															_1: {ctor: '[]'}
-														}
-													}
-												}
-											}
-										}
-									}
-								},
-								A3(
-									append,
-									'A',
-									{
-										ctor: '::',
-										_0: r,
-										_1: {
-											ctor: '::',
-											_0: r,
-											_1: {
-												ctor: '::',
-												_0: 0,
-												_1: {
-													ctor: '::',
-													_0: 1,
-													_1: {
-														ctor: '::',
-														_0: cw,
-														_1: {
-															ctor: '::',
-															_0: x - dx,
-															_1: {
-																ctor: '::',
-																_0: y - dy,
-																_1: {ctor: '[]'}
-															}
-														}
-													}
-												}
-											}
-										}
-									},
-									str_)),
-							_1: _p16,
-							_2: _p18,
-							_3: x0_,
-							_4: y0_,
-							_5: false
-						};
-					} else {
-						var da_ = (_elm_lang$core$Native_Utils.cmp(da, 0) < 0) ? (A2(_user$project$Visualization_Path$mod, da, tau) + tau) : da;
-						return {
-							ctor: '_Tuple6',
-							_0: A3(
-								append,
-								'A',
-								{
-									ctor: '::',
-									_0: r,
-									_1: {
-										ctor: '::',
-										_0: r,
-										_1: {
-											ctor: '::',
-											_0: 0,
-											_1: {
-												ctor: '::',
-												_0: boolToFloat(
-													_elm_lang$core$Native_Utils.cmp(da_, _elm_lang$core$Basics$pi) > -1),
-												_1: {
-													ctor: '::',
-													_0: cw,
-													_1: {
-														ctor: '::',
-														_0: x + (r * _elm_lang$core$Basics$cos(a1)),
-														_1: {
-															ctor: '::',
-															_0: y + (r * _elm_lang$core$Basics$sin(a1)),
-															_1: {ctor: '[]'}
-														}
-													}
-												}
-											}
-										}
-									}
-								},
-								str_),
-							_1: _p16,
-							_2: _p18,
-							_3: x + (r * _elm_lang$core$Basics$cos(a1)),
-							_4: y + (r * _elm_lang$core$Basics$sin(a1)),
-							_5: false
-						};
-					}
-				}
-			});
-		var _p2 = item;
-		switch (_p2.ctor) {
-			case 'Move':
-				var _p4 = _p2._0._1;
-				var _p3 = _p2._0._0;
-				return {
-					ctor: '_Tuple6',
-					_0: A3(
-						append,
-						'M',
-						{
-							ctor: '::',
-							_0: _p3,
-							_1: {
-								ctor: '::',
-								_0: _p4,
-								_1: {ctor: '[]'}
-							}
-						},
-						_p15),
-					_1: _p3,
-					_2: _p4,
-					_3: _p3,
-					_4: _p4,
-					_5: false
-				};
-			case 'Close':
-				return _p14 ? {ctor: '_Tuple6', _0: _p15, _1: _p16, _2: _p18, _3: _p17, _4: _p19, _5: _p14} : {
-					ctor: '_Tuple6',
-					_0: A3(
-						append,
-						'Z',
-						{ctor: '[]'},
-						_p15),
-					_1: _p16,
-					_2: _p18,
-					_3: _p16,
-					_4: _p18,
-					_5: false
-				};
-			case 'Line':
-				var _p6 = _p2._0._1;
-				var _p5 = _p2._0._0;
-				return {
-					ctor: '_Tuple6',
-					_0: A3(
-						append,
-						'L',
-						{
-							ctor: '::',
-							_0: _p5,
-							_1: {
-								ctor: '::',
-								_0: _p6,
-								_1: {ctor: '[]'}
-							}
-						},
-						_p15),
-					_1: _p16,
-					_2: _p18,
-					_3: _p5,
-					_4: _p6,
-					_5: false
-				};
-			case 'QuadraticCurve':
-				var _p8 = _p2._1._1;
-				var _p7 = _p2._1._0;
-				return {
-					ctor: '_Tuple6',
-					_0: A3(
-						append,
-						'Q',
-						{
-							ctor: '::',
-							_0: _p2._0._0,
-							_1: {
-								ctor: '::',
-								_0: _p2._0._1,
-								_1: {
-									ctor: '::',
-									_0: _p7,
-									_1: {
-										ctor: '::',
-										_0: _p8,
-										_1: {ctor: '[]'}
-									}
-								}
-							}
-						},
-						_p15),
-					_1: _p16,
-					_2: _p18,
-					_3: _p7,
-					_4: _p8,
-					_5: false
-				};
-			case 'BezierCurve':
-				var _p10 = _p2._2._1;
-				var _p9 = _p2._2._0;
-				return {
-					ctor: '_Tuple6',
-					_0: A3(
-						append,
-						'C',
-						{
-							ctor: '::',
-							_0: _p2._0._0,
-							_1: {
-								ctor: '::',
-								_0: _p2._0._1,
-								_1: {
-									ctor: '::',
-									_0: _p2._1._0,
-									_1: {
-										ctor: '::',
-										_0: _p2._1._1,
-										_1: {
-											ctor: '::',
-											_0: _p9,
-											_1: {
-												ctor: '::',
-												_0: _p10,
-												_1: {ctor: '[]'}
-											}
-										}
-									}
-								}
-							}
-						},
-						_p15),
-					_1: _p16,
-					_2: _p18,
-					_3: _p9,
-					_4: _p10,
-					_5: false
-				};
-			case 'Arc':
-				return A5(stringifyArc, _p2._0._0, _p2._0._1, _p2._1._0, _p2._1._1, _p2._2);
-			case 'ArcCustom':
-				return A6(stringifyArcCustom, _p2._0._0, _p2._0._1, _p2._1, _p2._2, _p2._3, _p2._4);
-			default:
-				var _p13 = _p2._0._1;
-				var _p12 = _p2._0._0;
-				var _p11 = _p2._1._0;
-				return {
-					ctor: '_Tuple6',
-					_0: A3(
-						append,
-						'Z',
-						{ctor: '[]'},
-						A3(
-							append,
-							'h',
-							{
-								ctor: '::',
-								_0: 0 - _p11,
-								_1: {ctor: '[]'}
-							},
-							A3(
-								append,
-								'v',
-								{
-									ctor: '::',
-									_0: _p2._1._1,
-									_1: {ctor: '[]'}
-								},
-								A3(
-									append,
-									'h',
-									{
-										ctor: '::',
-										_0: _p11,
-										_1: {ctor: '[]'}
-									},
-									A3(
-										append,
-										'M',
-										{
-											ctor: '::',
-											_0: _p12,
-											_1: {
-												ctor: '::',
-												_0: _p13,
-												_1: {ctor: '[]'}
-											}
-										},
-										_p15))))),
-					_1: _p12,
-					_2: _p13,
-					_3: _p12,
-					_4: _p13,
-					_5: false
-				};
-		}
-	});
-var _user$project$Visualization_Path$toAttrString = function (path) {
-	var _p20 = A3(
-		_elm_lang$core$List$foldl,
-		_user$project$Visualization_Path$stringify,
-		{ctor: '_Tuple6', _0: '', _1: 0, _2: 0, _3: 0, _4: 0, _5: true},
-		path);
-	var result = _p20._0;
-	return result;
-};
-var _user$project$Visualization_Path$begin = {ctor: '[]'};
-var _user$project$Visualization_Path$push = F2(
-	function (el, list) {
-		return A2(
-			_elm_lang$core$Basics_ops['++'],
-			list,
-			{
-				ctor: '::',
-				_0: el,
-				_1: {ctor: '[]'}
-			});
-	});
-var _user$project$Visualization_Path$Rect = F2(
-	function (a, b) {
-		return {ctor: 'Rect', _0: a, _1: b};
-	});
-var _user$project$Visualization_Path$rect = F4(
-	function (x, y, w, h) {
-		return _user$project$Visualization_Path$push(
-			A2(
-				_user$project$Visualization_Path$Rect,
-				{ctor: '_Tuple2', _0: x, _1: y},
-				{ctor: '_Tuple2', _0: w, _1: h}));
-	});
-var _user$project$Visualization_Path$ArcCustom = F5(
-	function (a, b, c, d, e) {
-		return {ctor: 'ArcCustom', _0: a, _1: b, _2: c, _3: d, _4: e};
-	});
-var _user$project$Visualization_Path$arc = F6(
-	function (x, y, radius, startAngle, endAngle, anticlockwise) {
-		return _user$project$Visualization_Path$push(
-			A5(
-				_user$project$Visualization_Path$ArcCustom,
-				{ctor: '_Tuple2', _0: x, _1: y},
-				radius,
-				startAngle,
-				endAngle,
-				anticlockwise));
-	});
-var _user$project$Visualization_Path$Arc = F3(
-	function (a, b, c) {
-		return {ctor: 'Arc', _0: a, _1: b, _2: c};
-	});
-var _user$project$Visualization_Path$arcTo = F5(
-	function (x1, y1, x2, y2, radius) {
-		return _user$project$Visualization_Path$push(
-			A3(
-				_user$project$Visualization_Path$Arc,
-				{ctor: '_Tuple2', _0: x1, _1: y1},
-				{ctor: '_Tuple2', _0: x2, _1: y2},
-				radius));
-	});
-var _user$project$Visualization_Path$BezierCurve = F3(
-	function (a, b, c) {
-		return {ctor: 'BezierCurve', _0: a, _1: b, _2: c};
-	});
-var _user$project$Visualization_Path$bezierCurveTo = F6(
-	function (cpx1, cpy1, cpx2, cpy2, x, y) {
-		return _user$project$Visualization_Path$push(
-			A3(
-				_user$project$Visualization_Path$BezierCurve,
-				{ctor: '_Tuple2', _0: cpx1, _1: cpy1},
-				{ctor: '_Tuple2', _0: cpx2, _1: cpy2},
-				{ctor: '_Tuple2', _0: x, _1: y}));
-	});
-var _user$project$Visualization_Path$QuadraticCurve = F2(
-	function (a, b) {
-		return {ctor: 'QuadraticCurve', _0: a, _1: b};
-	});
-var _user$project$Visualization_Path$quadraticCurveTo = F4(
-	function (cpx, cpy, x, y) {
-		return _user$project$Visualization_Path$push(
-			A2(
-				_user$project$Visualization_Path$QuadraticCurve,
-				{ctor: '_Tuple2', _0: cpx, _1: cpy},
-				{ctor: '_Tuple2', _0: x, _1: y}));
-	});
-var _user$project$Visualization_Path$Line = function (a) {
-	return {ctor: 'Line', _0: a};
-};
-var _user$project$Visualization_Path$lineTo = F2(
-	function (x, y) {
-		return _user$project$Visualization_Path$push(
-			_user$project$Visualization_Path$Line(
-				{ctor: '_Tuple2', _0: x, _1: y}));
-	});
-var _user$project$Visualization_Path$Close = {ctor: 'Close'};
-var _user$project$Visualization_Path$close = _user$project$Visualization_Path$push(_user$project$Visualization_Path$Close);
-var _user$project$Visualization_Path$Move = function (a) {
-	return {ctor: 'Move', _0: a};
-};
-var _user$project$Visualization_Path$moveTo = F2(
-	function (x, y) {
-		return _user$project$Visualization_Path$push(
-			_user$project$Visualization_Path$Move(
-				{ctor: '_Tuple2', _0: x, _1: y}));
-	});
-var _user$project$Visualization_Shape$slope2 = F3(
-	function (_p1, _p0, t) {
-		var _p2 = _p1;
-		var _p3 = _p0;
-		var h = _p3._0 - _p2._0;
-		return _elm_lang$core$Native_Utils.eq(h, 0) ? t : (((3 * (_p3._1 - _p2._1)) / h) - (t / 2));
-	});
-var _user$project$Visualization_Shape$sign = function (x) {
-	return (_elm_lang$core$Native_Utils.cmp(x, 0) < 0) ? -1 : 1;
-};
-var _user$project$Visualization_Shape$slope3 = F3(
-	function (_p6, _p5, _p4) {
-		var _p7 = _p6;
-		var _p8 = _p5;
-		var _p11 = _p8._1;
-		var _p10 = _p8._0;
-		var _p9 = _p4;
-		var h1 = _p9._0 - _p10;
-		var h0 = _p10 - _p7._0;
-		var h = _elm_lang$core$Native_Utils.eq(h1, 0) ? ((_elm_lang$core$Native_Utils.cmp(h0, 0) < 0) ? 0 : h0) : h1;
-		var s0 = (_p11 - _p7._1) / h;
-		var s1 = (_p9._1 - _p11) / h;
-		var p = ((s0 * h1) + (s1 * h0)) / (h0 + h1);
-		return (_user$project$Visualization_Shape$sign(s0) + _user$project$Visualization_Shape$sign(s1)) * A2(
-			_elm_lang$core$Basics$min,
-			A2(
-				_elm_lang$core$Basics$min,
-				_elm_lang$core$Basics$abs(s0),
-				_elm_lang$core$Basics$abs(s1)),
-			0.5 * _elm_lang$core$Basics$abs(p));
-	});
-var _user$project$Visualization_Shape$pie = F2(
-	function (settings, data) {
-		var unsafeGet = F2(
-			function (index, array) {
-				var _p12 = A2(_elm_lang$core$Array$get, index, array);
-				if (_p12.ctor === 'Just') {
-					return _p12._0;
-				} else {
-					return _elm_lang$core$Native_Utils.crashCase(
-						'Visualization.Shape',
-						{
-							start: {line: 642, column: 13},
-							end: {line: 647, column: 59}
-						},
-						_p12)('This should never happen');
-				}
-			});
-		var dataArray = _elm_lang$core$Array$fromList(data);
-		var sortedIndices = function (_p14) {
-			return A2(
-				_elm_lang$core$List$map,
-				_elm_lang$core$Tuple$first,
-				A2(
-					_elm_lang$core$List$sortWith,
-					F2(
-						function (_p16, _p15) {
-							var _p17 = _p16;
-							var _p18 = _p15;
-							return A2(settings.sortingFn, _p17._1, _p18._1);
-						}),
-					A2(
-						_elm_lang$core$List$indexedMap,
-						F2(
-							function (v0, v1) {
-								return {ctor: '_Tuple2', _0: v0, _1: v1};
-							}),
-						_p14)));
-		};
-		var da = A2(
-			_elm_lang$core$Basics$min,
-			2 * _elm_lang$core$Basics$pi,
-			A2(_elm_lang$core$Basics$max, -2 * _elm_lang$core$Basics$pi, settings.endAngle - settings.startAngle));
-		var p = A2(
-			_elm_lang$core$Basics$min,
-			_elm_lang$core$Basics$abs(da) / _elm_lang$core$Basics$toFloat(
-				_elm_lang$core$List$length(data)),
-			settings.padAngle);
-		var pa = p * ((_elm_lang$core$Native_Utils.cmp(da, 0) < 0) ? -1 : 1);
-		var summer = F2(
-			function (a, b) {
-				var v = settings.valueFn(a);
-				return (_elm_lang$core$Native_Utils.cmp(v, 0) > 0) ? (v + b) : b;
-			});
-		var sum = A3(_elm_lang$core$List$foldr, summer, 0, data);
-		var k = _elm_lang$core$Native_Utils.eq(sum, 0) ? 0 : ((da - (_elm_lang$core$Basics$toFloat(
-			_elm_lang$core$List$length(data)) * pa)) / sum);
-		var computeValue = F2(
-			function (el, angle) {
-				var value = settings.valueFn(el);
-				return {
-					innerRadius: settings.innerRadius,
-					outerRadius: settings.outerRadius,
-					cornerRadius: settings.cornerRadius,
-					startAngle: angle,
-					endAngle: (angle + ((_elm_lang$core$Native_Utils.cmp(value, 0) > 0) ? (value * k) : 0)) + pa,
-					padAngle: p,
-					padRadius: settings.padRadius
-				};
-			});
-		var helper = F2(
-			function (index, _p19) {
-				var _p20 = _p19;
-				var r = A2(
-					computeValue,
-					A2(unsafeGet, index, dataArray),
-					_p20._0);
-				return {
-					ctor: '_Tuple2',
-					_0: r.endAngle,
-					_1: A3(_elm_lang$core$Dict$insert, index, r, _p20._1)
-				};
-			});
-		return _elm_lang$core$Dict$values(
-			_elm_lang$core$Tuple$second(
-				A3(
-					_elm_lang$core$List$foldl,
-					helper,
-					{ctor: '_Tuple2', _0: settings.startAngle, _1: _elm_lang$core$Dict$empty},
-					sortedIndices(data))));
-	});
-var _user$project$Visualization_Shape$defaultPieConfig = {startAngle: 0, endAngle: 2 * _elm_lang$core$Basics$pi, padAngle: 0, sortingFn: _elm_lang$core$Basics$compare, valueFn: _elm_lang$core$Basics$identity, innerRadius: 0, outerRadius: 100, cornerRadius: 0, padRadius: 0};
-var _user$project$Visualization_Shape$centroid = function (arcData) {
-	var a = ((arcData.startAngle + arcData.endAngle) / 2) - (_elm_lang$core$Basics$pi / 2);
-	var r = (arcData.innerRadius + arcData.outerRadius) / 2;
-	return {
-		ctor: '_Tuple2',
-		_0: _elm_lang$core$Basics$cos(a) * r,
-		_1: _elm_lang$core$Basics$sin(a) * r
-	};
-};
-var _user$project$Visualization_Shape$myAsin = function (x) {
-	return (_elm_lang$core$Native_Utils.cmp(x, 1) > -1) ? (_elm_lang$core$Basics$pi / 2) : ((_elm_lang$core$Native_Utils.cmp(x, -1) < 1) ? ((0 - _elm_lang$core$Basics$pi) / 2) : _elm_lang$core$Basics$asin(x));
-};
-var _user$project$Visualization_Shape$cornerTangents = F7(
-	function (x0, y0, x1, y1, r1, rc, cw) {
-		var r = r1 - rc;
-		var y01 = y0 - y1;
-		var x01 = x0 - x1;
-		var lo = (cw ? rc : (0 - rc)) / _elm_lang$core$Basics$sqrt(
-			Math.pow(x01, 2) + Math.pow(y01, 2));
-		var ox = lo * y01;
-		var x11 = x0 + ox;
-		var x10 = x1 + ox;
-		var x00 = (x11 + x10) / 2;
-		var dx = x10 - x11;
-		var oy = (0 - lo) * x01;
-		var y11 = y0 + oy;
-		var y10 = y1 + oy;
-		var y00 = (y11 + y10) / 2;
-		var dy = y10 - y11;
-		var d2 = Math.pow(dx, 2) + Math.pow(dy, 2);
-		var dd = (x11 * y10) - (x10 * y11);
-		var d = ((_elm_lang$core$Native_Utils.cmp(dy, 0) < 0) ? -1 : 1) * _elm_lang$core$Basics$sqrt(
-			A2(
-				_elm_lang$core$Basics$max,
-				0,
-				(Math.pow(r, 2) * d2) - Math.pow(dd, 2)));
-		var cx0 = ((dd * dy) - (dx * d)) / d2;
-		var dx0 = cx0 - x00;
-		var cy0 = (((0 - dd) * dx) - (dy * d)) / d2;
-		var dy0 = cy0 - y00;
-		var cx1 = ((dd * dy) + (dx * d)) / d2;
-		var dx1 = cx1 - x00;
-		var cy1 = (((0 - dd) * dx) + (dy * d)) / d2;
-		var dy1 = cy1 - y00;
-		var _p21 = (_elm_lang$core$Native_Utils.cmp(
-			Math.pow(dx0, 2) + Math.pow(dy0, 2),
-			Math.pow(dx1, 2) + Math.pow(dy1, 2)) > 0) ? {ctor: '_Tuple2', _0: cx1, _1: cy1} : {ctor: '_Tuple2', _0: cx0, _1: cy0};
-		var fcx = _p21._0;
-		var fxy = _p21._1;
-		return {cx: fcx, cy: fxy, x01: 0 - ox, y01: 0 - oy, x11: fcx * ((r1 / r) - 1), y11: fxy * ((r1 / r) - 1)};
-	});
-var _user$project$Visualization_Shape$intersect = F8(
-	function (x0, y0, x1, y1, x2, y2, x3, y3) {
-		var y32 = y3 - y2;
-		var x32 = x3 - x2;
-		var y10 = y1 - y0;
-		var x10 = x1 - x0;
-		var t = ((x32 * (y0 - y2)) - (y32 * (x0 - x2))) / ((y32 * x10) - (x32 * y10));
-		return {ctor: '_Tuple2', _0: x0 + (t * x10), _1: y0 + (t * y10)};
-	});
-var _user$project$Visualization_Shape$epsilon = 1.0e-12;
-var _user$project$Visualization_Shape$arc = function (arcData) {
-	var a1 = arcData.endAngle - (_elm_lang$core$Basics$pi / 2);
-	var a0 = arcData.startAngle - (_elm_lang$core$Basics$pi / 2);
-	var da = _elm_lang$core$Basics$abs(a1 - a0);
-	var cw = _elm_lang$core$Native_Utils.cmp(a1, a0) > 0;
-	var _p22 = (_elm_lang$core$Native_Utils.cmp(arcData.innerRadius, arcData.outerRadius) > 0) ? {ctor: '_Tuple2', _0: arcData.outerRadius, _1: arcData.innerRadius} : {ctor: '_Tuple2', _0: arcData.innerRadius, _1: arcData.outerRadius};
-	var r0 = _p22._0;
-	var r1 = _p22._1;
-	var path = function () {
-		if (_elm_lang$core$Native_Utils.cmp(r1, _user$project$Visualization_Shape$epsilon) < 1) {
-			return A3(_user$project$Visualization_Path$moveTo, 0, 0, _user$project$Visualization_Path$begin);
-		} else {
-			if (_elm_lang$core$Native_Utils.cmp(da, (2 * _elm_lang$core$Basics$pi) - _user$project$Visualization_Shape$epsilon) > 0) {
-				var p = A7(
-					_user$project$Visualization_Path$arc,
-					0,
-					0,
-					r1,
-					a0,
-					a1,
-					!cw,
-					A3(
-						_user$project$Visualization_Path$moveTo,
-						r1 * _elm_lang$core$Basics$cos(a0),
-						r1 * _elm_lang$core$Basics$sin(a0),
-						_user$project$Visualization_Path$begin));
-				return (_elm_lang$core$Native_Utils.cmp(r0, _user$project$Visualization_Shape$epsilon) > 0) ? A7(
-					_user$project$Visualization_Path$arc,
-					0,
-					0,
-					r0,
-					a1,
-					a0,
-					cw,
-					A3(
-						_user$project$Visualization_Path$moveTo,
-						r0 * _elm_lang$core$Basics$cos(a1),
-						r0 * _elm_lang$core$Basics$sin(a1),
-						p)) : p;
-			} else {
-				var rc = A2(
-					_elm_lang$core$Basics$min,
-					_elm_lang$core$Basics$abs(r1 - r0) / 2,
-					arcData.cornerRadius);
-				var ap = arcData.padAngle / 2;
-				var rp = (_elm_lang$core$Native_Utils.cmp(ap, _user$project$Visualization_Shape$epsilon) > 0) ? ((_elm_lang$core$Native_Utils.cmp(arcData.padRadius, 0) > 0) ? arcData.padRadius : _elm_lang$core$Basics$sqrt(
-					Math.pow(r0, 2) + Math.pow(r1, 2))) : 0;
-				var p0 = _user$project$Visualization_Shape$myAsin(
-					(rp / r0) * _elm_lang$core$Basics$sin(ap));
-				var _p23 = (_elm_lang$core$Native_Utils.cmp(rp, _user$project$Visualization_Shape$epsilon) > 0) ? ((_elm_lang$core$Native_Utils.cmp(da - (p0 * 2), _user$project$Visualization_Shape$epsilon) > 0) ? (cw ? {ctor: '_Tuple3', _0: a0 + p0, _1: a1 - p0, _2: da - (p0 * 2)} : {ctor: '_Tuple3', _0: a0 - p0, _1: a1 + p0, _2: da - (p0 * 2)}) : {ctor: '_Tuple3', _0: (a0 + a1) / 2, _1: (a0 + a1) / 2, _2: 0}) : {ctor: '_Tuple3', _0: a0, _1: a1, _2: da};
-				var a00 = _p23._0;
-				var a10 = _p23._1;
-				var da0 = _p23._2;
-				var x10 = r0 * _elm_lang$core$Basics$cos(a10);
-				var y10 = r0 * _elm_lang$core$Basics$sin(a10);
-				var x00 = r0 * _elm_lang$core$Basics$cos(a00);
-				var y00 = r0 * _elm_lang$core$Basics$sin(a00);
-				var p1 = _user$project$Visualization_Shape$myAsin(
-					(rp / r1) * _elm_lang$core$Basics$sin(ap));
-				var _p24 = (_elm_lang$core$Native_Utils.cmp(rp, _user$project$Visualization_Shape$epsilon) > 0) ? ((_elm_lang$core$Native_Utils.cmp(da - (p1 * 2), _user$project$Visualization_Shape$epsilon) > 0) ? (cw ? {ctor: '_Tuple3', _0: a0 + p1, _1: a1 - p1, _2: da - (p1 * 2)} : {ctor: '_Tuple3', _0: a0 - p1, _1: a1 + p1, _2: da - (p1 * 2)}) : {ctor: '_Tuple3', _0: (a0 + a1) / 2, _1: (a0 + a1) / 2, _2: 0}) : {ctor: '_Tuple3', _0: a0, _1: a1, _2: da};
-				var a01 = _p24._0;
-				var a11 = _p24._1;
-				var da1 = _p24._2;
-				var x01 = r1 * _elm_lang$core$Basics$cos(a01);
-				var y01 = r1 * _elm_lang$core$Basics$sin(a01);
-				var x11 = r1 * _elm_lang$core$Basics$cos(a11);
-				var y11 = r1 * _elm_lang$core$Basics$sin(a11);
-				var _p25 = (_elm_lang$core$Native_Utils.cmp(da0, _user$project$Visualization_Shape$epsilon) > 0) ? A8(_user$project$Visualization_Shape$intersect, x01, y01, x00, y00, x11, y11, x10, y10) : {ctor: '_Tuple2', _0: x10, _1: y10};
-				var ocx = _p25._0;
-				var ocy = _p25._1;
-				var lc = _elm_lang$core$Basics$sqrt(
-					Math.pow(ocx, 2) + Math.pow(ocy, 2));
-				var _p26 = {ctor: '_Tuple4', _0: x01 - ocx, _1: y01 - ocy, _2: x11 - ocx, _3: y11 - ocy};
-				var ax = _p26._0;
-				var ay = _p26._1;
-				var bx = _p26._2;
-				var by = _p26._3;
-				var kc = 1 / _elm_lang$core$Basics$sin(
-					_elm_lang$core$Basics$acos(
-						((ax * bx) + (ay * by)) / (_elm_lang$core$Basics$sqrt(
-							Math.pow(ax, 2) + Math.pow(ay, 2)) * _elm_lang$core$Basics$sqrt(
-							Math.pow(bx, 2) + Math.pow(by, 2)))) / 2);
-				var _p27 = ((_elm_lang$core$Native_Utils.cmp(rc, _user$project$Visualization_Shape$epsilon) > 0) && (_elm_lang$core$Native_Utils.cmp(da, _elm_lang$core$Basics$pi) < 0)) ? {
-					ctor: '_Tuple2',
-					_0: A2(_elm_lang$core$Basics$min, rc, (r0 - lc) / (kc - 1)),
-					_1: A2(_elm_lang$core$Basics$min, rc, (r1 - lc) / (kc + 1))
-				} : {ctor: '_Tuple2', _0: rc, _1: rc};
-				var rc0 = _p27._0;
-				var rc1 = _p27._1;
-				var outerRing = function () {
-					if (_elm_lang$core$Native_Utils.cmp(da1, _user$project$Visualization_Shape$epsilon) < 1) {
-						return A3(_user$project$Visualization_Path$moveTo, x01, y01, _user$project$Visualization_Path$begin);
-					} else {
-						if (_elm_lang$core$Native_Utils.cmp(rc1, _user$project$Visualization_Shape$epsilon) > 0) {
-							var t1 = A7(_user$project$Visualization_Shape$cornerTangents, x11, y11, x10, y10, r1, rc1, cw);
-							var t0 = A7(_user$project$Visualization_Shape$cornerTangents, x00, y00, x01, y01, r1, rc1, cw);
-							var p = A3(_user$project$Visualization_Path$moveTo, t0.cx + t0.x01, t0.cy + t0.y01, _user$project$Visualization_Path$begin);
-							return (_elm_lang$core$Native_Utils.cmp(rc1, rc) < 0) ? A7(
-								_user$project$Visualization_Path$arc,
-								t0.cx,
-								t0.cy,
-								rc1,
-								A2(_elm_lang$core$Basics$atan2, t0.y01, t0.x01),
-								A2(_elm_lang$core$Basics$atan2, t1.y01, t1.x01),
-								!cw,
-								p) : A7(
-								_user$project$Visualization_Path$arc,
-								t1.cx,
-								t1.cy,
-								rc1,
-								A2(_elm_lang$core$Basics$atan2, t1.y11, t1.x11),
-								A2(_elm_lang$core$Basics$atan2, t1.y01, t1.x01),
-								!cw,
-								A7(
-									_user$project$Visualization_Path$arc,
-									0,
-									0,
-									r1,
-									A2(_elm_lang$core$Basics$atan2, t0.cy + t0.y11, t0.cx + t0.x11),
-									A2(_elm_lang$core$Basics$atan2, t1.cy + t1.y11, t1.cx + t1.x11),
-									!cw,
-									A7(
-										_user$project$Visualization_Path$arc,
-										t0.cx,
-										t0.cy,
-										rc1,
-										A2(_elm_lang$core$Basics$atan2, t0.y01, t0.x01),
-										A2(_elm_lang$core$Basics$atan2, t0.y11, t0.x11),
-										!cw,
-										p)));
-						} else {
-							return A7(
-								_user$project$Visualization_Path$arc,
-								0,
-								0,
-								r1,
-								a01,
-								a11,
-								!cw,
-								A3(_user$project$Visualization_Path$moveTo, x01, y01, _user$project$Visualization_Path$begin));
-						}
-					}
-				}();
-				if ((_elm_lang$core$Native_Utils.cmp(r0, _user$project$Visualization_Shape$epsilon) < 1) || (_elm_lang$core$Native_Utils.cmp(da0, _user$project$Visualization_Shape$epsilon) < 1)) {
-					return A3(_user$project$Visualization_Path$lineTo, x10, y10, outerRing);
-				} else {
-					if (_elm_lang$core$Native_Utils.cmp(rc0, _user$project$Visualization_Shape$epsilon) > 0) {
-						var t1 = A7(_user$project$Visualization_Shape$cornerTangents, x01, y01, x00, y00, r0, 0 - rc0, cw);
-						var t0 = A7(_user$project$Visualization_Shape$cornerTangents, x10, y10, x11, y11, r0, 0 - rc0, cw);
-						var p = A3(_user$project$Visualization_Path$lineTo, t0.cx + t0.x01, t0.cy + t0.y01, outerRing);
-						return (_elm_lang$core$Native_Utils.cmp(rc0, rc) < 0) ? A7(
-							_user$project$Visualization_Path$arc,
-							t0.cx,
-							t0.cy,
-							rc0,
-							A2(_elm_lang$core$Basics$atan2, t0.y01, t0.x01),
-							A2(_elm_lang$core$Basics$atan2, t1.y01, t1.x01),
-							!cw,
-							p) : A7(
-							_user$project$Visualization_Path$arc,
-							t1.cx,
-							t1.cy,
-							rc0,
-							A2(_elm_lang$core$Basics$atan2, t1.y11, t1.x11),
-							A2(_elm_lang$core$Basics$atan2, t1.y01, t1.x01),
-							!cw,
-							A7(
-								_user$project$Visualization_Path$arc,
-								0,
-								0,
-								r0,
-								A2(_elm_lang$core$Basics$atan2, t0.cy + t0.y11, t0.cx + t0.x11),
-								A2(_elm_lang$core$Basics$atan2, t1.cy + t1.y11, t1.cx + t1.x11),
-								cw,
-								A7(
-									_user$project$Visualization_Path$arc,
-									t0.cx,
-									t0.cy,
-									rc0,
-									A2(_elm_lang$core$Basics$atan2, t0.y01, t0.x01),
-									A2(_elm_lang$core$Basics$atan2, t0.y11, t0.x11),
-									!cw,
-									p)));
-					} else {
-						return A7(_user$project$Visualization_Path$arc, 0, 0, r0, a10, a00, cw, outerRing);
-					}
-				}
-			}
-		}
-	}();
-	return _user$project$Visualization_Path$toAttrString(
-		_user$project$Visualization_Path$close(path));
-};
-var _user$project$Visualization_Shape$Arc = F7(
-	function (a, b, c, d, e, f, g) {
-		return {innerRadius: a, outerRadius: b, cornerRadius: c, startAngle: d, endAngle: e, padAngle: f, padRadius: g};
-	});
-var _user$project$Visualization_Shape$PieConfig = F9(
-	function (a, b, c, d, e, f, g, h, i) {
-		return {startAngle: a, endAngle: b, padAngle: c, sortingFn: d, valueFn: e, innerRadius: f, outerRadius: g, cornerRadius: h, padRadius: i};
-	});
-var _user$project$Visualization_Shape$Area = function (a) {
-	return {ctor: 'Area', _0: a};
-};
-var _user$project$Visualization_Shape$area = F2(
-	function (curve, data) {
-		var makeCurves = F2(
-			function (datum, _p28) {
-				var _p29 = _p28;
-				var _p30 = {ctor: '_Tuple3', _0: _p29._0, _1: datum, _2: _p29._1};
-				if (_p30._1.ctor === 'Nothing') {
-					return {ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: _p30._2};
-				} else {
-					if (_p30._0.ctor === 'Nothing') {
-						var _p31 = _p30._1._0;
-						return {
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Maybe$Just(_p31),
-							_1: {
-								ctor: '::',
-								_0: _user$project$Visualization_Shape$Area(
-									{
-										ctor: '::',
-										_0: _p31,
-										_1: {ctor: '[]'}
-									}),
-								_1: _p30._2
-							}
-						};
-					} else {
-						if ((_p30._2.ctor === '::') && (_p30._2._0.ctor === 'Area')) {
-							var _p32 = _p30._1._0;
-							return {
-								ctor: '_Tuple2',
-								_0: _elm_lang$core$Maybe$Just(_p32),
-								_1: {
-									ctor: '::',
-									_0: _user$project$Visualization_Shape$Area(
-										{ctor: '::', _0: _p32, _1: _p30._2._0._0}),
-									_1: _p30._2._1
-								}
-							};
-						} else {
-							var _p33 = _p30._1._0;
-							return {
-								ctor: '_Tuple2',
-								_0: _elm_lang$core$Maybe$Just(_p33),
-								_1: {
-									ctor: '::',
-									_0: _user$project$Visualization_Shape$Area(
-										{
-											ctor: '::',
-											_0: _p33,
-											_1: {ctor: '[]'}
-										}),
-									_1: _p30._2
-								}
-							};
-						}
-					}
-				}
-			});
-		return _user$project$Visualization_Path$toAttrString(
-			A2(
-				_elm_lang$core$List$concatMap,
-				curve,
-				_elm_lang$core$Tuple$second(
-					A3(
-						_elm_lang$core$List$foldr,
-						makeCurves,
-						{
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Maybe$Nothing,
-							_1: {ctor: '[]'}
-						},
-						data))));
-	});
-var _user$project$Visualization_Shape$Line = function (a) {
-	return {ctor: 'Line', _0: a};
-};
-var _user$project$Visualization_Shape$applyRecursivelyForArea = F2(
-	function (fn, points) {
-		var points1 = _elm_lang$core$List$reverse(
-			A2(_elm_lang$core$List$map, _elm_lang$core$Tuple$second, points));
-		var points0 = A2(_elm_lang$core$List$map, _elm_lang$core$Tuple$first, points);
-		var _p34 = {
-			ctor: '_Tuple2',
-			_0: fn(
-				_user$project$Visualization_Shape$Line(points1)),
-			_1: points1
-		};
-		if ((((_p34.ctor === '_Tuple2') && (_p34._0.ctor === '::')) && (_p34._1.ctor === '::')) && (_p34._1._0.ctor === '_Tuple2')) {
-			return A2(
-				_elm_lang$core$Basics_ops['++'],
-				A3(
-					_user$project$Visualization_Path$lineTo,
-					_p34._1._0._0,
-					_p34._1._0._1,
-					fn(
-						_user$project$Visualization_Shape$Line(points0))),
-				_user$project$Visualization_Path$close(_p34._0._1));
-		} else {
-			return {ctor: '[]'};
-		}
-	});
-var _user$project$Visualization_Shape$linearCurve = function (part) {
-	var _p35 = part;
-	if (_p35.ctor === 'Line') {
-		if (_p35._0.ctor === '[]') {
-			return {ctor: '[]'};
-		} else {
-			return {
-				ctor: '::',
-				_0: _user$project$Visualization_Path$Move(_p35._0._0),
-				_1: A2(_elm_lang$core$List$map, _user$project$Visualization_Path$Line, _p35._0._1)
-			};
-		}
-	} else {
-		return A2(_user$project$Visualization_Shape$applyRecursivelyForArea, _user$project$Visualization_Shape$linearCurve, _p35._0);
-	}
-};
-var _user$project$Visualization_Shape$monotoneInXCurve = function (part) {
-	var point = F5(
-		function (_p37, _p36, t0, t1, path) {
-			var _p38 = _p37;
-			var _p42 = _p38._0;
-			var _p39 = _p36;
-			var _p41 = _p39._1;
-			var _p40 = _p39._0;
-			var dx = (_p40 - _p42) / 3;
-			return A7(_user$project$Visualization_Path$bezierCurveTo, _p42 + dx, _p38._1 + (dx * t0), _p40 - dx, _p41 - (dx * t1), _p40, _p41, path);
-		});
-	var finalize = function (_p43) {
-		var _p44 = _p43;
-		var _p51 = _p44._1._1;
-		var _p50 = _p44._0._1;
-		var _p49 = _p44._1._0;
-		var _p48 = _p44._0._0;
-		var _p47 = _p44._3;
-		var _p45 = _p44._2;
-		if (_p45.ctor === 'Nothing') {
-			return A3(_user$project$Visualization_Path$lineTo, _p49, _p51, _p47);
-		} else {
-			var _p46 = _p45._0;
-			return A5(
-				point,
-				{ctor: '_Tuple2', _0: _p48, _1: _p50},
-				{ctor: '_Tuple2', _0: _p49, _1: _p51},
-				_p46,
-				A3(
-					_user$project$Visualization_Shape$slope2,
-					{ctor: '_Tuple2', _0: _p48, _1: _p50},
-					{ctor: '_Tuple2', _0: _p49, _1: _p51},
-					_p46),
-				_p47);
-		}
-	};
-	var helper = F2(
-		function (_p53, _p52) {
-			var _p54 = _p53;
-			var _p62 = _p54._1;
-			var _p61 = _p54._0;
-			var _p55 = _p52;
-			var _p60 = _p55._1._1;
-			var _p59 = _p55._0._1;
-			var _p58 = _p55._1._0;
-			var _p57 = _p55._0._0;
-			var t1 = A3(
-				_user$project$Visualization_Shape$slope3,
-				{ctor: '_Tuple2', _0: _p57, _1: _p59},
-				{ctor: '_Tuple2', _0: _p58, _1: _p60},
-				{ctor: '_Tuple2', _0: _p61, _1: _p62});
-			var t0 = function () {
-				var _p56 = _p55._2;
-				if (_p56.ctor === 'Nothing') {
-					return A3(
-						_user$project$Visualization_Shape$slope2,
-						{ctor: '_Tuple2', _0: _p57, _1: _p59},
-						{ctor: '_Tuple2', _0: _p58, _1: _p60},
-						t1);
-				} else {
-					return _p56._0;
-				}
-			}();
-			return {
-				ctor: '_Tuple4',
-				_0: {ctor: '_Tuple2', _0: _p58, _1: _p60},
-				_1: {ctor: '_Tuple2', _0: _p61, _1: _p62},
-				_2: _elm_lang$core$Maybe$Just(t1),
-				_3: A5(
-					point,
-					{ctor: '_Tuple2', _0: _p57, _1: _p59},
-					{ctor: '_Tuple2', _0: _p58, _1: _p60},
-					t0,
-					t1,
-					_p55._3)
-			};
-		});
-	var _p63 = part;
-	if (_p63.ctor === 'Line') {
-		if (_p63._0.ctor === '[]') {
-			return {ctor: '[]'};
-		} else {
-			if (_p63._0._1.ctor === '[]') {
-				return {ctor: '[]'};
-			} else {
-				var _p64 = _p63._0._0;
-				return finalize(
-					A3(
-						_elm_lang$core$List$foldl,
-						helper,
-						{
-							ctor: '_Tuple4',
-							_0: _p64,
-							_1: _p63._0._1._0,
-							_2: _elm_lang$core$Maybe$Nothing,
-							_3: {
-								ctor: '::',
-								_0: _user$project$Visualization_Path$Move(_p64),
-								_1: {ctor: '[]'}
-							}
-						},
-						_p63._0._1._1));
-			}
-		}
-	} else {
-		return A2(_user$project$Visualization_Shape$applyRecursivelyForArea, _user$project$Visualization_Shape$monotoneInXCurve, _p63._0);
-	}
-};
-var _user$project$Visualization_Shape$line = F2(
-	function (curve, data) {
-		var makeCurves = F2(
-			function (datum, _p65) {
-				var _p66 = _p65;
-				var _p67 = {ctor: '_Tuple3', _0: _p66._0, _1: datum, _2: _p66._1};
-				if (_p67._1.ctor === 'Nothing') {
-					return {ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: _p67._2};
-				} else {
-					if (_p67._0.ctor === 'Nothing') {
-						var _p68 = _p67._1._0;
-						return {
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Maybe$Just(_p68),
-							_1: {
-								ctor: '::',
-								_0: _user$project$Visualization_Shape$Line(
-									{
-										ctor: '::',
-										_0: _p68,
-										_1: {ctor: '[]'}
-									}),
-								_1: _p67._2
-							}
-						};
-					} else {
-						if ((_p67._2.ctor === '::') && (_p67._2._0.ctor === 'Line')) {
-							var _p69 = _p67._1._0;
-							return {
-								ctor: '_Tuple2',
-								_0: _elm_lang$core$Maybe$Just(_p69),
-								_1: {
-									ctor: '::',
-									_0: _user$project$Visualization_Shape$Line(
-										{ctor: '::', _0: _p69, _1: _p67._2._0._0}),
-									_1: _p67._2._1
-								}
-							};
-						} else {
-							var _p70 = _p67._1._0;
-							return {
-								ctor: '_Tuple2',
-								_0: _elm_lang$core$Maybe$Just(_p70),
-								_1: {
-									ctor: '::',
-									_0: _user$project$Visualization_Shape$Line(
-										{
-											ctor: '::',
-											_0: _p70,
-											_1: {ctor: '[]'}
-										}),
-									_1: _p67._2
-								}
-							};
-						}
-					}
-				}
-			});
-		return _user$project$Visualization_Path$toAttrString(
-			A2(
-				_elm_lang$core$List$concatMap,
-				curve,
-				_elm_lang$core$Tuple$second(
-					A3(
-						_elm_lang$core$List$foldr,
-						makeCurves,
-						{
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Maybe$Nothing,
-							_1: {ctor: '[]'}
-						},
-						data))));
-	});
 var _user$project$SampleData$miserablesGraph = A2(
 	_elm_community$graph$Graph$fromNodeLabelsAndEdgePairs,
 	{
@@ -21165,15 +19865,92 @@ var _user$project$LineChart$yAxis = A2(
 		_user$project$Visualization_Axis$defaultOptions,
 		{orientation: _user$project$Visualization_Axis$Left, tickCount: 5}),
 	_user$project$LineChart$yScale);
+var _user$project$LineChart$column = F2(
+	function (xScale, _p0) {
+		var _p1 = _p0;
+		var _p3 = _p1._1;
+		var _p2 = _p1._0;
+		return A2(
+			_elm_lang$svg$Svg$g,
+			{
+				ctor: '::',
+				_0: _elm_lang$svg$Svg_Attributes$class('column'),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$svg$Svg$rect,
+					{
+						ctor: '::',
+						_0: _elm_lang$svg$Svg_Attributes$x(
+							_elm_lang$core$Basics$toString(
+								A2(_user$project$Visualization_Scale$convert, xScale, _p2))),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$y(
+								_elm_lang$core$Basics$toString(
+									(_user$project$LineChart$h - A2(_user$project$Visualization_Scale$convert, _user$project$LineChart$yScale, _p3)) - (2 * _user$project$LineChart$padding))),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$svg$Svg_Attributes$width(
+									_elm_lang$core$Basics$toString(
+										_user$project$Visualization_Scale$bandwidth(xScale))),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$svg$Svg_Attributes$height(
+										_elm_lang$core$Basics$toString(
+											A2(_user$project$Visualization_Scale$convert, _user$project$LineChart$yScale, _p3))),
+									_1: {ctor: '[]'}
+								}
+							}
+						}
+					},
+					{ctor: '[]'}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$svg$Svg$text_,
+						{
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$x(
+								_elm_lang$core$Basics$toString(
+									A2(
+										_user$project$Visualization_Scale$convert,
+										_user$project$Visualization_Scale$toRenderable(xScale),
+										_p2))),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$svg$Svg_Attributes$y(
+									_elm_lang$core$Basics$toString(
+										((_user$project$LineChart$h - A2(_user$project$Visualization_Scale$convert, _user$project$LineChart$yScale, _p3)) - (2 * _user$project$LineChart$padding)) - 5)),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$svg$Svg_Attributes$textAnchor('middle'),
+									_1: {ctor: '[]'}
+								}
+							}
+						},
+						{
+							ctor: '::',
+							_0: _elm_lang$svg$Svg$text(
+								_elm_lang$core$Basics$toString(_p3)),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				}
+			});
+	});
 var _user$project$LineChart$w = 900;
-var _user$project$LineChart$xScale = A2(
-	_user$project$Visualization_Scale$time,
-	{
-		ctor: '_Tuple2',
-		_0: _elm_lang$core$Date$fromTime(1448928000000),
-		_1: _elm_lang$core$Date$fromTime(1456790400000)
-	},
-	{ctor: '_Tuple2', _0: 0, _1: _user$project$LineChart$w - (2 * _user$project$LineChart$padding)});
+var _user$project$LineChart$xScale = function (model) {
+	return A3(
+		_user$project$Visualization_Scale$band,
+		_elm_lang$core$Native_Utils.update(
+			_user$project$Visualization_Scale$defaultBandConfig,
+			{paddingInner: 0.1, paddingOuter: 0.2}),
+		A2(_elm_lang$core$List$map, _elm_lang$core$Tuple$first, model),
+		{ctor: '_Tuple2', _0: 0, _1: _user$project$LineChart$w - (2 * _user$project$LineChart$padding)});
+};
 var _user$project$LineChart$xAxis = function (model) {
 	return A2(
 		_user$project$Visualization_Axis$axis,
@@ -21181,51 +19958,11 @@ var _user$project$LineChart$xAxis = function (model) {
 			_user$project$Visualization_Axis$defaultOptions,
 			{
 				orientation: _user$project$Visualization_Axis$Bottom,
-				tickCount: _elm_lang$core$List$length(model)
+				tickFormat: _elm_lang$core$Maybe$Just(
+					_justinmimbs$elm_date_extra$Date_Extra$toFormattedString('dd MMM'))
 			}),
-		_user$project$LineChart$xScale);
-};
-var _user$project$LineChart$transformToLineData = function (_p0) {
-	var _p1 = _p0;
-	return _elm_lang$core$Maybe$Just(
-		{
-			ctor: '_Tuple2',
-			_0: A2(_user$project$Visualization_Scale$convert, _user$project$LineChart$xScale, _p1._0),
-			_1: A2(_user$project$Visualization_Scale$convert, _user$project$LineChart$yScale, _p1._1)
-		});
-};
-var _user$project$LineChart$line = function (model) {
-	return _elm_lang$svg$Svg_Attributes$d(
-		A2(
-			_user$project$Visualization_Shape$line,
-			_user$project$Visualization_Shape$monotoneInXCurve,
-			A2(_elm_lang$core$List$map, _user$project$LineChart$transformToLineData, model)));
-};
-var _user$project$LineChart$tranfromToAreaData = function (_p2) {
-	var _p3 = _p2;
-	var _p4 = _p3._0;
-	return _elm_lang$core$Maybe$Just(
-		{
-			ctor: '_Tuple2',
-			_0: {
-				ctor: '_Tuple2',
-				_0: A2(_user$project$Visualization_Scale$convert, _user$project$LineChart$xScale, _p4),
-				_1: _elm_lang$core$Tuple$first(
-					_user$project$Visualization_Scale$rangeExtent(_user$project$LineChart$yScale))
-			},
-			_1: {
-				ctor: '_Tuple2',
-				_0: A2(_user$project$Visualization_Scale$convert, _user$project$LineChart$xScale, _p4),
-				_1: A2(_user$project$Visualization_Scale$convert, _user$project$LineChart$yScale, _p3._1)
-			}
-		});
-};
-var _user$project$LineChart$area = function (model) {
-	return _elm_lang$svg$Svg_Attributes$d(
-		A2(
-			_user$project$Visualization_Shape$area,
-			_user$project$Visualization_Shape$monotoneInXCurve,
-			A2(_elm_lang$core$List$map, _user$project$LineChart$tranfromToAreaData, model)));
+		_user$project$Visualization_Scale$toRenderable(
+			_user$project$LineChart$xScale(model)));
 };
 var _user$project$LineChart$view = function (model) {
 	return A2(
@@ -21250,28 +19987,11 @@ var _user$project$LineChart$view = function (model) {
 		{
 			ctor: '::',
 			_0: A2(
-				_elm_lang$svg$Svg$g,
+				_elm_lang$svg$Svg$style,
+				{ctor: '[]'},
 				{
 					ctor: '::',
-					_0: _elm_lang$svg$Svg_Attributes$transform(
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							'translate(',
-							A2(
-								_elm_lang$core$Basics_ops['++'],
-								_elm_lang$core$Basics$toString(_user$project$LineChart$padding - 1),
-								A2(
-									_elm_lang$core$Basics_ops['++'],
-									', ',
-									A2(
-										_elm_lang$core$Basics_ops['++'],
-										_elm_lang$core$Basics$toString(_user$project$LineChart$h - _user$project$LineChart$padding),
-										')'))))),
-					_1: {ctor: '[]'}
-				},
-				{
-					ctor: '::',
-					_0: _user$project$LineChart$xAxis(model),
+					_0: _elm_lang$svg$Svg$text('\n            .column rect { fill: rgba(118, 214, 78, 0.8); }\n            .column text { display: none; }\n            .column:hover rect { fill: rgb(118, 214, 78); }\n            .column:hover text { display: inline; }\n          '),
 					_1: {ctor: '[]'}
 				}),
 			_1: {
@@ -21292,13 +20012,13 @@ var _user$project$LineChart$view = function (model) {
 										', ',
 										A2(
 											_elm_lang$core$Basics_ops['++'],
-											_elm_lang$core$Basics$toString(_user$project$LineChart$padding),
+											_elm_lang$core$Basics$toString(_user$project$LineChart$h - _user$project$LineChart$padding),
 											')'))))),
 						_1: {ctor: '[]'}
 					},
 					{
 						ctor: '::',
-						_0: _user$project$LineChart$yAxis,
+						_0: _user$project$LineChart$xAxis(model),
 						_1: {ctor: '[]'}
 					}),
 				_1: {
@@ -21313,7 +20033,7 @@ var _user$project$LineChart$view = function (model) {
 									'translate(',
 									A2(
 										_elm_lang$core$Basics_ops['++'],
-										_elm_lang$core$Basics$toString(_user$project$LineChart$padding),
+										_elm_lang$core$Basics$toString(_user$project$LineChart$padding - 1),
 										A2(
 											_elm_lang$core$Basics_ops['++'],
 											', ',
@@ -21321,60 +20041,46 @@ var _user$project$LineChart$view = function (model) {
 												_elm_lang$core$Basics_ops['++'],
 												_elm_lang$core$Basics$toString(_user$project$LineChart$padding),
 												')'))))),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$svg$Svg_Attributes$class('series'),
-								_1: {ctor: '[]'}
-							}
+							_1: {ctor: '[]'}
 						},
 						{
 							ctor: '::',
-							_0: A2(
-								_elm_lang$svg$Svg$path,
-								{
-									ctor: '::',
-									_0: _user$project$LineChart$area(model),
-									_1: {
-										ctor: '::',
-										_0: _elm_lang$svg$Svg_Attributes$stroke('none'),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$svg$Svg_Attributes$strokeWidth('3px'),
-											_1: {
-												ctor: '::',
-												_0: _elm_lang$svg$Svg_Attributes$fill('rgba(255, 0, 0, 0.54)'),
-												_1: {ctor: '[]'}
-											}
-										}
-									}
-								},
-								{ctor: '[]'}),
-							_1: {
-								ctor: '::',
-								_0: A2(
-									_elm_lang$svg$Svg$path,
-									{
-										ctor: '::',
-										_0: _user$project$LineChart$line(model),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$svg$Svg_Attributes$stroke('red'),
-											_1: {
-												ctor: '::',
-												_0: _elm_lang$svg$Svg_Attributes$strokeWidth('3px'),
-												_1: {
-													ctor: '::',
-													_0: _elm_lang$svg$Svg_Attributes$fill('none'),
-													_1: {ctor: '[]'}
-												}
-											}
-										}
-									},
-									{ctor: '[]'}),
-								_1: {ctor: '[]'}
-							}
+							_0: _user$project$LineChart$yAxis,
+							_1: {ctor: '[]'}
 						}),
-					_1: {ctor: '[]'}
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$svg$Svg$g,
+							{
+								ctor: '::',
+								_0: _elm_lang$svg$Svg_Attributes$transform(
+									A2(
+										_elm_lang$core$Basics_ops['++'],
+										'translate(',
+										A2(
+											_elm_lang$core$Basics_ops['++'],
+											_elm_lang$core$Basics$toString(_user$project$LineChart$padding),
+											A2(
+												_elm_lang$core$Basics_ops['++'],
+												', ',
+												A2(
+													_elm_lang$core$Basics_ops['++'],
+													_elm_lang$core$Basics$toString(_user$project$LineChart$padding),
+													')'))))),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$svg$Svg_Attributes$class('series'),
+									_1: {ctor: '[]'}
+								}
+							},
+							A2(
+								_elm_lang$core$List$map,
+								_user$project$LineChart$column(
+									_user$project$LineChart$xScale(model)),
+								model)),
+						_1: {ctor: '[]'}
+					}
 				}
 			}
 		});
