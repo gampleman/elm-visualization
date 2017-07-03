@@ -8,15 +8,21 @@ import Helper exposing (isAbout, isBetween, expectAll)
 
 
 insertTest =
-    skip <|
-        describe "insert"
-            [ fuzz2 (quadtree point) point "increments the length" <|
-                \tree val ->
-                    QuadTree.insert val tree
-                        |> QuadTree.length
-                        |> Expect.equal
-                            (QuadTree.length tree + 1)
-            ]
+    describe "insert"
+        [ test "increments length" <|
+            \() ->
+                QuadTree.empty
+                    |> QuadTree.insert { x = 10, y = 10 }
+                    |> QuadTree.length
+                    |> Expect.equal 1
+
+        -- , fuzz2 (quadtree point) point "increments the length" <|
+        --     \tree val ->
+        --         QuadTree.insert val tree
+        --             |> QuadTree.length
+        --             |> Expect.equal
+        --                 (QuadTree.length tree + 1)
+        ]
 
 
 quadtree : Fuzzer (Pointed a) -> Fuzzer (QuadTree () (Pointed a))

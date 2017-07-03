@@ -12,7 +12,8 @@
         "Visualization.Axis",
         "Visualization.Shape",
         "Visualization.List",
-        "Visualization.Force"
+        "Visualization.Force",
+        "Visualization.Histogram"
     ],
     "dependencies": {
         "elm-lang/core": "5.0.0 <= v < 6.0.0",

@@ -11,6 +11,7 @@ import Visualization.Axis as Axis exposing (defaultOptions)
 import Visualization.List as List
 import Visualization.Scale as Scale exposing (ContinuousScale, ContinuousTimeScale)
 import Visualization.Shape as Shape
+import SampleData exposing (timeSeries)
 
 
 w : Float
@@ -96,19 +97,4 @@ view model =
 
 
 main =
-    view model
-
-
-
--- Here we simply define the data inline. The examples don't include logic for fetching and parsing this data.
-
-
-model =
-    [ ( Date.fromTime 1448928000000, 2.5 )
-    , ( Date.fromTime 1451606400000, 2 )
-    , ( Date.fromTime 1452211200000, 3.5 )
-    , ( Date.fromTime 1452816000000, 2 )
-    , ( Date.fromTime 1453420800000, 3 )
-    , ( Date.fromTime 1454284800000, 1 )
-    , ( Date.fromTime 1456790400000, 1.2 )
-    ]
+    view timeSeries

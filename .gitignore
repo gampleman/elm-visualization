@@ -1,2 +1,4 @@
 /elm-stuff/
 /examples/elm-stuff/
+tests/Doc
+.DS_Store

@@ -1,6 +1,19 @@
-module SampleData exposing (crimeRates, CrimeRate, miserablesGraph)
+module SampleData exposing (timeSeries, crimeRates, CrimeRate, miserablesGraph)
 
 import Graph
+import Date exposing (Date)
+
+
+timeSeries : List ( Date, Float )
+timeSeries =
+    [ ( Date.fromTime 1448928000000, 2.5 )
+    , ( Date.fromTime 1451606400000, 2 )
+    , ( Date.fromTime 1452211200000, 3.5 )
+    , ( Date.fromTime 1452816000000, 2 )
+    , ( Date.fromTime 1453420800000, 3 )
+    , ( Date.fromTime 1454284800000, 1 )
+    , ( Date.fromTime 1456790400000, 1.2 )
+    ]
 
 
 type alias CrimeRate =

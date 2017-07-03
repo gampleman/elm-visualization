@@ -4,6 +4,7 @@ module Visualization.Axis exposing (..)
 alleviates one of the more tedious tasks in visualizing data.
 
 @docs axis, defaultOptions, Options, Orientation, RenderableScale
+
 -}
 
 import Visualization.Scale as Scale exposing (Scale)
@@ -20,10 +21,12 @@ type Orientation
 
 
 {-| Options for configuring the scale:
-- `orientation`: Where to render the Axis.
-- `ticks`: Optionally pass ticks (in the domain). Defaults to `Scale.ticks`.
-- `tickFormat`: A formatting function for the tick marks. Defaults to `Scale.tickFormat`.
-- `tickCount`: How many tickmarks to approximately generate. Defaults to 10.
+
+  - `orientation`: Where to render the Axis.
+  - `ticks`: Optionally pass ticks (in the domain). Defaults to `Scale.ticks`.
+  - `tickFormat`: A formatting function for the tick marks. Defaults to `Scale.tickFormat`.
+  - `tickCount`: How many tickmarks to approximately generate. Defaults to 10.
+
 -}
 type alias Options a =
     { orientation : Orientation
@@ -50,7 +53,7 @@ defaultOptions =
     }
 
 
-{-| A type alias for the scale. Currently only continuous (including time) scales are supported.
+{-| A type alias for the scale. Currently only continuous (including time) and band (via the `toRenderable` function) scales are supported.
 -}
 type alias RenderableScale a domain range value =
     Scale
@@ -112,6 +115,7 @@ For example, here is a typical bottom-oriented axis:
         <text fill="#000" y="9" x="0.5" dy="0.71em">1.0</text>
       </g>
     </g>
+
 -}
 axis :
     Options value

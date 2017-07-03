@@ -4,13 +4,15 @@ module CrimeViz exposing (main)
 the primitives provided in this library.
 -}
 
+import Color exposing (Color)
+import Color.Convert exposing (colorToCssRgb)
 import Date
 import SampleData exposing (CrimeRate, crimeRates)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Visualization.Axis as Axis
+import Visualization.Axis as Axis exposing (defaultOptions)
 import Visualization.List as List
-import Visualization.Scale as Scale exposing (ContinuousScale)
+import Visualization.Scale as Scale exposing (ContinuousScale, OrdinalScale)
 import Visualization.Shape as Shape
 
 
@@ -31,59 +33,77 @@ padding =
 
 series =
     [ { label = "Murder"
-      , color = "#843c39"
       , accessor = .murder
       }
     , { label = "Rape"
-      , color = "#ad494a"
       , accessor = .rape
       }
     , { label = "Robbery"
-      , color = "#d6616b"
       , accessor = .robbery
       }
     , { label = "Assault"
-      , color = "#e7969c"
       , accessor = .assault
       }
     ]
 
 
+accessors : List (CrimeRate -> Int)
+accessors =
+    List.map .accessor series
+
+
+values : CrimeRate -> List Float
+values i =
+    List.map (\a -> toFloat <| a i) accessors
+
+
+colorScale : OrdinalScale String Color
+colorScale =
+    Scale.ordinal (List.map .label series) Scale.category10
+
+
+colorString : String -> String
+colorString =
+    Scale.convert colorScale >> Maybe.withDefault Color.black >> colorToCssRgb
+
+
 view : List CrimeRate -> Svg msg
 view model =
     let
-        accessors : List (CrimeRate -> Int)
-        accessors =
-            List.map .accessor series
-
         last =
-            List.reverse model |> List.head |> Maybe.withDefault (CrimeRate 0 0 0 0 0 0 0 0 0)
+            List.reverse model
+                |> List.head
+                |> Maybe.withDefault (CrimeRate 0 0 0 0 0 0 0 0 0)
 
         first =
-            List.head model |> Maybe.withDefault (CrimeRate 0 0 0 0 0 0 0 0 0)
-
-        values i =
-            List.map (\a -> a i) accessors
+            List.head model
+                |> Maybe.withDefault (CrimeRate 0 0 0 0 0 0 0 0 0)
 
         xScale : ContinuousScale
         xScale =
-            Scale.linear (List.map (.year >> toFloat) model |> List.extent |> Maybe.withDefault ( 1900, 1901 )) ( 0, w - 2 * padding )
+            model
+                |> List.map (.year >> toFloat)
+                |> List.extent
+                |> Maybe.withDefault ( 1900, 1901 )
+                |> flip Scale.linear ( 0, w - 2 * padding )
 
         yScale : ContinuousScale
         yScale =
-            Scale.nice (Scale.linear ( 0, List.map (values >> List.maximum >> Maybe.withDefault 0 >> toFloat) model |> List.maximum |> Maybe.withDefault 0 ) ( h - 2 * padding, 0 )) 4
-
-        opts : Axis.Options a
-        opts =
-            Axis.defaultOptions
+            model
+                |> List.map (values >> List.maximum >> Maybe.withDefault 0)
+                |> List.maximum
+                |> Maybe.withDefault 0
+                |> (,) 0
+                |> flip Scale.linear ( h - 2 * padding, 0 )
+                |> flip Scale.nice 4
 
         xAxis : Svg msg
         xAxis =
-            Axis.axis { opts | orientation = Axis.Bottom, tickCount = 10 } xScale
+            Axis.axis { defaultOptions | orientation = Axis.Bottom, tickCount = 10 } xScale
 
         yAxis : Svg msg
         yAxis =
-            Axis.axis { opts | orientation = Axis.Left, ticks = Just (List.map toFloat (values first)) } yScale
+            Axis.axis { defaultOptions | orientation = Axis.Left, ticks = Just (values first) } yScale
 
         lineGenerator : ( Int, Int ) -> Maybe ( Float, Float )
         lineGenerator ( x, y ) =
@@ -101,12 +121,12 @@ view model =
             , g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString padding ++ ")") ]
                 [ yAxis, text_ [ fontFamily "sans-serif", fontSize "10", x "5", y "5" ] [ text "Occurences" ] ]
             , g [ transform ("translate(" ++ toString padding ++ ", " ++ toString padding ++ ")"), class "series" ]
-                (List.map (\{ accessor, color } -> Svg.path [ d (line accessor), stroke color, strokeWidth "3px", fill "none" ] []) series)
+                (List.map (\{ accessor, label } -> Svg.path [ d (line accessor), stroke (colorString label), strokeWidth "3px", fill "none" ] []) series)
             , g [ fontFamily "sans-serif", fontSize "10" ]
                 (List.map
-                    (\{ accessor, color, label } ->
+                    (\{ accessor, label } ->
                         g [ transform ("translate(" ++ toString (w - padding + 10) ++ ", " ++ toString (padding + Scale.convert yScale (toFloat (accessor last))) ++ ")") ]
-                            [ text_ [ fill color ] [ text label ] ]
+                            [ text_ [ fill (colorString label) ] [ text label ] ]
                     )
                     series
                 )

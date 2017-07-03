@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>BarChart Example</title>
+    <style media="screen">
+      body {
+        font-family: Helvetica, sans-serif;
+        display: flex;
+      }
+      main {
+        order: 1;
+      }
+      aside {
+        width: 300px;
+      }
+      aside ul {
+        padding: 0;
+      }
+      aside li {
+        list-style-type: none;
+        margin: 10px;
+      }
+      aside li.active a {
+        text-decoration: none;
+      }
+      iframe {
+        border: 1px solid black;
+      }
+      hr:first-of-type {
+        display: none;
+      }
+      /*
+
+Atom One Light by Daniel Gamage
+Original One Light Syntax theme from https://github.com/atom/one-light-syntax
+
+base:    #fafafa
+mono-1:  #383a42
+mono-2:  #686b77
+mono-3:  #a0a1a7
+hue-1:   #0184bb
+hue-2:   #4078f2
+hue-3:   #a626a4
+hue-4:   #50a14f
+hue-5:   #e45649
+hue-5-2: #c91243
+hue-6:   #986801
+hue-6-2: #c18401
+
+*/
+
+.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0.5em;
+  color: #383a42;
+  background: #fafafa;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #a0a1a7;
+  font-style: italic;
+}
+
+.hljs-doctag,
+.hljs-keyword,
+.hljs-formula {
+  color: #a626a4;
+}
+
+.hljs-section,
+.hljs-name,
+.hljs-selector-tag,
+.hljs-deletion,
+.hljs-subst {
+  color: #e45649;
+}
+
+.hljs-literal {
+  color: #0184bb;
+}
+
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-attribute,
+.hljs-meta-string {
+  color: #50a14f;
+}
+
+.hljs-built_in,
+.hljs-class .hljs-title {
+  color: #c18401;
+}
+
+.hljs-attr,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-type,
+.hljs-selector-class,
+.hljs-selector-attr,
+.hljs-selector-pseudo,
+.hljs-number {
+  color: #986801;
+}
+
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link,
+.hljs-meta,
+.hljs-selector-id,
+.hljs-title {
+  color: #4078f2;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
+
+.hljs-link {
+  text-decoration: underline;
+}
+
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>BarChart</h1>
+
+      <iframe src="iframe.html" width="990" height="504" frameborder="1"></iframe>
+
+      
+        <hr />
+        <h3>BarChart</h3>
+        <div class="description"><p> This module shows how to build a simple bar chart.</p>
+</div>
+        <pre><code class="elm">module LineChart exposing (main)
+
+
+import Date exposing (Date)
+import Date.Extra as Date
+import Svg exposing (..)
+import Svg.Attributes exposing (..)
+import Visualization.Axis as Axis exposing (defaultOptions)
+import Visualization.Scale as Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
+import SampleData exposing (timeSeries)
+
+
+w : Float
+w =
+    900
+
+
+h : Float
+h =
+    450
+
+
+padding : Float
+padding =
+    30
+
+
+xScale : List ( Date, Float ) -&gt; BandScale Date
+xScale model =
+    Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } (List.map Tuple.first model) ( 0, w - 2 * padding )
+
+
+yScale : ContinuousScale
+yScale =
+    Scale.linear ( 0, 5 ) ( h - 2 * padding, 0 )
+
+
+xAxis : List ( Date, Float ) -&gt; Svg msg
+xAxis model =
+    Axis.axis { defaultOptions | orientation = Axis.Bottom, tickFormat = Just (Date.toFormattedString "dd MMM") } (Scale.toRenderable (xScale model))
+
+
+yAxis : Svg msg
+yAxis =
+    Axis.axis { defaultOptions | orientation = Axis.Left, tickCount = 5 } yScale
+
+
+column : BandScale Date -&gt; ( Date, Float ) -&gt; Svg msg
+column xScale ( date, value ) =
+    g [ class "column" ]
+        [ rect
+            [ x &lt;| toString &lt;| Scale.convert xScale date
+            , y &lt;| toString &lt;| h - Scale.convert yScale value - 2 * padding
+            , width &lt;| toString &lt;| Scale.bandwidth xScale
+            , height &lt;| toString &lt;| Scale.convert yScale value
+            ]
+            []
+        , text_
+            [ x &lt;| toString &lt;| Scale.convert (Scale.toRenderable xScale) date
+            , y &lt;| toString &lt;| h - Scale.convert yScale value - 2 * padding - 5
+            , textAnchor "middle"
+            ]
+            [ text &lt;| toString value ]
+        ]
+
+
+view : List ( Date, Float ) -&gt; Svg msg
+view model =
+    svg [ width (toString w ++ "px"), height (toString h ++ "px") ]
+        [ Svg.style [] [ text """
+            .column rect { fill: rgba(118, 214, 78, 0.8); }
+            .column text { display: none; }
+            .column:hover rect { fill: rgb(118, 214, 78); }
+            .column:hover text { display: inline; }
+          """ ]
+        , g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString (h - padding) ++ ")") ]
+            [ xAxis model ]
+        , g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString padding ++ ")") ]
+            [ yAxis ]
+        , g [ transform ("translate(" ++ toString padding ++ ", " ++ toString padding ++ ")"), class "series" ] &lt;|
+            List.map (column (xScale model)) model
+        ]
+
+
+main =
+    view timeSeries
+</code></pre>
+      
+        <hr />
+        <h3></h3>
+        <div class="description"></div>
+        <pre><code class="elm"></code></pre>
+      
+    </main>
+    <aside>
+      <h2>Examples</h2>
+      <ul>
+        
+          <li >
+            <a href="../Background">Background</a>
+          </li>
+        
+          <li class="active">
+            <a href="../BarChart">BarChart</a>
+          </li>
+        
+          <li >
+            <a href="../Centroid">Centroid</a>
+          </li>
+        
+          <li >
+            <a href="../CornerRadius">CornerRadius</a>
+          </li>
+        
+          <li >
+            <a href="../CrimeViz">CrimeViz</a>
+          </li>
+        
+          <li >
+            <a href="../Cross">Cross</a>
+          </li>
+        
+          <li >
+            <a href="../Curves">Curves</a>
+          </li>
+        
+          <li >
+            <a href="../CustomPieChart">CustomPieChart</a>
+          </li>
+        
+          <li >
+            <a href="../ForceDirectedGraph">ForceDirectedGraph</a>
+          </li>
+        
+          <li >
+            <a href="../Histogram">Histogram</a>
+          </li>
+        
+          <li >
+            <a href="../LineChart">LineChart</a>
+          </li>
+        
+          <li >
+            <a href="../PadAngle">PadAngle</a>
+          </li>
+        
+          <li >
+            <a href="../Petals">Petals</a>
+          </li>
+        
+          <li >
+            <a href="../PieChart">PieChart</a>
+          </li>
+        
+      </ul>
+    </aside>
+  </body>
+</html>

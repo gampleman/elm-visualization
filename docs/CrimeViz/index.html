@@ -144,13 +144,15 @@ the primitives provided in this library.</p>
         <pre><code class="elm"><span class="hljs-keyword">module</span> CrimeViz <span class="hljs-keyword">exposing</span> (main)
 
 
+<span class="hljs-keyword">import</span> Color <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Color</span>)
+<span class="hljs-keyword">import</span> Color.Convert <span class="hljs-keyword">exposing</span> (colorToCssRgb)
 <span class="hljs-keyword">import</span> Date
 <span class="hljs-keyword">import</span> SampleData <span class="hljs-keyword">exposing</span> (<span class="hljs-type">CrimeRate</span>, crimeRates)
 <span class="hljs-keyword">import</span> Svg <span class="hljs-keyword">exposing</span> (..)
 <span class="hljs-keyword">import</span> Svg.Attributes <span class="hljs-keyword">exposing</span> (..)
-<span class="hljs-keyword">import</span> Visualization.Axis <span class="hljs-keyword">as</span> Axis
+<span class="hljs-keyword">import</span> Visualization.Axis <span class="hljs-keyword">as</span> Axis <span class="hljs-keyword">exposing</span> (defaultOptions)
 <span class="hljs-keyword">import</span> Visualization.List <span class="hljs-keyword">as</span> List
-<span class="hljs-keyword">import</span> Visualization.Scale <span class="hljs-keyword">as</span> Scale <span class="hljs-keyword">exposing</span> (<span class="hljs-type">ContinuousScale</span>)
+<span class="hljs-keyword">import</span> Visualization.Scale <span class="hljs-keyword">as</span> Scale <span class="hljs-keyword">exposing</span> (<span class="hljs-type">ContinuousScale</span>, <span class="hljs-type">OrdinalScale</span>)
 <span class="hljs-keyword">import</span> Visualization.Shape <span class="hljs-keyword">as</span> Shape
 
 
@@ -171,59 +173,77 @@ the primitives provided in this library.</p>
 
 <span class="hljs-title">series</span> =
     [ { label = <span class="hljs-string">"Murder"</span>
-      , color = <span class="hljs-string">"#843c39"</span>
       , accessor = .murder
       }
     , { label = <span class="hljs-string">"Rape"</span>
-      , color = <span class="hljs-string">"#ad494a"</span>
       , accessor = .rape
       }
     , { label = <span class="hljs-string">"Robbery"</span>
-      , color = <span class="hljs-string">"#d6616b"</span>
       , accessor = .robbery
       }
     , { label = <span class="hljs-string">"Assault"</span>
-      , color = <span class="hljs-string">"#e7969c"</span>
       , accessor = .assault
       }
     ]
 
 
+<span class="hljs-title">accessors</span> : <span class="hljs-type">List</span> (<span class="hljs-type">CrimeRate</span> -&gt; <span class="hljs-type">Int</span>)
+<span class="hljs-title">accessors</span> =
+    <span class="hljs-type">List</span>.map .accessor series
+
+
+<span class="hljs-title">values</span> : <span class="hljs-type">CrimeRate</span> -&gt; <span class="hljs-type">List</span> <span class="hljs-type">Float</span>
+<span class="hljs-title">values</span> i =
+    <span class="hljs-type">List</span>.map (\a -&gt; toFloat &lt;| a i) accessors
+
+
+<span class="hljs-title">colorScale</span> : <span class="hljs-type">OrdinalScale</span> <span class="hljs-type">String</span> <span class="hljs-type">Color</span>
+<span class="hljs-title">colorScale</span> =
+    <span class="hljs-type">Scale</span>.ordinal (<span class="hljs-type">List</span>.map .label series) <span class="hljs-type">Scale</span>.category10
+
+
+<span class="hljs-title">colorString</span> : <span class="hljs-type">String</span> -&gt; <span class="hljs-type">String</span>
+<span class="hljs-title">colorString</span> =
+    <span class="hljs-type">Scale</span>.convert colorScale &gt;&gt; <span class="hljs-type">Maybe</span>.withDefault <span class="hljs-type">Color</span>.black &gt;&gt; colorToCssRgb
+
+
 <span class="hljs-title">view</span> : <span class="hljs-type">List</span> <span class="hljs-type">CrimeRate</span> -&gt; <span class="hljs-type">Svg</span> msg
 <span class="hljs-title">view</span> model =
     <span class="hljs-keyword">let</span>
-        accessors : <span class="hljs-type">List</span> (<span class="hljs-type">CrimeRate</span> -&gt; <span class="hljs-type">Int</span>)
-        accessors =
-            <span class="hljs-type">List</span>.map .accessor series
-
         last =
-            <span class="hljs-type">List</span>.reverse model |&gt; <span class="hljs-type">List</span>.head |&gt; <span class="hljs-type">Maybe</span>.withDefault (<span class="hljs-type">CrimeRate</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span>)
+            <span class="hljs-type">List</span>.reverse model
+                |&gt; <span class="hljs-type">List</span>.head
+                |&gt; <span class="hljs-type">Maybe</span>.withDefault (<span class="hljs-type">CrimeRate</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span>)
 
         first =
-            <span class="hljs-type">List</span>.head model |&gt; <span class="hljs-type">Maybe</span>.withDefault (<span class="hljs-type">CrimeRate</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span>)
-
-        values i =
-            <span class="hljs-type">List</span>.map (\a -&gt; a i) accessors
+            <span class="hljs-type">List</span>.head model
+                |&gt; <span class="hljs-type">Maybe</span>.withDefault (<span class="hljs-type">CrimeRate</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span>)
 
         xScale : <span class="hljs-type">ContinuousScale</span>
         xScale =
-            <span class="hljs-type">Scale</span>.linear (<span class="hljs-type">List</span>.map (.year &gt;&gt; toFloat) model |&gt; <span class="hljs-type">List</span>.extent |&gt; <span class="hljs-type">Maybe</span>.withDefault ( <span class="hljs-number">1900</span>, <span class="hljs-number">1901</span> )) ( <span class="hljs-number">0</span>, w - <span class="hljs-number">2</span> * padding )
+            model
+                |&gt; <span class="hljs-type">List</span>.map (.year &gt;&gt; toFloat)
+                |&gt; <span class="hljs-type">List</span>.extent
+                |&gt; <span class="hljs-type">Maybe</span>.withDefault ( <span class="hljs-number">1900</span>, <span class="hljs-number">1901</span> )
+                |&gt; flip <span class="hljs-type">Scale</span>.linear ( <span class="hljs-number">0</span>, w - <span class="hljs-number">2</span> * padding )
 
         yScale : <span class="hljs-type">ContinuousScale</span>
         yScale =
-            <span class="hljs-type">Scale</span>.nice (<span class="hljs-type">Scale</span>.linear ( <span class="hljs-number">0</span>, <span class="hljs-type">List</span>.map (values &gt;&gt; <span class="hljs-type">List</span>.maximum &gt;&gt; <span class="hljs-type">Maybe</span>.withDefault <span class="hljs-number">0</span> &gt;&gt; toFloat) model |&gt; <span class="hljs-type">List</span>.maximum |&gt; <span class="hljs-type">Maybe</span>.withDefault <span class="hljs-number">0</span> ) ( h - <span class="hljs-number">2</span> * padding, <span class="hljs-number">0</span> )) <span class="hljs-number">4</span>
-
-        opts : <span class="hljs-type">Axis</span>.<span class="hljs-type">Options</span> a
-        opts =
-            <span class="hljs-type">Axis</span>.defaultOptions
+            model
+                |&gt; <span class="hljs-type">List</span>.map (values &gt;&gt; <span class="hljs-type">List</span>.maximum &gt;&gt; <span class="hljs-type">Maybe</span>.withDefault <span class="hljs-number">0</span>)
+                |&gt; <span class="hljs-type">List</span>.maximum
+                |&gt; <span class="hljs-type">Maybe</span>.withDefault <span class="hljs-number">0</span>
+                |&gt; (,) <span class="hljs-number">0</span>
+                |&gt; flip <span class="hljs-type">Scale</span>.linear ( h - <span class="hljs-number">2</span> * padding, <span class="hljs-number">0</span> )
+                |&gt; flip <span class="hljs-type">Scale</span>.nice <span class="hljs-number">4</span>
 
         xAxis : <span class="hljs-type">Svg</span> msg
         xAxis =
-            <span class="hljs-type">Axis</span>.axis { opts | orientation = <span class="hljs-type">Axis</span>.<span class="hljs-type">Bottom</span>, tickCount = <span class="hljs-number">10</span> } xScale
+            <span class="hljs-type">Axis</span>.axis { defaultOptions | orientation = <span class="hljs-type">Axis</span>.<span class="hljs-type">Bottom</span>, tickCount = <span class="hljs-number">10</span> } xScale
 
         yAxis : <span class="hljs-type">Svg</span> msg
         yAxis =
-            <span class="hljs-type">Axis</span>.axis { opts | orientation = <span class="hljs-type">Axis</span>.<span class="hljs-type">Left</span>, ticks = <span class="hljs-type">Just</span> (<span class="hljs-type">List</span>.map toFloat (values first)) } yScale
+            <span class="hljs-type">Axis</span>.axis { defaultOptions | orientation = <span class="hljs-type">Axis</span>.<span class="hljs-type">Left</span>, ticks = <span class="hljs-type">Just</span> (values first) } yScale
 
         lineGenerator : ( <span class="hljs-type">Int</span>, <span class="hljs-type">Int</span> ) -&gt; <span class="hljs-type">Maybe</span> ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> )
         lineGenerator ( x, y ) =
@@ -241,12 +261,12 @@ the primitives provided in this library.</p>
             , g [ transform (<span class="hljs-string">"translate("</span> ++ toString (padding - <span class="hljs-number">1</span>) ++ <span class="hljs-string">", "</span> ++ toString padding ++ <span class="hljs-string">")"</span>) ]
                 [ yAxis, text_ [ fontFamily <span class="hljs-string">"sans-serif"</span>, fontSize <span class="hljs-string">"10"</span>, x <span class="hljs-string">"5"</span>, y <span class="hljs-string">"5"</span> ] [ text <span class="hljs-string">"Occurences"</span> ] ]
             , g [ transform (<span class="hljs-string">"translate("</span> ++ toString padding ++ <span class="hljs-string">", "</span> ++ toString padding ++ <span class="hljs-string">")"</span>), class <span class="hljs-string">"series"</span> ]
-                (<span class="hljs-type">List</span>.map (\{ accessor, color } -&gt; <span class="hljs-type">Svg</span>.path [ d (line accessor), stroke color, strokeWidth <span class="hljs-string">"3px"</span>, fill <span class="hljs-string">"none"</span> ] []) series)
+                (<span class="hljs-type">List</span>.map (\{ accessor, label } -&gt; <span class="hljs-type">Svg</span>.path [ d (line accessor), stroke (colorString label), strokeWidth <span class="hljs-string">"3px"</span>, fill <span class="hljs-string">"none"</span> ] []) series)
             , g [ fontFamily <span class="hljs-string">"sans-serif"</span>, fontSize <span class="hljs-string">"10"</span> ]
                 (<span class="hljs-type">List</span>.map
-                    (\{ accessor, color, label } -&gt;
+                    (\{ accessor, label } -&gt;
                         g [ transform (<span class="hljs-string">"translate("</span> ++ toString (w - padding + <span class="hljs-number">10</span>) ++ <span class="hljs-string">", "</span> ++ toString (padding + <span class="hljs-type">Scale</span>.convert yScale (toFloat (accessor last))) ++ <span class="hljs-string">")"</span>) ]
-                            [ text_ [ fill color ] [ text label ] ]
+                            [ text_ [ fill (colorString label) ] [ text label ] ]
                     )
                     series
                 )
@@ -276,6 +296,10 @@ the primitives provided in this library.</p>
           </li>
         
           <li >
+            <a href="../BarChart">BarChart</a>
+          </li>
+        
+          <li >
             <a href="../Centroid">Centroid</a>
           </li>
         
@@ -301,6 +325,10 @@ the primitives provided in this library.</p>
         
           <li >
             <a href="../ForceDirectedGraph">ForceDirectedGraph</a>
+          </li>
+        
+          <li >
+            <a href="../Histogram">Histogram</a>
           </li>
         
           <li >

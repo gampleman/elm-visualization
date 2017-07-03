@@ -1,4 +1,6 @@
-# Elm-Visualization
+<h1><img src="http://code.gampleman.eu/elm-visualization/misc/Logo.png" srcset="http://code.gampleman.eu/elm-visualization/misc/Logo.png, http://code.gampleman.eu/elm-visualization/misc/Logo@2x.png 2x" width="888" height="283" alt="Elm-visualization"/></h1>
+
+[Docs](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/) | [Examples](http://code.gampleman.eu/elm-visualization/) | [GitHub](https://github.com/gampleman/elm-visualization) | [Changelog](https://github.com/gampleman/elm-visualization/releases)
 
 This project is designed to give you all the tools needed to build data visualizations.
 It is not a charting library in the sense that you have pre-bundled Excel-style
@@ -6,7 +8,9 @@ charts, but it should contain all the tools to make building such charts relativ
 easy. The advantage is that you are free to design and build data visualizations
 that uniquely suite your needs.
 
-[![PadAngle](http://code.gampleman.eu/elm-visualization/PadAngle/preview.png) ![Plus](http://code.gampleman.eu/elm-visualization/Cross/preview.png) ![LineChart](http://code.gampleman.eu/elm-visualization/LineChart/preview.png) ![LineChart](http://code.gampleman.eu/elm-visualization/Curves/preview.png)](http://code.gampleman.eu/elm-visualization/)
+## Learn by example
+
+[![PadAngle](http://code.gampleman.eu/elm-visualization/PadAngle/preview.png)  ![CrimeViz](http://code.gampleman.eu/elm-visualization/CrimeViz/preview.png) ![Curves](http://code.gampleman.eu/elm-visualization/Curves/preview.png) ![ForceDirectedGraph](http://code.gampleman.eu/elm-visualization/ForceDirectedGraph/preview.png)](http://code.gampleman.eu/elm-visualization/)
 
 ## What's included?
 
@@ -36,17 +40,18 @@ myPath = begin
 
 ### [Shapes](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization-Shape)
 
-This module gives you ways to draw some fundamental shapes used in data visualization.
+This module gives you ways to draw some fundamental shapes used in data visualization, including lines (as in line or area charts),
+as well as arcs (as in pie charts).
 
-Want to create a line chart with smooth curves?
+### [Force Layout](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization-Force)
 
-```elm
-path [d (Shape.line Shape.monotoneInXCurve dataPoints), stroke "2", fill "none"] []
-```
+Use a simulation of physical forces to do layout. Suitable for i.e. network graphs.
 
-Done.
+### [Histogram](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization-Histogram)
 
-### [Utilities](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization-List)
+Compute histograms of data.
+
+### [List Utilities](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization-List)
 
 A bag of list processing methods that encapsulate common algorithms.
 
@@ -60,8 +65,3 @@ great DOM abstraction already, selections are not part of this library.
 
 This library is still under active development, so please submit feature requests
 iff you are also willing to implement them. Bug reports are welcome.
-
-Some things worth working on:
-
-- [ ] Scales have a number of stubs in them for other scale types.
-- [ ] Shape could do with more line generators.

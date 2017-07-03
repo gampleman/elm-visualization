@@ -2,8 +2,8 @@ module Helper exposing (..)
 
 import Expect exposing (Expectation)
 import Regex exposing (HowMany(..))
-import String
 import Result
+import Test.Runner exposing (getFailure)
 import Visualization.Path as Path exposing (..)
 
 
@@ -33,7 +33,7 @@ precision =
 
 
 isAbout a b =
-    if round (a * precision) == round (b * precision) then
+    if truncate ((a - b) * precision) == 0 then
         Expect.pass
     else
         Expect.equal a b
@@ -56,3 +56,20 @@ isBetween ( b, c ) a =
 expectAll : List Expectation -> Expectation
 expectAll expectations =
     Expect.all (List.map always expectations) ()
+
+
+expectAny : List Expectation -> Expectation
+expectAny expectations =
+    let
+        failuires =
+            List.filterMap Test.Runner.getFailure expectations
+    in
+        if List.length failuires == List.length expectations then
+            Expect.fail <| (++) "Expected at least one of the following to pass:\n" <| String.join "\n" <| List.map .message failuires
+        else
+            Expect.pass
+
+
+expectMember : List a -> a -> Expectation
+expectMember list item =
+    Expect.true "expectMember" <| List.member item list
