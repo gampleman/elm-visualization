@@ -1,4 +1,5 @@
-<h1><img src="http://code.gampleman.eu/elm-visualization/misc/Logo.png" srcset="http://code.gampleman.eu/elm-visualization/misc/Logo.png, http://code.gampleman.eu/elm-visualization/misc/Logo@2x.png 2x" width="888" height="283" alt="Elm-visualization"/></h1>
+# ![Elm-visualization](http://code.gampleman.eu/elm-visualization/misc/Logo.png)
+
 
 [Docs](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/) | [Examples](http://code.gampleman.eu/elm-visualization/) | [GitHub](https://github.com/gampleman/elm-visualization) | [Changelog](https://github.com/gampleman/elm-visualization/releases)
 

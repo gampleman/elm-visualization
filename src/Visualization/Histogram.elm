@@ -17,6 +17,8 @@ module Visualization.Histogram
 numerical data. It is an estimate of the probability distribution of a continuous
 variable (quantitative variable)
 
+[![Histogram](http://code.gampleman.eu/elm-visualization/Histogram/preview.png)](http://code.gampleman.eu/elm-visualization/Histogram/)
+
 To compute a histogram, one first configures a Histogram Generator and then uses
 it to compute a histogram. Histograms can then be visualized in a variaty of ways,
 for example using Svg rects and linear scales.
