@@ -1,5 +1,5 @@
 {
-    "version": "1.3.0",
+    "version": "1.4.0",
     "summary": "A data visualization package for Elm",
     "repository": "https://github.com/gampleman/elm-visualization.git",
     "license": "MIT",
