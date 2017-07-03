@@ -1,4 +1,4 @@
-# ![Elm-visualization](http://code.gampleman.eu/elm-visualization/misc/Logo.png)
+![Elm-visualization](http://code.gampleman.eu/elm-visualization/misc/Logo.png)
 
 
 [Docs](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/) | [Examples](http://code.gampleman.eu/elm-visualization/) | [GitHub](https://github.com/gampleman/elm-visualization) | [Changelog](https://github.com/gampleman/elm-visualization/releases)
