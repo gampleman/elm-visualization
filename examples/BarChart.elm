@@ -52,14 +52,14 @@ column xScale ( date, value ) =
     g [ class "column" ]
         [ rect
             [ x <| toString <| Scale.convert xScale date
-            , y <| toString <| h - Scale.convert yScale value - 2 * padding
+            , y <| toString <| Scale.convert yScale value
             , width <| toString <| Scale.bandwidth xScale
-            , height <| toString <| Scale.convert yScale value
+            , height <| toString <| h - Scale.convert yScale value - 2 * padding
             ]
             []
         , text_
             [ x <| toString <| Scale.convert (Scale.toRenderable xScale) date
-            , y <| toString <| h - Scale.convert yScale value - 2 * padding - 5
+            , y <| toString <| Scale.convert yScale value - 5
             , textAnchor "middle"
             ]
             [ text <| toString value ]
