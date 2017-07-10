@@ -1,4 +1,4 @@
-module LineChart exposing (main)
+module BarChart exposing (main)
 
 {-| This module shows how to build a simple bar chart.
 -}

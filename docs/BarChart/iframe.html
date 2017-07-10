@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html><head><meta charset="UTF-8"><title>LineChart</title><style>html,head,body { padding:0; margin:0; }
+<html><head><meta charset="UTF-8"><title>BarChart</title><style>html,head,body { padding:0; margin:0; }
 body { font-family: calibri, helvetica, arial, sans-serif; }</style><script type="text/javascript">
 (function() {
 'use strict';
@@ -19853,19 +19853,19 @@ var _user$project$SampleData$crimeRates = {
 		}
 	}
 };
-var _user$project$LineChart$padding = 30;
-var _user$project$LineChart$h = 450;
-var _user$project$LineChart$yScale = A2(
+var _user$project$BarChart$padding = 30;
+var _user$project$BarChart$h = 450;
+var _user$project$BarChart$yScale = A2(
 	_user$project$Visualization_Scale$linear,
 	{ctor: '_Tuple2', _0: 0, _1: 5},
-	{ctor: '_Tuple2', _0: _user$project$LineChart$h - (2 * _user$project$LineChart$padding), _1: 0});
-var _user$project$LineChart$yAxis = A2(
+	{ctor: '_Tuple2', _0: _user$project$BarChart$h - (2 * _user$project$BarChart$padding), _1: 0});
+var _user$project$BarChart$yAxis = A2(
 	_user$project$Visualization_Axis$axis,
 	_elm_lang$core$Native_Utils.update(
 		_user$project$Visualization_Axis$defaultOptions,
 		{orientation: _user$project$Visualization_Axis$Left, tickCount: 5}),
-	_user$project$LineChart$yScale);
-var _user$project$LineChart$column = F2(
+	_user$project$BarChart$yScale);
+var _user$project$BarChart$column = F2(
 	function (xScale, _p0) {
 		var _p1 = _p0;
 		var _p3 = _p1._1;
@@ -19890,7 +19890,7 @@ var _user$project$LineChart$column = F2(
 							ctor: '::',
 							_0: _elm_lang$svg$Svg_Attributes$y(
 								_elm_lang$core$Basics$toString(
-									A2(_user$project$Visualization_Scale$convert, _user$project$LineChart$yScale, _p3))),
+									A2(_user$project$Visualization_Scale$convert, _user$project$BarChart$yScale, _p3))),
 							_1: {
 								ctor: '::',
 								_0: _elm_lang$svg$Svg_Attributes$width(
@@ -19900,7 +19900,7 @@ var _user$project$LineChart$column = F2(
 									ctor: '::',
 									_0: _elm_lang$svg$Svg_Attributes$height(
 										_elm_lang$core$Basics$toString(
-											(_user$project$LineChart$h - A2(_user$project$Visualization_Scale$convert, _user$project$LineChart$yScale, _p3)) - (2 * _user$project$LineChart$padding))),
+											(_user$project$BarChart$h - A2(_user$project$Visualization_Scale$convert, _user$project$BarChart$yScale, _p3)) - (2 * _user$project$BarChart$padding))),
 									_1: {ctor: '[]'}
 								}
 							}
@@ -19923,7 +19923,7 @@ var _user$project$LineChart$column = F2(
 								ctor: '::',
 								_0: _elm_lang$svg$Svg_Attributes$y(
 									_elm_lang$core$Basics$toString(
-										A2(_user$project$Visualization_Scale$convert, _user$project$LineChart$yScale, _p3) - 5)),
+										A2(_user$project$Visualization_Scale$convert, _user$project$BarChart$yScale, _p3) - 5)),
 								_1: {
 									ctor: '::',
 									_0: _elm_lang$svg$Svg_Attributes$textAnchor('middle'),
@@ -19941,17 +19941,17 @@ var _user$project$LineChart$column = F2(
 				}
 			});
 	});
-var _user$project$LineChart$w = 900;
-var _user$project$LineChart$xScale = function (model) {
+var _user$project$BarChart$w = 900;
+var _user$project$BarChart$xScale = function (model) {
 	return A3(
 		_user$project$Visualization_Scale$band,
 		_elm_lang$core$Native_Utils.update(
 			_user$project$Visualization_Scale$defaultBandConfig,
 			{paddingInner: 0.1, paddingOuter: 0.2}),
 		A2(_elm_lang$core$List$map, _elm_lang$core$Tuple$first, model),
-		{ctor: '_Tuple2', _0: 0, _1: _user$project$LineChart$w - (2 * _user$project$LineChart$padding)});
+		{ctor: '_Tuple2', _0: 0, _1: _user$project$BarChart$w - (2 * _user$project$BarChart$padding)});
 };
-var _user$project$LineChart$xAxis = function (model) {
+var _user$project$BarChart$xAxis = function (model) {
 	return A2(
 		_user$project$Visualization_Axis$axis,
 		_elm_lang$core$Native_Utils.update(
@@ -19962,9 +19962,9 @@ var _user$project$LineChart$xAxis = function (model) {
 					_justinmimbs$elm_date_extra$Date_Extra$toFormattedString('dd MMM'))
 			}),
 		_user$project$Visualization_Scale$toRenderable(
-			_user$project$LineChart$xScale(model)));
+			_user$project$BarChart$xScale(model)));
 };
-var _user$project$LineChart$view = function (model) {
+var _user$project$BarChart$view = function (model) {
 	return A2(
 		_elm_lang$svg$Svg$svg,
 		{
@@ -19972,14 +19972,14 @@ var _user$project$LineChart$view = function (model) {
 			_0: _elm_lang$svg$Svg_Attributes$width(
 				A2(
 					_elm_lang$core$Basics_ops['++'],
-					_elm_lang$core$Basics$toString(_user$project$LineChart$w),
+					_elm_lang$core$Basics$toString(_user$project$BarChart$w),
 					'px')),
 			_1: {
 				ctor: '::',
 				_0: _elm_lang$svg$Svg_Attributes$height(
 					A2(
 						_elm_lang$core$Basics_ops['++'],
-						_elm_lang$core$Basics$toString(_user$project$LineChart$h),
+						_elm_lang$core$Basics$toString(_user$project$BarChart$h),
 						'px')),
 				_1: {ctor: '[]'}
 			}
@@ -20006,19 +20006,19 @@ var _user$project$LineChart$view = function (model) {
 								'translate(',
 								A2(
 									_elm_lang$core$Basics_ops['++'],
-									_elm_lang$core$Basics$toString(_user$project$LineChart$padding - 1),
+									_elm_lang$core$Basics$toString(_user$project$BarChart$padding - 1),
 									A2(
 										_elm_lang$core$Basics_ops['++'],
 										', ',
 										A2(
 											_elm_lang$core$Basics_ops['++'],
-											_elm_lang$core$Basics$toString(_user$project$LineChart$h - _user$project$LineChart$padding),
+											_elm_lang$core$Basics$toString(_user$project$BarChart$h - _user$project$BarChart$padding),
 											')'))))),
 						_1: {ctor: '[]'}
 					},
 					{
 						ctor: '::',
-						_0: _user$project$LineChart$xAxis(model),
+						_0: _user$project$BarChart$xAxis(model),
 						_1: {ctor: '[]'}
 					}),
 				_1: {
@@ -20033,19 +20033,19 @@ var _user$project$LineChart$view = function (model) {
 									'translate(',
 									A2(
 										_elm_lang$core$Basics_ops['++'],
-										_elm_lang$core$Basics$toString(_user$project$LineChart$padding - 1),
+										_elm_lang$core$Basics$toString(_user$project$BarChart$padding - 1),
 										A2(
 											_elm_lang$core$Basics_ops['++'],
 											', ',
 											A2(
 												_elm_lang$core$Basics_ops['++'],
-												_elm_lang$core$Basics$toString(_user$project$LineChart$padding),
+												_elm_lang$core$Basics$toString(_user$project$BarChart$padding),
 												')'))))),
 							_1: {ctor: '[]'}
 						},
 						{
 							ctor: '::',
-							_0: _user$project$LineChart$yAxis,
+							_0: _user$project$BarChart$yAxis,
 							_1: {ctor: '[]'}
 						}),
 					_1: {
@@ -20060,13 +20060,13 @@ var _user$project$LineChart$view = function (model) {
 										'translate(',
 										A2(
 											_elm_lang$core$Basics_ops['++'],
-											_elm_lang$core$Basics$toString(_user$project$LineChart$padding),
+											_elm_lang$core$Basics$toString(_user$project$BarChart$padding),
 											A2(
 												_elm_lang$core$Basics_ops['++'],
 												', ',
 												A2(
 													_elm_lang$core$Basics_ops['++'],
-													_elm_lang$core$Basics$toString(_user$project$LineChart$padding),
+													_elm_lang$core$Basics$toString(_user$project$BarChart$padding),
 													')'))))),
 								_1: {
 									ctor: '::',
@@ -20076,8 +20076,8 @@ var _user$project$LineChart$view = function (model) {
 							},
 							A2(
 								_elm_lang$core$List$map,
-								_user$project$LineChart$column(
-									_user$project$LineChart$xScale(model)),
+								_user$project$BarChart$column(
+									_user$project$BarChart$xScale(model)),
 								model)),
 						_1: {ctor: '[]'}
 					}
@@ -20085,12 +20085,12 @@ var _user$project$LineChart$view = function (model) {
 			}
 		});
 };
-var _user$project$LineChart$main = _elm_lang$virtual_dom$Native_VirtualDom.staticProgram(
-	_user$project$LineChart$view(_user$project$SampleData$timeSeries));
+var _user$project$BarChart$main = _elm_lang$virtual_dom$Native_VirtualDom.staticProgram(
+	_user$project$BarChart$view(_user$project$SampleData$timeSeries));
 var Elm = {};
-Elm['LineChart'] = Elm['LineChart'] || {};
-if (typeof _user$project$LineChart$main !== 'undefined') {
-    _user$project$LineChart$main(Elm['LineChart'], 'LineChart', undefined);
+Elm['BarChart'] = Elm['BarChart'] || {};
+if (typeof _user$project$BarChart$main !== 'undefined') {
+    _user$project$BarChart$main(Elm['BarChart'], 'BarChart', undefined);
 }
 
 if (typeof define === "function" && define['amd'])
@@ -20122,4 +20122,4 @@ for (var publicModule in Elm)
 }
 
 }).call(this);
-</script></head><body><script type="text/javascript">Elm.LineChart.fullscreen()</script></body></html>
+</script></head><body><script type="text/javascript">Elm.BarChart.fullscreen()</script></body></html>
