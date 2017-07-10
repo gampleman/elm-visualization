@@ -192,14 +192,14 @@ column xScale ( date, value ) =
     g [ class "column" ]
         [ rect
             [ x &lt;| toString &lt;| Scale.convert xScale date
-            , y &lt;| toString &lt;| h - Scale.convert yScale value - 2 * padding
+            , y &lt;| toString &lt;| Scale.convert yScale value
             , width &lt;| toString &lt;| Scale.bandwidth xScale
-            , height &lt;| toString &lt;| Scale.convert yScale value
+            , height &lt;| toString &lt;| h - Scale.convert yScale value - 2 * padding
             ]
             []
         , text_
             [ x &lt;| toString &lt;| Scale.convert (Scale.toRenderable xScale) date
-            , y &lt;| toString &lt;| h - Scale.convert yScale value - 2 * padding - 5
+            , y &lt;| toString &lt;| Scale.convert yScale value - 5
             , textAnchor "middle"
             ]
             [ text &lt;| toString value ]
