@@ -153,7 +153,7 @@ tickStep start stop count =
             abs (stop - start) / max 0 (toFloat count)
 
         step1 =
-            toFloat (10 ^ (floor (logBase e step0 / logBase e 10)))
+            toFloat (10 ^ floor (logBase e step0 / logBase e 10))
 
         error =
             step0 / step1

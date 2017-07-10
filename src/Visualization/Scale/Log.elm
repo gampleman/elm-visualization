@@ -59,7 +59,7 @@ ticks base ( start, end ) count =
                     else if t > end then
                         []
                     else
-                        (ticksHelper inc st i j (inc k)) ++ [ t ]
+                        ticksHelper inc st i j (inc k) ++ [ t ]
                 else
                     []
     in

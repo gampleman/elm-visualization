@@ -40,7 +40,7 @@ for example using Svg rects and linear scales.
 
 -}
 
-import Array exposing (Array)
+import Array
 import Visualization.Array as Array
 import Visualization.List as VList
 
@@ -169,7 +169,7 @@ compute list (H { value, threshold, domain }) =
         [] ->
             []
 
-        x :: xs ->
+        x :: _ ->
             let
                 defaultValue =
                     value x
