@@ -1,4 +1,22 @@
-module Visualization.Shape exposing (line, area, linearCurve, monotoneInXCurve, Curve, pie, Arc, arc, centroid, defaultPieConfig, PieConfig)
+module Visualization.Shape
+    exposing
+        ( line
+        , area
+        , linearCurve
+        , monotoneInXCurve
+        , Curve
+        , pie
+        , Arc
+        , arc
+        , centroid
+        , defaultPieConfig
+        , PieConfig
+        , stackOffsetNone
+        , stackOffsetDiverging
+        , stackOffsetExpand
+        , stackOffsetSilhouette
+        , stackOffsetWiggle
+        )
 
 {-| Visualizations typically consist of discrete graphical marks, such as symbols,
 arcs, lines and areas. While the rectangles of a bar chart may be easy enough to
@@ -35,6 +53,7 @@ variety of shape generators for your convenience.
 -}
 
 import Visualization.Path as Path exposing (..)
+import Visualization.StackOffset as StackOffset
 import Array
 import Dict
 
@@ -116,6 +135,10 @@ subtract disproportionately from smaller arcs, introducing distortion.
 The pad radius determines the fixed linear distance separating adjacent arcs,
 defined as padRadius * padAngle.
 
+## Stack Offset
+
+
+@docs stackOffsetNone , stackOffsetDiverging , stackOffsetExpand , stackOffsetSilhouette , stackOffsetWiggle
 -}
 type alias Arc =
     { innerRadius : Float
@@ -938,3 +961,38 @@ area curve data =
                     ( Just p1, Area [ p1 ] :: l )
     in
         toAttrString <| List.concatMap curve <| Tuple.second <| List.foldr makeCurves ( Nothing, [] ) data
+
+
+{-| Applies a zero baseline.
+-}
+stackOffsetNone : List (List ( Float, Float )) -> List (List ( Float, Float ))
+stackOffsetNone =
+    StackOffset.stackOffsetNone
+
+
+{-| Positive values are stacked above zero, negative values below zero.
+-}
+stackOffsetDiverging : List (List ( Float, Float )) -> List (List ( Float, Float ))
+stackOffsetDiverging =
+    StackOffset.stackOffsetDiverging
+
+
+{-| Applies a zero baseline and normalizes the values for each point such that the topline is always one.
+-}
+stackOffsetExpand : List (List ( Float, Float )) -> List (List ( Float, Float ))
+stackOffsetExpand =
+    StackOffset.stackOffsetExpand
+
+
+{-| Shifts the baseline down such that the center of the streamgraph is always at zero.
+-}
+stackOffsetSilhouette : List (List ( Float, Float )) -> List (List ( Float, Float ))
+stackOffsetSilhouette =
+    StackOffset.stackOffsetSilhouette
+
+
+{-| Shifts the baseline so as to minimize the weighted wiggle of layers.
+-}
+stackOffsetWiggle : List (List ( Float, Float )) -> List (List ( Float, Float ))
+stackOffsetWiggle =
+    StackOffset.stackOffsetWiggle
