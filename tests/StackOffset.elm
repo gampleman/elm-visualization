@@ -3,6 +3,7 @@ module StackOffset exposing (..)
 import Expect
 import Test exposing (..)
 import Visualization.StackOffset as StackOffset
+import Visualization.Shape as Shape
 
 
 series3x3 =
@@ -32,7 +33,7 @@ offset =
                         , [ ( 4, 9 ), ( 6, 8 ), ( 3, 7 ) ]
                         ]
                 in
-                    StackOffset.stackOffsetNone series3x3
+                    Shape.stackOffsetNone series3x3
                         |> Expect.equal expected
         , test "stackOffsetSilhouette produces correct result " <|
             \_ ->
@@ -43,7 +44,7 @@ offset =
                         , [ ( -0.5, 4.5 ), ( 2, 4 ), ( -0.5, 3.5 ) ]
                         ]
                 in
-                    StackOffset.stackOffsetSilhouette series3x3
+                    Shape.stackOffsetSilhouette series3x3
                         |> Expect.equal expected
         , test "stackOffsetWiggle prodices correct result " <|
             \_ ->
@@ -54,7 +55,7 @@ offset =
                         , [ ( 4, 9 ), ( 5, 7 ), ( 3.7857142857142856, 7.785714285714286 ) ]
                         ]
                 in
-                    StackOffset.stackOffsetWiggle series3x3
+                    Shape.stackOffsetWiggle series3x3
                         |> Expect.equal expected
         , test "stackOffsetWiggle prodices correct result for 4 x 4 " <|
             \_ ->
@@ -66,7 +67,7 @@ offset =
                         , [ ( 9, 12 ), ( 7.545454545454545, 10.545454545454545 ), ( 7.587121212121212, 12.587121212121211 ), ( 9.587121212121213, 10.587121212121213 ) ]
                         ]
                 in
-                    StackOffset.stackOffsetWiggle series4x4
+                    Shape.stackOffsetWiggle series4x4
                         |> Expect.equal expected
         , test "stackOffsetSilhouette produces correct result for 4 x 4 " <|
             \_ ->
@@ -78,7 +79,7 @@ offset =
                         , [ ( 3, 6 ), ( 2.5, 5.5 ), ( 1, 6 ), ( -0.5, 0.5 ) ]
                         ]
                 in
-                    StackOffset.stackOffsetSilhouette series4x4
+                    Shape.stackOffsetSilhouette series4x4
                         |> Expect.equal expected
         , test "stackOffsetExpand produces correct result for 4 x 4 " <|
             \_ ->
@@ -90,7 +91,7 @@ offset =
                         , [ ( 0.75, 1 ), ( 0.7272727272727273, 1 ), ( 0.5833333333333333, 1 ), ( 0, 1 ) ]
                         ]
                 in
-                    StackOffset.stackOffsetExpand series4x4
+                    Shape.stackOffsetExpand series4x4
                         |> Expect.equal expected
         , test "stackOffsetDiverging produces correct result for 4 x 4 " <|
             \_ ->
@@ -102,7 +103,7 @@ offset =
                         , [ ( 9, 11 ), ( -3, 0 ), ( 7, 11 ), ( -11, -7 ) ]
                         ]
                 in
-                    StackOffset.stackOffsetDiverging series4x4
+                    Shape.stackOffsetDiverging series4x4
                         |> Expect.equal expected
           {-
              , test "s1 s2 are correct" <|

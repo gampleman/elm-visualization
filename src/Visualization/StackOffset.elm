@@ -1,17 +1,18 @@
 module Visualization.StackOffset
     exposing
-        ( stackOffsetNone
-        , stackOffsetDiverging
-        , stackOffsetExpand
-        , stackOffsetSilhouette
-        , stackOffsetWiggle
+        ( none
+        , diverging
+        , expand
+        , silhouette
+        , wiggle
+        , sortByInsideOut
         )
 
 import List.Extra as List
 
 
-stackOffsetNone : List (List ( Float, Float )) -> List (List ( Float, Float ))
-stackOffsetNone series =
+none : List (List ( Float, Float )) -> List (List ( Float, Float ))
+none series =
     case series of
         [] ->
             []
@@ -19,7 +20,7 @@ stackOffsetNone series =
         x :: xs ->
             let
                 weirdAdd ( s10, s11 ) ( s00, s01 ) =
-                    -- no idea why this is what it is
+                    -- fall back to s00 when s01 is NaN
                     if isNaN s01 then
                         ( s00, s11 + s00 )
                     else
@@ -35,7 +36,7 @@ stackOffsetNone series =
                     |> List.reverse
 
 
-stackOffsetDiverging series =
+diverging series =
     case series of
         [] ->
             []
@@ -65,7 +66,7 @@ stackOffsetDiverging series =
                     |> List.transpose
 
 
-stackOffsetExpand series =
+expand series =
     case series of
         [] ->
             []
@@ -82,10 +83,10 @@ stackOffsetExpand series =
             in
                 List.map2 (\column newY -> List.map (\( x, y ) -> ( x, y / newY )) column) transposed ys
                     |> List.transpose
-                    |> stackOffsetNone
+                    |> none
 
 
-stackOffsetSilhouette series =
+silhouette series =
     case series of
         [] ->
             []
@@ -99,11 +100,11 @@ stackOffsetSilhouette series =
             in
                 (List.map2 (\( x, y ) newY -> ( -newY / 2, y + (-newY / 2) )) first ys)
                     :: xs
-                    |> stackOffsetNone
+                    |> none
 
 
-stackOffsetWiggle : List (List ( Float, Float )) -> List (List ( Float, Float ))
-stackOffsetWiggle series =
+wiggle : List (List ( Float, Float )) -> List (List ( Float, Float ))
+wiggle series =
     case series of
         [] ->
             []
@@ -157,7 +158,7 @@ stackOffsetWiggle series =
                         |> List.map2 (\( x, y ) yValue -> ( yValue, y + yValue )) first
             in
                 (newFirst :: rest)
-                    |> stackOffsetNone
+                    |> none
 
 
 pairwise : (a -> a -> result) -> List a -> List result
@@ -166,5 +167,28 @@ pairwise f list =
         [] ->
             []
 
-        x :: xs ->
-            List.map2 f (x :: xs) xs
+        _ :: tail ->
+            List.map2 f list tail
+
+
+sortByInsideOut : (a -> number) -> List (List a) -> List (List a)
+sortByInsideOut toNumber items =
+    let
+        foldMap =
+            List.foldl (\element accum -> toNumber element + accum) 0
+
+        withSum =
+            List.map (\element -> ( element, foldMap element )) items
+
+        folder ( element, sum ) ( bottom, bottoms, top, tops ) =
+            if top < bottom then
+                ( bottom, bottoms, top + sum, element :: tops )
+            else
+                ( bottom + sum, element :: bottoms, top, tops )
+
+        ( _, bottom, _, top ) =
+            withSum
+                |> List.sortBy Tuple.second
+                |> List.foldl folder ( 0, [], 0, [] )
+    in
+        List.reverse bottom ++ top

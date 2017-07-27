@@ -16,6 +16,7 @@ module Visualization.Shape
         , stackOffsetExpand
         , stackOffsetSilhouette
         , stackOffsetWiggle
+        , sortByInsideOut
         )
 
 {-| Visualizations typically consist of discrete graphical marks, such as symbols,
@@ -967,32 +968,61 @@ area curve data =
 -}
 stackOffsetNone : List (List ( Float, Float )) -> List (List ( Float, Float ))
 stackOffsetNone =
-    StackOffset.stackOffsetNone
+    StackOffset.none
 
 
 {-| Positive values are stacked above zero, negative values below zero.
 -}
 stackOffsetDiverging : List (List ( Float, Float )) -> List (List ( Float, Float ))
 stackOffsetDiverging =
-    StackOffset.stackOffsetDiverging
+    StackOffset.diverging
 
 
 {-| Applies a zero baseline and normalizes the values for each point such that the topline is always one.
 -}
 stackOffsetExpand : List (List ( Float, Float )) -> List (List ( Float, Float ))
 stackOffsetExpand =
-    StackOffset.stackOffsetExpand
+    StackOffset.expand
 
 
 {-| Shifts the baseline down such that the center of the streamgraph is always at zero.
 -}
 stackOffsetSilhouette : List (List ( Float, Float )) -> List (List ( Float, Float ))
 stackOffsetSilhouette =
-    StackOffset.stackOffsetSilhouette
+    StackOffset.silhouette
 
 
 {-| Shifts the baseline so as to minimize the weighted wiggle of layers.
 -}
 stackOffsetWiggle : List (List ( Float, Float )) -> List (List ( Float, Float ))
 stackOffsetWiggle =
-    StackOffset.stackOffsetWiggle
+    StackOffset.wiggle
+
+
+{-| large (according to the sum of values) series at the center and small ones on the outer edges
+-}
+
+
+
+-- cannot have a type annotation, as the function needs to produce a number and a comparable ,and the elm compiler
+-- does not know that number is always comparable
+--sortByInsideOut : (a -> number) -> List a -> List a
+
+
+sortByInsideOut toNumber items =
+    let
+        withSum =
+            List.map (\element -> ( element, toNumber element )) items
+
+        folder ( element, sum ) ( bottom, bottoms, top, tops ) =
+            if top < bottom then
+                ( bottom, bottoms, top + sum, element :: tops )
+            else
+                ( bottom + sum, element :: bottoms, top, tops )
+
+        ( _, bottom, _, top ) =
+            withSum
+                |> List.sortBy Tuple.second
+                |> List.foldl folder ( 0, [], 0, [] )
+    in
+        List.reverse bottom ++ top
