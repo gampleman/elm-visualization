@@ -54,6 +54,7 @@ variety of shape generators for your convenience.
 -}
 
 import Visualization.Path as Path exposing (..)
+import List.Extra as List
 import Visualization.StackOffset as StackOffset
 import Array
 import Dict
@@ -981,8 +982,28 @@ stackOffsetDiverging =
 {-| Applies a zero baseline and normalizes the values for each point such that the topline is always one.
 -}
 stackOffsetExpand : List (List ( Float, Float )) -> List (List ( Float, Float ))
-stackOffsetExpand =
-    StackOffset.expand
+stackOffsetExpand items =
+    let
+        -- divide each value in a column by the total sum of the column
+        normalizeColumn column =
+            let
+                deltas =
+                    List.map (abs << uncurry (-)) column
+
+                total =
+                    List.sum deltas
+            in
+                List.map (\value -> ( 0, value / total )) deltas
+    in
+        items
+            |> List.transpose
+            |> List.map normalizeColumn
+            |> List.transpose
+            |> stackOffsetNone
+
+
+
+--StackOffset.expand
 
 
 {-| Shifts the baseline down such that the center of the streamgraph is always at zero.
