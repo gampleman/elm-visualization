@@ -61,6 +61,7 @@ stack offset order items =
     in
         values
             |> List.map (List.indexedMap (\i e -> ( toFloat i, e )))
+            |> Debug.log "before offset"
             |> offset
             |> (,) labels
 
@@ -131,20 +132,24 @@ cycle curve low high_ =
                     lastLow =
                         List.last ls |> Maybe.withDefault l
 
+                    lastHigh =
+                        List.head high_ |> Maybe.withDefault h
+
                     connectorRight =
-                        lineTo [ lastLow, h ]
+                        [ subpath (moveTo lastLow) [ lineTo [ h ] ] ]
 
                     connectorLeft =
-                        closePath
+                        [ subpath (moveTo lastHigh) [ closePath ] ]
                 in
-                    -- this is not very pretty, but this has to be one subpath (so 1 moveto) to get the area to work right
-                    case ( curve low, curve high ) of
-                        ( [ bottom ], [ top ] ) ->
-                            subpath (moveTo l) (bottom.drawtos ++ [ connectorRight ] ++ top.drawtos ++ [ connectorLeft ])
-                                |> List.singleton
-
-                        _ ->
-                            []
+                    [ curve low
+                    , connectorRight
+                    , curve high
+                    , connectorLeft
+                    ]
+                        |> List.concat
+                        |> List.concatMap .drawtos
+                        |> subpath (moveTo l)
+                        |> List.singleton
 
             _ ->
                 []
