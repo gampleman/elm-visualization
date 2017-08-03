@@ -17,6 +17,9 @@ module Visualization.Shape
         , stackOffsetSilhouette
         , stackOffsetWiggle
         , sortByInsideOut
+        , StackConfig
+        , StackResult
+        , stack
         )
 
 {-| Visualizations typically consist of discrete graphical marks, such as symbols,
@@ -51,6 +54,14 @@ variety of shape generators for your convenience.
 
 @docs linearCurve, monotoneInXCurve, Curve
 
+# Stack
+@docs StackConfig, StackResult, stack
+
+## Stack Offset
+@docs stackOffsetNone , stackOffsetDiverging , stackOffsetExpand , stackOffsetSilhouette , stackOffsetWiggle
+
+## Stack Order
+@docs sortByInsideOut
 -}
 
 import Visualization.Path as Path exposing (..)
@@ -136,11 +147,6 @@ subtract disproportionately from smaller arcs, introducing distortion.
 
 The pad radius determines the fixed linear distance separating adjacent arcs,
 defined as padRadius * padAngle.
-
-## Stack Offset
-
-
-@docs stackOffsetNone , stackOffsetDiverging , stackOffsetExpand , stackOffsetSilhouette , stackOffsetWiggle
 -}
 type alias Arc =
     { innerRadius : Float
@@ -963,6 +969,55 @@ area curve data =
                     ( Just p1, Area [ p1 ] :: l )
     in
         toAttrString <| List.concatMap curve <| Tuple.second <| List.foldr makeCurves ( Nothing, [] ) data
+
+
+
+--- STACK
+
+
+type alias StackConfig a =
+    { data : List ( a, List Float )
+    , offset : List (List ( Float, Float )) -> List (List ( Float, Float ))
+    , order : List ( a, List Float ) -> List ( a, List Float )
+    }
+
+
+type alias StackResult a =
+    { values : List (List ( Float, Float ))
+    , labels : List a
+    , extent : ( Float, Float )
+    }
+
+
+stack : StackConfig a -> StackResult a
+stack { offset, order, data } =
+    let
+        ( labels, values ) =
+            data
+                |> order
+                |> List.unzip
+
+        stacked =
+            values
+                |> List.map (List.map (\e -> ( 0, e )))
+                |> offset
+    in
+        { values = stacked
+        , labels = labels
+        , extent = calculateExtremes stacked
+        }
+
+
+{-| Calculates the minimal and maximal y values, for correct scaling
+-}
+calculateExtremes : List (List ( Float, Float )) -> ( Float, Float )
+calculateExtremes coords =
+    let
+        folder ( y1, y2 ) ( accmin, accmax ) =
+            ( Basics.min y1 y2 |> Basics.min accmin, Basics.max y1 y2 |> Basics.max accmax )
+    in
+        List.map (List.foldl folder ( 0, 0 )) coords
+            |> List.foldl (\( mi, ma ) ( accmin, accmax ) -> ( Basics.min mi accmin, Basics.max ma accmax )) ( 0, 0 )
 
 
 {-| Applies a zero baseline.

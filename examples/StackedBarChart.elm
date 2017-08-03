@@ -4,12 +4,16 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Color.Convert exposing (colorToCssRgb)
 import Visualization.Axis as Axis exposing (defaultOptions)
-import Visualization.Shape as Shape
+import Visualization.Shape as Shape exposing (StackConfig, StackResult)
 import Visualization.Scale as Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
 import SampleData exposing (CrimeRate)
-import Stack exposing (StackConfig, StackResult)
 import Color exposing (Color)
 import List.Extra as List
+
+
+main : Svg msg
+main =
+    view (Shape.stack config)
 
 
 type alias Year =
@@ -99,7 +103,7 @@ column xScale ( year, values ) =
 
 
 view : StackResult String -> Svg msg
-view { values, labels } =
+view { values, labels, extent } =
     let
         -- transpose back to get the values per year
         yearValues =
@@ -114,7 +118,7 @@ view { values, labels } =
 
         yScale : ContinuousScale
         yScale =
-            Scale.linear (Stack.calculateExtremes values) ( canvas.height - (padding.left + padding.right), 0 )
+            Scale.linear extent ( canvas.height - (padding.left + padding.right), 0 )
                 |> flip Scale.nice 4
 
         axisOptions =
@@ -126,7 +130,7 @@ view { values, labels } =
 
         yAxis : Svg msg
         yAxis =
-            Axis.axis { axisOptions | orientation = Axis.Left {- , ticks = Just () -} } yScale
+            Axis.axis { axisOptions | orientation = Axis.Left } yScale
 
         scaledValues =
             List.map (List.map (\( y1, y2 ) -> ( Scale.convert yScale y1, Scale.convert yScale y2 ))) yearValues
@@ -144,8 +148,3 @@ view { values, labels } =
 translate : number -> number -> Svg.Attribute msg
 translate x y =
     transform ("translate(" ++ toString x ++ ", " ++ toString y ++ ")")
-
-
-main : Svg msg
-main =
-    view (Stack.create config)

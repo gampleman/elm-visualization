@@ -5,13 +5,16 @@ import Color.Convert exposing (colorToCssRgb)
 import Visualization.Scale as Scale exposing (ContinuousScale, OrdinalScale, BandScale, defaultBandConfig, Scale)
 import Visualization.Axis as Axis exposing (Orientation(..))
 import List.Extra as List
-import Curve
+import Visualization.List
 import Color exposing (Color)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Stack exposing (StackConfig, StackResult)
-import Visualization.Shape
-import Path exposing (Path)
+import Visualization.Shape as Shape exposing (StackConfig, StackResult)
+
+
+main : Svg msg
+main =
+    view (Shape.stack config)
 
 
 type alias Year =
@@ -31,6 +34,14 @@ series =
       }
     , { label = "Assault"
       , accessor = .assault
+      }
+      {-
+         , { label = "Larceny"
+           , accessor = .larceny
+           }
+      -}
+    , { label = "Motor Theft"
+      , accessor = .motorTheft
       }
     ]
 
@@ -84,7 +95,7 @@ padding =
 stackedGraphConfig : StackConfig String
 stackedGraphConfig =
     { data = samples
-    , offset = Visualization.Shape.stackOffsetNone
+    , offset = Shape.stackOffsetNone
     , order = List.sortBy (Tuple.second >> List.sum >> negate)
     }
 
@@ -92,8 +103,8 @@ stackedGraphConfig =
 streamgraphConfig : StackConfig String
 streamgraphConfig =
     { data = samples
-    , offset = Visualization.Shape.stackOffsetWiggle
-    , order = Visualization.Shape.sortByInsideOut (Tuple.second >> List.sum)
+    , offset = Shape.stackOffsetWiggle
+    , order = Shape.sortByInsideOut (Tuple.second >> List.sum)
     }
 
 
@@ -103,19 +114,25 @@ config =
 
 
 view : StackResult String -> Svg msg
-view { values, labels } =
+view { values, labels, extent } =
     let
         years : List Year
         years =
             List.map .year SampleData.crimeRates
 
-        xScale : BandScale Year
+        xScale : ContinuousScale
         xScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } years ( 0, canvas.width - (padding.top + padding.bottom) )
+            let
+                domain =
+                    Visualization.List.extent years
+                        |> Maybe.withDefault ( 0, 0 )
+                        |> (\( a, b ) -> ( toFloat a, toFloat b ))
+            in
+                Scale.linear domain ( 0, canvas.width - (padding.top + padding.bottom) )
 
         yScale : ContinuousScale
         yScale =
-            Scale.linear (Stack.calculateExtremes values) ( canvas.height - (padding.left + padding.right), 0 )
+            Scale.linear extent ( canvas.height - (padding.left + padding.right), 0 )
                 |> flip Scale.nice 4
 
         axisOptions =
@@ -123,15 +140,14 @@ view { values, labels } =
 
         xAxis : Svg msg
         xAxis =
-            -- TODO fewer ticks, tickCount doesn't seem to work
-            Axis.axis { axisOptions | orientation = Axis.Bottom, tickCount = 1 } (Scale.toRenderable xScale)
+            Axis.axis { axisOptions | orientation = Axis.Bottom } xScale
 
         yAxis : Svg msg
         yAxis =
             Axis.axis { axisOptions | orientation = Axis.Left {- , ticks = Just () -} } yScale
 
         paths =
-            List.map2 (renderStream (Curve.catmullRom 1.0 << Stack.repeatFirst) ( xScale, yScale )) (colors labels) values
+            List.map2 (renderStream ( xScale, yScale )) (colors labels) values
 
         labelPositions =
             List.map (List.last >> Maybe.withDefault ( 0, 0 ) >> (\( y1, y2 ) -> (y2 + y1) / 2)) values
@@ -163,16 +179,60 @@ view { values, labels } =
 
 The result is a generator because we generate the  band color randomly
 -}
-renderStream : (List ( Float, Float ) -> Path) -> ( Scale { a | range : ( Float, Float ) }, ContinuousScale ) -> Color -> List ( Float, Float ) -> Svg msg
-renderStream curve scales color coords =
-    Path.svgPath (Stack.toArea curve scales coords) [ fill (colorToCssRgb color) ]
+renderStream : ( ContinuousScale, ContinuousScale ) -> Color -> List ( Float, Float ) -> Svg msg
+renderStream scales color coords =
+    -- Path.svgPath (Stack.toArea curve scales coords) [ fill (colorToCssRgb color) ]
+    let
+        pathString =
+            toArea scales coords
+    in
+        Svg.path [ fill (colorToCssRgb color), d pathString ] []
+
+
+{-| Create a svg path string that draws the area between two lines
+-}
+toArea : ( ContinuousScale, ContinuousScale ) -> List ( Float, Float ) -> String
+toArea ( scaleX, scaleY ) ys =
+    let
+        mapper : Float -> ( Float, Float ) -> Maybe ( ( Float, Float ), ( Float, Float ) )
+        mapper xCoord ( y1, y2 ) =
+            let
+                ( l, h ) =
+                    if y1 < y2 then
+                        ( y1, y2 )
+                    else
+                        ( y2, y1 )
+            in
+                Just
+                    ( ( xCoord, Scale.convert scaleY l )
+                    , ( xCoord, Scale.convert scaleY h )
+                    )
+
+        xCoordinates : List Float
+        xCoordinates =
+            -- generate evenly spaced values in x's domain
+            -- then cast them to values in the codomain/range
+            evenlySpaced (List.length ys - 1) (Scale.domain scaleX)
+                |> List.map (Scale.convert scaleX)
+    in
+        List.map2 mapper xCoordinates ys
+            |> Shape.area Shape.linearCurve
+
+
+{-| Give exact evenly spaced values in the give domain
+
+    evenlySpaced 2 (0, 100) --> [ 0, 50, 100 ]
+
+-}
+evenlySpaced : Int -> ( Float, Float ) -> List Float
+evenlySpaced n (( lower, upper ) as extent) =
+    if n <= 1 then
+        [ lower, upper ]
+    else
+        Scale.linear ( 1, toFloat n ) extent
+            |> (\intermediateScale -> List.map (Scale.convert intermediateScale << toFloat) (List.range 1 n))
 
 
 translate : number -> number -> Svg.Attribute msg
 translate x y =
     transform ("translate(" ++ toString x ++ ", " ++ toString y ++ ")")
-
-
-main : Svg msg
-main =
-    view (Stack.create config)
