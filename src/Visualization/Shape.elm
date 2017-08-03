@@ -982,28 +982,8 @@ stackOffsetDiverging =
 {-| Applies a zero baseline and normalizes the values for each point such that the topline is always one.
 -}
 stackOffsetExpand : List (List ( Float, Float )) -> List (List ( Float, Float ))
-stackOffsetExpand items =
-    let
-        -- divide each value in a column by the total sum of the column
-        normalizeColumn column =
-            let
-                deltas =
-                    List.map (abs << uncurry (-)) column
-
-                total =
-                    List.sum deltas
-            in
-                List.map (\value -> ( 0, value / total )) deltas
-    in
-        items
-            |> List.transpose
-            |> List.map normalizeColumn
-            |> List.transpose
-            |> stackOffsetNone
-
-
-
---StackOffset.expand
+stackOffsetExpand =
+    StackOffset.expand
 
 
 {-| Shifts the baseline down such that the center of the streamgraph is always at zero.
@@ -1021,16 +1001,13 @@ stackOffsetWiggle =
 
 
 {-| large (according to the sum of values) series at the center and small ones on the outer edges
+
 -}
-
-
-
--- cannot have a type annotation, as the function needs to produce a number and a comparable ,and the elm compiler
--- does not know that number is always comparable
---sortByInsideOut : (a -> number) -> List a -> List a
-
-
+sortByInsideOut : (a -> Float) -> List a -> List a
 sortByInsideOut toNumber items =
+    -- **NOTE:** There is no reason this  shouldn't work with `number` instead of float, and in 0.19 this possible
+    -- But because `(+)` needs a number and `List.sortBy` needs a `comparable`, using `a -> number` won't typecheck.
+    -- this will be possible in 0.19
     let
         withSum =
             List.map (\element -> ( element, toNumber element )) items

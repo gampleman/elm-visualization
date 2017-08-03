@@ -67,23 +67,23 @@ diverging series =
 
 
 expand series =
-    case series of
-        [] ->
-            []
-
-        first :: rest ->
+    let
+        -- divide each value in a column by the total sum of the column
+        normalizeColumn column =
             let
-                transposed =
-                    series
-                        |> List.transpose
+                deltas =
+                    List.map (abs << uncurry (-)) column
 
-                ys =
-                    transposed
-                        |> List.map (List.sum << List.map Tuple.second)
+                total =
+                    List.sum deltas
             in
-                List.map2 (\column newY -> List.map (\( x, y ) -> ( x, y / newY )) column) transposed ys
-                    |> List.transpose
-                    |> none
+                List.map (\value -> ( 0, value / total )) deltas
+    in
+        series
+            |> List.transpose
+            |> List.map normalizeColumn
+            |> List.transpose
+            |> none
 
 
 silhouette series =
