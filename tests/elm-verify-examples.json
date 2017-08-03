@@ -3,6 +3,6 @@
   "tests" : [
     "Visualization.List",
     "Visualization.Path",
-    "Visualization.Scale"
+    "Visualization.Shape"
   ]
 }

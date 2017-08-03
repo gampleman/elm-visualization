@@ -65,7 +65,6 @@ variety of shape generators for your convenience.
 -}
 
 import Visualization.Path as Path exposing (..)
-import List.Extra as List
 import Visualization.StackOffset as StackOffset
 import Array
 import Dict
@@ -975,6 +974,34 @@ area curve data =
 --- STACK
 
 
+{-| Configuration for a stacked chart.
+
+* **data:** List of values with an accompanying label.
+* **offset:** How to stack the layers on top of each other.
+* **order:** sorting function to determine the order of the layers.
+
+Some example configs:
+
+
+    -- myData : List ( String, List Float )
+
+    stackedBarChart : StackConfig String
+    stackedBarChart =
+        { data = myData
+        , offset = Shape.stackOffsetNone
+        , order =
+            -- stylistic choice: largest (by sum of values) category at the bottom
+            List.sortBy (Tuple.second >> List.sum >> negate)
+        }
+
+
+    streamgraph : StackConfig String
+    streamgraph =
+        { data = myData
+        , offset = Shape.stackOffsetWiggle
+        , order = Shape.sortByInsideOut (Tuple.second >> List.sum)
+        }
+-}
 type alias StackConfig a =
     { data : List ( a, List Float )
     , offset : List (List ( Float, Float )) -> List (List ( Float, Float ))
@@ -982,6 +1009,12 @@ type alias StackConfig a =
     }
 
 
+{-| The basis for constructing a stacked chart
+
+* **labels:** Sorted list of labels
+* **values:** Sorted list of values, where every item is a `(yLow, yHigh)` pair.
+* **extent:** The minimum and maximum y-value. Convenient for creating scales.
+-}
 type alias StackResult a =
     { values : List (List ( Float, Float ))
     , labels : List a
@@ -989,6 +1022,8 @@ type alias StackResult a =
     }
 
 
+{-| Create a stack result
+-}
 stack : StackConfig a -> StackResult a
 stack { offset, order, data } =
     let
@@ -1021,6 +1056,12 @@ calculateExtremes coords =
 
 
 {-| Applies a zero baseline.
+
+    stackOffsetNone [ [ (0, 42) ], [ (0, 70) ] ]
+                --> [ [ (0, 42) ], [ (42, 112 ) ] ]
+
+    stackOffsetNone [ [ (0, 42) ], [ (20, 70) ] ]
+                --> [ [ (0, 42) ], [ (42, 112 ) ] ]
 -}
 stackOffsetNone : List (List ( Float, Float )) -> List (List ( Float, Float ))
 stackOffsetNone =
@@ -1028,6 +1069,13 @@ stackOffsetNone =
 
 
 {-| Positive values are stacked above zero, negative values below zero.
+
+    stackOffsetDiverging [ [ (0, 42) ], [ (0, -24) ] ]
+                --> [ [ (0, 42) ], [ (-24, 0 ) ] ]
+
+    stackOffsetDiverging [ [ (0, 42), (0, -20) ], [ (0, -24), (0, -24) ] ]
+                --> [[(0,42),(-20,0)],[(-24,0),(-44,-20)]]
+
 -}
 stackOffsetDiverging : List (List ( Float, Float )) -> List (List ( Float, Float ))
 stackOffsetDiverging =
@@ -1035,6 +1083,9 @@ stackOffsetDiverging =
 
 
 {-| Applies a zero baseline and normalizes the values for each point such that the topline is always one.
+
+    stackOffsetExpand [ [ (0, 50) ], [ (50, 100) ] ]
+                --> [[(0,0.5)],[(0.5,1)]]
 -}
 stackOffsetExpand : List (List ( Float, Float )) -> List (List ( Float, Float ))
 stackOffsetExpand =
@@ -1042,6 +1093,9 @@ stackOffsetExpand =
 
 
 {-| Shifts the baseline down such that the center of the streamgraph is always at zero.
+
+    stackOffsetSilhouette [ [ (0, 50) ], [ (50, 100) ] ]
+                --> [[(-75,-25)],[(-25,75)]]
 -}
 stackOffsetSilhouette : List (List ( Float, Float )) -> List (List ( Float, Float ))
 stackOffsetSilhouette =
@@ -1049,20 +1103,24 @@ stackOffsetSilhouette =
 
 
 {-| Shifts the baseline so as to minimize the weighted wiggle of layers.
+
+    stackOffsetWiggle [ [ (0, 50) ], [ (50, 100) ] ]
+                --> [[(0,50)],[(50,150)]]
 -}
 stackOffsetWiggle : List (List ( Float, Float )) -> List (List ( Float, Float ))
 stackOffsetWiggle =
     StackOffset.wiggle
 
 
-{-| large (according to the sum of values) series at the center and small ones on the outer edges
+{-| Sort such that small values are at the outer edges, and large values in the middle.
 
+This is the recommended order for stream graphs.
 -}
 sortByInsideOut : (a -> Float) -> List a -> List a
 sortByInsideOut toNumber items =
-    -- **NOTE:** There is no reason this  shouldn't work with `number` instead of float, and in 0.19 this possible
-    -- But because `(+)` needs a number and `List.sortBy` needs a `comparable`, using `a -> number` won't typecheck.
-    -- this will be possible in 0.19
+    -- NOTE this can't be (a -> number) in 0.18.
+    -- because `(+)` needs a number and `List.sortBy` needs a `comparable`, using `a -> number` won't typecheck.
+    -- This will be possible in 0.19
     let
         withSum =
             List.map (\element -> ( element, toNumber element )) items
