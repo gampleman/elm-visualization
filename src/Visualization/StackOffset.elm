@@ -169,26 +169,3 @@ pairwise f list =
 
         _ :: tail ->
             List.map2 f list tail
-
-
-sortByInsideOut : (a -> number) -> List (List a) -> List (List a)
-sortByInsideOut toNumber items =
-    let
-        foldMap =
-            List.foldl (\element accum -> toNumber element + accum) 0
-
-        withSum =
-            List.map (\element -> ( element, foldMap element )) items
-
-        folder ( element, sum ) ( bottom, bottoms, top, tops ) =
-            if top < bottom then
-                ( bottom, bottoms, top + sum, element :: tops )
-            else
-                ( bottom + sum, element :: bottoms, top, tops )
-
-        ( _, bottom, _, top ) =
-            withSum
-                |> List.sortBy Tuple.second
-                |> List.foldl folder ( 0, [], 0, [] )
-    in
-        List.reverse bottom ++ top
