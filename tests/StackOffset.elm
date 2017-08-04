@@ -112,33 +112,4 @@ offset =
                 in
                     Shape.stackOffsetDiverging series4x4
                         |> Expect.equal expected
-          {-
-             , test "s1 s2 are correct" <|
-                 \_ ->
-                     let
-                         series =
-                             [ [ ( 0, 1 ), ( 0, 2 ), ( 0, 1 ) ]
-                             , [ ( 0, 3 ), ( 0, 4 ), ( 0, 2 ) ]
-                             , [ ( 0, 5 ), ( 0, 2 ), ( 0, 4 ) ]
-                             ]
-
-                         expected =
-                             ( [ [ 2, 6, 8 ], [ 1, 3, 7 ] ]
-                             , [ [ 1, 7, 8 ], [ -0.5, -4.5, -12.5 ] ]
-                             )
-                     in
-                         StackOffset.s1s2 series
-                             |> Expect.equal expected
-
-             , test "s1 s2 are correct for 4 x 4 " <|
-                 \_ ->
-                     let
-                         expected =
-                             ( [ [ 2, 6, 8, 11 ], [ 1, 3, 7, 12 ], [ 0, 0, 0, 1 ] ]
-                             , [ [ 1, 7, 8, 5 ], [ -0.5, -4.5, -12.5, -12.5 ], [ 0, 0, 0, -9 ] ]
-                             )
-                     in
-                         StackOffset.s1s2 series4x4
-                             |> Expect.equal expected
-          -}
         ]
