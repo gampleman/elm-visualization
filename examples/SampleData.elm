@@ -1,4 +1,4 @@
-module SampleData exposing (timeSeries, crimeRates, CrimeRate, miserablesGraph, norwegianCarSales)
+module SampleData exposing (timeSeries, crimeRates, CrimeRate, miserablesGraph, norwegianCarSales, Gender(..), Population, populationMinnesota1850)
 
 import Graph
 import Date exposing (Date)
@@ -53,6 +53,70 @@ crimeRates =
     , CrimeRate 2012 313873685 14856 85141 355051 762009 2109932 6168874 723186
     , CrimeRate 2013 316128839 14196 79770 345031 724149 1928465 6004453 699594
     ]
+
+
+type Gender
+    = M
+    | F
+
+
+type alias Population =
+    { year : Int, age : Int, gender : Gender, people : Int }
+
+
+populationMinnesota1850 : List Population
+populationMinnesota1850 =
+    let
+        parse ( year, age, gender, people ) =
+            Population year
+                age
+                (if gender == 1 then
+                    M
+                 else
+                    F
+                )
+                people
+    in
+        List.map parse
+            [ ( 1850, 0, 1, 1483789 )
+            , ( 1850, 0, 2, 1450376 )
+            , ( 1850, 5, 1, 1411067 )
+            , ( 1850, 5, 2, 1359668 )
+            , ( 1850, 10, 1, 1260099 )
+            , ( 1850, 10, 2, 1216114 )
+            , ( 1850, 15, 1, 1077133 )
+            , ( 1850, 15, 2, 1110619 )
+            , ( 1850, 20, 1, 1017281 )
+            , ( 1850, 20, 2, 1003841 )
+            , ( 1850, 25, 1, 862547 )
+            , ( 1850, 25, 2, 799482 )
+            , ( 1850, 30, 1, 730638 )
+            , ( 1850, 30, 2, 639636 )
+            , ( 1850, 35, 1, 588487 )
+            , ( 1850, 35, 2, 505012 )
+            , ( 1850, 40, 1, 475911 )
+            , ( 1850, 40, 2, 428185 )
+            , ( 1850, 45, 1, 384211 )
+            , ( 1850, 45, 2, 341254 )
+            , ( 1850, 50, 1, 321343 )
+            , ( 1850, 50, 2, 286580 )
+            , ( 1850, 55, 1, 194080 )
+            , ( 1850, 55, 2, 187208 )
+            , ( 1850, 60, 1, 174976 )
+            , ( 1850, 60, 2, 162236 )
+            , ( 1850, 65, 1, 106827 )
+            , ( 1850, 65, 2, 105534 )
+            , ( 1850, 70, 1, 73677 )
+            , ( 1850, 70, 2, 71762 )
+            , ( 1850, 75, 1, 40834 )
+            , ( 1850, 75, 2, 40229 )
+            , ( 1850, 80, 1, 23449 )
+            , ( 1850, 80, 2, 22949 )
+            , ( 1850, 85, 1, 8186 )
+            , ( 1850, 85, 2, 10511 )
+            , ( 1850, 90, 1, 5259 )
+            , ( 1850, 90, 2, 6569 )
+            ]
 
 
 miserablesGraph =
