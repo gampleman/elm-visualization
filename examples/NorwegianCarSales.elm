@@ -104,6 +104,19 @@ padding =
     }
 
 
+expandConfig : StackConfig String
+expandConfig =
+    -- this config is not displayed correctly by the code in this file
+    -- because we process a subset of the data, but still display the full x-axis
+    { data =
+        List.take 5 samples
+            |> List.map (Tuple.mapSecond <| List.take <| 12 * 3)
+    , offset =
+        Shape.stackOffsetExpand
+    , order = List.sortBy (Tuple.second >> List.sum >> negate)
+    }
+
+
 stackedGraphConfig : StackConfig String
 stackedGraphConfig =
     { data = samples
