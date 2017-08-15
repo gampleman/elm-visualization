@@ -5,7 +5,6 @@ module Visualization.StackOffset
         , expand
         , silhouette
         , wiggle
-        , sortByInsideOut
         )
 
 import List.Extra as List

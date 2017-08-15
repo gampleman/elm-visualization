@@ -55,12 +55,32 @@ variety of shape generators for your convenience.
 @docs linearCurve, monotoneInXCurve, Curve
 
 # Stack
+
+A stack is a way to fit multiple graphs into one drawing. Rather than drawing graphs on top of each other, the layers are stacked. This is useful when
+the relation between the graphs is of interest.
+
+In most cases, the absolute size of a piece of data becomes harder to determine for the reader.
+
 @docs StackConfig, StackResult, stack
 
 ## Stack Offset
+The method of stacking.
+
 @docs stackOffsetNone , stackOffsetDiverging , stackOffsetExpand , stackOffsetSilhouette , stackOffsetWiggle
 
 ## Stack Order
+
+The order of the layers. Normal list functions can be used, for instance
+
+    -- keep order of the input data
+    identity
+
+    -- reverse
+    List.reverse
+
+    -- decreasing by sum of the values (largest is lowest)
+    List.sortBy (Tuple.second >> List.sum >> negate)
+
 @docs sortByInsideOut
 -}
 
@@ -990,7 +1010,8 @@ Some example configs:
         { data = myData
         , offset = Shape.stackOffsetNone
         , order =
-            -- stylistic choice: largest (by sum of values) category at the bottom
+            -- stylistic choice: largest (by sum of values)
+            -- category at the bottom
             List.sortBy (Tuple.second >> List.sum >> negate)
         }
 
@@ -1055,7 +1076,11 @@ calculateExtremes coords =
             |> List.foldl (\( mi, ma ) ( accmin, accmax ) -> ( Basics.min mi accmin, Basics.max ma accmax )) ( 0, 0 )
 
 
-{-| Applies a zero baseline.
+{-|
+
+<img style="max-width: 100%;" src="https://rawgit.com/folkertdev/elm-visualization/master/docs/misc/stackOffsetNone.svg" />
+
+Stacks the values on top of each other, starting at 0.
 
     stackOffsetNone [ [ (0, 42) ], [ (0, 70) ] ]
                 --> [ [ (0, 42) ], [ (42, 112 ) ] ]
@@ -1068,7 +1093,11 @@ stackOffsetNone =
     StackOffset.none
 
 
-{-| Positive values are stacked above zero, negative values below zero.
+{-|
+
+<img style="max-width: 100%;" src="https://rawgit.com/folkertdev/elm-visualization/master/docs/misc/stackOffsetDiverging.svg" />
+
+Positive values are stacked above zero, negative values below zero.
 
     stackOffsetDiverging [ [ (0, 42) ], [ (0, -24) ] ]
                 --> [ [ (0, 42) ], [ (-24, 0 ) ] ]
@@ -1082,7 +1111,10 @@ stackOffsetDiverging =
     StackOffset.diverging
 
 
-{-| Applies a zero baseline and normalizes the values for each point such that the topline is always one.
+{-|
+
+<img style="max-width: 100%;" src="https://rawgit.com/folkertdev/elm-visualization/master/docs/misc/stackOffsetExpand.svg" />
+Applies a zero baseline and normalizes the values for each point such that the topline is always one.
 
     stackOffsetExpand [ [ (0, 50) ], [ (50, 100) ] ]
                 --> [[(0,0.5)],[(0.5,1)]]
@@ -1092,7 +1124,10 @@ stackOffsetExpand =
     StackOffset.expand
 
 
-{-| Shifts the baseline down such that the center of the streamgraph is always at zero.
+{-|
+
+<img style="max-width: 100%;" src="https://rawgit.com/folkertdev/elm-visualization/master/docs/misc/stackOffsetSilhouette.svg" />
+Shifts the baseline down such that the center of the streamgraph is always at zero.
 
     stackOffsetSilhouette [ [ (0, 50) ], [ (50, 100) ] ]
                 --> [[(-75,-25)],[(-25,75)]]
@@ -1102,7 +1137,13 @@ stackOffsetSilhouette =
     StackOffset.silhouette
 
 
-{-| Shifts the baseline so as to minimize the weighted wiggle of layers.
+{-|
+
+<img style="max-width: 100%;" src="https://rawgit.com/folkertdev/elm-visualization/master/docs/misc/stackOffsetWiggle.svg" />
+Shifts the baseline so as to minimize the weighted wiggle of layers.
+
+Visually, high wiggle means peaks going in both directions very close to each other. The silhouette stack offset above often suffers
+from having high wiggle.
 
     stackOffsetWiggle [ [ (0, 50) ], [ (50, 100) ] ]
                 --> [[(0,50)],[(50,150)]]
