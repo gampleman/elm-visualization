@@ -42,7 +42,10 @@ populationMinnesota1850 =
     in
         { categories = categories
         , data = [ ( 1850, List.map (.people >> toFloat) m ), ( 1850, List.map (.people >> toFloat >> negate) f ) ]
-        , extent = Visualization.List.extent categories |> Maybe.map (\( a, b ) -> ( toFloat a, toFloat b )) |> Maybe.withDefault ( 0, 0 )
+        , extent =
+            Visualization.List.extent categories
+                |> Maybe.map (\( a, b ) -> ( toFloat a, toFloat b ))
+                |> Maybe.withDefault ( 0, 0 )
         }
 
 
@@ -105,64 +108,35 @@ column ( year, values ) =
 view : StackResult Int -> Svg msg
 view { values, labels, extent } =
     let
-        _ =
-            Debug.log "extent" values
-
         scaledValues =
             values
                 |> List.transpose
                 |> List.map (List.map (\( y1, y2 ) -> ( Scale.convert xScale y1, Scale.convert xScale y2 )))
 
-        quantizeScale : QuantizeScale Int
-        quantizeScale =
-            case populationMinnesota1850.categories of
-                [] ->
-                    Debug.crash "empty data set"
-
-                c :: cs ->
-                    Scale.quantize populationMinnesota1850.extent ( c, cs )
-
         axisOptions =
             Axis.defaultOptions
 
         xScale =
-            Scale.linear extent xRange
+            Scale.linear extent ( canvas.width - (padding.top + padding.bottom), 0 )
                 |> flip Scale.nice 4
 
-        xRange =
-            ( canvas.width - (padding.top + padding.bottom), 0 )
+        yScale =
+            Scale.linear populationMinnesota1850.extent ( canvas.height - (padding.left + padding.right), 0 )
 
         xAxis : Svg msg
         xAxis =
-            Axis.axis { axisOptions | orientation = Axis.Bottom, tickFormat = Just (absoluteTickFormat xScale) } xScale
-
-        sentinelYScale =
-            Scale.linear populationMinnesota1850.extent ( canvas.height - (padding.left + padding.right), 0 )
-
-        absoluteTickFormat :
-            Scale
-                { a
-                    | convert : domain -> range -> number -> b
-                    , domain : domain
-                    , tickFormat : domain -> Int -> number -> String
-                }
-            -> number
-            -> String
-        absoluteTickFormat scale value =
-            Scale.tickFormat scale 10 (abs value)
+            Axis.axis { axisOptions | orientation = Axis.Bottom, tickFormat = Just (absoluteTickFormat xScale 10) } xScale
 
         yAxis : Svg msg
         yAxis =
-            Axis.axis
-                { axisOptions
-                    | orientation = Axis.Left
-                    , tickCount =
-                        populationMinnesota1850
-                            |> .extent
-                            |> Tuple.second
-                            |> (\v -> round v // 10 * 2)
-                }
-                sentinelYScale
+            let
+                tickCount =
+                    populationMinnesota1850
+                        |> .extent
+                        |> Tuple.second
+                        |> (\v -> round v // 10 * 2)
+            in
+                Axis.axis { axisOptions | orientation = Axis.Left, tickCount = tickCount } yScale
     in
         Svg.svg [ width (toString canvas.width ++ "px"), height (toString canvas.height ++ "px") ]
             [ g [ translate (padding.left - 1) (canvas.height - padding.top) ]
@@ -200,6 +174,20 @@ view { values, labels, extent } =
                 ]
                 [ text "People" ]
             ]
+
+
+absoluteTickFormat :
+    Scale
+        { a
+            | convert : domain -> range -> number -> b
+            , domain : domain
+            , tickFormat : domain -> Int -> number -> String
+        }
+    -> Int
+    -> number
+    -> String
+absoluteTickFormat scale tickCount value =
+    Scale.tickFormat scale tickCount (abs value)
 
 
 translate : number -> number -> Svg.Attribute msg
