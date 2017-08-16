@@ -1,4 +1,4 @@
-module SampleData exposing (timeSeries, crimeRates, CrimeRate, miserablesGraph, norwegianCarSales, Gender(..), Population, populationMinnesota1850)
+module SampleData exposing (timeSeries, crimeRates, CrimeRate, miserablesGraph, norwegianCarSales, Gender(..), Population, populationMinnesota1850, norwegianCarSalesMiddlePlayers)
 
 import Graph
 import Date exposing (Date)
@@ -454,6 +454,46 @@ miserablesGraph =
         , ( 76, 48 )
         , ( 76, 58 )
         ]
+
+
+norwegianCarSalesMiddlePlayers : List ( String, List Float )
+norwegianCarSalesMiddlePlayers =
+    let
+        emptyYear : List number
+        emptyYear =
+            List.repeat 12 0
+
+        yearValues : unused -> Dict Int (Dict Int number) -> List Float
+        yearValues make years =
+            List.range 2007 2016
+                |> List.map (yearValue (Dict.map monthValues years))
+                |> List.concat
+
+        yearValue : Dict comparable (List number) -> comparable -> List number
+        yearValue year index =
+            Dict.get index year
+                |> Maybe.withDefault emptyYear
+
+        monthValues : unused -> Dict Int number -> List Float
+        monthValues year months =
+            List.range 1 12
+                |> List.map (monthValue months)
+
+        monthValue : Dict Int number -> Int -> Float
+        monthValue months index =
+            Dict.get index months
+                |> Maybe.withDefault 0
+                |> toFloat
+    in
+        -- first, for every make convert the nested dict into a rectangular matrix (size: length data x 12), padding with 0s when data is missing
+        -- then, sort and select the middle brands:
+        -- they have more variation, which makes for a more interesting graph.
+        norwegianCarSales
+            |> Dict.map yearValues
+            |> Dict.toList
+            |> List.sortBy (Tuple.second >> List.sum >> negate)
+            |> List.drop 4
+            |> List.take 8
 
 
 {-| Subset of a kaggle dataset
