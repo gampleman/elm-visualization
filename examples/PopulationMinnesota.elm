@@ -1,4 +1,4 @@
-module DutchTemperatures exposing (..)
+module PopulationMinnesota exposing (..)
 
 import SampleData exposing (Gender(M, F))
 import Color.Convert exposing (colorToCssRgba)

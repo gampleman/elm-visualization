@@ -30,13 +30,7 @@ samples =
 
 colorScale : OrdinalScale String Color
 colorScale =
-    let
-        colors =
-            Scale.linear ( 0.1, 1.0 ) ( 0, 1 )
-                |> flip Scale.ticks (List.length samples + 1)
-                |> List.map (\v -> Scale.viridisInterpolator (1 - v))
-    in
-        Scale.ordinal (List.reverse <| List.map Tuple.first samples) colors
+    Scale.ordinal (List.reverse <| List.map Tuple.first samples) Scale.category20c
 
 
 sampleColor : String -> Color
