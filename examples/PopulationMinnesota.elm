@@ -81,20 +81,17 @@ colors =
         |> List.map colorToCssRgba
 
 
-column : ( Int, List ( Float, Float ) ) -> Svg msg
-column ( year, values ) =
+column : BandScale Int -> ( Int, List ( Float, Float ) ) -> Svg msg
+column yScale ( year, values ) =
     let
-        barHeight =
-            15
-
-        scale =
-            Scale.linear populationMinnesota1850.extent ( canvas.height - (padding.top + padding.bottom + barHeight), 0 )
+        bandwidth =
+            Scale.bandwidth yScale
 
         block color ( upperY, lowerY ) =
             rect
-                [ y <| toString <| Scale.convert scale (toFloat year)
+                [ y <| toString <| Scale.convert yScale year
                 , x <| toString <| lowerY
-                , height <| toString <| barHeight
+                , height <| toString <| bandwidth
                 , width <| toString <| (abs <| upperY - lowerY)
                 , fill color
                 ]
@@ -116,12 +113,14 @@ view { values, labels, extent } =
         axisOptions =
             Axis.defaultOptions
 
+        xScale : ContinuousScale
         xScale =
             Scale.linear extent ( canvas.width - (padding.top + padding.bottom), 0 )
                 |> flip Scale.nice 4
 
+        yScale : BandScale Int
         yScale =
-            Scale.linear populationMinnesota1850.extent ( canvas.height - (padding.left + padding.right), 0 )
+            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } populationMinnesota1850.categories ( 0, canvas.height - (padding.left + padding.right) )
 
         xAxis : Svg msg
         xAxis =
@@ -136,13 +135,13 @@ view { values, labels, extent } =
                         |> Tuple.second
                         |> (\v -> round v // 10 * 2)
             in
-                Axis.axis { axisOptions | orientation = Axis.Left, tickCount = tickCount } yScale
+                Axis.axis { axisOptions | orientation = Axis.Left } (Scale.toRenderable yScale)
     in
         Svg.svg [ width (toString canvas.width ++ "px"), height (toString canvas.height ++ "px") ]
             [ g [ translate (padding.left - 1) (canvas.height - padding.top) ]
                 [ xAxis ]
             , g [ translate padding.left padding.top, class "series" ] <|
-                List.map column (List.map2 (,) populationMinnesota1850.categories scaledValues)
+                List.map (column yScale) (List.map2 (,) populationMinnesota1850.categories scaledValues)
             , g [ translate (padding.left - 1) padding.top ]
                 [ yAxis
                 , text_ [ fontFamily "sans-serif", fontSize "18", x "5", y "5" ] [ text "Age" ]
@@ -157,14 +156,14 @@ view { values, labels, extent } =
                 , fontSize "20"
                 , textAnchor "middle"
                 ]
-                [ text "Males" ]
+                [ text "Men" ]
             , text_
                 [ translate (padding.left + Scale.convert xScale -500000) (2 * padding.top)
                 , fontFamily "sans-serif"
                 , fontSize "20"
                 , textAnchor "middle"
                 ]
-                [ text "Females" ]
+                [ text "Women" ]
             , text_
                 [ translate (padding.left + Scale.convert xScale 0) (canvas.height - padding.bottom / 2)
                 , fontFamily "sans-serif"
@@ -176,6 +175,8 @@ view { values, labels, extent } =
             ]
 
 
+{-| Make negative numbers appear as positive in the ticks
+-}
 absoluteTickFormat :
     Scale
         { a
