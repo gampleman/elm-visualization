@@ -1,4 +1,26 @@
-module Visualization.Shape exposing (line, area, linearCurve, monotoneInXCurve, Curve, pie, Arc, arc, centroid, defaultPieConfig, PieConfig)
+module Visualization.Shape
+    exposing
+        ( line
+        , area
+        , linearCurve
+        , monotoneInXCurve
+        , Curve
+        , pie
+        , Arc
+        , arc
+        , centroid
+        , defaultPieConfig
+        , PieConfig
+        , stackOffsetNone
+        , stackOffsetDiverging
+        , stackOffsetExpand
+        , stackOffsetSilhouette
+        , stackOffsetWiggle
+        , sortByInsideOut
+        , StackConfig
+        , StackResult
+        , stack
+        )
 
 {-| Visualizations typically consist of discrete graphical marks, such as symbols,
 arcs, lines and areas. While the rectangles of a bar chart may be easy enough to
@@ -32,9 +54,38 @@ variety of shape generators for your convenience.
 
 @docs linearCurve, monotoneInXCurve, Curve
 
+# Stack
+
+A stack is a way to fit multiple graphs into one drawing. Rather than drawing graphs on top of each other, the layers are stacked. This is useful when
+the relation between the graphs is of interest.
+
+In most cases, the absolute size of a piece of data becomes harder to determine for the reader.
+
+@docs StackConfig, StackResult, stack
+
+## Stack Offset
+The method of stacking.
+
+@docs stackOffsetNone , stackOffsetDiverging , stackOffsetExpand , stackOffsetSilhouette , stackOffsetWiggle
+
+## Stack Order
+
+The order of the layers. Normal list functions can be used, for instance
+
+    -- keep order of the input data
+    identity
+
+    -- reverse
+    List.reverse
+
+    -- decreasing by sum of the values (largest is lowest)
+    List.sortBy (Tuple.second >> List.sum >> negate)
+
+@docs sortByInsideOut
 -}
 
 import Visualization.Path as Path exposing (..)
+import Visualization.StackOffset as StackOffset
 import Array
 import Dict
 
@@ -115,7 +166,6 @@ subtract disproportionately from smaller arcs, introducing distortion.
 
 The pad radius determines the fixed linear distance separating adjacent arcs,
 defined as padRadius * padAngle.
-
 -}
 type alias Arc =
     { innerRadius : Float
@@ -938,3 +988,193 @@ area curve data =
                     ( Just p1, Area [ p1 ] :: l )
     in
         toAttrString <| List.concatMap curve <| Tuple.second <| List.foldr makeCurves ( Nothing, [] ) data
+
+
+
+--- STACK
+
+
+{-| Configuration for a stacked chart.
+
+* **data:** List of values with an accompanying label.
+* **offset:** How to stack the layers on top of each other.
+* **order:** sorting function to determine the order of the layers.
+
+Some example configs:
+
+
+    -- myData : List ( String, List Float )
+
+    stackedBarChart : StackConfig String
+    stackedBarChart =
+        { data = myData
+        , offset = Shape.stackOffsetNone
+        , order =
+            -- stylistic choice: largest (by sum of values)
+            -- category at the bottom
+            List.sortBy (Tuple.second >> List.sum >> negate)
+        }
+
+
+    streamgraph : StackConfig String
+    streamgraph =
+        { data = myData
+        , offset = Shape.stackOffsetWiggle
+        , order = Shape.sortByInsideOut (Tuple.second >> List.sum)
+        }
+-}
+type alias StackConfig a =
+    { data : List ( a, List Float )
+    , offset : List (List ( Float, Float )) -> List (List ( Float, Float ))
+    , order : List ( a, List Float ) -> List ( a, List Float )
+    }
+
+
+{-| The basis for constructing a stacked chart
+
+* **labels:** Sorted list of labels
+* **values:** Sorted list of values, where every item is a `(yLow, yHigh)` pair.
+* **extent:** The minimum and maximum y-value. Convenient for creating scales.
+-}
+type alias StackResult a =
+    { values : List (List ( Float, Float ))
+    , labels : List a
+    , extent : ( Float, Float )
+    }
+
+
+{-| Create a stack result
+-}
+stack : StackConfig a -> StackResult a
+stack { offset, order, data } =
+    let
+        ( labels, values ) =
+            data
+                |> order
+                |> List.unzip
+
+        stacked =
+            values
+                |> List.map (List.map (\e -> ( 0, e )))
+                |> offset
+    in
+        { values = stacked
+        , labels = labels
+        , extent = calculateExtremes stacked
+        }
+
+
+{-| Calculates the minimal and maximal y values, for correct scaling
+-}
+calculateExtremes : List (List ( Float, Float )) -> ( Float, Float )
+calculateExtremes coords =
+    let
+        folder ( y1, y2 ) ( accmin, accmax ) =
+            ( Basics.min y1 y2 |> Basics.min accmin, Basics.max y1 y2 |> Basics.max accmax )
+    in
+        List.map (List.foldl folder ( 0, 0 )) coords
+            |> List.foldl (\( mi, ma ) ( accmin, accmax ) -> ( Basics.min mi accmin, Basics.max ma accmax )) ( 0, 0 )
+
+
+{-|
+
+<img style="max-width: 100%;" src="https://rawgit.com/folkertdev/elm-visualization/master/docs/misc/stackOffsetNone.svg" />
+
+Stacks the values on top of each other, starting at 0.
+
+    stackOffsetNone [ [ (0, 42) ], [ (0, 70) ] ]
+                --> [ [ (0, 42) ], [ (42, 112 ) ] ]
+
+    stackOffsetNone [ [ (0, 42) ], [ (20, 70) ] ]
+                --> [ [ (0, 42) ], [ (42, 112 ) ] ]
+-}
+stackOffsetNone : List (List ( Float, Float )) -> List (List ( Float, Float ))
+stackOffsetNone =
+    StackOffset.none
+
+
+{-|
+
+<img style="max-width: 100%;" src="https://rawgit.com/folkertdev/elm-visualization/master/docs/misc/stackOffsetDiverging.svg" />
+
+Positive values are stacked above zero, negative values below zero.
+
+    stackOffsetDiverging [ [ (0, 42) ], [ (0, -24) ] ]
+                --> [ [ (0, 42) ], [ (-24, 0 ) ] ]
+
+    stackOffsetDiverging [ [ (0, 42), (0, -20) ], [ (0, -24), (0, -24) ] ]
+                --> [[(0,42),(-20,0)],[(-24,0),(-44,-20)]]
+
+-}
+stackOffsetDiverging : List (List ( Float, Float )) -> List (List ( Float, Float ))
+stackOffsetDiverging =
+    StackOffset.diverging
+
+
+{-|
+
+<img style="max-width: 100%;" src="https://rawgit.com/folkertdev/elm-visualization/master/docs/misc/stackOffsetExpand.svg" />
+Applies a zero baseline and normalizes the values for each point such that the topline is always one.
+
+    stackOffsetExpand [ [ (0, 50) ], [ (50, 100) ] ]
+                --> [[(0,0.5)],[(0.5,1)]]
+-}
+stackOffsetExpand : List (List ( Float, Float )) -> List (List ( Float, Float ))
+stackOffsetExpand =
+    StackOffset.expand
+
+
+{-|
+
+<img style="max-width: 100%;" src="https://rawgit.com/folkertdev/elm-visualization/master/docs/misc/stackOffsetSilhouette.svg" />
+Shifts the baseline down such that the center of the streamgraph is always at zero.
+
+    stackOffsetSilhouette [ [ (0, 50) ], [ (50, 100) ] ]
+                --> [[(-75,-25)],[(-25,75)]]
+-}
+stackOffsetSilhouette : List (List ( Float, Float )) -> List (List ( Float, Float ))
+stackOffsetSilhouette =
+    StackOffset.silhouette
+
+
+{-|
+
+<img style="max-width: 100%;" src="https://rawgit.com/folkertdev/elm-visualization/master/docs/misc/stackOffsetWiggle.svg" />
+Shifts the baseline so as to minimize the weighted wiggle of layers.
+
+Visually, high wiggle means peaks going in both directions very close to each other. The silhouette stack offset above often suffers
+from having high wiggle.
+
+    stackOffsetWiggle [ [ (0, 50) ], [ (50, 100) ] ]
+                --> [[(0,50)],[(50,150)]]
+-}
+stackOffsetWiggle : List (List ( Float, Float )) -> List (List ( Float, Float ))
+stackOffsetWiggle =
+    StackOffset.wiggle
+
+
+{-| Sort such that small values are at the outer edges, and large values in the middle.
+
+This is the recommended order for stream graphs.
+-}
+sortByInsideOut : (a -> Float) -> List a -> List a
+sortByInsideOut toNumber items =
+    -- NOTE this can't be (a -> number) in 0.18.
+    -- because `(+)` needs a number and `List.sortBy` needs a `comparable`, using `a -> number` won't typecheck.
+    -- This will be possible in 0.19
+    let
+        withSum =
+            List.map (\element -> ( element, toNumber element )) items
+
+        folder ( element, sum ) ( bottom, bottoms, top, tops ) =
+            if top < bottom then
+                ( bottom, bottoms, top + sum, element :: tops )
+            else
+                ( bottom + sum, element :: bottoms, top, tops )
+
+        ( _, bottom, _, top ) =
+            withSum
+                |> List.sortBy Tuple.second
+                |> List.foldl folder ( 0, [], 0, [] )
+    in
+        List.reverse bottom ++ top
