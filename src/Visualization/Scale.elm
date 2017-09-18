@@ -580,7 +580,7 @@ band config domain range =
 {-| Returns the width of a band in a band scale.
 
     scale : BandScale String
-    scale = band ["a", "b", "c"] (0, 120)
+    scale = band defaultBandConfig ["a", "b", "c"] (0, 120)
 
     bandwidth scale --> 40
 

@@ -11,7 +11,7 @@ that uniquely suite your needs.
 
 ## Learn by example
 
-[![PadAngle](http://code.gampleman.eu/elm-visualization/PadAngle/preview.png)  ![CrimeViz](http://code.gampleman.eu/elm-visualization/CrimeViz/preview.png) ![Curves](http://code.gampleman.eu/elm-visualization/Curves/preview.png) ![ForceDirectedGraph](http://code.gampleman.eu/elm-visualization/ForceDirectedGraph/preview.png)](http://code.gampleman.eu/elm-visualization/)
+<a href="http://code.gampleman.eu/elm-visualization/"><img src="http://code.gampleman.eu/elm-visualization/misc/examples@2x.png" alt="Examples" srcset="http://code.gampleman.eu/elm-visualization/misc/Logo.png, http://code.gampleman.eu/elm-visualization/misc/Logo@2x.png 2x" style="max-width: 100%" /></a>
 
 ## What's included?
 
@@ -58,7 +58,7 @@ A bag of list processing methods that encapsulate common algorithms.
 
 ## Acknowledgements
 
-Currently, it is almost a straight port of parts of the [D3](https://github.com/d3/d3) library
+Heavily inspired by parts of the [D3](https://github.com/d3/d3) library
 by [Mike Bostock](https://bost.ocks.org/mike/). However since Elm provides a
 great DOM abstraction already, selections are not part of this library.
 

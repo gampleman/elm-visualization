@@ -11,6 +11,7 @@ import Visualization.Shape as Shape
 import Svg exposing (Svg, svg, rect, path, g, line, text, text_)
 import Svg.Attributes exposing (..)
 import Visualization.Path
+import Example
 
 
 screenWidth : Float
@@ -98,35 +99,25 @@ drawLegend index ( name, curve, color ) =
     text_ [ style ("color: " ++ color ++ "; font-family: monospace"), x (toString padding), y (toString (toFloat index * 20 + padding)) ] [ text name ]
 
 
-view : Msg -> Svg Msg
+view : List ( String, Curve, String ) -> Svg String
 view model =
     div []
         [ p []
             [ text "Curve type: "
-            , a [ href "#linear", onClick Linear ] [ text "Linear" ]
-            , text " "
-            , a [ href "#monotone-in-x", onClick MonotoneInX ] [ text "MonotoneInX" ]
+            , Example.linkTo Linear [] [ text "Linear" ]
+            , text " | "
+            , Example.linkTo MonotoneInX [] [ text "MonotoneInX" ]
             ]
         , svg [ width (toString screenWidth), height (toString screenHeight) ]
             [ rect [ width "100%", height "100%", fill "#dfdfdf" ] []
             , g [] <| List.indexedMap yGridLine <| Scale.ticks yScale 10
             , g [] <| List.indexedMap xGridLine <| Scale.ticks xScale 20
             , g [] <|
-                List.map drawCurve (curveTypes model)
+                List.map drawCurve model
             , g [] <| List.map (\point -> Svg.path [ d circle, fill "white", stroke "black", transform ("translate" ++ toString point) ] []) preparedPoints
-            , g [] <| List.indexedMap drawLegend <| curveTypes model
+            , g [] <| List.indexedMap drawLegend <| model
             ]
         ]
-
-
-curveTypes : Msg -> List ( String, Curve, String )
-curveTypes model =
-    case model of
-        Linear ->
-            [ ( "linearCurve", Shape.linearCurve, "#000" ) ]
-
-        MonotoneInX ->
-            [ ( "monotoneInXCurve", Shape.monotoneInXCurve, "#000" ) ]
 
 
 circle : String
@@ -142,11 +133,14 @@ circle =
         }
 
 
-type Msg
+type Views
     = Linear
     | MonotoneInX
 
 
-main : Program Never Msg Msg
+main : Program Never String String
 main =
-    Html.beginnerProgram { model = Linear, view = view, update = (\msg model -> msg) }
+    Example.switchableViews
+        [ ( Linear, view [ ( "linearCurve", Shape.linearCurve, "#000" ) ] )
+        , ( MonotoneInX, view [ ( "monotoneInXCurve", Shape.monotoneInXCurve, "#000" ) ] )
+        ]

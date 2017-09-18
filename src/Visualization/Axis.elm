@@ -81,7 +81,7 @@ position of the axis with respect to the chart, specify a transform attribute on
 the containing element.
 
 The elements created by the axis are considered part of its public API.
-You can apply external stylesheets or modify the generated axis elements to
+You can apply external stylesheets to
 customize the axis appearance. An axis consists of a path element of class
 “domain” representing the extent of the scale’s domain, followed by transformed
 g elements of class “tick” representing each of the scale’s ticks. Each tick has

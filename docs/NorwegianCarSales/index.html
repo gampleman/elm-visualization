@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>NorwegianCarSales Example</title>
+    <style media="screen">
+      body {
+        font-family: Helvetica, sans-serif;
+        display: flex;
+      }
+      main {
+        order: 1;
+      }
+      aside {
+        width: 300px;
+      }
+      aside ul {
+        padding: 0;
+      }
+      aside li {
+        list-style-type: none;
+        margin: 10px;
+      }
+      aside li.active a {
+        text-decoration: none;
+      }
+      iframe {
+        border: 1px solid black;
+      }
+      hr:first-of-type {
+        display: none;
+      }
+      /*
+
+Atom One Light by Daniel Gamage
+Original One Light Syntax theme from https://github.com/atom/one-light-syntax
+
+base:    #fafafa
+mono-1:  #383a42
+mono-2:  #686b77
+mono-3:  #a0a1a7
+hue-1:   #0184bb
+hue-2:   #4078f2
+hue-3:   #a626a4
+hue-4:   #50a14f
+hue-5:   #e45649
+hue-5-2: #c91243
+hue-6:   #986801
+hue-6-2: #c18401
+
+*/
+
+.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0.5em;
+  color: #383a42;
+  background: #fafafa;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #a0a1a7;
+  font-style: italic;
+}
+
+.hljs-doctag,
+.hljs-keyword,
+.hljs-formula {
+  color: #a626a4;
+}
+
+.hljs-section,
+.hljs-name,
+.hljs-selector-tag,
+.hljs-deletion,
+.hljs-subst {
+  color: #e45649;
+}
+
+.hljs-literal {
+  color: #0184bb;
+}
+
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-attribute,
+.hljs-meta-string {
+  color: #50a14f;
+}
+
+.hljs-built_in,
+.hljs-class .hljs-title {
+  color: #c18401;
+}
+
+.hljs-attr,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-type,
+.hljs-selector-class,
+.hljs-selector-attr,
+.hljs-selector-pseudo,
+.hljs-number {
+  color: #986801;
+}
+
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link,
+.hljs-meta,
+.hljs-selector-id,
+.hljs-title {
+  color: #4078f2;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
+
+.hljs-link {
+  text-decoration: underline;
+}
+
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>NorwegianCarSales</h1>
+
+      <iframe src="iframe.html" width="990" height="504" frameborder="1"></iframe>
+
+      
+        <hr />
+        <h3>NorwegianCarSales</h3>
+        <div class="description"><p> This example demonstates using different kinds of layouts for stacked graphs.</p>
+</div>
+        <pre><code class="elm"><span class="hljs-keyword">module</span> NorwegianCarSales <span class="hljs-keyword">exposing</span> (main)
+
+
+<span class="hljs-keyword">import</span> SampleData
+<span class="hljs-keyword">import</span> Color.Convert <span class="hljs-keyword">exposing</span> (colorToCssRgb)
+<span class="hljs-keyword">import</span> Visualization.Scale <span class="hljs-keyword">as</span> Scale <span class="hljs-keyword">exposing</span> (<span class="hljs-type">ContinuousScale</span>, <span class="hljs-type">OrdinalScale</span>, <span class="hljs-type">Scale</span>)
+<span class="hljs-keyword">import</span> Visualization.Axis <span class="hljs-keyword">as</span> Axis <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Orientation(..)</span>)
+<span class="hljs-keyword">import</span> List.Extra <span class="hljs-keyword">as</span> List
+<span class="hljs-keyword">import</span> Color <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Color</span>)
+<span class="hljs-keyword">import</span> Svg <span class="hljs-keyword">exposing</span> (..)
+<span class="hljs-keyword">import</span> Html <span class="hljs-keyword">exposing</span> (div)
+<span class="hljs-keyword">import</span> Html.Attributes
+<span class="hljs-keyword">import</span> Svg.Attributes <span class="hljs-keyword">exposing</span> (..)
+<span class="hljs-keyword">import</span> Visualization.Shape <span class="hljs-keyword">as</span> Shape <span class="hljs-keyword">exposing</span> (<span class="hljs-type">StackConfig</span>, <span class="hljs-type">StackResult</span>)
+<span class="hljs-keyword">import</span> Date <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Date</span>, <span class="hljs-type">Month(..)</span>)
+<span class="hljs-keyword">import</span> Date.Extra <span class="hljs-keyword">as</span> Date
+<span class="hljs-keyword">import</span> Example
+
+
+<span class="hljs-title">samples</span> : <span class="hljs-type">List</span> ( <span class="hljs-type">String</span>, <span class="hljs-type">List</span> <span class="hljs-type">Float</span> )
+<span class="hljs-title">samples</span> =
+    <span class="hljs-type">SampleData</span>.norwegianCarSalesMiddlePlayers
+
+
+<span class="hljs-title">colorScale</span> : <span class="hljs-type">OrdinalScale</span> <span class="hljs-type">String</span> <span class="hljs-type">Color</span>
+<span class="hljs-title">colorScale</span> =
+    <span class="hljs-type">Scale</span>.ordinal (<span class="hljs-type">List</span>.reverse &lt;| <span class="hljs-type">List</span>.map <span class="hljs-type">Tuple</span>.first samples) <span class="hljs-type">Scale</span>.category20c
+
+
+<span class="hljs-title">sampleColor</span> : <span class="hljs-type">String</span> -&gt; <span class="hljs-type">Color</span>
+<span class="hljs-title">sampleColor</span> label =
+    <span class="hljs-type">Scale</span>.convert colorScale label |&gt; <span class="hljs-type">Maybe</span>.withDefault <span class="hljs-type">Color</span>.black
+
+
+<span class="hljs-title">colors</span> : <span class="hljs-type">List</span> <span class="hljs-type">String</span> -&gt; <span class="hljs-type">List</span> <span class="hljs-type">Color</span>
+<span class="hljs-title">colors</span> labels =
+    <span class="hljs-type">List</span>.map sampleColor labels
+
+
+<span class="hljs-title">width</span> : number
+<span class="hljs-title">width</span> =
+    <span class="hljs-number">990</span>
+
+
+<span class="hljs-title">height</span> : number
+<span class="hljs-title">height</span> =
+    <span class="hljs-number">504</span>
+
+
+<span class="hljs-title">padding</span> : number
+<span class="hljs-title">padding</span> =
+    <span class="hljs-number">40</span>
+
+
+<span class="hljs-title">stackedGraphConfig</span> : <span class="hljs-type">StackConfig</span> <span class="hljs-type">String</span>
+<span class="hljs-title">stackedGraphConfig</span> =
+    { data = samples
+    , offset = <span class="hljs-type">Shape</span>.stackOffsetNone
+    , order = <span class="hljs-type">List</span>.sortBy (<span class="hljs-type">Tuple</span>.second &gt;&gt; <span class="hljs-type">List</span>.sum &gt;&gt; negate)
+    }
+
+
+<span class="hljs-title">streamgraphConfig</span> : <span class="hljs-type">StackConfig</span> <span class="hljs-type">String</span>
+<span class="hljs-title">streamgraphConfig</span> =
+    { data = samples
+    , offset = <span class="hljs-type">Shape</span>.stackOffsetWiggle
+    , order = <span class="hljs-type">Shape</span>.sortByInsideOut (<span class="hljs-type">Tuple</span>.second &gt;&gt; <span class="hljs-type">List</span>.sum)
+    }
+
+
+<span class="hljs-title">silhouetteConfig</span> : <span class="hljs-type">StackConfig</span> <span class="hljs-type">String</span>
+<span class="hljs-title">silhouetteConfig</span> =
+    { data = samples
+    , offset = <span class="hljs-type">Shape</span>.stackOffsetSilhouette
+    , order = <span class="hljs-type">Shape</span>.sortByInsideOut (<span class="hljs-type">Tuple</span>.second &gt;&gt; <span class="hljs-type">List</span>.sum)
+    }
+
+
+<span class="hljs-title">view</span> : <span class="hljs-type">StackResult</span> <span class="hljs-type">String</span> -&gt; <span class="hljs-type">Svg</span> <span class="hljs-type">String</span>
+<span class="hljs-title">view</span> { values, labels, extent } =
+    <span class="hljs-keyword">let</span>
+        labelsWidth =
+            <span class="hljs-number">50</span>
+
+        size : <span class="hljs-type">Int</span>
+        size =
+            <span class="hljs-type">List</span>.head values
+                |&gt; <span class="hljs-type">Maybe</span>.map <span class="hljs-type">List</span>.length
+                |&gt; <span class="hljs-type">Maybe</span>.withDefault <span class="hljs-number">0</span>
+
+        xScale : <span class="hljs-type">ContinuousScale</span>
+        xScale =
+            <span class="hljs-comment">-- map an index to screen space</span>
+            <span class="hljs-type">Scale</span>.linear ( <span class="hljs-number">0</span>, toFloat size - <span class="hljs-number">1</span> ) ( padding, width - padding - labelsWidth )
+
+        yScale : <span class="hljs-type">ContinuousScale</span>
+        yScale =
+            <span class="hljs-type">Scale</span>.linear extent ( height - padding, padding )
+                |&gt; flip <span class="hljs-type">Scale</span>.nice <span class="hljs-number">4</span>
+
+        axisOptions =
+            <span class="hljs-type">Axis</span>.defaultOptions
+
+        xAxis : <span class="hljs-type">Svg</span> msg
+        xAxis =
+            <span class="hljs-comment">-- construct the time domain for display</span>
+            <span class="hljs-comment">-- the data is per-month, so we have to pick a day</span>
+            <span class="hljs-comment">-- to get the ticks to show up correctly, the upper bound needs to be Jan 2 (Jan 1 does not work).</span>
+            <span class="hljs-type">Scale</span>.time ( <span class="hljs-type">Date</span>.fromCalendarDate <span class="hljs-number">2007</span> <span class="hljs-type">Jan</span> <span class="hljs-number">1</span>, <span class="hljs-type">Date</span>.fromCalendarDate <span class="hljs-number">2017</span> <span class="hljs-type">Jan</span> <span class="hljs-number">2</span> ) ( <span class="hljs-number">0</span>, width - padding * <span class="hljs-number">2</span> - labelsWidth )
+                |&gt; <span class="hljs-type">Axis</span>.axis { axisOptions | orientation = <span class="hljs-type">Axis</span>.<span class="hljs-type">Bottom</span>, tickCount = <span class="hljs-number">1</span> }
+
+        yAxis : <span class="hljs-type">Svg</span> msg
+        yAxis =
+            <span class="hljs-type">Axis</span>.axis { axisOptions | orientation = <span class="hljs-type">Axis</span>.<span class="hljs-type">Left</span> } yScale
+
+        paths =
+            <span class="hljs-type">List</span>.map2 (renderStream ( xScale, yScale )) (colors labels) values
+
+        labelPositions =
+            <span class="hljs-keyword">let</span>
+                position ys =
+                    ys
+                        |&gt; <span class="hljs-type">List</span>.last
+                        |&gt; <span class="hljs-type">Maybe</span>.withDefault ( <span class="hljs-number">0</span>, <span class="hljs-number">0</span> )
+                        |&gt; (\( y1, y2 ) -&gt; (y2 + y1) / <span class="hljs-number">2</span>)
+                        |&gt; <span class="hljs-type">Scale</span>.convert yScale
+            <span class="hljs-keyword">in</span>
+                <span class="hljs-type">List</span>.map position values
+
+        labelElement : <span class="hljs-type">String</span> -&gt; <span class="hljs-type">Float</span> -&gt; <span class="hljs-type">Svg</span> msg
+        labelElement label yPosition =
+            g [ translate (width - padding - labelsWidth + <span class="hljs-number">10</span>) yPosition ]
+                [ text_ [ fill (sampleColor label |&gt; colorToCssRgb) ] [ text label ] ]
+    <span class="hljs-keyword">in</span>
+        div []
+            [ titleNavigation
+            , <span class="hljs-type">Svg</span>.svg [ <span class="hljs-type">Svg</span>.<span class="hljs-type">Attributes</span>.width (toString width ++ <span class="hljs-string">"px"</span>), <span class="hljs-type">Svg</span>.<span class="hljs-type">Attributes</span>.height (toString height ++ <span class="hljs-string">"px"</span>) ]
+                [ g [ translate (padding - <span class="hljs-number">1</span>) (height - padding) ]
+                    [ xAxis ]
+                , g [ class <span class="hljs-string">"series"</span> ] paths
+                , g [ fontFamily <span class="hljs-string">"sans-serif"</span>, fontSize <span class="hljs-string">"10"</span> ]
+                    (<span class="hljs-type">List</span>.map2 labelElement labels labelPositions)
+                ]
+            ]
+
+
+<span class="hljs-title">titleNavigation</span> : <span class="hljs-type">Html</span>.<span class="hljs-type">Html</span> <span class="hljs-type">String</span>
+<span class="hljs-title">titleNavigation</span> =
+    div [ <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.style [ ( <span class="hljs-string">"padding"</span>, toString padding ++ <span class="hljs-string">"px"</span> ), ( <span class="hljs-string">"font-family"</span>, <span class="hljs-string">"sans-serif"</span> ), ( <span class="hljs-string">"position"</span>, <span class="hljs-string">"absolute"</span> ) ] ]
+        [ <span class="hljs-type">Html</span>.h1 [ <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.style [ ( <span class="hljs-string">"margin-top"</span>, <span class="hljs-string">"0px"</span> ), ( <span class="hljs-string">"font-size"</span>, <span class="hljs-string">"20px"</span> ) ] ] [ text <span class="hljs-string">"Car Sales in Norway"</span> ]
+        , <span class="hljs-type">Html</span>.p []
+            [ text <span class="hljs-string">"Layout: "</span>
+            , <span class="hljs-type">Example</span>.linkTo <span class="hljs-type">StreamGraph</span> [] [ text <span class="hljs-string">"Stream Graph"</span> ]
+            , text <span class="hljs-string">" | "</span>
+            , <span class="hljs-type">Example</span>.linkTo <span class="hljs-type">Sillhoutte</span> [] [ text <span class="hljs-string">"Sillhoutte"</span> ]
+            , text <span class="hljs-string">" | "</span>
+            , <span class="hljs-type">Example</span>.linkTo <span class="hljs-type">Stacked</span> [] [ text <span class="hljs-string">"Stacked Area"</span> ]
+            ]
+        ]
+
+
+<span class="hljs-comment">{-| Renders one colored stream with given scaling
+-}</span>
+<span class="hljs-title">renderStream</span> : ( <span class="hljs-type">ContinuousScale</span>, <span class="hljs-type">ContinuousScale</span> ) -&gt; <span class="hljs-type">Color</span> -&gt; <span class="hljs-type">List</span> ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> ) -&gt; <span class="hljs-type">Svg</span> msg
+<span class="hljs-title">renderStream</span> scales color coords =
+    <span class="hljs-type">Svg</span>.path [ fill (colorToCssRgb color), d (toArea scales coords) ] []
+
+
+<span class="hljs-comment">{-| Create a svg path string that draws the area between two lines
+-}</span>
+<span class="hljs-title">toArea</span> : ( <span class="hljs-type">ContinuousScale</span>, <span class="hljs-type">ContinuousScale</span> ) -&gt; <span class="hljs-type">List</span> ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> ) -&gt; <span class="hljs-type">String</span>
+<span class="hljs-title">toArea</span> ( scaleX, scaleY ) ys =
+    <span class="hljs-keyword">let</span>
+        mapper : <span class="hljs-type">Int</span> -&gt; ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> ) -&gt; <span class="hljs-type">Maybe</span> ( ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> ), ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> ) )
+        mapper index ( y1, y2 ) =
+            <span class="hljs-keyword">let</span>
+                xCoord =
+                    index
+                        |&gt; toFloat
+                        |&gt; <span class="hljs-type">Scale</span>.convert scaleX
+
+                ( low, high ) =
+                    <span class="hljs-keyword">if</span> y1 &lt; y2 <span class="hljs-keyword">then</span>
+                        ( y1, y2 )
+                    <span class="hljs-keyword">else</span>
+                        ( y2, y1 )
+            <span class="hljs-keyword">in</span>
+                <span class="hljs-type">Just</span>
+                    ( ( xCoord, <span class="hljs-type">Scale</span>.convert scaleY low )
+                    , ( xCoord, <span class="hljs-type">Scale</span>.convert scaleY high )
+                    )
+    <span class="hljs-keyword">in</span>
+        <span class="hljs-type">List</span>.indexedMap mapper ys
+            |&gt; <span class="hljs-type">Shape</span>.area <span class="hljs-type">Shape</span>.monotoneInXCurve
+
+
+<span class="hljs-title">translate</span> : number -&gt; number -&gt; <span class="hljs-type">Svg</span>.<span class="hljs-type">Attribute</span> msg
+<span class="hljs-title">translate</span> x y =
+    transform (<span class="hljs-string">"translate("</span> ++ toString x ++ <span class="hljs-string">", "</span> ++ toString y ++ <span class="hljs-string">")"</span>)
+
+
+<span class="hljs-keyword">type</span> <span class="hljs-type">Views</span>
+    = <span class="hljs-type">StreamGraph</span>
+    | <span class="hljs-type">Sillhoutte</span>
+    | <span class="hljs-type">Stacked</span>
+
+
+<span class="hljs-title">main</span> : <span class="hljs-type">Program</span> <span class="hljs-type">Never</span> <span class="hljs-type">String</span> <span class="hljs-type">String</span>
+<span class="hljs-title">main</span> =
+    <span class="hljs-type">Example</span>.switchableViews
+        [ ( <span class="hljs-type">StreamGraph</span>, view (<span class="hljs-type">Shape</span>.stack streamgraphConfig) )
+        , ( <span class="hljs-type">Sillhoutte</span>, view (<span class="hljs-type">Shape</span>.stack silhouetteConfig) )
+        , ( <span class="hljs-type">Stacked</span>, view (<span class="hljs-type">Shape</span>.stack stackedGraphConfig) )
+        ]
+</code></pre>
+      
+        <hr />
+        <h3></h3>
+        <div class="description"></div>
+        <pre><code class="elm"></code></pre>
+      
+        <hr />
+        <h3></h3>
+        <div class="description"></div>
+        <pre><code class="elm"></code></pre>
+      
+    </main>
+    <aside>
+      <h2>Examples</h2>
+      <ul>
+        
+          <li >
+            <a href="../Background">Background</a>
+          </li>
+        
+          <li >
+            <a href="../BarChart">BarChart</a>
+          </li>
+        
+          <li >
+            <a href="../Centroid">Centroid</a>
+          </li>
+        
+          <li >
+            <a href="../CornerRadius">CornerRadius</a>
+          </li>
+        
+          <li >
+            <a href="../CrimeViz">CrimeViz</a>
+          </li>
+        
+          <li >
+            <a href="../Cross">Cross</a>
+          </li>
+        
+          <li >
+            <a href="../Curves">Curves</a>
+          </li>
+        
+          <li >
+            <a href="../CustomPieChart">CustomPieChart</a>
+          </li>
+        
+          <li >
+            <a href="../ForceDirectedGraph">ForceDirectedGraph</a>
+          </li>
+        
+          <li >
+            <a href="../Histogram">Histogram</a>
+          </li>
+        
+          <li >
+            <a href="../LineChart">LineChart</a>
+          </li>
+        
+          <li class="active">
+            <a href="../NorwegianCarSales">NorwegianCarSales</a>
+          </li>
+        
+          <li >
+            <a href="../PadAngle">PadAngle</a>
+          </li>
+        
+          <li >
+            <a href="../Petals">Petals</a>
+          </li>
+        
+          <li >
+            <a href="../PieChart">PieChart</a>
+          </li>
+        
+          <li >
+            <a href="../PopulationMinnesota">PopulationMinnesota</a>
+          </li>
+        
+          <li >
+            <a href="../StackedBarChart">StackedBarChart</a>
+          </li>
+        
+      </ul>
+    </aside>
+  </body>
+</html>

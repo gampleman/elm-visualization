@@ -151,6 +151,7 @@ hue-6-2: #c18401
 <span class="hljs-keyword">import</span> Svg <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Svg</span>, svg, rect, path, g, line, text, text_)
 <span class="hljs-keyword">import</span> Svg.Attributes <span class="hljs-keyword">exposing</span> (..)
 <span class="hljs-keyword">import</span> Visualization.Path
+<span class="hljs-keyword">import</span> Example
 
 
 <span class="hljs-title">screenWidth</span> : <span class="hljs-type">Float</span>
@@ -238,35 +239,25 @@ hue-6-2: #c18401
     text_ [ style (<span class="hljs-string">"color: "</span> ++ color ++ <span class="hljs-string">"; font-family: monospace"</span>), x (toString padding), y (toString (toFloat index * <span class="hljs-number">20</span> + padding)) ] [ text name ]
 
 
-<span class="hljs-title">view</span> : <span class="hljs-type">Msg</span> -&gt; <span class="hljs-type">Svg</span> <span class="hljs-type">Msg</span>
+<span class="hljs-title">view</span> : <span class="hljs-type">List</span> ( <span class="hljs-type">String</span>, <span class="hljs-type">Curve</span>, <span class="hljs-type">String</span> ) -&gt; <span class="hljs-type">Svg</span> <span class="hljs-type">String</span>
 <span class="hljs-title">view</span> model =
     div []
         [ p []
             [ text <span class="hljs-string">"Curve type: "</span>
-            , a [ href <span class="hljs-string">"#linear"</span>, onClick <span class="hljs-type">Linear</span> ] [ text <span class="hljs-string">"Linear"</span> ]
-            , text <span class="hljs-string">" "</span>
-            , a [ href <span class="hljs-string">"#monotone-in-x"</span>, onClick <span class="hljs-type">MonotoneInX</span> ] [ text <span class="hljs-string">"MonotoneInX"</span> ]
+            , <span class="hljs-type">Example</span>.linkTo <span class="hljs-type">Linear</span> [] [ text <span class="hljs-string">"Linear"</span> ]
+            , text <span class="hljs-string">" | "</span>
+            , <span class="hljs-type">Example</span>.linkTo <span class="hljs-type">MonotoneInX</span> [] [ text <span class="hljs-string">"MonotoneInX"</span> ]
             ]
         , svg [ width (toString screenWidth), height (toString screenHeight) ]
             [ rect [ width <span class="hljs-string">"100%"</span>, height <span class="hljs-string">"100%"</span>, fill <span class="hljs-string">"#dfdfdf"</span> ] []
             , g [] &lt;| <span class="hljs-type">List</span>.indexedMap yGridLine &lt;| <span class="hljs-type">Scale</span>.ticks yScale <span class="hljs-number">10</span>
             , g [] &lt;| <span class="hljs-type">List</span>.indexedMap xGridLine &lt;| <span class="hljs-type">Scale</span>.ticks xScale <span class="hljs-number">20</span>
             , g [] &lt;|
-                <span class="hljs-type">List</span>.map drawCurve (curveTypes model)
+                <span class="hljs-type">List</span>.map drawCurve model
             , g [] &lt;| <span class="hljs-type">List</span>.map (\point -&gt; <span class="hljs-type">Svg</span>.path [ d circle, fill <span class="hljs-string">"white"</span>, stroke <span class="hljs-string">"black"</span>, transform (<span class="hljs-string">"translate"</span> ++ toString point) ] []) preparedPoints
-            , g [] &lt;| <span class="hljs-type">List</span>.indexedMap drawLegend &lt;| curveTypes model
+            , g [] &lt;| <span class="hljs-type">List</span>.indexedMap drawLegend &lt;| model
             ]
         ]
-
-
-<span class="hljs-title">curveTypes</span> : <span class="hljs-type">Msg</span> -&gt; <span class="hljs-type">List</span> ( <span class="hljs-type">String</span>, <span class="hljs-type">Curve</span>, <span class="hljs-type">String</span> )
-<span class="hljs-title">curveTypes</span> model =
-    <span class="hljs-keyword">case</span> model <span class="hljs-keyword">of</span>
-        <span class="hljs-type">Linear</span> -&gt;
-            [ ( <span class="hljs-string">"linearCurve"</span>, <span class="hljs-type">Shape</span>.linearCurve, <span class="hljs-string">"#000"</span> ) ]
-
-        <span class="hljs-type">MonotoneInX</span> -&gt;
-            [ ( <span class="hljs-string">"monotoneInXCurve"</span>, <span class="hljs-type">Shape</span>.monotoneInXCurve, <span class="hljs-string">"#000"</span> ) ]
 
 
 <span class="hljs-title">circle</span> : <span class="hljs-type">String</span>
@@ -282,15 +273,23 @@ hue-6-2: #c18401
         }
 
 
-<span class="hljs-keyword">type</span> <span class="hljs-type">Msg</span>
+<span class="hljs-keyword">type</span> <span class="hljs-type">Views</span>
     = <span class="hljs-type">Linear</span>
     | <span class="hljs-type">MonotoneInX</span>
 
 
-<span class="hljs-title">main</span> : <span class="hljs-type">Program</span> <span class="hljs-type">Never</span> <span class="hljs-type">Msg</span> <span class="hljs-type">Msg</span>
+<span class="hljs-title">main</span> : <span class="hljs-type">Program</span> <span class="hljs-type">Never</span> <span class="hljs-type">String</span> <span class="hljs-type">String</span>
 <span class="hljs-title">main</span> =
-    <span class="hljs-type">Html</span>.beginnerProgram { model = <span class="hljs-type">Linear</span>, view = view, update = (\msg model -&gt; msg) }
+    <span class="hljs-type">Example</span>.switchableViews
+        [ ( <span class="hljs-type">Linear</span>, view [ ( <span class="hljs-string">"linearCurve"</span>, <span class="hljs-type">Shape</span>.linearCurve, <span class="hljs-string">"#000"</span> ) ] )
+        , ( <span class="hljs-type">MonotoneInX</span>, view [ ( <span class="hljs-string">"monotoneInXCurve"</span>, <span class="hljs-type">Shape</span>.monotoneInXCurve, <span class="hljs-string">"#000"</span> ) ] )
+        ]
 </code></pre>
+      
+        <hr />
+        <h3></h3>
+        <div class="description"></div>
+        <pre><code class="elm"></code></pre>
       
     </main>
     <aside>
@@ -342,6 +341,10 @@ hue-6-2: #c18401
           </li>
         
           <li >
+            <a href="../NorwegianCarSales">NorwegianCarSales</a>
+          </li>
+        
+          <li >
             <a href="../PadAngle">PadAngle</a>
           </li>
         
@@ -351,6 +354,14 @@ hue-6-2: #c18401
         
           <li >
             <a href="../PieChart">PieChart</a>
+          </li>
+        
+          <li >
+            <a href="../PopulationMinnesota">PopulationMinnesota</a>
+          </li>
+        
+          <li >
+            <a href="../StackedBarChart">StackedBarChart</a>
           </li>
         
       </ul>

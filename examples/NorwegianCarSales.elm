@@ -1,4 +1,7 @@
-module NorwegianCarSales exposing (..)
+module NorwegianCarSales exposing (main)
+
+{-| This example demonstates using different kinds of layouts for stacked graphs.
+-}
 
 import SampleData
 import Color.Convert exposing (colorToCssRgb)
@@ -8,19 +11,12 @@ import List.Extra as List
 import Color exposing (Color)
 import Svg exposing (..)
 import Html exposing (div)
+import Html.Attributes
 import Svg.Attributes exposing (..)
 import Visualization.Shape as Shape exposing (StackConfig, StackResult)
 import Date exposing (Date, Month(..))
 import Date.Extra as Date
-
-
-main : Svg msg
-main =
-    div []
-        [ view (Shape.stack streamgraphConfig)
-        , view (Shape.stack silhouetteConfig)
-        , view (Shape.stack stackedGraphConfig)
-        ]
+import Example
 
 
 samples : List ( String, List Float )
@@ -43,33 +39,19 @@ colors labels =
     List.map sampleColor labels
 
 
-canvas : { width : Float, height : Float }
-canvas =
-    { width = 900
-    , height = 450
-    }
+width : number
+width =
+    990
 
 
-padding : { bottom : number, left : number1, right : number2, top : number3 }
+height : number
+height =
+    504
+
+
+padding : number
 padding =
-    { top = 60
-    , left = 60
-    , right = 60
-    , bottom = 60
-    }
-
-
-expandConfig : StackConfig String
-expandConfig =
-    -- this config is not displayed correctly by the code in this file
-    -- because we process a subset of the data, but still display the full x-axis
-    { data =
-        List.take 5 samples
-            |> List.map (Tuple.mapSecond <| List.take <| 12 * 3)
-    , offset =
-        Shape.stackOffsetExpand
-    , order = List.sortBy (Tuple.second >> List.sum >> negate)
-    }
+    40
 
 
 stackedGraphConfig : StackConfig String
@@ -96,14 +78,12 @@ silhouetteConfig =
     }
 
 
-config : StackConfig String
-config =
-    streamgraphConfig
-
-
-view : StackResult String -> Svg msg
+view : StackResult String -> Svg String
 view { values, labels, extent } =
     let
+        labelsWidth =
+            50
+
         size : Int
         size =
             List.head values
@@ -113,11 +93,11 @@ view { values, labels, extent } =
         xScale : ContinuousScale
         xScale =
             -- map an index to screen space
-            Scale.linear ( 0, toFloat size - 1 ) ( 0, canvas.width - (padding.top + padding.bottom) )
+            Scale.linear ( 0, toFloat size - 1 ) ( padding, width - padding - labelsWidth )
 
         yScale : ContinuousScale
         yScale =
-            Scale.linear extent ( canvas.height - (padding.left + padding.right), 0 )
+            Scale.linear extent ( height - padding, padding )
                 |> flip Scale.nice 4
 
         axisOptions =
@@ -128,7 +108,7 @@ view { values, labels, extent } =
             -- construct the time domain for display
             -- the data is per-month, so we have to pick a day
             -- to get the ticks to show up correctly, the upper bound needs to be Jan 2 (Jan 1 does not work).
-            Scale.time ( Date.fromCalendarDate 2007 Jan 1, Date.fromCalendarDate 2017 Jan 2 ) ( 0, canvas.width - (padding.top + padding.bottom) )
+            Scale.time ( Date.fromCalendarDate 2007 Jan 1, Date.fromCalendarDate 2017 Jan 2 ) ( 0, width - padding * 2 - labelsWidth )
                 |> Axis.axis { axisOptions | orientation = Axis.Bottom, tickCount = 1 }
 
         yAxis : Svg msg
@@ -151,23 +131,34 @@ view { values, labels, extent } =
 
         labelElement : String -> Float -> Svg msg
         labelElement label yPosition =
-            g [ translate (canvas.width - padding.right + 10) (padding.top + yPosition) ]
+            g [ translate (width - padding - labelsWidth + 10) yPosition ]
                 [ text_ [ fill (sampleColor label |> colorToCssRgb) ] [ text label ] ]
     in
-        Svg.svg [ width (toString canvas.width ++ "px"), height (toString canvas.height ++ "px") ]
-            [ g [ translate (padding.left - 1) (canvas.height - padding.top) ]
-                [ xAxis ]
-            , g [ translate padding.left padding.top, class "series" ] paths
-            , g [ translate (padding.left - 1) padding.top ]
-                []
-              -- [ yAxis, text_ [ fontFamily "sans-serif", fontSize "10", x "5", y "5" ] [ text "Occurences" ] ]
-            , g [ fontFamily "sans-serif", fontSize "10" ]
-                (List.map2 labelElement labels labelPositions)
-            , g [ translate (canvas.width - padding.right) (padding.top + 20) ]
-                [ text_ [ fontFamily "sans-serif", fontSize "20", textAnchor "end" ] [ text "Car Sales in Norway" ]
-                  -- , text_ [ fontFamily "sans-serif", fontSize "10", textAnchor "end", dy "1em" ] [ text "Source: " ]
+        div []
+            [ titleNavigation
+            , Svg.svg [ Svg.Attributes.width (toString width ++ "px"), Svg.Attributes.height (toString height ++ "px") ]
+                [ g [ translate (padding - 1) (height - padding) ]
+                    [ xAxis ]
+                , g [ class "series" ] paths
+                , g [ fontFamily "sans-serif", fontSize "10" ]
+                    (List.map2 labelElement labels labelPositions)
                 ]
             ]
+
+
+titleNavigation : Html.Html String
+titleNavigation =
+    div [ Html.Attributes.style [ ( "padding", toString padding ++ "px" ), ( "font-family", "sans-serif" ), ( "position", "absolute" ) ] ]
+        [ Html.h1 [ Html.Attributes.style [ ( "margin-top", "0px" ), ( "font-size", "20px" ) ] ] [ text "Car Sales in Norway" ]
+        , Html.p []
+            [ text "Layout: "
+            , Example.linkTo StreamGraph [] [ text "Stream Graph" ]
+            , text " | "
+            , Example.linkTo Sillhoutte [] [ text "Sillhoutte" ]
+            , text " | "
+            , Example.linkTo Stacked [] [ text "Stacked Area" ]
+            ]
+        ]
 
 
 {-| Renders one colored stream with given scaling
@@ -208,3 +199,18 @@ toArea ( scaleX, scaleY ) ys =
 translate : number -> number -> Svg.Attribute msg
 translate x y =
     transform ("translate(" ++ toString x ++ ", " ++ toString y ++ ")")
+
+
+type Views
+    = StreamGraph
+    | Sillhoutte
+    | Stacked
+
+
+main : Program Never String String
+main =
+    Example.switchableViews
+        [ ( StreamGraph, view (Shape.stack streamgraphConfig) )
+        , ( Sillhoutte, view (Shape.stack silhouetteConfig) )
+        , ( Stacked, view (Shape.stack stackedGraphConfig) )
+        ]
