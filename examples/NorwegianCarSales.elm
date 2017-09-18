@@ -1,4 +1,4 @@
-module NorwegianCarSales exposing (..)
+module NorwegianCarSales exposing (main)
 
 {-| This example demonstates using different kinds of layouts for stacked graphs.
 -}

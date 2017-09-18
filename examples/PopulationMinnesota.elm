@@ -1,4 +1,4 @@
-module PopulationMinnesota exposing (..)
+module PopulationMinnesota exposing (main)
 
 import SampleData exposing (Gender(M, F))
 import Color.Convert exposing (colorToCssRgba)
