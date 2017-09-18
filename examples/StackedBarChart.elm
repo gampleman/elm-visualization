@@ -44,8 +44,8 @@ samples =
 
 canvas : { width : Float, height : Float }
 canvas =
-    { width = 900
-    , height = 450
+    { width = 990
+    , height = 504
     }
 
 

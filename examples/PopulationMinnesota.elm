@@ -7,16 +7,13 @@ import Visualization.Axis as Axis exposing (Orientation(..))
 import List.Extra as List
 import Visualization.List
 import Svg exposing (..)
-import Html exposing (div)
 import Svg.Attributes exposing (..)
 import Visualization.Shape as Shape exposing (StackConfig, StackResult)
 
 
 main : Svg msg
 main =
-    div []
-        [ view (Shape.stack config)
-        ]
+    view (Shape.stack config)
 
 
 populationMinnesota1850 : { categories : List Int, data : List ( Int, List Float ), extent : ( Float, Float ) }
@@ -49,20 +46,19 @@ populationMinnesota1850 =
         }
 
 
-canvas : { width : Float, height : Float }
-canvas =
-    { width = 900
-    , height = 450
-    }
+width : number
+width =
+    990
 
 
-padding : { bottom : number, left : number1, right : number2, top : number3 }
+height : number
+height =
+    504
+
+
+padding : number
 padding =
-    { top = 60
-    , left = 60
-    , right = 60
-    , bottom = 60
-    }
+    60
 
 
 config : StackConfig Int
@@ -91,8 +87,8 @@ column yScale ( year, values ) =
             rect
                 [ y <| toString <| Scale.convert yScale year
                 , x <| toString <| lowerY
-                , height <| toString <| bandwidth
-                , width <| toString <| (abs <| upperY - lowerY)
+                , Svg.Attributes.height <| toString <| bandwidth
+                , Svg.Attributes.width <| toString <| (abs <| upperY - lowerY)
                 , fill color
                 ]
                 []
@@ -115,12 +111,12 @@ view { values, labels, extent } =
 
         xScale : ContinuousScale
         xScale =
-            Scale.linear extent ( canvas.width - (padding.top + padding.bottom), 0 )
+            Scale.linear extent ( width - padding, padding )
                 |> flip Scale.nice 4
 
         yScale : BandScale Int
         yScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } populationMinnesota1850.categories ( 0, canvas.height - (padding.left + padding.right) )
+            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } populationMinnesota1850.categories ( padding, height - padding )
 
         xAxis : Svg msg
         xAxis =
@@ -137,37 +133,37 @@ view { values, labels, extent } =
             in
                 Axis.axis { axisOptions | orientation = Axis.Left } (Scale.toRenderable yScale)
     in
-        Svg.svg [ width (toString canvas.width ++ "px"), height (toString canvas.height ++ "px") ]
-            [ g [ translate (padding.left - 1) (canvas.height - padding.top) ]
+        Svg.svg [ Svg.Attributes.width (toString width ++ "px"), Svg.Attributes.height (toString height ++ "px") ]
+            [ g [ translate 0 (height - padding) ]
                 [ xAxis ]
-            , g [ translate padding.left padding.top, class "series" ] <|
+            , g [ class "series" ] <|
                 List.map (column yScale) (List.map2 (,) populationMinnesota1850.categories scaledValues)
-            , g [ translate (padding.left - 1) padding.top ]
+            , g [ translate padding 0 ]
                 [ yAxis
-                , text_ [ fontFamily "sans-serif", fontSize "18", x "5", y "5" ] [ text "Age" ]
+                , text_ [ fontFamily "sans-serif", fontSize "14", x "5", y "65" ] [ text "Age" ]
                 ]
-            , g [ translate (canvas.width - padding.right) (padding.top + 20) ]
+            , g [ translate (width - padding) (padding + 20) ]
                 [ text_ [ fontFamily "sans-serif", fontSize "20", textAnchor "end" ] [ text "1850" ]
                 , text_ [ fontFamily "sans-serif", fontSize "10", textAnchor "end", dy "1em" ] [ text "population distribution in Minnesota" ]
                 ]
             , text_
-                [ translate (padding.left + Scale.convert xScale 500000) (2 * padding.top)
+                [ translate (Scale.convert xScale 500000) (2 * padding)
                 , fontFamily "sans-serif"
                 , fontSize "20"
                 , textAnchor "middle"
                 ]
                 [ text "Men" ]
             , text_
-                [ translate (padding.left + Scale.convert xScale -500000) (2 * padding.top)
+                [ translate (Scale.convert xScale -500000) (2 * padding)
                 , fontFamily "sans-serif"
                 , fontSize "20"
                 , textAnchor "middle"
                 ]
                 [ text "Women" ]
             , text_
-                [ translate (padding.left + Scale.convert xScale 0) (canvas.height - padding.bottom / 2)
+                [ translate (Scale.convert xScale 0) (height - padding / 2)
                 , fontFamily "sans-serif"
-                , fontSize "18"
+                , fontSize "14"
                 , textAnchor "middle"
                 , dy "1em"
                 ]
