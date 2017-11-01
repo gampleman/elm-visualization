@@ -19,6 +19,29 @@ import Date.Extra as Date
 import Example
 
 
+exampleConfig : List ( String, StackConfig String )
+exampleConfig =
+    [ ( "Stream Graph"
+      , { data = samples
+        , offset = Shape.stackOffsetWiggle
+        , order = Shape.sortByInsideOut (Tuple.second >> List.sum)
+        }
+      )
+    , ( "Sillhoutte"
+      , { data = samples
+        , offset = Shape.stackOffsetSilhouette
+        , order = Shape.sortByInsideOut (Tuple.second >> List.sum)
+        }
+      )
+    , ( "Stacked Area"
+      , { data = samples
+        , offset = Shape.stackOffsetNone
+        , order = List.sortBy (Tuple.second >> List.sum >> negate)
+        }
+      )
+    ]
+
+
 samples : List ( String, List Float )
 samples =
     SampleData.norwegianCarSalesMiddlePlayers
@@ -52,30 +75,6 @@ height =
 padding : number
 padding =
     40
-
-
-stackedGraphConfig : StackConfig String
-stackedGraphConfig =
-    { data = samples
-    , offset = Shape.stackOffsetNone
-    , order = List.sortBy (Tuple.second >> List.sum >> negate)
-    }
-
-
-streamgraphConfig : StackConfig String
-streamgraphConfig =
-    { data = samples
-    , offset = Shape.stackOffsetWiggle
-    , order = Shape.sortByInsideOut (Tuple.second >> List.sum)
-    }
-
-
-silhouetteConfig : StackConfig String
-silhouetteConfig =
-    { data = samples
-    , offset = Shape.stackOffsetSilhouette
-    , order = Shape.sortByInsideOut (Tuple.second >> List.sum)
-    }
 
 
 view : StackResult String -> Svg String
@@ -150,14 +149,7 @@ titleNavigation : Html.Html String
 titleNavigation =
     div [ Html.Attributes.style [ ( "padding", toString padding ++ "px" ), ( "font-family", "sans-serif" ), ( "position", "absolute" ) ] ]
         [ Html.h1 [ Html.Attributes.style [ ( "margin-top", "0px" ), ( "font-size", "20px" ) ] ] [ text "Car Sales in Norway" ]
-        , Html.p []
-            [ text "Layout: "
-            , Example.linkTo StreamGraph [] [ text "Stream Graph" ]
-            , text " | "
-            , Example.linkTo Sillhoutte [] [ text "Sillhoutte" ]
-            , text " | "
-            , Example.linkTo Stacked [] [ text "Stacked Area" ]
-            ]
+        , Example.navigation "Layout" exampleConfig
         ]
 
 
@@ -201,16 +193,10 @@ translate x y =
     transform ("translate(" ++ toString x ++ ", " ++ toString y ++ ")")
 
 
-type Views
-    = StreamGraph
-    | Sillhoutte
-    | Stacked
-
-
 main : Program Never String String
 main =
-    Example.switchableViews
-        [ ( StreamGraph, view (Shape.stack streamgraphConfig) )
-        , ( Sillhoutte, view (Shape.stack silhouetteConfig) )
-        , ( Stacked, view (Shape.stack stackedGraphConfig) )
-        ]
+    Example.switchableViews exampleConfig (Shape.stack >> view)
+
+
+
+{- {"additionalShots": ["stream-graph", "silhouette", "stacked-area"]} -}

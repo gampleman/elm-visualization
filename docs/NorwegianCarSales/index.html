@@ -159,6 +159,29 @@ hue-6-2: #c18401
 <span class="hljs-keyword">import</span> Example
 
 
+<span class="hljs-title">exampleConfig</span> : <span class="hljs-type">List</span> ( <span class="hljs-type">String</span>, <span class="hljs-type">StackConfig</span> <span class="hljs-type">String</span> )
+<span class="hljs-title">exampleConfig</span> =
+    [ ( <span class="hljs-string">"Stream Graph"</span>
+      , { data = samples
+        , offset = <span class="hljs-type">Shape</span>.stackOffsetWiggle
+        , order = <span class="hljs-type">Shape</span>.sortByInsideOut (<span class="hljs-type">Tuple</span>.second &gt;&gt; <span class="hljs-type">List</span>.sum)
+        }
+      )
+    , ( <span class="hljs-string">"Sillhoutte"</span>
+      , { data = samples
+        , offset = <span class="hljs-type">Shape</span>.stackOffsetSilhouette
+        , order = <span class="hljs-type">Shape</span>.sortByInsideOut (<span class="hljs-type">Tuple</span>.second &gt;&gt; <span class="hljs-type">List</span>.sum)
+        }
+      )
+    , ( <span class="hljs-string">"Stacked Area"</span>
+      , { data = samples
+        , offset = <span class="hljs-type">Shape</span>.stackOffsetNone
+        , order = <span class="hljs-type">List</span>.sortBy (<span class="hljs-type">Tuple</span>.second &gt;&gt; <span class="hljs-type">List</span>.sum &gt;&gt; negate)
+        }
+      )
+    ]
+
+
 <span class="hljs-title">samples</span> : <span class="hljs-type">List</span> ( <span class="hljs-type">String</span>, <span class="hljs-type">List</span> <span class="hljs-type">Float</span> )
 <span class="hljs-title">samples</span> =
     <span class="hljs-type">SampleData</span>.norwegianCarSalesMiddlePlayers
@@ -192,30 +215,6 @@ hue-6-2: #c18401
 <span class="hljs-title">padding</span> : number
 <span class="hljs-title">padding</span> =
     <span class="hljs-number">40</span>
-
-
-<span class="hljs-title">stackedGraphConfig</span> : <span class="hljs-type">StackConfig</span> <span class="hljs-type">String</span>
-<span class="hljs-title">stackedGraphConfig</span> =
-    { data = samples
-    , offset = <span class="hljs-type">Shape</span>.stackOffsetNone
-    , order = <span class="hljs-type">List</span>.sortBy (<span class="hljs-type">Tuple</span>.second &gt;&gt; <span class="hljs-type">List</span>.sum &gt;&gt; negate)
-    }
-
-
-<span class="hljs-title">streamgraphConfig</span> : <span class="hljs-type">StackConfig</span> <span class="hljs-type">String</span>
-<span class="hljs-title">streamgraphConfig</span> =
-    { data = samples
-    , offset = <span class="hljs-type">Shape</span>.stackOffsetWiggle
-    , order = <span class="hljs-type">Shape</span>.sortByInsideOut (<span class="hljs-type">Tuple</span>.second &gt;&gt; <span class="hljs-type">List</span>.sum)
-    }
-
-
-<span class="hljs-title">silhouetteConfig</span> : <span class="hljs-type">StackConfig</span> <span class="hljs-type">String</span>
-<span class="hljs-title">silhouetteConfig</span> =
-    { data = samples
-    , offset = <span class="hljs-type">Shape</span>.stackOffsetSilhouette
-    , order = <span class="hljs-type">Shape</span>.sortByInsideOut (<span class="hljs-type">Tuple</span>.second &gt;&gt; <span class="hljs-type">List</span>.sum)
-    }
 
 
 <span class="hljs-title">view</span> : <span class="hljs-type">StackResult</span> <span class="hljs-type">String</span> -&gt; <span class="hljs-type">Svg</span> <span class="hljs-type">String</span>
@@ -290,14 +289,7 @@ hue-6-2: #c18401
 <span class="hljs-title">titleNavigation</span> =
     div [ <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.style [ ( <span class="hljs-string">"padding"</span>, toString padding ++ <span class="hljs-string">"px"</span> ), ( <span class="hljs-string">"font-family"</span>, <span class="hljs-string">"sans-serif"</span> ), ( <span class="hljs-string">"position"</span>, <span class="hljs-string">"absolute"</span> ) ] ]
         [ <span class="hljs-type">Html</span>.h1 [ <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.style [ ( <span class="hljs-string">"margin-top"</span>, <span class="hljs-string">"0px"</span> ), ( <span class="hljs-string">"font-size"</span>, <span class="hljs-string">"20px"</span> ) ] ] [ text <span class="hljs-string">"Car Sales in Norway"</span> ]
-        , <span class="hljs-type">Html</span>.p []
-            [ text <span class="hljs-string">"Layout: "</span>
-            , <span class="hljs-type">Example</span>.linkTo <span class="hljs-type">StreamGraph</span> [] [ text <span class="hljs-string">"Stream Graph"</span> ]
-            , text <span class="hljs-string">" | "</span>
-            , <span class="hljs-type">Example</span>.linkTo <span class="hljs-type">Sillhoutte</span> [] [ text <span class="hljs-string">"Sillhoutte"</span> ]
-            , text <span class="hljs-string">" | "</span>
-            , <span class="hljs-type">Example</span>.linkTo <span class="hljs-type">Stacked</span> [] [ text <span class="hljs-string">"Stacked Area"</span> ]
-            ]
+        , <span class="hljs-type">Example</span>.navigation <span class="hljs-string">"Layout"</span> exampleConfig
         ]
 
 
@@ -341,19 +333,13 @@ hue-6-2: #c18401
     transform (<span class="hljs-string">"translate("</span> ++ toString x ++ <span class="hljs-string">", "</span> ++ toString y ++ <span class="hljs-string">")"</span>)
 
 
-<span class="hljs-keyword">type</span> <span class="hljs-type">Views</span>
-    = <span class="hljs-type">StreamGraph</span>
-    | <span class="hljs-type">Sillhoutte</span>
-    | <span class="hljs-type">Stacked</span>
-
-
 <span class="hljs-title">main</span> : <span class="hljs-type">Program</span> <span class="hljs-type">Never</span> <span class="hljs-type">String</span> <span class="hljs-type">String</span>
 <span class="hljs-title">main</span> =
-    <span class="hljs-type">Example</span>.switchableViews
-        [ ( <span class="hljs-type">StreamGraph</span>, view (<span class="hljs-type">Shape</span>.stack streamgraphConfig) )
-        , ( <span class="hljs-type">Sillhoutte</span>, view (<span class="hljs-type">Shape</span>.stack silhouetteConfig) )
-        , ( <span class="hljs-type">Stacked</span>, view (<span class="hljs-type">Shape</span>.stack stackedGraphConfig) )
-        ]
+    <span class="hljs-type">Example</span>.switchableViews exampleConfig (<span class="hljs-type">Shape</span>.stack &gt;&gt; view)
+
+
+
+<span class="hljs-comment">{- {"additionalShots": ["stream-graph", "silhouette", "stacked-area"]} -}</span>
 </code></pre>
       
         <hr />

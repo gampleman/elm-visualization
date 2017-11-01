@@ -236,18 +236,13 @@ hue-6-2: #c18401
 
 <span class="hljs-title">drawLegend</span> : <span class="hljs-type">Int</span> -&gt; ( <span class="hljs-type">String</span>, <span class="hljs-type">Curve</span>, <span class="hljs-type">String</span> ) -&gt; <span class="hljs-type">Svg</span> msg
 <span class="hljs-title">drawLegend</span> index ( name, curve, color ) =
-    text_ [ style (<span class="hljs-string">"color: "</span> ++ color ++ <span class="hljs-string">"; font-family: monospace"</span>), x (toString padding), y (toString (toFloat index * <span class="hljs-number">20</span> + padding)) ] [ text name ]
+    text_ [ style (<span class="hljs-string">"fill: "</span> ++ color ++ <span class="hljs-string">"; font-family: monospace"</span>), x (toString padding), y (toString (toFloat index * <span class="hljs-number">20</span> + padding)) ] [ text name ]
 
 
 <span class="hljs-title">view</span> : <span class="hljs-type">List</span> ( <span class="hljs-type">String</span>, <span class="hljs-type">Curve</span>, <span class="hljs-type">String</span> ) -&gt; <span class="hljs-type">Svg</span> <span class="hljs-type">String</span>
 <span class="hljs-title">view</span> model =
     div []
-        [ p []
-            [ text <span class="hljs-string">"Curve type: "</span>
-            , <span class="hljs-type">Example</span>.linkTo <span class="hljs-type">Linear</span> [] [ text <span class="hljs-string">"Linear"</span> ]
-            , text <span class="hljs-string">" | "</span>
-            , <span class="hljs-type">Example</span>.linkTo <span class="hljs-type">MonotoneInX</span> [] [ text <span class="hljs-string">"MonotoneInX"</span> ]
-            ]
+        [ <span class="hljs-type">Example</span>.navigation <span class="hljs-string">"Curve type"</span> exampleData
         , svg [ width (toString screenWidth), height (toString screenHeight) ]
             [ rect [ width <span class="hljs-string">"100%"</span>, height <span class="hljs-string">"100%"</span>, fill <span class="hljs-string">"#dfdfdf"</span> ] []
             , g [] &lt;| <span class="hljs-type">List</span>.indexedMap yGridLine &lt;| <span class="hljs-type">Scale</span>.ticks yScale <span class="hljs-number">10</span>
@@ -276,14 +271,28 @@ hue-6-2: #c18401
 <span class="hljs-keyword">type</span> <span class="hljs-type">Views</span>
     = <span class="hljs-type">Linear</span>
     | <span class="hljs-type">MonotoneInX</span>
+    | <span class="hljs-type">Step</span>
+
+
+<span class="hljs-title">exampleData</span> =
+    [ ( <span class="hljs-string">"Linear"</span>, [ ( <span class="hljs-string">"linearCurve"</span>, <span class="hljs-type">Shape</span>.linearCurve, <span class="hljs-string">"#000"</span> ) ] )
+    , ( <span class="hljs-string">"MonotoneInX"</span>, [ ( <span class="hljs-string">"monotoneInXCurve"</span>, <span class="hljs-type">Shape</span>.monotoneInXCurve, <span class="hljs-string">"#000"</span> ) ] )
+    , ( <span class="hljs-string">"Step"</span>
+      , [ ( <span class="hljs-string">"stepCurve 0"</span>, <span class="hljs-type">Shape</span>.stepCurve <span class="hljs-number">0</span>, <span class="hljs-string">"rgba(85, 106, 55, 0.4)"</span> )
+        , ( <span class="hljs-string">"stepCurve 0.5"</span>, <span class="hljs-type">Shape</span>.stepCurve <span class="hljs-number">0.5</span>, <span class="hljs-string">"#000"</span> )
+        , ( <span class="hljs-string">"stepCurve 1"</span>, <span class="hljs-type">Shape</span>.stepCurve <span class="hljs-number">1</span>, <span class="hljs-string">"rgba(106, 55, 55, 0.4)"</span> )
+        ]
+      )
+    ]
 
 
 <span class="hljs-title">main</span> : <span class="hljs-type">Program</span> <span class="hljs-type">Never</span> <span class="hljs-type">String</span> <span class="hljs-type">String</span>
 <span class="hljs-title">main</span> =
-    <span class="hljs-type">Example</span>.switchableViews
-        [ ( <span class="hljs-type">Linear</span>, view [ ( <span class="hljs-string">"linearCurve"</span>, <span class="hljs-type">Shape</span>.linearCurve, <span class="hljs-string">"#000"</span> ) ] )
-        , ( <span class="hljs-type">MonotoneInX</span>, view [ ( <span class="hljs-string">"monotoneInXCurve"</span>, <span class="hljs-type">Shape</span>.monotoneInXCurve, <span class="hljs-string">"#000"</span> ) ] )
-        ]
+    <span class="hljs-type">Example</span>.switchableViews exampleData view
+
+
+
+<span class="hljs-comment">{- {"additionalShots": ["linear", "monotoneinx", "step"]} -}</span>
 </code></pre>
       
         <hr />

@@ -96,18 +96,13 @@ drawCurve ( name, curve, color ) =
 
 drawLegend : Int -> ( String, Curve, String ) -> Svg msg
 drawLegend index ( name, curve, color ) =
-    text_ [ style ("color: " ++ color ++ "; font-family: monospace"), x (toString padding), y (toString (toFloat index * 20 + padding)) ] [ text name ]
+    text_ [ style ("fill: " ++ color ++ "; font-family: monospace"), x (toString padding), y (toString (toFloat index * 20 + padding)) ] [ text name ]
 
 
 view : List ( String, Curve, String ) -> Svg String
 view model =
     div []
-        [ p []
-            [ text "Curve type: "
-            , Example.linkTo Linear [] [ text "Linear" ]
-            , text " | "
-            , Example.linkTo MonotoneInX [] [ text "MonotoneInX" ]
-            ]
+        [ Example.navigation "Curve type" exampleData
         , svg [ width (toString screenWidth), height (toString screenHeight) ]
             [ rect [ width "100%", height "100%", fill "#dfdfdf" ] []
             , g [] <| List.indexedMap yGridLine <| Scale.ticks yScale 10
@@ -136,11 +131,25 @@ circle =
 type Views
     = Linear
     | MonotoneInX
+    | Step
+
+
+exampleData =
+    [ ( "Linear", [ ( "linearCurve", Shape.linearCurve, "#000" ) ] )
+    , ( "MonotoneInX", [ ( "monotoneInXCurve", Shape.monotoneInXCurve, "#000" ) ] )
+    , ( "Step"
+      , [ ( "stepCurve 0", Shape.stepCurve 0, "rgba(85, 106, 55, 0.4)" )
+        , ( "stepCurve 0.5", Shape.stepCurve 0.5, "#000" )
+        , ( "stepCurve 1", Shape.stepCurve 1, "rgba(106, 55, 55, 0.4)" )
+        ]
+      )
+    ]
 
 
 main : Program Never String String
 main =
-    Example.switchableViews
-        [ ( Linear, view [ ( "linearCurve", Shape.linearCurve, "#000" ) ] )
-        , ( MonotoneInX, view [ ( "monotoneInXCurve", Shape.monotoneInXCurve, "#000" ) ] )
-        ]
+    Example.switchableViews exampleData view
+
+
+
+{- {"additionalShots": ["linear", "monotoneinx", "step"]} -}
