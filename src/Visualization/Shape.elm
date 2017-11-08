@@ -788,12 +788,45 @@ adapter curveFn part =
 
 {-| Produces a polyline through the specified points.
 
-[![linearCurve](http://code.gampleman.eu/elm-visualization/Curves/linearCurve.png)](http://code.gampleman.eu/elm-visualization/Curves/)
+<a href="http://code.gampleman.eu/elm-visualization/Curves/"><img style="max-width: 100%" src="http://code.gampleman.eu/elm-visualization/Curves/linear@2x.png" alt="linear curve illustration" /></a>
 
 -}
 linearCurve : Curve -> List PathSegment
 linearCurve =
     adapter Curve.linear
+
+
+{-| Produces a cubic [basis spline](https://en.wikipedia.org/wiki/B-spline) using the specified control points.
+The first and last points are triplicated such that the spline starts at the first point and ends at the last
+point, and is tangent to the line between the first and second points, and to the line between the penultimate
+and last points.
+
+<a href="http://code.gampleman.eu/elm-visualization/Curves/"><img style="max-width: 100%" src="http://code.gampleman.eu/elm-visualization/Curves/basis@2x.png" alt="basis curve illustration" /></a>
+
+-}
+basisCurve : Curve -> List PathSegment
+basisCurve =
+    adapter Curve.basis
+
+
+{-| Produces a closed cubic basis spline using the specified control points. When a line segment ends, the first three control points are repeated, producing a closed loop with C2 continuity.
+
+<a href="http://code.gampleman.eu/elm-visualization/Curves/"><img style="max-width: 100%" src="http://code.gampleman.eu/elm-visualization/Curves/basisClosed@2x.png" alt="closed basis curve illustration" /></a>
+
+-}
+basisCurveClosed : Curve -> List PathSegment
+basisCurveClosed =
+    adapter Curve.basisClosed
+
+
+{-| Produces a cubic basis spline using the specified control points. Unlike basis, the first and last points are not repeated, and thus the curve typically does not intersect these points.
+
+<a href="http://code.gampleman.eu/elm-visualization/Curves/"><img style="max-width: 100%" src="http://code.gampleman.eu/elm-visualization/Curves/basisOpen@2x.png" alt="open basis curve illustration" /></a>
+
+-}
+basisCurveOpen : Curve -> List PathSegment
+basisCurveOpen =
+    adapter Curve.basisOpen
 
 
 {-| Produces a cubic spline that [preserves monotonicity](http://adsabs.harvard.edu/full/1990A%26A...239..443S)
@@ -807,108 +840,10 @@ only at grid points where they are given by the data, but not in between two adj
 
 -}
 monotoneInXCurve : Curve -> List PathSegment
-monotoneInXCurve part =
-    let
-        point ( x0, y0 ) ( x1, y1 ) t0 t1 path =
-            let
-                dx =
-                    (x1 - x0) / 3
-            in
-                path |> Path.bezierCurveTo (x0 + dx) (y0 + dx * t0) (x1 - dx) (y1 - dx * t1) x1 y1
-
-        finalize ( ( x0, y0 ), ( x1, y1 ), t0maybe, path ) =
-            case t0maybe of
-                Nothing ->
-                    path |> Path.lineTo x1 y1
-
-                Just t0 ->
-                    point ( x0, y0 ) ( x1, y1 ) t0 (slope2 ( x0, y0 ) ( x1, y1 ) t0) path
-
-        helper ( x, y ) ( ( x0, y0 ), ( x1, y1 ), t0maybe, path ) =
-            let
-                t1 =
-                    slope3 ( x0, y0 ) ( x1, y1 ) ( x, y )
-
-                t0 =
-                    case t0maybe of
-                        Nothing ->
-                            slope2 ( x0, y0 ) ( x1, y1 ) t1
-
-                        Just t0actual ->
-                            t0actual
-            in
-                ( ( x1, y1 ), ( x, y ), Just t1, point ( x0, y0 ) ( x1, y1 ) t0 t1 path )
-    in
-        case part of
-            Line [] ->
-                []
-
-            Line (_ :: []) ->
-                []
-
-            Line (point0 :: point1 :: points) ->
-                finalize <| List.foldl helper ( point0, point1, Nothing, [ Path.Move point0 ] ) points
-
-            Area points ->
-                applyRecursivelyForArea monotoneInXCurve points
+monotoneInXCurve =
+    adapter Curve.monotoneX
 
 
-sign : Float -> Float
-sign x =
-    if x < 0 then
-        -1
-    else
-        1
-
-
-
-{- Calculate a one-sided slope. -}
-
-
-slope2 : ( Float, Float ) -> ( Float, Float ) -> Float -> Float
-slope2 ( x0, y0 ) ( x1, y1 ) t =
-    let
-        h =
-            x1 - x0
-    in
-        if h == 0 then
-            t
-        else
-            3 * (y1 - y0) / h - t / 2
-
-
-
-{- Calculate the slopes of the tangents. -}
-
-
-slope3 : ( Float, Float ) -> ( Float, Float ) -> ( Float, Float ) -> Float
-slope3 ( x0, y0 ) ( x1, y1 ) ( x2, y2 ) =
-    let
-        h0 =
-            x1 - x0
-
-        h1 =
-            x2 - x1
-
-        h =
-            if h1 == 0 then
-                if h0 < 0 then
-                    0
-                else
-                    h0
-            else
-                h1
-
-        s0 =
-            (y1 - y0) / h
-
-        s1 =
-            (y2 - y1) / h
-
-        p =
-            (s0 * h1 + s1 * h0) / (h0 + h1)
-    in
-        (sign s0 + sign s1) * min (min (abs s0) (abs s1)) (0.5 * abs p)
 stepCurve : Float -> Curve -> List PathSegment
 stepCurve factor =
     adapter (Curve.step (clamp 0 1 factor))
