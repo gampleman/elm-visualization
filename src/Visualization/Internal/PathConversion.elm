@@ -2,6 +2,10 @@ module Visualization.Internal.PathConversion exposing (..)
 
 import List.Extra
 import LowLevel.Command exposing (CursorState, DrawTo(..), MoveTo(..), counterClockwise)
+import OpenSolid.CubicSpline2d as CubicSpline2d
+import OpenSolid.LineSegment2d as LineSegment2d
+import OpenSolid.Point2d exposing (coordinates)
+import OpenSolid.QuadraticSpline2d as QuadraticSpline2d
 import Segment exposing (Segment(..))
 import SubPath exposing (SubPath)
 import Vector2
@@ -18,14 +22,25 @@ subpathToVizPath subPath =
 convertSegment : Segment -> PathSegment
 convertSegment segment =
     case segment of
-        LineSegment start end ->
-            P.Line end
+        LineSegment lineSegment ->
+            lineSegment
+                |> LineSegment2d.endPoint
+                |> coordinates
+                |> P.Line
 
-        Quadratic start c1 end ->
-            P.QuadraticCurve c1 end
+        Quadratic quadraticSpline2d ->
+            let
+                ( start, c1, end ) =
+                    QuadraticSpline2d.controlPoints quadraticSpline2d
+            in
+                P.QuadraticCurve (coordinates c1) (coordinates end)
 
-        Cubic start c1 c2 end ->
-            P.BezierCurve c1 c2 end
+        Cubic cubicSpline2d ->
+            let
+                ( start, c1, c2, end ) =
+                    CubicSpline2d.controlPoints cubicSpline2d
+            in
+                P.BezierCurve (coordinates c1) (coordinates c2) (coordinates end)
 
         Arc { start, end, radii, xAxisRotate, arcFlag, direction } ->
             let
@@ -38,7 +53,7 @@ convertSegment segment =
                     Tuple.first radii
 
                 anticlockwise =
-                    direction == counterClockwise
+                    direction /= counterClockwise
 
                 startAngle =
                     Vector2.angle start center

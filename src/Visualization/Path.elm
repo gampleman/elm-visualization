@@ -265,12 +265,7 @@ toOneTruePathSegment item ( subpaths, x0, y0, x1, y1, empty ) =
                             [ { radii = ( r, r )
                               , xAxisRotate = 0
                               , arcFlag = Cmd.smallestArc
-                              , direction =
-                                    (if y01 * x20 > x01 * y20 then
-                                        Cmd.clockwise
-                                     else
-                                        Cmd.counterClockwise
-                                    )
+                              , direction = boolToDirection (y01 * x20 > x01 * y20)
                               , target = ( x1_ + t21 * x21, y1_ + t21 * y21 )
                               }
                             ]
@@ -285,9 +280,9 @@ toOneTruePathSegment item ( subpaths, x0, y0, x1, y1, empty ) =
 
         boolToDirection b =
             if b then
-                Cmd.clockwise
-            else
                 Cmd.counterClockwise
+            else
+                Cmd.clockwise
 
         boolToArc b =
             if b then
