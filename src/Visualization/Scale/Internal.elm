@@ -1,4 +1,4 @@
-module Visualization.Scale.Internal exposing (bimap)
+module Visualization.Scale.Internal exposing (bimap, interpolateFloat)
 
 
 bimap :
@@ -16,3 +16,8 @@ bimap ( d0, d1 ) ( r0, r1 ) deinterpolate reinterpolate =
                 ( deinterpolate d0 d1, reinterpolate r0 r1 )
     in
         re << de
+
+
+interpolateFloat : Float -> Float -> Float -> Float
+interpolateFloat from to time =
+    from + (to - from) * time

@@ -1,8 +1,7 @@
 module Visualization.Scale.Log exposing (convert, invert, ticks, tickFormat, nice, rangeExtent)
 
 import Visualization.List as List
-import Visualization.Interpolate exposing (interpolateFloat)
-import Visualization.Scale.Internal exposing (bimap)
+import Visualization.Scale.Internal exposing (bimap, interpolateFloat)
 
 
 rangeExtent : ( Float, Float ) -> ( Float, Float ) -> ( Float, Float )

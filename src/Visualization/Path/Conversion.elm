@@ -1,4 +1,4 @@
-module Visualization.Internal.PathConversion exposing (..)
+module Visualization.Path.Conversion exposing (subpathToVizPath)
 
 import List.Extra
 import LowLevel.Command exposing (CursorState, DrawTo(..), MoveTo(..), counterClockwise)

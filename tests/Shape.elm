@@ -478,7 +478,7 @@ arcTest =
                         { defaultArc | cornerRadius = infinity, startAngle = 0, endAngle = pi / 2 }
                 in
                     expectAll
-                        [ { param | innerRadius = 10, outerRadius = 100 } |> Debug.log "param" |> Shape.arc |> pathEqual "M0,-41.421356A41.421356,41.421356,0,1,1,41.421356,0L24.142136,0A24.142136,24.142136,0,0,1,0,-24.142136Z"
+                        [ { param | innerRadius = 10, outerRadius = 100 } |> Shape.arc |> pathEqual "M0,-41.421356A41.421356,41.421356,0,1,1,41.421356,0L24.142136,0A24.142136,24.142136,0,0,1,0,-24.142136Z"
 
                         --, { param | innerRadius = 100, outerRadius = 10 } |> Shape.arc |> pathEqual "M0,-41.421356A41.421356,41.421356,0,1,1,41.421356,0L24.142136,0A24.142136,24.142136,0,0,1,0,-24.142136Z"
                         ]

@@ -1,17 +1,60 @@
-module Visualization.StackOffset
+module Visualization.Shape.Stack
     exposing
-        ( none
-        , diverging
-        , expand
-        , silhouette
-        , wiggle
+        ( offsetNone
+        , offsetDiverging
+        , offsetExpand
+        , offsetSilhouette
+        , offsetWiggle
+        , sortByInsideOut
+        , computeStack
         )
 
 import List.Extra as List
 
 
-none : List (List ( Float, Float )) -> List (List ( Float, Float ))
-none series =
+computeStack :
+    { d
+        | data : b
+        , offset : List (List ( number, c )) -> List (List ( Float, Float ))
+        , order : b -> List ( a, List c )
+    }
+    ->
+        { extent : ( Float, Float )
+        , labels : List a
+        , values : List (List ( Float, Float ))
+        }
+computeStack { offset, order, data } =
+    let
+        ( labels, values ) =
+            data
+                |> order
+                |> List.unzip
+
+        stacked =
+            values
+                |> List.map (List.map (\e -> ( 0, e )))
+                |> offset
+    in
+        { values = stacked
+        , labels = labels
+        , extent = calculateExtremes stacked
+        }
+
+
+{-| Calculates the minimal and maximal y values, for correct scaling
+-}
+calculateExtremes : List (List ( Float, Float )) -> ( Float, Float )
+calculateExtremes coords =
+    let
+        folder ( y1, y2 ) ( accmin, accmax ) =
+            ( Basics.min y1 y2 |> Basics.min accmin, Basics.max y1 y2 |> Basics.max accmax )
+    in
+        List.map (List.foldl folder ( 0, 0 )) coords
+            |> List.foldl (\( mi, ma ) ( accmin, accmax ) -> ( Basics.min mi accmin, Basics.max ma accmax )) ( 0, 0 )
+
+
+offsetNone : List (List ( Float, Float )) -> List (List ( Float, Float ))
+offsetNone series =
     case series of
         [] ->
             []
@@ -35,7 +78,10 @@ none series =
                     |> List.reverse
 
 
-diverging series =
+offsetDiverging :
+    List (List ( number, number ))
+    -> List (List ( number1, number1 ))
+offsetDiverging series =
     case series of
         [] ->
             []
@@ -65,7 +111,8 @@ diverging series =
                     |> List.transpose
 
 
-expand series =
+offsetExpand : List (List ( Float, Float )) -> List (List ( Float, Float ))
+offsetExpand series =
     let
         -- divide each value in a column by the total sum of the column
         normalizeColumn column =
@@ -82,10 +129,11 @@ expand series =
             |> List.transpose
             |> List.map normalizeColumn
             |> List.transpose
-            |> none
+            |> offsetNone
 
 
-silhouette series =
+offsetSilhouette : List (List ( Float, Float )) -> List (List ( Float, Float ))
+offsetSilhouette series =
     case series of
         [] ->
             []
@@ -99,11 +147,11 @@ silhouette series =
             in
                 (List.map2 (\( x, y ) newY -> ( -newY / 2, y + (-newY / 2) )) first ys)
                     :: xs
-                    |> none
+                    |> offsetNone
 
 
-wiggle : List (List ( Float, Float )) -> List (List ( Float, Float ))
-wiggle series =
+offsetWiggle : List (List ( Float, Float )) -> List (List ( Float, Float ))
+offsetWiggle series =
     case series of
         [] ->
             []
@@ -157,7 +205,7 @@ wiggle series =
                         |> List.map2 (\( x, y ) yValue -> ( yValue, y + yValue )) first
             in
                 (newFirst :: rest)
-                    |> none
+                    |> offsetNone
 
 
 pairwise : (a -> a -> result) -> List a -> List result
@@ -168,3 +216,26 @@ pairwise f list =
 
         _ :: tail ->
             List.map2 f list tail
+
+
+sortByInsideOut : (a -> Float) -> List a -> List a
+sortByInsideOut toNumber items =
+    -- NOTE this can't be (a -> number) in 0.18.
+    -- because `(+)` needs a number and `List.sortBy` needs a `comparable`, using `a -> number` won't typecheck.
+    -- This will be possible in 0.19
+    let
+        withSum =
+            List.map (\element -> ( element, toNumber element )) items
+
+        folder ( element, sum ) ( bottom, bottoms, top, tops ) =
+            if top < bottom then
+                ( bottom, bottoms, top + sum, element :: tops )
+            else
+                ( bottom + sum, element :: bottoms, top, tops )
+
+        ( _, bottom, _, top ) =
+            withSum
+                |> List.sortBy Tuple.second
+                |> List.foldl folder ( 0, [], 0, [] )
+    in
+        List.reverse bottom ++ top

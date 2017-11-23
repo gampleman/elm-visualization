@@ -4,8 +4,7 @@ module Curves exposing (main)
 -}
 
 import Html exposing (div, p, a)
-import Html.Attributes exposing (href)
-import Html.Events exposing (onClick)
+import Color.Convert exposing (colorToCssRgb)
 import Visualization.Scale as Scale exposing (ContinuousScale)
 import Visualization.Shape as Shape
 import Svg exposing (Svg, svg, rect, path, g, line, text, text_)
@@ -33,14 +32,14 @@ points : List ( Float, Float )
 points =
     [ ( 0.1, 0.1 )
     , ( 0.2, 0.6 )
-    , ( 0.35, 0.9 )
-    , ( 0.45, 0.9 )
-    , ( 0.6, 0.3 )
+    , ( 0.35, 0.3 )
+    , ( 0.45, 0.3 )
+    , ( 0.6, 0.2 )
     , ( 0.9, 0.8 )
     , ( 1.2, 0.6 )
-    , ( 1.5, 0.4 )
+    , ( 1.5, 0.9 )
     , ( 1.7, 0.2 )
-    , ( 1.9, 0.7 )
+    , ( 1.9, 0.1 )
     ]
 
 
@@ -128,21 +127,39 @@ circle =
         }
 
 
-type Views
-    = Linear
-    | MonotoneInX
-    | Step
+basic : String -> Curve -> List ( String, Curve, String )
+basic prefix curveFn =
+    [ ( prefix, curveFn, "#000" ) ]
+
+
+parametrized : String -> (Float -> Curve) -> List ( String, Curve, String )
+parametrized prefix curveFn =
+    let
+        scale =
+            Scale.sequential ( 0, 1 ) Scale.magmaInterpolator
+
+        stops =
+            [ 0, 0.25, 0.5, 0.75, 1 ]
+    in
+        stops
+            |> List.map (\s -> ( prefix ++ " " ++ toString s, curveFn s, Scale.convert scale s |> colorToCssRgb ))
 
 
 exampleData =
-    [ ( "Linear", [ ( "linearCurve", Shape.linearCurve, "#000" ) ] )
-    , ( "MonotoneInX", [ ( "monotoneInXCurve", Shape.monotoneInXCurve, "#000" ) ] )
-    , ( "Step"
-      , [ ( "stepCurve 0", Shape.stepCurve 0, "rgba(85, 106, 55, 0.4)" )
-        , ( "stepCurve 0.5", Shape.stepCurve 0.5, "#000" )
-        , ( "stepCurve 1", Shape.stepCurve 1, "rgba(106, 55, 55, 0.4)" )
-        ]
-      )
+    [ ( "Linear", basic "linearCurve" Shape.linearCurve )
+    , ( "Basis", basic "basisCurve" Shape.basisCurve )
+    , ( "BasisClosed", basic "basisCurveClosed" Shape.basisCurveClosed )
+    , ( "BasisOpen", basic "basisCurveOpen" Shape.basisCurveOpen )
+    , ( "Bundle", parametrized "bundleCurve" Shape.bundleCurve )
+    , ( "Cardinal", parametrized "cardinalCurve" Shape.cardinalCurve )
+    , ( "CardinalClosed", parametrized "cardinalCurveClosed" Shape.cardinalCurveClosed )
+    , ( "CardinalOpen", parametrized "cardinalCurveOpen" Shape.cardinalCurveOpen )
+    , ( "CatmullRom", parametrized "catmullRomCurve" Shape.catmullRomCurve )
+    , ( "CatmullRomClosed", parametrized "catmullRomCurveClosed" Shape.catmullRomCurveClosed )
+    , ( "CatmullRomOpen", parametrized "catmullRomCurveOpen" Shape.catmullRomCurveOpen )
+    , ( "MonotoneInX", basic "monotoneInXCurve" Shape.monotoneInXCurve )
+    , ( "Step", parametrized "stepCurve" Shape.stepCurve )
+    , ( "Natural", basic "naturalCurve" Shape.naturalCurve )
     ]
 
 
@@ -152,4 +169,4 @@ main =
 
 
 
-{- {"additionalShots": ["linear", "monotoneinx", "step"]} -}
+{- {"additionalShots": ["linear", "basis", "basisclosed", "basisopen", "bundle", "cardinal", "cardinalclosed", "cardinalopen", "catmullrom", "catmullromclosed", "catmullromopen", "monotoneinx", "step", "natural"]} -}
