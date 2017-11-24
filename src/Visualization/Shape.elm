@@ -1,7 +1,9 @@
 module Visualization.Shape
     exposing
         ( line
+        , lineRadial
         , area
+        , areaRadial
         , linearCurve
         , basisCurveOpen
         , basisCurve
@@ -58,10 +60,14 @@ variety of shape generators for your convenience.
 
 [![Line Chart](http://code.gampleman.eu/elm-visualization/LineChart/preview.png)](http://code.gampleman.eu/elm-visualization/LineChart/)
 
-@docs line, area
+@docs line, lineRadial, area, areaRadial
 
 
 # Curves
+
+While lines are defined as a sequence of two-dimensional [x, y] points, and areas are similarly
+defined by a topline and a baseline, there remains the task of transforming this discrete representation
+into a continuous shape: i.e., how to interpolate between the points. A variety of curves are provided for this purpose.
 
 @docs Curve, linearCurve
 @docs basisCurve, basisCurveClosed, basisCurveOpen
@@ -74,8 +80,8 @@ variety of shape generators for your convenience.
 
 # Stack
 
-A stack is a way to fit multiple graphs into one drawing. Rather than drawing graphs on top of each other, the layers are stacked. This is useful when
-the relation between the graphs is of interest.
+A stack is a way to fit multiple graphs into one drawing. Rather than drawing graphs on top of each other,
+the layers are stacked. This is useful when the relation between the graphs is of interest.
 
 In most cases, the absolute size of a piece of data becomes harder to determine for the reader.
 
@@ -584,6 +590,17 @@ line curve =
     Visualization.Shape.Generators.line (Curve >> curve)
 
 
+{-| This works exactly like `line`, except it interprets the points it recieves as `(angle, radius)`
+pairs, where radius is in *radians*. Therefore it renders a radial layout with a center at `(0, 0)`.
+
+Use a transform to position the layout in final rendering.
+
+-}
+lineRadial : (Curve -> List PathSegment) -> List (Maybe Point) -> String
+lineRadial curve =
+    Visualization.Shape.Generators.line (Curve.toPolarWithCenter ( 0, 0 ) >> Curve >> curve)
+
+
 {-| The area generator produces an area, as in an area chart. An area is defined
 by two bounding lines, either splines or polylines. Typically, the two lines
 share the same x-values (x0 = x1), differing only in y-value (y0 and y1);
@@ -617,6 +634,17 @@ where `xScale` and `yScale` would be appropriate `Scale`s.
 area : (Curve -> List PathSegment) -> List (Maybe ( Point, Point )) -> String
 area curve =
     Visualization.Shape.Generators.area (Curve >> curve)
+
+
+{-| This works exactly like `area`, except it interprets the points it recieves as `(angle, radius)`
+pairs, where radius is in *radians*. Therefore it renders a radial layout with a center at `(0, 0)`.
+
+Use a transform to position the layout in final rendering.
+
+-}
+areaRadial : (Curve -> List PathSegment) -> List (Maybe ( Point, Point )) -> String
+areaRadial curve =
+    Visualization.Shape.Generators.area (Curve.toPolarWithCenter ( 0, 0 ) >> Curve >> curve)
 
 
 
