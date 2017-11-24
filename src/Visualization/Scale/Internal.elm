@@ -37,7 +37,10 @@ toFixed precision value =
                     [ x, String.padRight precision '0' y ]
 
                 [ val ] ->
-                    [ val, String.padRight precision '0' "" ]
+                    if precision > 0 then
+                        [ val, String.padRight precision '0' "" ]
+                    else
+                        [ val ]
 
                 val ->
                     val
