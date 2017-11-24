@@ -1,9 +1,8 @@
 module Visualization.Scale.Time exposing (convert, invert, ticks, tickFormat, nice, rangeExtent)
 
-import Visualization.Interpolate exposing (interpolateFloat)
 import Date.Extra as Date exposing (range, Interval(..))
 import Date exposing (Date)
-import Visualization.Scale.Internal exposing (bimap)
+import Visualization.Scale.Internal exposing (bimap, interpolateFloat)
 import Visualization.Scale.Linear as Linear
 
 

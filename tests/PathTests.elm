@@ -1,4 +1,4 @@
-module Path exposing (all)
+module PathTests exposing (all)
 
 import Test exposing (..)
 import Expect
@@ -247,7 +247,7 @@ all =
                 begin
                     |> moveTo 150 100
                     |> rect 100 200 50 25
-                    |> pathEqual "M150,100M100,200h50v25h-50Z"
+                    |> pathEqual "M150,100M100,200H150V225H100Z"
         , test "DSL and ADT definitions are equivalent" <|
             \() ->
                 begin

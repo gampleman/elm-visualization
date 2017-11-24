@@ -1,5 +1,5 @@
 {
-    "version": "1.5.0",
+    "version": "1.6.0",
     "summary": "A data visualization package for Elm",
     "repository": "https://github.com/gampleman/elm-visualization.git",
     "license": "MIT",
@@ -16,11 +16,14 @@
         "Visualization.Histogram"
     ],
     "dependencies": {
+        "Zinggi/elm-webgl-math": "1.0.5 <= v < 2.0.0",
         "elm-community/list-extra": "6.1.0 <= v < 7.0.0",
         "elm-lang/core": "5.0.0 <= v < 6.0.0",
         "elm-lang/html": "2.0.0 <= v < 3.0.0",
         "elm-lang/svg": "2.0.0 <= v < 3.0.0",
-        "justinmimbs/elm-date-extra": "2.0.1 <= v < 3.0.0"
+        "folkertdev/one-true-path-experiment": "3.0.0 <= v < 4.0.0",
+        "justinmimbs/elm-date-extra": "2.0.1 <= v < 3.0.0",
+        "opensolid/geometry": "2.0.1 <= v < 3.0.0"
     },
     "elm-version": "0.18.0 <= v < 0.19.0"
 }

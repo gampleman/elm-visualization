@@ -63,22 +63,22 @@ splitInsert bbox item head tail =
             quadrants bbox
 
         quadrant q =
-            let
-                _ =
-                    Debug.log "quadrant" ( q, item, head, contains q item, contains q head )
-            in
-                case ( contains q item, contains q head ) of
-                    ( True, True ) ->
-                        splitInsert q item head tail
+            -- let
+            --     _ =
+            --         Debug.log "quadrant" ( q, item, head, contains q item, contains q head )
+            -- in
+            case ( contains q item, contains q head ) of
+                ( True, True ) ->
+                    splitInsert q item head tail
 
-                    ( True, False ) ->
-                        Leaf q [ item ]
+                ( True, False ) ->
+                    Leaf q [ item ]
 
-                    ( False, True ) ->
-                        Leaf q (head :: tail)
+                ( False, True ) ->
+                    Leaf q (head :: tail)
 
-                    ( False, False ) ->
-                        Empty
+                ( False, False ) ->
+                    Empty
     in
         Node bbox () (quadrant nw) (quadrant ne) (quadrant se) (quadrant sw)
 

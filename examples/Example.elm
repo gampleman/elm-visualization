@@ -1,14 +1,26 @@
-module Example exposing (switchableViews, linkTo)
+module Example exposing (switchableViews, linkTo, navigation)
 
-import Html exposing (Html)
+import Html exposing (Html, text)
 import Html.Attributes exposing (href)
 import Html.Events exposing (onClick)
 import Navigation exposing (Location)
 
 
-stringify : a -> String
+stringify : String -> String
 stringify =
-    toString >> String.toLower
+    String.toLower
+        >> String.map
+            (\char ->
+                case char of
+                    ' ' ->
+                        '-'
+
+                    ':' ->
+                        '-'
+
+                    a ->
+                        a
+            )
 
 
 toMsg : { b | hash : String } -> String
@@ -21,25 +33,34 @@ toMsg { hash } =
             ""
 
 
-view : List ( a, Html String ) -> String -> Html String
-view config location =
+view : List ( String, a ) -> (a -> Html String) -> String -> Html String
+view config viewFn location =
     List.filter (\( l, _ ) -> stringify l == location) config
         |> List.head
         |> Maybe.map Tuple.second
-        |> Maybe.withDefault (List.head config |> Maybe.map Tuple.second |> Maybe.withDefault (Html.text "404 not found"))
+        |> Maybe.map viewFn
+        |> Maybe.withDefault (List.head config |> Maybe.map Tuple.second |> Maybe.map viewFn |> Maybe.withDefault (Html.text "404 not found"))
 
 
-switchableViews : List ( a, Html String ) -> Program Never String String
-switchableViews config =
+navigation : String -> List ( String, a ) -> Html String
+navigation title config =
+    Html.p [] <|
+        text
+            (title ++ ": ")
+            :: (List.intersperse (text " | ") <| List.map (\( a, _ ) -> linkTo a [] [ text a ]) config)
+
+
+switchableViews : List ( String, a ) -> (a -> Html String) -> Program Never String String
+switchableViews config viewFn =
     Navigation.program toMsg
         { init = \l -> ( toMsg l, Cmd.none )
         , update = \msg oldMsg -> ( msg, Cmd.none )
-        , view = view config
+        , view = view (Debug.log "config" config) viewFn
         , subscriptions = always Sub.none
         }
 
 
-linkTo : a -> List (Html.Attribute String) -> List (Html String) -> Html String
+linkTo : String -> List (Html.Attribute String) -> List (Html String) -> Html String
 linkTo view attrs children =
     let
         clickHandler =

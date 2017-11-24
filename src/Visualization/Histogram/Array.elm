@@ -1,4 +1,4 @@
-module Visualization.Array exposing (bisectRight)
+module Visualization.Histogram.Array exposing (bisectRight)
 
 import Array exposing (Array)
 import Bitwise

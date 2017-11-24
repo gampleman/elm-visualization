@@ -41,7 +41,7 @@ for example using Svg rects and linear scales.
 -}
 
 import Array
-import Visualization.Array as Array
+import Visualization.Histogram.Array as Array
 import Visualization.List as VList
 
 

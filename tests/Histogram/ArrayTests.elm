@@ -1,4 +1,4 @@
-module ArrayTests exposing (bisectRight)
+module Histogram.ArrayTests exposing (bisectRight)
 
 import Array exposing (Array)
 import Array.Hamt as Hamt
@@ -6,7 +6,7 @@ import Expect
 import Fuzz exposing (..)
 import Helper exposing (expectAll, expectAny)
 import Test exposing (..)
-import Visualization.Array as Array
+import Visualization.Histogram.Array as Array
 
 
 bisectRight : Test

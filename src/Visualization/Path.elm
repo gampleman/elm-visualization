@@ -1,4 +1,4 @@
-module Visualization.Path exposing (PathSegment(..), Path, begin, moveTo, lineTo, close, quadraticCurveTo, bezierCurveTo, arcTo, arc, rect, toAttrString)
+module Visualization.Path exposing (PathSegment(..), Path, begin, moveTo, lineTo, close, quadraticCurveTo, bezierCurveTo, arcTo, arc, rect, toAttrString, toOneTruePath)
 
 {-| This module provides an abstraction over drawing complex paths. Currently it
 contains a function to convert this representation into a string suitable for the
@@ -6,6 +6,12 @@ contains a function to convert this representation into a string suitable for th
 publicly exposed and alternative renderers can be built in e.g. Canvas or WebGL.
 
 The functions here are modeled after the [Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#Paths).
+
+*Deprecated:* In a future major release this module will be removed in favor of [folkertdev/one-true-path-experiment][otp] or
+it's successors, as they provide a safe, high quality wrapper over path based drawing that should be interoperable with
+other packages. To make migration easier, the `toOneTruePath` function is provided, so that downstream code can
+start working with [folkertdev/one-true-path-experiment][otp],
+rather than the datatypes provided in this module, yet still inter-operate.
 
 
 # Datatype
@@ -15,7 +21,7 @@ The functions here are modeled after the [Canvas API](https://developer.mozilla.
 
 # Converting
 
-@docs toAttrString
+@docs toAttrString, toOneTruePath
 
 
 # DSL
@@ -36,7 +42,9 @@ Is equivalent to:
 
 -}
 
-import String
+import LowLevel.Command as Cmd
+import Path
+import SubPath exposing (SubPath)
 
 
 type alias Point =
@@ -177,16 +185,19 @@ mod a b =
         (frac - toFloat (truncate frac)) * b
 
 
-stringify : PathSegment -> ( String, Float, Float, Float, Float, Bool ) -> ( String, Float, Float, Float, Float, Bool )
-stringify item ( str, x0, y0, x1, y1, empty ) =
+toOneTruePathSegment : PathSegment -> ( List ( Cmd.MoveTo, List Cmd.DrawTo ), Float, Float, Float, Float, Bool ) -> ( List ( Cmd.MoveTo, List Cmd.DrawTo ), Float, Float, Float, Float, Bool )
+toOneTruePathSegment item ( subpaths, x0, y0, x1, y1, empty ) =
     let
-        append cmd values str =
-            str ++ cmd ++ (String.join "," <| List.map toString values)
+        append i ds =
+            case ds of
+                ( moveto, list ) :: more ->
+                    ( moveto, list ++ [ i ] ) :: more
 
-        epsilon =
-            1.0e-6
+                _ ->
+                    ds
 
-        stringifyArc x1_ y1_ x2_ y2_ radius =
+        convertArc : Float -> Float -> Float -> Float -> Float -> ( List ( Cmd.MoveTo, List Cmd.DrawTo ), Float, Float, Float, Float, Bool )
+        convertArc x1_ y1_ x2_ y2_ radius =
             let
                 -- TODO: Figure out how this actually works and write a lot of comments/refactor.
                 -- Currently this is a straight port from D3.
@@ -241,34 +252,31 @@ stringify item ( str, x0, y0, x1, y1, empty ) =
                 t21 =
                     l / l21
 
-                str_ =
+                subpaths_ =
                     if abs (t01 - 1) > epsilon then
-                        append "L" [ x1_ + t01 * x01, y1_ + t01 * y01 ] str
+                        append (Cmd.LineTo [ ( x1_ + t01 * x01, y1_ + t01 * y01 ) ]) subpaths
                     else
-                        str
+                        subpaths
             in
                 if empty then
-                    ( append "M" [ x1_, y1_ ] str, x0, y0, x1_, y1_, False )
+                    ( ( Cmd.MoveTo ( x1_, y1_ ), [] ) :: subpaths, x0, y0, x1_, y1_, False )
                 else if l01_2 < epsilon then
-                    ( str, x0, y0, x1, y1, empty )
+                    ( subpaths, x0, y0, x1, y1, empty )
                     -- do nothing
                 else if not (abs (y01 * x21 - y21 * x01) > epsilon) || r == 0 then
-                    ( append "L" [ x1_, y1_ ] str, x0, y0, x1_, y1_, False )
+                    ( append (Cmd.LineTo [ ( x1_, y1_ ) ]) subpaths, x0, y0, x1_, y1_, False )
                 else
-                    ( append "A"
-                        [ r
-                        , r
-                        , 0
-                        , 0
-                        , (if y01 * x20 > x01 * y20 then
-                            1
-                           else
-                            0
-                          )
-                        , x1_ + t21 * x21
-                        , y1_ + t21 * y21
-                        ]
-                        str_
+                    ( append
+                        (Cmd.arcTo
+                            [ { radii = ( r, r )
+                              , xAxisRotate = 0
+                              , arcFlag = Cmd.smallestArc
+                              , direction = boolToDirection (y01 * x20 > x01 * y20)
+                              , target = ( x1_ + t21 * x21, y1_ + t21 * y21 )
+                              }
+                            ]
+                        )
+                        subpaths_
                     , x0
                     , y0
                     , x1_ + t21 * x21
@@ -276,13 +284,19 @@ stringify item ( str, x0, y0, x1, y1, empty ) =
                     , False
                     )
 
-        boolToFloat b =
+        boolToDirection b =
             if b then
-                1
+                Cmd.counterClockwise
             else
-                0
+                Cmd.clockwise
 
-        stringifyArcCustom x y radius a0 a1 ccw =
+        boolToArc b =
+            if b then
+                Cmd.largestArc
+            else
+                Cmd.smallestArc
+
+        convertArcCustom x y radius a0 a1 ccw =
             let
                 r =
                     abs radius
@@ -300,7 +314,7 @@ stringify item ( str, x0, y0, x1, y1, empty ) =
                     y + dy
 
                 cw =
-                    boolToFloat (not ccw)
+                    boolToDirection (not ccw)
 
                 tau =
                     2 * pi
@@ -311,21 +325,40 @@ stringify item ( str, x0, y0, x1, y1, empty ) =
                     else
                         a1 - a0
 
-                str_ =
+                subpaths_ =
                     if empty then
-                        append "M" [ x0_, y0_ ] str
+                        ( Cmd.MoveTo ( x0_, y0_ ), [] ) :: subpaths
                     else if abs (x1 - x0_) > epsilon || abs (y1 - y0_) > epsilon then
-                        append "L" [ x0_, y0_ ] str
+                        append (Cmd.LineTo [ ( x0_, y0_ ) ]) subpaths
                     else
-                        str
+                        subpaths
             in
                 if r == 0 then
                     -- Is this arc empty? We’re done.
-                    ( str_, x0, y0, x1, y1, empty )
+                    ( subpaths_, x0, y0, x1, y1, empty )
                 else if da > (tau - epsilon) then
                     -- Is this a complete circle? Draw two arcs to complete the circle.
-                    ( append "A" [ r, r, 0, 1, cw, x - dx, y - dy ] str_
-                        |> append "A" [ r, r, 0, 1, cw, x0_, y0_ ]
+                    ( append
+                        (Cmd.arcTo
+                            [ { radii = ( r, r )
+                              , xAxisRotate = 0
+                              , arcFlag = Cmd.largestArc
+                              , direction = cw
+                              , target = ( x - dx, y - dy )
+                              }
+                            ]
+                        )
+                        subpaths_
+                        |> append
+                            (Cmd.arcTo
+                                [ { radii = ( r, r )
+                                  , xAxisRotate = 0
+                                  , arcFlag = Cmd.largestArc
+                                  , direction = cw
+                                  , target = ( x0_, y0_ )
+                                  }
+                                ]
+                            )
                     , x0
                     , y0
                     , x0_
@@ -341,46 +374,70 @@ stringify item ( str, x0, y0, x1, y1, empty ) =
                                 da
                     in
                         -- Otherwise, draw an arc!
-                        ( append "A" [ r, r, 0, boolToFloat (da_ >= pi), cw, x + r * cos a1, y + r * sin a1 ] str_, x0, y0, x + r * cos a1, y + r * sin a1, False )
+                        ( append
+                            (Cmd.arcTo
+                                [ { radii = ( r, r )
+                                  , xAxisRotate = 0
+                                  , arcFlag = boolToArc (da_ >= pi)
+                                  , direction = cw
+                                  , target = ( x + r * cos a1, y + r * sin a1 )
+                                  }
+                                ]
+                            )
+                            subpaths_
+                        , x0
+                        , y0
+                        , x + r * cos a1
+                        , y + r * sin a1
+                        , False
+                        )
     in
         case item of
             Move ( x, y ) ->
-                ( append "M" [ x, y ] str, x, y, x, y, False )
+                ( ( Cmd.MoveTo ( x, y ), [] ) :: subpaths, x, y, x, y, False )
 
             Close ->
                 if empty then
-                    ( str, x0, y0, x1, y1, empty )
+                    ( subpaths, x0, y0, x1, y1, empty )
                     -- do nothing
                 else
-                    ( append "Z" [] str, x0, y0, x0, y0, False )
+                    ( append Cmd.ClosePath subpaths, x0, y0, x0, y0, False )
 
             Line ( x, y ) ->
-                ( append "L" [ x, y ] str, x0, y0, x, y, False )
+                ( append (Cmd.LineTo [ ( x, y ) ]) subpaths, x0, y0, x, y, False )
 
-            QuadraticCurve ( cpx, cpy ) ( x, y ) ->
-                ( append "Q" [ cpx, cpy, x, y ] str, x0, y0, x, y, False )
+            QuadraticCurve cp ( x, y ) ->
+                ( append (Cmd.quadraticCurveTo [ ( cp, ( x, y ) ) ]) subpaths, x0, y0, x, y, False )
 
-            BezierCurve ( cpx1, cpy1 ) ( cpx2, cpy2 ) ( x, y ) ->
-                ( append "C" [ cpx1, cpy1, cpx2, cpy2, x, y ] str, x0, y0, x, y, False )
+            BezierCurve cp1 cp2 ( x, y ) ->
+                ( append (Cmd.cubicCurveTo [ ( cp1, cp2, ( x, y ) ) ]) subpaths, x0, y0, x, y, False )
 
             Arc ( x1_, y1_ ) ( x2_, y2_ ) radius ->
-                stringifyArc x1_ y1_ x2_ y2_ radius
+                convertArc x1_ y1_ x2_ y2_ radius
 
             ArcCustom ( x, y ) radius startAngle endAngle anticlockwise ->
-                stringifyArcCustom x y radius startAngle endAngle anticlockwise
+                convertArcCustom x y radius startAngle endAngle anticlockwise
 
             Rect ( x, y ) ( w, h ) ->
-                ( append "M" [ x, y ] str
-                    |> append "h" [ w ]
-                    |> append "v" [ h ]
-                    |> append "h" [ -w ]
-                    |> append "Z" []
+                ( ( Cmd.MoveTo ( x, y )
+                  , [ Cmd.horizontalTo [ x + w ]
+                    , Cmd.verticalTo [ y + h ]
+                    , Cmd.horizontalTo [ x ]
+                    , Cmd.closePath
+                    ]
+                  )
+                    :: subpaths
                 , x
                 , y
                 , x
                 , y
                 , False
                 )
+
+
+epsilon : Float
+epsilon =
+    1.0e-6
 
 
 {-| Transforms a path to a string that can be passed into the `d` attribute of the
@@ -391,13 +448,28 @@ stringify item ( str, x0, y0, x1, y1, empty ) =
         |> arcTo 200 100 200 200 50
         |> arc 150 150 50 0 pi False
         |> toAttrString
-        --> "M100,100L150,100A50,50,0,0,1,200,150A50,50,0,1,1,100,150"
+        --> "M100,100 L150,100 A50,50 0 0 1 200,150 A50,50 0 1 1 100,150"
 
 -}
 toAttrString : Path -> String
 toAttrString path =
+    path
+        |> toOneTruePath
+        |> Path.toString
+
+
+{-| Transforms the path to a path from the [folkertdev/one-true-path-experiment][otp]
+library. This allows you to do fancy math on the path data - with the hope that this will enable animation library authors
+to build general purpose transitions between these.
+
+[otp]: https://github.com/folkertdev/one-true-path-experiment
+
+-}
+toOneTruePath : Path -> Path.Path
+toOneTruePath path =
     let
         ( result, _, _, _, _, _ ) =
-            List.foldl stringify ( "", 0, 0, 0, 0, True ) path
+            List.foldl toOneTruePathSegment ( [], 0, 0, 0, 0, True ) path
     in
-        result
+        List.reverse result
+            |> List.map (uncurry SubPath.subpath)

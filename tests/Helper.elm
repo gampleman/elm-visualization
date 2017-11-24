@@ -5,6 +5,7 @@ import Regex exposing (HowMany(..))
 import Result
 import Test.Runner exposing (getFailure)
 import Visualization.Path as Path exposing (..)
+import Path.LowLevel.Parser as Parser
 
 
 pathEqual : String -> String -> Expect.Expectation
@@ -18,6 +19,7 @@ pathEqual str path =
 
         normalize =
             Regex.replace All (Regex.regex "[-+]?(?:\\d+\\.\\d+|\\d+\\.|\\.\\d+|\\d+)(?:[eE][-]?\\d+)?") (\{ match } -> format <| Result.withDefault 0 <| String.toFloat match)
+                >> Parser.parse
 
         pathStr =
             normalize path
@@ -25,7 +27,18 @@ pathEqual str path =
         normStr =
             normalize str
     in
-        Expect.equal normStr pathStr
+        case ( normStr, pathStr ) of
+            ( Ok normParse, Ok pathParse ) ->
+                Expect.equal normParse pathParse
+
+            ( Err a, Err b ) ->
+                Expect.fail ("Parsing both strings failed with:" ++ toString ( a, b ))
+
+            ( _, Err e ) ->
+                Expect.fail ("Parsing the expected failed with:" ++ toString e)
+
+            ( Err e, _ ) ->
+                Expect.fail ("Parsing the model failed with:" ++ toString e)
 
 
 precision =

@@ -4,8 +4,7 @@ module Curves exposing (main)
 -}
 
 import Html exposing (div, p, a)
-import Html.Attributes exposing (href)
-import Html.Events exposing (onClick)
+import Color.Convert exposing (colorToCssRgb)
 import Visualization.Scale as Scale exposing (ContinuousScale)
 import Visualization.Shape as Shape
 import Svg exposing (Svg, svg, rect, path, g, line, text, text_)
@@ -33,14 +32,14 @@ points : List ( Float, Float )
 points =
     [ ( 0.1, 0.1 )
     , ( 0.2, 0.6 )
-    , ( 0.35, 0.9 )
-    , ( 0.45, 0.9 )
-    , ( 0.6, 0.3 )
+    , ( 0.35, 0.3 )
+    , ( 0.45, 0.3 )
+    , ( 0.6, 0.2 )
     , ( 0.9, 0.8 )
     , ( 1.2, 0.6 )
-    , ( 1.5, 0.4 )
+    , ( 1.5, 0.9 )
     , ( 1.7, 0.2 )
-    , ( 1.9, 0.7 )
+    , ( 1.9, 0.1 )
     ]
 
 
@@ -96,18 +95,13 @@ drawCurve ( name, curve, color ) =
 
 drawLegend : Int -> ( String, Curve, String ) -> Svg msg
 drawLegend index ( name, curve, color ) =
-    text_ [ style ("color: " ++ color ++ "; font-family: monospace"), x (toString padding), y (toString (toFloat index * 20 + padding)) ] [ text name ]
+    text_ [ style ("fill: " ++ color ++ "; font-family: monospace"), x (toString padding), y (toString (toFloat index * 20 + padding)) ] [ text name ]
 
 
 view : List ( String, Curve, String ) -> Svg String
 view model =
     div []
-        [ p []
-            [ text "Curve type: "
-            , Example.linkTo Linear [] [ text "Linear" ]
-            , text " | "
-            , Example.linkTo MonotoneInX [] [ text "MonotoneInX" ]
-            ]
+        [ Example.navigation "Curve type" exampleData
         , svg [ width (toString screenWidth), height (toString screenHeight) ]
             [ rect [ width "100%", height "100%", fill "#dfdfdf" ] []
             , g [] <| List.indexedMap yGridLine <| Scale.ticks yScale 10
@@ -133,14 +127,46 @@ circle =
         }
 
 
-type Views
-    = Linear
-    | MonotoneInX
+basic : String -> Curve -> List ( String, Curve, String )
+basic prefix curveFn =
+    [ ( prefix, curveFn, "#000" ) ]
+
+
+parametrized : String -> (Float -> Curve) -> List ( String, Curve, String )
+parametrized prefix curveFn =
+    let
+        scale =
+            Scale.sequential ( 0, 1 ) Scale.magmaInterpolator
+
+        stops =
+            [ 0, 0.25, 0.5, 0.75, 1 ]
+    in
+        stops
+            |> List.map (\s -> ( prefix ++ " " ++ toString s, curveFn s, Scale.convert scale s |> colorToCssRgb ))
+
+
+exampleData =
+    [ ( "Linear", basic "linearCurve" Shape.linearCurve )
+    , ( "Basis", basic "basisCurve" Shape.basisCurve )
+    , ( "BasisClosed", basic "basisCurveClosed" Shape.basisCurveClosed )
+    , ( "BasisOpen", basic "basisCurveOpen" Shape.basisCurveOpen )
+    , ( "Bundle", parametrized "bundleCurve" Shape.bundleCurve )
+    , ( "Cardinal", parametrized "cardinalCurve" Shape.cardinalCurve )
+    , ( "CardinalClosed", parametrized "cardinalCurveClosed" Shape.cardinalCurveClosed )
+    , ( "CardinalOpen", parametrized "cardinalCurveOpen" Shape.cardinalCurveOpen )
+    , ( "CatmullRom", parametrized "catmullRomCurve" Shape.catmullRomCurve )
+    , ( "CatmullRomClosed", parametrized "catmullRomCurveClosed" Shape.catmullRomCurveClosed )
+    , ( "CatmullRomOpen", parametrized "catmullRomCurveOpen" Shape.catmullRomCurveOpen )
+    , ( "MonotoneInX", basic "monotoneInXCurve" Shape.monotoneInXCurve )
+    , ( "Step", parametrized "stepCurve" Shape.stepCurve )
+    , ( "Natural", basic "naturalCurve" Shape.naturalCurve )
+    ]
 
 
 main : Program Never String String
 main =
-    Example.switchableViews
-        [ ( Linear, view [ ( "linearCurve", Shape.linearCurve, "#000" ) ] )
-        , ( MonotoneInX, view [ ( "monotoneInXCurve", Shape.monotoneInXCurve, "#000" ) ] )
-        ]
+    Example.switchableViews exampleData view
+
+
+
+{- {"additionalShots": ["linear", "basis", "basisclosed", "basisopen", "bundle", "cardinal", "cardinalclosed", "cardinalopen", "catmullrom", "catmullromclosed", "catmullromopen", "monotoneinx", "step", "natural"], "options": {"linear": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "basis": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "basisclosed": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "basisopen": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "bundle": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "cardinal": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "cardinalclosed": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "cardinalopen": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "catmullrom": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "catmullromclosed": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "catmullromopen": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "monotoneinx": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "step": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "natural": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}}} -}

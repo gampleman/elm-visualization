@@ -1,7 +1,7 @@
 <h1><img src="http://code.gampleman.eu/elm-visualization/misc/Logo@2x.png" alt="Elm-visualization" srcset="http://code.gampleman.eu/elm-visualization/misc/Logo@2x.png, http://code.gampleman.eu/elm-visualization/misc/Logo@2x.png 2x" style="max-width: 100%" /></h1>
 
 
-[Docs](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/) | [Examples](http://code.gampleman.eu/elm-visualization/) | [GitHub](https://github.com/gampleman/elm-visualization) | [Changelog](https://github.com/gampleman/elm-visualization/releases)
+[Docs](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/) | [Examples](http://code.gampleman.eu/elm-visualization/) | [GitHub](https://github.com/gampleman/elm-visualization) | [Changelog](https://github.com/gampleman/elm-visualization/releases) | `#visualization` on [Elm slack](https://elmlang.herokuapp.com)
 
 This project is designed to give you all the tools needed to build data visualizations.
 It is not a charting library in the sense that you have pre-bundled Excel-style
@@ -11,14 +11,14 @@ that uniquely suite your needs.
 
 ## Learn by example
 
-<a href="http://code.gampleman.eu/elm-visualization/"><img src="http://code.gampleman.eu/elm-visualization/misc/examples@2x.png" alt="Examples" srcset="http://code.gampleman.eu/elm-visualization/misc/Logo.png, http://code.gampleman.eu/elm-visualization/misc/Logo@2x.png 2x" style="max-width: 100%" /></a>
+<a href="http://code.gampleman.eu/elm-visualization/"><img src="http://code.gampleman.eu/elm-visualization/misc/examples@2x.png" alt="Examples" srcset="http://code.gampleman.eu/elm-visualization/misc/examples.png, http://code.gampleman.eu/elm-visualization/misc/examples@2x.png 2x" style="max-width: 100%" /></a>
 
 ## What's included?
 
 ### [Scales](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization-Scale)
 
 Most of the time you have data that has properties that you want to display on the
-screen, however these properties typically aren't in pixels. Scales solve this \
+screen, however these properties typically aren't in pixels. Scales solve this
 fundamental problem by giving you convenient ways to transform raw data into positions,
 sizes, colors, labels and other ways to display data.
 

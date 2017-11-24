@@ -1,8 +1,7 @@
-module StackOffset exposing (..)
+module Shape.Stack exposing (..)
 
 import Expect
 import Test exposing (..)
-import Visualization.StackOffset as StackOffset
 import Visualization.Shape as Shape
 
 

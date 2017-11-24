@@ -3564,6 +3564,10 @@ var _elm_community$intdict$IntDict$highestBitSet = function (n) {
 	return n5 & (~(n5 >>> 1));
 };
 var _elm_community$intdict$IntDict$signBit = _elm_community$intdict$IntDict$highestBitSet(-1);
+var _elm_community$intdict$IntDict$mostSignificantBranchingBit = F2(
+	function (a, b) {
+		return (_elm_lang$core$Native_Utils.eq(a, _elm_community$intdict$IntDict$signBit) || _elm_lang$core$Native_Utils.eq(b, _elm_community$intdict$IntDict$signBit)) ? _elm_community$intdict$IntDict$signBit : A2(_elm_lang$core$Basics$max, a, b);
+	});
 var _elm_community$intdict$IntDict$isBranchingBitSet = function (p) {
 	return function (_p12) {
 		return A2(
@@ -3576,7 +3580,7 @@ var _elm_community$intdict$IntDict$isBranchingBitSet = function (p) {
 	};
 };
 var _elm_community$intdict$IntDict$higherBitMask = function (branchingBit) {
-	return ~((branchingBit * 2) - 1);
+	return branchingBit ^ (~(branchingBit - 1));
 };
 var _elm_community$intdict$IntDict$prefixMatches = F2(
 	function (p, n) {
@@ -3812,6 +3816,82 @@ var _elm_community$intdict$IntDict$fromList = function (pairs) {
 		_elm_community$intdict$IntDict$empty,
 		pairs);
 };
+var _elm_community$intdict$IntDict$before = F2(
+	function (key, dict) {
+		var go = F2(
+			function (def, dict) {
+				go:
+				while (true) {
+					var _p36 = dict;
+					switch (_p36.ctor) {
+						case 'Empty':
+							return _elm_community$intdict$IntDict$findMax(def);
+						case 'Leaf':
+							var _p37 = _p36._0;
+							return (_elm_lang$core$Native_Utils.cmp(_p37.key, key) > -1) ? _elm_community$intdict$IntDict$findMax(def) : _elm_lang$core$Maybe$Just(
+								{ctor: '_Tuple2', _0: _p37.key, _1: _p37.value});
+						default:
+							var _p38 = _p36._0;
+							if (!A2(_elm_community$intdict$IntDict$prefixMatches, _p38.prefix, key)) {
+								return (_elm_lang$core$Native_Utils.cmp(_p38.prefix.prefixBits, key) > 0) ? _elm_community$intdict$IntDict$findMax(def) : _elm_community$intdict$IntDict$findMax(_p38.right);
+							} else {
+								if (A2(_elm_community$intdict$IntDict$isBranchingBitSet, _p38.prefix, key)) {
+									var _v28 = _p38.left,
+										_v29 = _p38.right;
+									def = _v28;
+									dict = _v29;
+									continue go;
+								} else {
+									var _v30 = def,
+										_v31 = _p38.left;
+									def = _v30;
+									dict = _v31;
+									continue go;
+								}
+							}
+					}
+				}
+			});
+		return A2(go, _elm_community$intdict$IntDict$Empty, dict);
+	});
+var _elm_community$intdict$IntDict$after = F2(
+	function (key, dict) {
+		var go = F2(
+			function (def, dict) {
+				go:
+				while (true) {
+					var _p39 = dict;
+					switch (_p39.ctor) {
+						case 'Empty':
+							return _elm_community$intdict$IntDict$findMin(def);
+						case 'Leaf':
+							var _p40 = _p39._0;
+							return (_elm_lang$core$Native_Utils.cmp(_p40.key, key) < 1) ? _elm_community$intdict$IntDict$findMin(def) : _elm_lang$core$Maybe$Just(
+								{ctor: '_Tuple2', _0: _p40.key, _1: _p40.value});
+						default:
+							var _p41 = _p39._0;
+							if (!A2(_elm_community$intdict$IntDict$prefixMatches, _p41.prefix, key)) {
+								return (_elm_lang$core$Native_Utils.cmp(_p41.prefix.prefixBits, key) < 0) ? _elm_community$intdict$IntDict$findMin(def) : _elm_community$intdict$IntDict$findMin(_p41.left);
+							} else {
+								if (A2(_elm_community$intdict$IntDict$isBranchingBitSet, _p41.prefix, key)) {
+									var _v33 = def,
+										_v34 = _p41.right;
+									def = _v33;
+									dict = _v34;
+									continue go;
+								} else {
+									var _v35 = _p41.right,
+										_v36 = _p41.left;
+									def = _v35;
+									dict = _v36;
+									continue go;
+								}
+							}
+					}
+				}
+			});
+		return A2(go, _elm_community$intdict$IntDict$Empty, dict);
+	});
 var _elm_community$intdict$IntDict$Right = {ctor: 'Right'};
 var _elm_community$intdict$IntDict$Left = {ctor: 'Left'};
 var _elm_community$intdict$IntDict$Disjunct = F2(
@@ -3832,7 +3912,7 @@ var _elm_community$intdict$IntDict$determineBranchRelation = F2(
 		var rp = r.prefix;
 		var lp = l.prefix;
 		var mask = _elm_community$intdict$IntDict$highestBitSet(
-			A2(_elm_lang$core$Basics$max, lp.branchingBit, rp.branchingBit));
+			A2(_elm_community$intdict$IntDict$mostSignificantBranchingBit, lp.branchingBit, rp.branchingBit));
 		var modifiedRightPrefix = A3(_elm_community$intdict$IntDict$combineBits, rp.prefixBits, ~lp.prefixBits, mask);
 		var prefix = A2(_elm_community$intdict$IntDict$lcp, lp.prefixBits, modifiedRightPrefix);
 		return _elm_lang$core$Native_Utils.eq(lp, rp) ? _elm_community$intdict$IntDict$SamePrefix : (_elm_lang$core$Native_Utils.eq(prefix, lp) ? A2(
@@ -3850,108 +3930,108 @@ var _elm_community$intdict$IntDict$uniteWith = F3(
 	function (merger, l, r) {
 		var mergeWith = F3(
 			function (key, left, right) {
-				var _p36 = {ctor: '_Tuple2', _0: left, _1: right};
-				if (_p36._0.ctor === 'Just') {
-					if (_p36._1.ctor === 'Just') {
+				var _p42 = {ctor: '_Tuple2', _0: left, _1: right};
+				if (_p42._0.ctor === 'Just') {
+					if (_p42._1.ctor === 'Just') {
 						return _elm_lang$core$Maybe$Just(
-							A3(merger, key, _p36._0._0, _p36._1._0));
+							A3(merger, key, _p42._0._0, _p42._1._0));
 					} else {
 						return left;
 					}
 				} else {
-					if (_p36._1.ctor === 'Just') {
+					if (_p42._1.ctor === 'Just') {
 						return right;
 					} else {
 						return _elm_lang$core$Native_Utils.crashCase(
 							'IntDict',
 							{
-								start: {line: 427, column: 7},
-								end: {line: 432, column: 144}
+								start: {line: 709, column: 13},
+								end: {line: 720, column: 154}
 							},
-							_p36)('IntDict.uniteWith: mergeWith was called with 2 Nothings. This is a bug in the implementation, please file a bug report!');
+							_p42)('IntDict.uniteWith: mergeWith was called with 2 Nothings. This is a bug in the implementation, please file a bug report!');
 					}
 				}
 			});
-		var _p38 = {ctor: '_Tuple2', _0: l, _1: r};
-		_v28_2:
+		var _p44 = {ctor: '_Tuple2', _0: l, _1: r};
+		_v38_2:
 		do {
-			_v28_1:
+			_v38_1:
 			do {
-				switch (_p38._0.ctor) {
+				switch (_p44._0.ctor) {
 					case 'Empty':
 						return r;
 					case 'Leaf':
-						switch (_p38._1.ctor) {
+						switch (_p44._1.ctor) {
 							case 'Empty':
-								break _v28_1;
+								break _v38_1;
 							case 'Leaf':
-								break _v28_2;
+								break _v38_2;
 							default:
-								break _v28_2;
+								break _v38_2;
 						}
 					default:
-						switch (_p38._1.ctor) {
+						switch (_p44._1.ctor) {
 							case 'Empty':
-								break _v28_1;
+								break _v38_1;
 							case 'Leaf':
-								var _p40 = _p38._1._0;
+								var _p46 = _p44._1._0;
 								return A3(
 									_elm_community$intdict$IntDict$update,
-									_p40.key,
+									_p46.key,
 									function (l_) {
 										return A3(
 											mergeWith,
-											_p40.key,
+											_p46.key,
 											l_,
-											_elm_lang$core$Maybe$Just(_p40.value));
+											_elm_lang$core$Maybe$Just(_p46.value));
 									},
 									l);
 							default:
-								var _p43 = _p38._1._0;
-								var _p42 = _p38._0._0;
-								var _p41 = A2(_elm_community$intdict$IntDict$determineBranchRelation, _p42, _p43);
-								switch (_p41.ctor) {
+								var _p49 = _p44._1._0;
+								var _p48 = _p44._0._0;
+								var _p47 = A2(_elm_community$intdict$IntDict$determineBranchRelation, _p48, _p49);
+								switch (_p47.ctor) {
 									case 'SamePrefix':
 										return A3(
 											_elm_community$intdict$IntDict$inner,
-											_p42.prefix,
-											A3(_elm_community$intdict$IntDict$uniteWith, merger, _p42.left, _p43.left),
-											A3(_elm_community$intdict$IntDict$uniteWith, merger, _p42.right, _p43.right));
+											_p48.prefix,
+											A3(_elm_community$intdict$IntDict$uniteWith, merger, _p48.left, _p49.left),
+											A3(_elm_community$intdict$IntDict$uniteWith, merger, _p48.right, _p49.right));
 									case 'Parent':
-										if (_p41._0.ctor === 'Left') {
-											if (_p41._1.ctor === 'Right') {
+										if (_p47._0.ctor === 'Left') {
+											if (_p47._1.ctor === 'Right') {
 												return A3(
 													_elm_community$intdict$IntDict$inner,
-													_p42.prefix,
-													_p42.left,
-													A3(_elm_community$intdict$IntDict$uniteWith, merger, _p42.right, r));
+													_p48.prefix,
+													_p48.left,
+													A3(_elm_community$intdict$IntDict$uniteWith, merger, _p48.right, r));
 											} else {
 												return A3(
 													_elm_community$intdict$IntDict$inner,
-													_p42.prefix,
-													A3(_elm_community$intdict$IntDict$uniteWith, merger, _p42.left, r),
-													_p42.right);
+													_p48.prefix,
+													A3(_elm_community$intdict$IntDict$uniteWith, merger, _p48.left, r),
+													_p48.right);
 											}
 										} else {
-											if (_p41._1.ctor === 'Right') {
+											if (_p47._1.ctor === 'Right') {
 												return A3(
 													_elm_community$intdict$IntDict$inner,
-													_p43.prefix,
-													_p43.left,
-													A3(_elm_community$intdict$IntDict$uniteWith, merger, l, _p43.right));
+													_p49.prefix,
+													_p49.left,
+													A3(_elm_community$intdict$IntDict$uniteWith, merger, l, _p49.right));
 											} else {
 												return A3(
 													_elm_community$intdict$IntDict$inner,
-													_p43.prefix,
-													A3(_elm_community$intdict$IntDict$uniteWith, merger, l, _p43.left),
-													_p43.right);
+													_p49.prefix,
+													A3(_elm_community$intdict$IntDict$uniteWith, merger, l, _p49.left),
+													_p49.right);
 											}
 										}
 									default:
-										if (_p41._1.ctor === 'Left') {
-											return A3(_elm_community$intdict$IntDict$inner, _p41._0, l, r);
+										if (_p47._1.ctor === 'Left') {
+											return A3(_elm_community$intdict$IntDict$inner, _p47._0, l, r);
 										} else {
-											return A3(_elm_community$intdict$IntDict$inner, _p41._0, r, l);
+											return A3(_elm_community$intdict$IntDict$inner, _p47._0, r, l);
 										}
 								}
 						}
@@ -3959,15 +4039,15 @@ var _elm_community$intdict$IntDict$uniteWith = F3(
 			} while(false);
 			return l;
 		} while(false);
-		var _p39 = _p38._0._0;
+		var _p45 = _p44._0._0;
 		return A3(
 			_elm_community$intdict$IntDict$update,
-			_p39.key,
+			_p45.key,
 			function (r_) {
 				return A3(
 					mergeWith,
-					_p39.key,
-					_elm_lang$core$Maybe$Just(_p39.value),
+					_p45.key,
+					_elm_lang$core$Maybe$Just(_p45.value),
 					r_);
 			},
 			r);
@@ -3981,73 +4061,73 @@ var _elm_community$intdict$IntDict$intersect = F2(
 	function (l, r) {
 		intersect:
 		while (true) {
-			var _p44 = {ctor: '_Tuple2', _0: l, _1: r};
-			_v30_2:
+			var _p50 = {ctor: '_Tuple2', _0: l, _1: r};
+			_v40_2:
 			do {
-				_v30_1:
+				_v40_1:
 				do {
-					switch (_p44._0.ctor) {
+					switch (_p50._0.ctor) {
 						case 'Empty':
 							return _elm_community$intdict$IntDict$Empty;
 						case 'Leaf':
-							switch (_p44._1.ctor) {
+							switch (_p50._1.ctor) {
 								case 'Empty':
-									break _v30_1;
+									break _v40_1;
 								case 'Leaf':
-									break _v30_2;
+									break _v40_2;
 								default:
-									break _v30_2;
+									break _v40_2;
 							}
 						default:
-							switch (_p44._1.ctor) {
+							switch (_p50._1.ctor) {
 								case 'Empty':
-									break _v30_1;
+									break _v40_1;
 								case 'Leaf':
-									var _p46 = _p44._1._0;
-									var _p45 = A2(_elm_community$intdict$IntDict$get, _p46.key, l);
-									if (_p45.ctor === 'Just') {
-										return A2(_elm_community$intdict$IntDict$leaf, _p46.key, _p45._0);
+									var _p52 = _p50._1._0;
+									var _p51 = A2(_elm_community$intdict$IntDict$get, _p52.key, l);
+									if (_p51.ctor === 'Just') {
+										return A2(_elm_community$intdict$IntDict$leaf, _p52.key, _p51._0);
 									} else {
 										return _elm_community$intdict$IntDict$Empty;
 									}
 								default:
-									var _p49 = _p44._1._0;
-									var _p48 = _p44._0._0;
-									var _p47 = A2(_elm_community$intdict$IntDict$determineBranchRelation, _p48, _p49);
-									switch (_p47.ctor) {
+									var _p55 = _p50._1._0;
+									var _p54 = _p50._0._0;
+									var _p53 = A2(_elm_community$intdict$IntDict$determineBranchRelation, _p54, _p55);
+									switch (_p53.ctor) {
 										case 'SamePrefix':
 											return A3(
 												_elm_community$intdict$IntDict$inner,
-												_p48.prefix,
-												A2(_elm_community$intdict$IntDict$intersect, _p48.left, _p49.left),
-												A2(_elm_community$intdict$IntDict$intersect, _p48.right, _p49.right));
+												_p54.prefix,
+												A2(_elm_community$intdict$IntDict$intersect, _p54.left, _p55.left),
+												A2(_elm_community$intdict$IntDict$intersect, _p54.right, _p55.right));
 										case 'Parent':
-											if (_p47._0.ctor === 'Left') {
-												if (_p47._1.ctor === 'Right') {
-													var _v33 = _p48.right,
-														_v34 = r;
-													l = _v33;
-													r = _v34;
+											if (_p53._0.ctor === 'Left') {
+												if (_p53._1.ctor === 'Right') {
+													var _v43 = _p54.right,
+														_v44 = r;
+													l = _v43;
+													r = _v44;
 													continue intersect;
 												} else {
-													var _v35 = _p48.left,
-														_v36 = r;
-													l = _v35;
-													r = _v36;
+													var _v45 = _p54.left,
+														_v46 = r;
+													l = _v45;
+													r = _v46;
 													continue intersect;
 												}
 											} else {
-												if (_p47._1.ctor === 'Right') {
-													var _v37 = l,
-														_v38 = _p49.right;
-													l = _v37;
-													r = _v38;
+												if (_p53._1.ctor === 'Right') {
+													var _v47 = l,
+														_v48 = _p55.right;
+													l = _v47;
+													r = _v48;
 													continue intersect;
 												} else {
-													var _v39 = l,
-														_v40 = _p49.left;
-													l = _v39;
-													r = _v40;
+													var _v49 = l,
+														_v50 = _p55.left;
+													l = _v49;
+													r = _v50;
 													continue intersect;
 												}
 											}
@@ -4059,74 +4139,74 @@ var _elm_community$intdict$IntDict$intersect = F2(
 				} while(false);
 				return _elm_community$intdict$IntDict$Empty;
 			} while(false);
-			return A2(_elm_community$intdict$IntDict$member, _p44._0._0.key, r) ? l : _elm_community$intdict$IntDict$Empty;
+			return A2(_elm_community$intdict$IntDict$member, _p50._0._0.key, r) ? l : _elm_community$intdict$IntDict$Empty;
 		}
 	});
 var _elm_community$intdict$IntDict$diff = F2(
 	function (l, r) {
 		diff:
 		while (true) {
-			var _p50 = {ctor: '_Tuple2', _0: l, _1: r};
-			_v41_2:
+			var _p56 = {ctor: '_Tuple2', _0: l, _1: r};
+			_v51_2:
 			do {
-				_v41_1:
+				_v51_1:
 				do {
-					switch (_p50._0.ctor) {
+					switch (_p56._0.ctor) {
 						case 'Empty':
 							return _elm_community$intdict$IntDict$Empty;
 						case 'Leaf':
-							switch (_p50._1.ctor) {
+							switch (_p56._1.ctor) {
 								case 'Empty':
-									break _v41_1;
+									break _v51_1;
 								case 'Leaf':
-									break _v41_2;
+									break _v51_2;
 								default:
-									break _v41_2;
+									break _v51_2;
 							}
 						default:
-							switch (_p50._1.ctor) {
+							switch (_p56._1.ctor) {
 								case 'Empty':
-									break _v41_1;
+									break _v51_1;
 								case 'Leaf':
-									return A2(_elm_community$intdict$IntDict$remove, _p50._1._0.key, l);
+									return A2(_elm_community$intdict$IntDict$remove, _p56._1._0.key, l);
 								default:
-									var _p53 = _p50._1._0;
-									var _p52 = _p50._0._0;
-									var _p51 = A2(_elm_community$intdict$IntDict$determineBranchRelation, _p52, _p53);
-									switch (_p51.ctor) {
+									var _p59 = _p56._1._0;
+									var _p58 = _p56._0._0;
+									var _p57 = A2(_elm_community$intdict$IntDict$determineBranchRelation, _p58, _p59);
+									switch (_p57.ctor) {
 										case 'SamePrefix':
 											return A3(
 												_elm_community$intdict$IntDict$inner,
-												_p52.prefix,
-												A2(_elm_community$intdict$IntDict$diff, _p52.left, _p53.left),
-												A2(_elm_community$intdict$IntDict$diff, _p52.right, _p53.right));
+												_p58.prefix,
+												A2(_elm_community$intdict$IntDict$diff, _p58.left, _p59.left),
+												A2(_elm_community$intdict$IntDict$diff, _p58.right, _p59.right));
 										case 'Parent':
-											if (_p51._0.ctor === 'Left') {
-												if (_p51._1.ctor === 'Left') {
+											if (_p57._0.ctor === 'Left') {
+												if (_p57._1.ctor === 'Left') {
 													return A3(
 														_elm_community$intdict$IntDict$inner,
-														_p52.prefix,
-														A2(_elm_community$intdict$IntDict$diff, _p52.left, r),
-														_p52.right);
+														_p58.prefix,
+														A2(_elm_community$intdict$IntDict$diff, _p58.left, r),
+														_p58.right);
 												} else {
 													return A3(
 														_elm_community$intdict$IntDict$inner,
-														_p52.prefix,
-														_p52.left,
-														A2(_elm_community$intdict$IntDict$diff, _p52.right, r));
+														_p58.prefix,
+														_p58.left,
+														A2(_elm_community$intdict$IntDict$diff, _p58.right, r));
 												}
 											} else {
-												if (_p51._1.ctor === 'Left') {
-													var _v43 = l,
-														_v44 = _p53.left;
-													l = _v43;
-													r = _v44;
+												if (_p57._1.ctor === 'Left') {
+													var _v53 = l,
+														_v54 = _p59.left;
+													l = _v53;
+													r = _v54;
 													continue diff;
 												} else {
-													var _v45 = l,
-														_v46 = _p53.right;
-													l = _v45;
-													r = _v46;
+													var _v55 = l,
+														_v56 = _p59.right;
+													l = _v55;
+													r = _v56;
 													continue diff;
 												}
 											}
@@ -4138,92 +4218,92 @@ var _elm_community$intdict$IntDict$diff = F2(
 				} while(false);
 				return l;
 			} while(false);
-			return A2(_elm_community$intdict$IntDict$member, _p50._0._0.key, r) ? _elm_community$intdict$IntDict$Empty : l;
+			return A2(_elm_community$intdict$IntDict$member, _p56._0._0.key, r) ? _elm_community$intdict$IntDict$Empty : l;
 		}
 	});
 var _elm_community$intdict$IntDict$merge = F6(
 	function (left, both, right, l, r, acc) {
 		var m = A3(_elm_community$intdict$IntDict$merge, left, both, right);
-		var _p54 = {ctor: '_Tuple2', _0: l, _1: r};
-		_v47_2:
+		var _p60 = {ctor: '_Tuple2', _0: l, _1: r};
+		_v57_2:
 		do {
-			_v47_1:
+			_v57_1:
 			do {
-				switch (_p54._0.ctor) {
+				switch (_p60._0.ctor) {
 					case 'Empty':
 						return A3(_elm_community$intdict$IntDict$foldl, right, acc, r);
 					case 'Leaf':
-						switch (_p54._1.ctor) {
+						switch (_p60._1.ctor) {
 							case 'Empty':
-								break _v47_1;
+								break _v57_1;
 							case 'Leaf':
-								break _v47_2;
+								break _v57_2;
 							default:
-								break _v47_2;
+								break _v57_2;
 						}
 					default:
-						switch (_p54._1.ctor) {
+						switch (_p60._1.ctor) {
 							case 'Empty':
-								break _v47_1;
+								break _v57_1;
 							case 'Leaf':
-								var _p58 = _p54._1._0;
-								var _p57 = A2(_elm_community$intdict$IntDict$get, _p58.key, l);
-								if (_p57.ctor === 'Nothing') {
+								var _p64 = _p60._1._0;
+								var _p63 = A2(_elm_community$intdict$IntDict$get, _p64.key, l);
+								if (_p63.ctor === 'Nothing') {
 									return A3(
 										m,
 										l,
 										_elm_community$intdict$IntDict$Empty,
-										A3(right, _p58.key, _p58.value, acc));
+										A3(right, _p64.key, _p64.value, acc));
 								} else {
 									return A3(
 										m,
-										A2(_elm_community$intdict$IntDict$remove, _p58.key, l),
+										A2(_elm_community$intdict$IntDict$remove, _p64.key, l),
 										_elm_community$intdict$IntDict$Empty,
-										A4(both, _p58.key, _p57._0, _p58.value, acc));
+										A4(both, _p64.key, _p63._0, _p64.value, acc));
 								}
 							default:
-								var _p61 = _p54._1._0;
-								var _p60 = _p54._0._0;
-								var _p59 = A2(_elm_community$intdict$IntDict$determineBranchRelation, _p60, _p61);
-								switch (_p59.ctor) {
+								var _p67 = _p60._1._0;
+								var _p66 = _p60._0._0;
+								var _p65 = A2(_elm_community$intdict$IntDict$determineBranchRelation, _p66, _p67);
+								switch (_p65.ctor) {
 									case 'SamePrefix':
 										return A3(
 											m,
-											_p60.right,
-											_p61.right,
-											A3(m, _p60.left, _p61.left, acc));
+											_p66.right,
+											_p67.right,
+											A3(m, _p66.left, _p67.left, acc));
 									case 'Parent':
-										if (_p59._0.ctor === 'Left') {
-											if (_p59._1.ctor === 'Left') {
+										if (_p65._0.ctor === 'Left') {
+											if (_p65._1.ctor === 'Left') {
 												return A3(
 													m,
-													_p60.right,
+													_p66.right,
 													_elm_community$intdict$IntDict$Empty,
-													A3(m, _p60.left, r, acc));
+													A3(m, _p66.left, r, acc));
 											} else {
 												return A3(
 													m,
-													_p60.right,
+													_p66.right,
 													r,
-													A3(m, _p60.left, _elm_community$intdict$IntDict$Empty, acc));
+													A3(m, _p66.left, _elm_community$intdict$IntDict$Empty, acc));
 											}
 										} else {
-											if (_p59._1.ctor === 'Left') {
+											if (_p65._1.ctor === 'Left') {
 												return A3(
 													m,
 													_elm_community$intdict$IntDict$Empty,
-													_p61.right,
-													A3(m, l, _p61.left, acc));
+													_p67.right,
+													A3(m, l, _p67.left, acc));
 											} else {
 												return A3(
 													m,
 													l,
-													_p61.right,
-													A3(m, _elm_community$intdict$IntDict$Empty, _p61.left, acc));
+													_p67.right,
+													A3(m, _elm_community$intdict$IntDict$Empty, _p67.left, acc));
 											}
 										}
 									default:
-										if (_p59._1.ctor === 'Left') {
+										if (_p65._1.ctor === 'Left') {
 											return A3(
 												m,
 												_elm_community$intdict$IntDict$Empty,
@@ -4242,20 +4322,20 @@ var _elm_community$intdict$IntDict$merge = F6(
 			} while(false);
 			return A3(_elm_community$intdict$IntDict$foldl, left, acc, l);
 		} while(false);
-		var _p56 = _p54._0._0;
-		var _p55 = A2(_elm_community$intdict$IntDict$get, _p56.key, r);
-		if (_p55.ctor === 'Nothing') {
+		var _p62 = _p60._0._0;
+		var _p61 = A2(_elm_community$intdict$IntDict$get, _p62.key, r);
+		if (_p61.ctor === 'Nothing') {
 			return A3(
 				m,
 				_elm_community$intdict$IntDict$Empty,
 				r,
-				A3(left, _p56.key, _p56.value, acc));
+				A3(left, _p62.key, _p62.value, acc));
 		} else {
 			return A3(
 				m,
 				_elm_community$intdict$IntDict$Empty,
-				A2(_elm_community$intdict$IntDict$remove, _p56.key, r),
-				A4(both, _p56.key, _p56.value, _p55._0, acc));
+				A2(_elm_community$intdict$IntDict$remove, _p62.key, r),
+				A4(both, _p62.key, _p62.value, _p61._0, acc));
 		}
 	});
 var _elm_community$graph$Graph$ignorePath = F4(
@@ -22123,8 +22203,8 @@ var _user$project$Visualization_Force$applyForce = F3(
 				return _elm_lang$core$Native_Utils.crashCase(
 					'Visualization.Force',
 					{
-						start: {line: 111, column: 5},
-						end: {line: 197, column: 42}
+						start: {line: 113, column: 5},
+						end: {line: 199, column: 42}
 					},
 					_p2)('not implemented');
 			case 'Links':
@@ -22212,16 +22292,16 @@ var _user$project$Visualization_Force$applyForce = F3(
 				return _elm_lang$core$Native_Utils.crashCase(
 					'Visualization.Force',
 					{
-						start: {line: 111, column: 5},
-						end: {line: 197, column: 42}
+						start: {line: 113, column: 5},
+						end: {line: 199, column: 42}
 					},
 					_p2)('not implemented');
 			default:
 				return _elm_lang$core$Native_Utils.crashCase(
 					'Visualization.Force',
 					{
-						start: {line: 111, column: 5},
-						end: {line: 197, column: 42}
+						start: {line: 113, column: 5},
+						end: {line: 199, column: 42}
 					},
 					_p2)('not implemented');
 		}
@@ -27126,7 +27206,7 @@ var _user$project$Visualization_List$ticks = F3(
 			_elm_lang$core$Basics$floor(stop / step)) * step) + (step / 2);
 		return A3(_user$project$Visualization_List$range, beg, end, step);
 	});
-var _user$project$Visualization_Interpolate$interpolateFloat = F3(
+var _user$project$Visualization_Scale_Internal$interpolateFloat = F3(
 	function (from, to, time) {
 		return from + ((to - from) * time);
 	});
@@ -27154,7 +27234,7 @@ var _user$project$Visualization_Scale_Internal$bimap = F4(
 				de(_p5));
 		};
 	});
-var _user$project$Visualization_Scale_Linear$interpolate = _user$project$Visualization_Interpolate$interpolateFloat;
+var _user$project$Visualization_Scale_Linear$interpolate = _user$project$Visualization_Scale_Internal$interpolateFloat;
 var _user$project$Visualization_Scale_Linear$ticks = F2(
 	function (_p0, count) {
 		var _p1 = _p0;
@@ -27171,7 +27251,7 @@ var _user$project$Visualization_Scale_Linear$invert = F2(
 	});
 var _user$project$Visualization_Scale_Linear$convert = F2(
 	function (domain, range) {
-		return A4(_user$project$Visualization_Scale_Internal$bimap, domain, range, _user$project$Visualization_Scale_Linear$deinterpolate, _user$project$Visualization_Interpolate$interpolateFloat);
+		return A4(_user$project$Visualization_Scale_Internal$bimap, domain, range, _user$project$Visualization_Scale_Linear$deinterpolate, _user$project$Visualization_Scale_Internal$interpolateFloat);
 	});
 var _user$project$Visualization_Scale_Linear$tickFormat = F2(
 	function (_p3, _p2) {
@@ -27333,7 +27413,7 @@ var _user$project$Visualization_Scale_Log$deinterpolate = F3(
 	});
 var _user$project$Visualization_Scale_Log$convert = F2(
 	function (domain, range) {
-		return A4(_user$project$Visualization_Scale_Internal$bimap, domain, range, _user$project$Visualization_Scale_Log$deinterpolate, _user$project$Visualization_Interpolate$interpolateFloat);
+		return A4(_user$project$Visualization_Scale_Internal$bimap, domain, range, _user$project$Visualization_Scale_Log$deinterpolate, _user$project$Visualization_Scale_Internal$interpolateFloat);
 	});
 var _user$project$Visualization_Scale_Log$invert = F2(
 	function (domain, range) {
@@ -27711,7 +27791,7 @@ var _user$project$Visualization_Scale_Time$tickIntervals = {
 };
 var _user$project$Visualization_Scale_Time$interpolate = F2(
 	function (a, b) {
-		return A2(_user$project$Visualization_Interpolate$interpolateFloat, a, b);
+		return A2(_user$project$Visualization_Scale_Internal$interpolateFloat, a, b);
 	});
 var _user$project$Visualization_Scale_Time$deinterpolate = _user$project$Visualization_Scale_Linear$deinterpolate;
 var _user$project$Visualization_Scale_Time$rangeExtent = F2(
@@ -27740,7 +27820,7 @@ var _user$project$Visualization_Scale_Time$convert = F2(
 						r,
 						_elm_lang$core$Date$toTime(v));
 				}),
-			_user$project$Visualization_Interpolate$interpolateFloat);
+			_user$project$Visualization_Scale_Internal$interpolateFloat);
 	});
 var _user$project$Visualization_Scale_Time$invert = F2(
 	function (domain, range) {
