@@ -17341,7 +17341,7 @@ var _user$project$Visualization_List$ticks = F3(
 			_elm_lang$core$Basics$floor(stop / step)) * step) + (step / 2);
 		return A3(_user$project$Visualization_List$range, beg, end, step);
 	});
-var _user$project$Visualization_Interpolate$interpolateFloat = F3(
+var _user$project$Visualization_Scale_Internal$interpolateFloat = F3(
 	function (from, to, time) {
 		return from + ((to - from) * time);
 	});
@@ -17369,7 +17369,7 @@ var _user$project$Visualization_Scale_Internal$bimap = F4(
 				de(_p5));
 		};
 	});
-var _user$project$Visualization_Scale_Linear$interpolate = _user$project$Visualization_Interpolate$interpolateFloat;
+var _user$project$Visualization_Scale_Linear$interpolate = _user$project$Visualization_Scale_Internal$interpolateFloat;
 var _user$project$Visualization_Scale_Linear$ticks = F2(
 	function (_p0, count) {
 		var _p1 = _p0;
@@ -17386,7 +17386,7 @@ var _user$project$Visualization_Scale_Linear$invert = F2(
 	});
 var _user$project$Visualization_Scale_Linear$convert = F2(
 	function (domain, range) {
-		return A4(_user$project$Visualization_Scale_Internal$bimap, domain, range, _user$project$Visualization_Scale_Linear$deinterpolate, _user$project$Visualization_Interpolate$interpolateFloat);
+		return A4(_user$project$Visualization_Scale_Internal$bimap, domain, range, _user$project$Visualization_Scale_Linear$deinterpolate, _user$project$Visualization_Scale_Internal$interpolateFloat);
 	});
 var _user$project$Visualization_Scale_Linear$tickFormat = F2(
 	function (_p3, _p2) {
@@ -17548,7 +17548,7 @@ var _user$project$Visualization_Scale_Log$deinterpolate = F3(
 	});
 var _user$project$Visualization_Scale_Log$convert = F2(
 	function (domain, range) {
-		return A4(_user$project$Visualization_Scale_Internal$bimap, domain, range, _user$project$Visualization_Scale_Log$deinterpolate, _user$project$Visualization_Interpolate$interpolateFloat);
+		return A4(_user$project$Visualization_Scale_Internal$bimap, domain, range, _user$project$Visualization_Scale_Log$deinterpolate, _user$project$Visualization_Scale_Internal$interpolateFloat);
 	});
 var _user$project$Visualization_Scale_Log$invert = F2(
 	function (domain, range) {
@@ -17926,7 +17926,7 @@ var _user$project$Visualization_Scale_Time$tickIntervals = {
 };
 var _user$project$Visualization_Scale_Time$interpolate = F2(
 	function (a, b) {
-		return A2(_user$project$Visualization_Interpolate$interpolateFloat, a, b);
+		return A2(_user$project$Visualization_Scale_Internal$interpolateFloat, a, b);
 	});
 var _user$project$Visualization_Scale_Time$deinterpolate = _user$project$Visualization_Scale_Linear$deinterpolate;
 var _user$project$Visualization_Scale_Time$rangeExtent = F2(
@@ -17955,7 +17955,7 @@ var _user$project$Visualization_Scale_Time$convert = F2(
 						r,
 						_elm_lang$core$Date$toTime(v));
 				}),
-			_user$project$Visualization_Interpolate$interpolateFloat);
+			_user$project$Visualization_Scale_Internal$interpolateFloat);
 	});
 var _user$project$Visualization_Scale_Time$invert = F2(
 	function (domain, range) {

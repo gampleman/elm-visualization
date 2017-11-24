@@ -11148,7 +11148,7 @@ var _mgold$elm_random_pcg$Random_Pcg$fromJson = _elm_lang$core$Json_Decode$oneOf
 			_1: {ctor: '[]'}
 		}
 	});
-var _user$project$Visualization_Array$bisectRight = F3(
+var _user$project$Visualization_Histogram_Array$bisectRight = F3(
 	function (item, array, extent) {
 		var usafeGet = function (index) {
 			var _p0 = A2(_elm_lang$core$Array$get, index, array);
@@ -11156,7 +11156,7 @@ var _user$project$Visualization_Array$bisectRight = F3(
 				return _p0._0;
 			} else {
 				return _elm_lang$core$Native_Utils.crashCase(
-					'Visualization.Array',
+					'Visualization.Histogram.Array',
 					{
 						start: {line: 12, column: 13},
 						end: {line: 17, column: 167}
@@ -11399,7 +11399,7 @@ var _user$project$Visualization_Histogram$compute = F2(
 			var binify = F2(
 				function (item, bins) {
 					var threshIndex = A3(
-						_user$project$Visualization_Array$bisectRight,
+						_user$project$Visualization_Histogram_Array$bisectRight,
 						_p7(item),
 						thresholds,
 						_elm_lang$core$Maybe$Just(
@@ -16008,7 +16008,7 @@ var _user$project$Visualization_Scale_Colors$plasma = _user$project$Visualizatio
 				}
 			}
 		}));
-var _user$project$Visualization_Interpolate$interpolateFloat = F3(
+var _user$project$Visualization_Scale_Internal$interpolateFloat = F3(
 	function (from, to, time) {
 		return from + ((to - from) * time);
 	});
@@ -16036,7 +16036,7 @@ var _user$project$Visualization_Scale_Internal$bimap = F4(
 				de(_p5));
 		};
 	});
-var _user$project$Visualization_Scale_Linear$interpolate = _user$project$Visualization_Interpolate$interpolateFloat;
+var _user$project$Visualization_Scale_Linear$interpolate = _user$project$Visualization_Scale_Internal$interpolateFloat;
 var _user$project$Visualization_Scale_Linear$ticks = F2(
 	function (_p0, count) {
 		var _p1 = _p0;
@@ -16053,7 +16053,7 @@ var _user$project$Visualization_Scale_Linear$invert = F2(
 	});
 var _user$project$Visualization_Scale_Linear$convert = F2(
 	function (domain, range) {
-		return A4(_user$project$Visualization_Scale_Internal$bimap, domain, range, _user$project$Visualization_Scale_Linear$deinterpolate, _user$project$Visualization_Interpolate$interpolateFloat);
+		return A4(_user$project$Visualization_Scale_Internal$bimap, domain, range, _user$project$Visualization_Scale_Linear$deinterpolate, _user$project$Visualization_Scale_Internal$interpolateFloat);
 	});
 var _user$project$Visualization_Scale_Linear$tickFormat = F2(
 	function (_p3, _p2) {
@@ -16215,7 +16215,7 @@ var _user$project$Visualization_Scale_Log$deinterpolate = F3(
 	});
 var _user$project$Visualization_Scale_Log$convert = F2(
 	function (domain, range) {
-		return A4(_user$project$Visualization_Scale_Internal$bimap, domain, range, _user$project$Visualization_Scale_Log$deinterpolate, _user$project$Visualization_Interpolate$interpolateFloat);
+		return A4(_user$project$Visualization_Scale_Internal$bimap, domain, range, _user$project$Visualization_Scale_Log$deinterpolate, _user$project$Visualization_Scale_Internal$interpolateFloat);
 	});
 var _user$project$Visualization_Scale_Log$invert = F2(
 	function (domain, range) {
@@ -16593,7 +16593,7 @@ var _user$project$Visualization_Scale_Time$tickIntervals = {
 };
 var _user$project$Visualization_Scale_Time$interpolate = F2(
 	function (a, b) {
-		return A2(_user$project$Visualization_Interpolate$interpolateFloat, a, b);
+		return A2(_user$project$Visualization_Scale_Internal$interpolateFloat, a, b);
 	});
 var _user$project$Visualization_Scale_Time$deinterpolate = _user$project$Visualization_Scale_Linear$deinterpolate;
 var _user$project$Visualization_Scale_Time$rangeExtent = F2(
@@ -16622,7 +16622,7 @@ var _user$project$Visualization_Scale_Time$convert = F2(
 						r,
 						_elm_lang$core$Date$toTime(v));
 				}),
-			_user$project$Visualization_Interpolate$interpolateFloat);
+			_user$project$Visualization_Scale_Internal$interpolateFloat);
 	});
 var _user$project$Visualization_Scale_Time$invert = F2(
 	function (domain, range) {

@@ -38524,7 +38524,7 @@ var _user$project$Visualization_List$ticks = F3(
 			_elm_lang$core$Basics$floor(stop / step)) * step) + (step / 2);
 		return A3(_user$project$Visualization_List$range, beg, end, step);
 	});
-var _user$project$Visualization_Interpolate$interpolateFloat = F3(
+var _user$project$Visualization_Scale_Internal$interpolateFloat = F3(
 	function (from, to, time) {
 		return from + ((to - from) * time);
 	});
@@ -38552,7 +38552,7 @@ var _user$project$Visualization_Scale_Internal$bimap = F4(
 				de(_p5));
 		};
 	});
-var _user$project$Visualization_Scale_Linear$interpolate = _user$project$Visualization_Interpolate$interpolateFloat;
+var _user$project$Visualization_Scale_Linear$interpolate = _user$project$Visualization_Scale_Internal$interpolateFloat;
 var _user$project$Visualization_Scale_Linear$ticks = F2(
 	function (_p0, count) {
 		var _p1 = _p0;
@@ -38569,7 +38569,7 @@ var _user$project$Visualization_Scale_Linear$invert = F2(
 	});
 var _user$project$Visualization_Scale_Linear$convert = F2(
 	function (domain, range) {
-		return A4(_user$project$Visualization_Scale_Internal$bimap, domain, range, _user$project$Visualization_Scale_Linear$deinterpolate, _user$project$Visualization_Interpolate$interpolateFloat);
+		return A4(_user$project$Visualization_Scale_Internal$bimap, domain, range, _user$project$Visualization_Scale_Linear$deinterpolate, _user$project$Visualization_Scale_Internal$interpolateFloat);
 	});
 var _user$project$Visualization_Scale_Linear$tickFormat = F2(
 	function (_p3, _p2) {
@@ -38731,7 +38731,7 @@ var _user$project$Visualization_Scale_Log$deinterpolate = F3(
 	});
 var _user$project$Visualization_Scale_Log$convert = F2(
 	function (domain, range) {
-		return A4(_user$project$Visualization_Scale_Internal$bimap, domain, range, _user$project$Visualization_Scale_Log$deinterpolate, _user$project$Visualization_Interpolate$interpolateFloat);
+		return A4(_user$project$Visualization_Scale_Internal$bimap, domain, range, _user$project$Visualization_Scale_Log$deinterpolate, _user$project$Visualization_Scale_Internal$interpolateFloat);
 	});
 var _user$project$Visualization_Scale_Log$invert = F2(
 	function (domain, range) {
@@ -39109,7 +39109,7 @@ var _user$project$Visualization_Scale_Time$tickIntervals = {
 };
 var _user$project$Visualization_Scale_Time$interpolate = F2(
 	function (a, b) {
-		return A2(_user$project$Visualization_Interpolate$interpolateFloat, a, b);
+		return A2(_user$project$Visualization_Scale_Internal$interpolateFloat, a, b);
 	});
 var _user$project$Visualization_Scale_Time$deinterpolate = _user$project$Visualization_Scale_Linear$deinterpolate;
 var _user$project$Visualization_Scale_Time$rangeExtent = F2(
@@ -39138,7 +39138,7 @@ var _user$project$Visualization_Scale_Time$convert = F2(
 						r,
 						_elm_lang$core$Date$toTime(v));
 				}),
-			_user$project$Visualization_Interpolate$interpolateFloat);
+			_user$project$Visualization_Scale_Internal$interpolateFloat);
 	});
 var _user$project$Visualization_Scale_Time$invert = F2(
 	function (domain, range) {
@@ -40170,7 +40170,7 @@ var _user$project$Visualization_Path$moveTo = F2(
 			_user$project$Visualization_Path$Move(
 				{ctor: '_Tuple2', _0: x, _1: y}));
 	});
-var _user$project$Visualization_Internal_PathConversion$finalize = F2(
+var _user$project$Visualization_Path_Conversion$finalize = F2(
 	function (subPath, path) {
 		var _p0 = _folkertdev$one_true_path_experiment$SubPath$unwrap(subPath);
 		if (_p0.ctor === 'Just') {
@@ -40194,7 +40194,7 @@ var _user$project$Visualization_Internal_PathConversion$finalize = F2(
 			return {ctor: '[]'};
 		}
 	});
-var _user$project$Visualization_Internal_PathConversion$convertSegment = function (segment) {
+var _user$project$Visualization_Path_Conversion$convertSegment = function (segment) {
 	var _p3 = segment;
 	switch (_p3.ctor) {
 		case 'LineSegment':
@@ -40244,263 +40244,531 @@ var _user$project$Visualization_Internal_PathConversion$convertSegment = functio
 				A5(_user$project$Visualization_Path$ArcCustom, center, r, startAngle, endAngle, anticlockwise));
 	}
 };
-var _user$project$Visualization_Internal_PathConversion$subpathToVizPath = function (subPath) {
+var _user$project$Visualization_Path_Conversion$subpathToVizPath = function (subPath) {
 	return A2(
-		_user$project$Visualization_Internal_PathConversion$finalize,
+		_user$project$Visualization_Path_Conversion$finalize,
 		subPath,
 		A2(
 			_elm_lang$core$List$map,
-			_user$project$Visualization_Internal_PathConversion$convertSegment,
+			_user$project$Visualization_Path_Conversion$convertSegment,
 			_folkertdev$one_true_path_experiment$SubPath$toSegments(subPath)));
 };
-var _user$project$Visualization_StackOffset$pairwise = F2(
-	function (f, list) {
-		var _p0 = list;
-		if (_p0.ctor === '[]') {
-			return {ctor: '[]'};
-		} else {
-			return A3(_elm_lang$core$List$map2, f, list, _p0._1);
-		}
-	});
-var _user$project$Visualization_StackOffset$diverging = function (series) {
-	var _p1 = series;
-	if (_p1.ctor === '[]') {
-		return {ctor: '[]'};
-	} else {
-		var folder = F2(
-			function (_p3, _p2) {
-				var _p4 = _p3;
-				var _p9 = _p4._1;
-				var _p5 = _p2;
-				var _p8 = _p5._0;
-				var _p7 = _p5._1;
-				var _p6 = _p5._2;
-				var dy = _p9 - _p4._0;
-				return (_elm_lang$core$Native_Utils.cmp(dy, 0) > -1) ? {
-					ctor: '_Tuple3',
-					_0: _p8 + dy,
-					_1: _p7,
-					_2: {
-						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: _p8, _1: _p8 + dy},
-						_1: _p6
-					}
-				} : ((_elm_lang$core$Native_Utils.cmp(dy, 0) < 0) ? {
-					ctor: '_Tuple3',
-					_0: _p8,
-					_1: _p7 + dy,
-					_2: {
-						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: _p7 + dy, _1: _p7},
-						_1: _p6
-					}
-				} : {
-					ctor: '_Tuple3',
-					_0: _p8,
-					_1: _p7,
-					_2: {
-						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: _p8, _1: _p9},
-						_1: _p6
-					}
-				});
-			});
-		var modifyColumn = function (column) {
-			return _elm_lang$core$List$reverse(
-				function (_p10) {
-					var _p11 = _p10;
-					return _p11._2;
-				}(
-					A3(
-						_elm_lang$core$List$foldl,
-						folder,
-						{
-							ctor: '_Tuple3',
-							_0: 0,
-							_1: 0,
-							_2: {ctor: '[]'}
-						},
-						column)));
-		};
-		return _elm_community$list_extra$List_Extra$transpose(
-			A2(
-				_elm_lang$core$List$map,
-				modifyColumn,
-				_elm_community$list_extra$List_Extra$transpose(series)));
-	}
-};
-var _user$project$Visualization_StackOffset$none = function (series) {
-	var _p12 = series;
-	if (_p12.ctor === '[]') {
-		return {ctor: '[]'};
-	} else {
-		var weirdAdd = F2(
-			function (_p14, _p13) {
-				var _p15 = _p14;
-				var _p19 = _p15._1;
-				var _p16 = _p13;
-				var _p18 = _p16._1;
-				var _p17 = _p16._0;
-				return _elm_lang$core$Basics$isNaN(_p18) ? {ctor: '_Tuple2', _0: _p17, _1: _p19 + _p17} : {ctor: '_Tuple2', _0: _p18, _1: _p19 + _p18};
-			});
-		var helper = F2(
-			function (s1, _p20) {
-				var _p21 = _p20;
-				var _p22 = _p21._0;
-				return {
+var _user$project$Visualization_Shape_Generators$area = F2(
+	function (curve, data) {
+		var makeShape = F2(
+			function (topline, bottomline) {
+				var _p0 = {
 					ctor: '_Tuple2',
-					_0: A3(_elm_lang$core$List$map2, weirdAdd, s1, _p22),
-					_1: {ctor: '::', _0: _p22, _1: _p21._1}
+					_0: curve(bottomline),
+					_1: bottomline
+				};
+				if ((((_p0.ctor === '_Tuple2') && (_p0._0.ctor === '::')) && (_p0._1.ctor === '::')) && (_p0._1._0.ctor === '_Tuple2')) {
+					return A2(
+						_elm_lang$core$Basics_ops['++'],
+						A3(
+							_user$project$Visualization_Path$lineTo,
+							_p0._1._0._0,
+							_p0._1._0._1,
+							curve(topline)),
+						_user$project$Visualization_Path$close(_p0._0._1));
+				} else {
+					return {ctor: '[]'};
+				}
+			});
+		var makeCurves = F3(
+			function (acc, datum, _p1) {
+				var _p2 = _p1;
+				var _p3 = {ctor: '_Tuple3', _0: _p2._0, _1: datum, _2: _p2._1};
+				if (_p3._1.ctor === 'Nothing') {
+					return {ctor: '_Tuple2', _0: false, _1: _p3._2};
+				} else {
+					if (_p3._0 === false) {
+						return {
+							ctor: '_Tuple2',
+							_0: true,
+							_1: {
+								ctor: '::',
+								_0: {
+									ctor: '::',
+									_0: acc(_p3._1._0),
+									_1: {ctor: '[]'}
+								},
+								_1: _p3._2
+							}
+						};
+					} else {
+						if (_p3._2.ctor === '::') {
+							return {
+								ctor: '_Tuple2',
+								_0: true,
+								_1: {
+									ctor: '::',
+									_0: {
+										ctor: '::',
+										_0: acc(_p3._1._0),
+										_1: _p3._2._0
+									},
+									_1: _p3._2._1
+								}
+							};
+						} else {
+							return {
+								ctor: '_Tuple2',
+								_0: true,
+								_1: {
+									ctor: '::',
+									_0: {
+										ctor: '::',
+										_0: acc(_p3._1._0),
+										_1: {ctor: '[]'}
+									},
+									_1: _p3._2
+								}
+							};
+						}
+					}
+				}
+			});
+		var topLineData = _elm_lang$core$Tuple$second(
+			A3(
+				_elm_lang$core$List$foldr,
+				makeCurves(_elm_lang$core$Tuple$first),
+				{
+					ctor: '_Tuple2',
+					_0: false,
+					_1: {ctor: '[]'}
+				},
+				data));
+		var bottomLineData = A2(
+			_elm_lang$core$List$map,
+			_elm_lang$core$List$reverse,
+			_elm_lang$core$Tuple$second(
+				A3(
+					_elm_lang$core$List$foldr,
+					makeCurves(_elm_lang$core$Tuple$second),
+					{
+						ctor: '_Tuple2',
+						_0: false,
+						_1: {ctor: '[]'}
+					},
+					data)));
+		var shapes = A3(_elm_lang$core$List$map2, makeShape, topLineData, bottomLineData);
+		return _user$project$Visualization_Path$toAttrString(
+			_elm_lang$core$List$concat(
+				A3(_elm_lang$core$List$map2, makeShape, topLineData, bottomLineData)));
+	});
+var _user$project$Visualization_Shape_Generators$line = F2(
+	function (curve, data) {
+		var makeCurves = F2(
+			function (datum, _p4) {
+				var _p5 = _p4;
+				var _p6 = {ctor: '_Tuple3', _0: _p5._0, _1: datum, _2: _p5._1};
+				if (_p6._1.ctor === 'Nothing') {
+					return {ctor: '_Tuple2', _0: false, _1: _p6._2};
+				} else {
+					if (_p6._0 === false) {
+						return {
+							ctor: '_Tuple2',
+							_0: true,
+							_1: {
+								ctor: '::',
+								_0: {
+									ctor: '::',
+									_0: _p6._1._0,
+									_1: {ctor: '[]'}
+								},
+								_1: _p6._2
+							}
+						};
+					} else {
+						if (_p6._2.ctor === '::') {
+							return {
+								ctor: '_Tuple2',
+								_0: true,
+								_1: {
+									ctor: '::',
+									_0: {ctor: '::', _0: _p6._1._0, _1: _p6._2._0},
+									_1: _p6._2._1
+								}
+							};
+						} else {
+							return {
+								ctor: '_Tuple2',
+								_0: true,
+								_1: {
+									ctor: '::',
+									_0: {
+										ctor: '::',
+										_0: _p6._1._0,
+										_1: {ctor: '[]'}
+									},
+									_1: _p6._2
+								}
+							};
+						}
+					}
+				}
+			});
+		return _user$project$Visualization_Path$toAttrString(
+			A2(
+				_elm_lang$core$List$concatMap,
+				curve,
+				_elm_lang$core$Tuple$second(
+					A3(
+						_elm_lang$core$List$foldr,
+						makeCurves,
+						{
+							ctor: '_Tuple2',
+							_0: false,
+							_1: {ctor: '[]'}
+						},
+						data))));
+	});
+var _user$project$Visualization_Shape_Pie$pie = F2(
+	function (settings, data) {
+		var unsafeGet = F2(
+			function (index, array) {
+				var _p0 = A2(_elm_lang$core$Array$get, index, array);
+				if (_p0.ctor === 'Just') {
+					return _p0._0;
+				} else {
+					return _elm_lang$core$Native_Utils.crashCase(
+						'Visualization.Shape.Pie',
+						{
+							start: {line: 461, column: 13},
+							end: {line: 466, column: 59}
+						},
+						_p0)('This should never happen');
+				}
+			});
+		var dataArray = _elm_lang$core$Array$fromList(data);
+		var sortedIndices = function (_p2) {
+			return A2(
+				_elm_lang$core$List$map,
+				_elm_lang$core$Tuple$first,
+				A2(
+					_elm_lang$core$List$sortWith,
+					F2(
+						function (_p4, _p3) {
+							var _p5 = _p4;
+							var _p6 = _p3;
+							return A2(settings.sortingFn, _p5._1, _p6._1);
+						}),
+					A2(
+						_elm_lang$core$List$indexedMap,
+						F2(
+							function (v0, v1) {
+								return {ctor: '_Tuple2', _0: v0, _1: v1};
+							}),
+						_p2)));
+		};
+		var da = A2(
+			_elm_lang$core$Basics$min,
+			2 * _elm_lang$core$Basics$pi,
+			A2(_elm_lang$core$Basics$max, -2 * _elm_lang$core$Basics$pi, settings.endAngle - settings.startAngle));
+		var p = A2(
+			_elm_lang$core$Basics$min,
+			_elm_lang$core$Basics$abs(da) / _elm_lang$core$Basics$toFloat(
+				_elm_lang$core$List$length(data)),
+			settings.padAngle);
+		var pa = p * ((_elm_lang$core$Native_Utils.cmp(da, 0) < 0) ? -1 : 1);
+		var summer = F2(
+			function (a, b) {
+				var v = settings.valueFn(a);
+				return (_elm_lang$core$Native_Utils.cmp(v, 0) > 0) ? (v + b) : b;
+			});
+		var sum = A3(_elm_lang$core$List$foldr, summer, 0, data);
+		var k = _elm_lang$core$Native_Utils.eq(sum, 0) ? 0 : ((da - (_elm_lang$core$Basics$toFloat(
+			_elm_lang$core$List$length(data)) * pa)) / sum);
+		var computeValue = F2(
+			function (el, angle) {
+				var value = settings.valueFn(el);
+				return {
+					innerRadius: settings.innerRadius,
+					outerRadius: settings.outerRadius,
+					cornerRadius: settings.cornerRadius,
+					startAngle: angle,
+					endAngle: (angle + ((_elm_lang$core$Native_Utils.cmp(value, 0) > 0) ? (value * k) : 0)) + pa,
+					padAngle: p,
+					padRadius: settings.padRadius
 				};
 			});
-		return _elm_lang$core$List$reverse(
-			A2(
-				_elm_lang$core$Basics$uncurry,
-				F2(
-					function (x, y) {
-						return {ctor: '::', _0: x, _1: y};
-					}),
+		var helper = F2(
+			function (index, _p7) {
+				var _p8 = _p7;
+				var r = A2(
+					computeValue,
+					A2(unsafeGet, index, dataArray),
+					_p8._0);
+				return {
+					ctor: '_Tuple2',
+					_0: r.endAngle,
+					_1: A3(_elm_lang$core$Dict$insert, index, r, _p8._1)
+				};
+			});
+		return _elm_lang$core$Dict$values(
+			_elm_lang$core$Tuple$second(
 				A3(
 					_elm_lang$core$List$foldl,
 					helper,
-					{
-						ctor: '_Tuple2',
-						_0: _p12._0,
-						_1: {ctor: '[]'}
-					},
-					_p12._1)));
-	}
-};
-var _user$project$Visualization_StackOffset$expand = function (series) {
-	var normalizeColumn = function (column) {
-		var deltas = A2(
-			_elm_lang$core$List$map,
-			function (_p23) {
-				return _elm_lang$core$Basics$abs(
-					A2(
-						_elm_lang$core$Basics$uncurry,
-						F2(
-							function (x, y) {
-								return x - y;
-							}),
-						_p23));
-			},
-			column);
-		var total = _elm_lang$core$List$sum(deltas);
-		return A2(
-			_elm_lang$core$List$map,
-			function (value) {
-				return {ctor: '_Tuple2', _0: 0, _1: value / total};
-			},
-			deltas);
+					{ctor: '_Tuple2', _0: settings.startAngle, _1: _elm_lang$core$Dict$empty},
+					sortedIndices(data))));
+	});
+var _user$project$Visualization_Shape_Pie$centroid = function (arcData) {
+	var a = ((arcData.startAngle + arcData.endAngle) / 2) - (_elm_lang$core$Basics$pi / 2);
+	var r = (arcData.innerRadius + arcData.outerRadius) / 2;
+	return {
+		ctor: '_Tuple2',
+		_0: _elm_lang$core$Basics$cos(a) * r,
+		_1: _elm_lang$core$Basics$sin(a) * r
 	};
-	return _user$project$Visualization_StackOffset$none(
-		_elm_community$list_extra$List_Extra$transpose(
-			A2(
-				_elm_lang$core$List$map,
-				normalizeColumn,
-				_elm_community$list_extra$List_Extra$transpose(series))));
 };
-var _user$project$Visualization_StackOffset$silhouette = function (series) {
-	var _p24 = series;
-	if (_p24.ctor === '[]') {
-		return {ctor: '[]'};
-	} else {
-		var ys = A2(
-			_elm_lang$core$List$map,
-			function (_p25) {
-				return _elm_lang$core$List$sum(
-					A2(_elm_lang$core$List$map, _elm_lang$core$Tuple$second, _p25));
-			},
-			_elm_community$list_extra$List_Extra$transpose(series));
-		return _user$project$Visualization_StackOffset$none(
-			{
-				ctor: '::',
-				_0: A3(
-					_elm_lang$core$List$map2,
-					F2(
-						function (_p26, newY) {
-							var _p27 = _p26;
-							return {ctor: '_Tuple2', _0: (0 - newY) / 2, _1: _p27._1 + ((0 - newY) / 2)};
-						}),
-					_p24._0,
-					ys),
-				_1: _p24._1
-			});
-	}
+var _user$project$Visualization_Shape_Pie$myAsin = function (x) {
+	return (_elm_lang$core$Native_Utils.cmp(x, 1) > -1) ? (_elm_lang$core$Basics$pi / 2) : ((_elm_lang$core$Native_Utils.cmp(x, -1) < 1) ? ((0 - _elm_lang$core$Basics$pi) / 2) : _elm_lang$core$Basics$asin(x));
 };
-var _user$project$Visualization_StackOffset$wiggle = function (series) {
-	var _p28 = series;
-	if (_p28.ctor === '[]') {
-		return {ctor: '[]'};
-	} else {
-		var safeDivision = F2(
-			function (a, b) {
-				return _elm_lang$core$Native_Utils.eq(b, 0) ? 0 : (a / b);
-			});
-		var scanner = F2(
-			function (_p29, yValue) {
-				var _p30 = _p29;
-				return yValue - A2(safeDivision, _p30._1, _p30._0);
-			});
-		var folder = F2(
-			function (_p32, _p31) {
-				var _p33 = _p32;
-				var _p36 = _p33._1;
-				var _p34 = _p31;
-				var _p35 = _p34._0;
-				var delta = _p36 - _p33._0;
-				return {ctor: '_Tuple2', _0: delta + _p35, _1: ((_p35 + (delta / 2)) * _p36) + _p34._1};
-			});
-		var deltaFractions = F2(
-			function (previous, current) {
-				return _elm_lang$core$Tuple$second(
-					A3(
-						_elm_lang$core$List$foldl,
-						folder,
-						{ctor: '_Tuple2', _0: 0, _1: 0},
-						A3(
-							_elm_lang$core$List$map2,
-							F2(
-								function (v0, v1) {
-									return {ctor: '_Tuple2', _0: v0, _1: v1};
-								}),
-							previous,
-							current)));
-			});
-		var columns = _elm_community$list_extra$List_Extra$transpose(
+var _user$project$Visualization_Shape_Pie$cornerTangents = F7(
+	function (x0, y0, x1, y1, r1, rc, cw) {
+		var r = r1 - rc;
+		var y01 = y0 - y1;
+		var x01 = x0 - x1;
+		var lo = (cw ? rc : (0 - rc)) / _elm_lang$core$Basics$sqrt(
+			Math.pow(x01, 2) + Math.pow(y01, 2));
+		var ox = lo * y01;
+		var x11 = x0 + ox;
+		var x10 = x1 + ox;
+		var x00 = (x11 + x10) / 2;
+		var dx = x10 - x11;
+		var oy = (0 - lo) * x01;
+		var y11 = y0 + oy;
+		var y10 = y1 + oy;
+		var y00 = (y11 + y10) / 2;
+		var dy = y10 - y11;
+		var d2 = Math.pow(dx, 2) + Math.pow(dy, 2);
+		var dd = (x11 * y10) - (x10 * y11);
+		var d = ((_elm_lang$core$Native_Utils.cmp(dy, 0) < 0) ? -1 : 1) * _elm_lang$core$Basics$sqrt(
 			A2(
-				_elm_lang$core$List$map,
-				_elm_lang$core$List$map(_elm_lang$core$Tuple$second),
-				series));
-		var newFirst = A3(
-			_elm_lang$core$List$map2,
-			F2(
-				function (_p37, yValue) {
-					var _p38 = _p37;
-					return {ctor: '_Tuple2', _0: yValue, _1: _p38._1 + yValue};
-				}),
-			_p28._0,
-			A3(
-				_elm_lang$core$List$scanl,
-				scanner,
+				_elm_lang$core$Basics$max,
 				0,
-				A3(
-					_elm_lang$core$List$map2,
-					F2(
-						function (v0, v1) {
-							return {ctor: '_Tuple2', _0: v0, _1: v1};
-						}),
-					A2(
-						_elm_lang$core$List$map,
-						_elm_lang$core$List$sum,
-						A2(_elm_lang$core$List$drop, 1, columns)),
-					A2(_user$project$Visualization_StackOffset$pairwise, deltaFractions, columns))));
-		return _user$project$Visualization_StackOffset$none(
-			{ctor: '::', _0: newFirst, _1: _p28._1});
-	}
+				(Math.pow(r, 2) * d2) - Math.pow(dd, 2)));
+		var cx0 = ((dd * dy) - (dx * d)) / d2;
+		var dx0 = cx0 - x00;
+		var cy0 = (((0 - dd) * dx) - (dy * d)) / d2;
+		var dy0 = cy0 - y00;
+		var cx1 = ((dd * dy) + (dx * d)) / d2;
+		var dx1 = cx1 - x00;
+		var cy1 = (((0 - dd) * dx) + (dy * d)) / d2;
+		var dy1 = cy1 - y00;
+		var _p9 = (_elm_lang$core$Native_Utils.cmp(
+			Math.pow(dx0, 2) + Math.pow(dy0, 2),
+			Math.pow(dx1, 2) + Math.pow(dy1, 2)) > 0) ? {ctor: '_Tuple2', _0: cx1, _1: cy1} : {ctor: '_Tuple2', _0: cx0, _1: cy0};
+		var fcx = _p9._0;
+		var fxy = _p9._1;
+		return {cx: fcx, cy: fxy, x01: 0 - ox, y01: 0 - oy, x11: fcx * ((r1 / r) - 1), y11: fxy * ((r1 / r) - 1)};
+	});
+var _user$project$Visualization_Shape_Pie$intersect = F8(
+	function (x0, y0, x1, y1, x2, y2, x3, y3) {
+		var y32 = y3 - y2;
+		var x32 = x3 - x2;
+		var y10 = y1 - y0;
+		var x10 = x1 - x0;
+		var t = ((x32 * (y0 - y2)) - (y32 * (x0 - x2))) / ((y32 * x10) - (x32 * y10));
+		return {ctor: '_Tuple2', _0: x0 + (t * x10), _1: y0 + (t * y10)};
+	});
+var _user$project$Visualization_Shape_Pie$epsilon = 1.0e-12;
+var _user$project$Visualization_Shape_Pie$arc = function (arcData) {
+	var a1 = arcData.endAngle - (_elm_lang$core$Basics$pi / 2);
+	var a0 = arcData.startAngle - (_elm_lang$core$Basics$pi / 2);
+	var da = _elm_lang$core$Basics$abs(a1 - a0);
+	var cw = _elm_lang$core$Native_Utils.cmp(a1, a0) > 0;
+	var _p10 = (_elm_lang$core$Native_Utils.cmp(arcData.innerRadius, arcData.outerRadius) > 0) ? {ctor: '_Tuple2', _0: arcData.outerRadius, _1: arcData.innerRadius} : {ctor: '_Tuple2', _0: arcData.innerRadius, _1: arcData.outerRadius};
+	var r0 = _p10._0;
+	var r1 = _p10._1;
+	var path = function () {
+		if (_elm_lang$core$Native_Utils.cmp(r1, _user$project$Visualization_Shape_Pie$epsilon) < 1) {
+			return A3(_user$project$Visualization_Path$moveTo, 0, 0, _user$project$Visualization_Path$begin);
+		} else {
+			if (_elm_lang$core$Native_Utils.cmp(da, (2 * _elm_lang$core$Basics$pi) - _user$project$Visualization_Shape_Pie$epsilon) > 0) {
+				var p = A7(
+					_user$project$Visualization_Path$arc,
+					0,
+					0,
+					r1,
+					a0,
+					a1,
+					!cw,
+					A3(
+						_user$project$Visualization_Path$moveTo,
+						r1 * _elm_lang$core$Basics$cos(a0),
+						r1 * _elm_lang$core$Basics$sin(a0),
+						_user$project$Visualization_Path$begin));
+				return (_elm_lang$core$Native_Utils.cmp(r0, _user$project$Visualization_Shape_Pie$epsilon) > 0) ? A7(
+					_user$project$Visualization_Path$arc,
+					0,
+					0,
+					r0,
+					a1,
+					a0,
+					cw,
+					A3(
+						_user$project$Visualization_Path$moveTo,
+						r0 * _elm_lang$core$Basics$cos(a1),
+						r0 * _elm_lang$core$Basics$sin(a1),
+						p)) : p;
+			} else {
+				var rc = A2(
+					_elm_lang$core$Basics$min,
+					_elm_lang$core$Basics$abs(r1 - r0) / 2,
+					arcData.cornerRadius);
+				var ap = arcData.padAngle / 2;
+				var rp = (_elm_lang$core$Native_Utils.cmp(ap, _user$project$Visualization_Shape_Pie$epsilon) > 0) ? ((_elm_lang$core$Native_Utils.cmp(arcData.padRadius, 0) > 0) ? arcData.padRadius : _elm_lang$core$Basics$sqrt(
+					Math.pow(r0, 2) + Math.pow(r1, 2))) : 0;
+				var p0 = _user$project$Visualization_Shape_Pie$myAsin(
+					(rp / r0) * _elm_lang$core$Basics$sin(ap));
+				var _p11 = (_elm_lang$core$Native_Utils.cmp(rp, _user$project$Visualization_Shape_Pie$epsilon) > 0) ? ((_elm_lang$core$Native_Utils.cmp(da - (p0 * 2), _user$project$Visualization_Shape_Pie$epsilon) > 0) ? (cw ? {ctor: '_Tuple3', _0: a0 + p0, _1: a1 - p0, _2: da - (p0 * 2)} : {ctor: '_Tuple3', _0: a0 - p0, _1: a1 + p0, _2: da - (p0 * 2)}) : {ctor: '_Tuple3', _0: (a0 + a1) / 2, _1: (a0 + a1) / 2, _2: 0}) : {ctor: '_Tuple3', _0: a0, _1: a1, _2: da};
+				var a00 = _p11._0;
+				var a10 = _p11._1;
+				var da0 = _p11._2;
+				var x10 = r0 * _elm_lang$core$Basics$cos(a10);
+				var y10 = r0 * _elm_lang$core$Basics$sin(a10);
+				var x00 = r0 * _elm_lang$core$Basics$cos(a00);
+				var y00 = r0 * _elm_lang$core$Basics$sin(a00);
+				var p1 = _user$project$Visualization_Shape_Pie$myAsin(
+					(rp / r1) * _elm_lang$core$Basics$sin(ap));
+				var _p12 = (_elm_lang$core$Native_Utils.cmp(rp, _user$project$Visualization_Shape_Pie$epsilon) > 0) ? ((_elm_lang$core$Native_Utils.cmp(da - (p1 * 2), _user$project$Visualization_Shape_Pie$epsilon) > 0) ? (cw ? {ctor: '_Tuple3', _0: a0 + p1, _1: a1 - p1, _2: da - (p1 * 2)} : {ctor: '_Tuple3', _0: a0 - p1, _1: a1 + p1, _2: da - (p1 * 2)}) : {ctor: '_Tuple3', _0: (a0 + a1) / 2, _1: (a0 + a1) / 2, _2: 0}) : {ctor: '_Tuple3', _0: a0, _1: a1, _2: da};
+				var a01 = _p12._0;
+				var a11 = _p12._1;
+				var da1 = _p12._2;
+				var x01 = r1 * _elm_lang$core$Basics$cos(a01);
+				var y01 = r1 * _elm_lang$core$Basics$sin(a01);
+				var x11 = r1 * _elm_lang$core$Basics$cos(a11);
+				var y11 = r1 * _elm_lang$core$Basics$sin(a11);
+				var _p13 = (_elm_lang$core$Native_Utils.cmp(da0, _user$project$Visualization_Shape_Pie$epsilon) > 0) ? A8(_user$project$Visualization_Shape_Pie$intersect, x01, y01, x00, y00, x11, y11, x10, y10) : {ctor: '_Tuple2', _0: x10, _1: y10};
+				var ocx = _p13._0;
+				var ocy = _p13._1;
+				var lc = _elm_lang$core$Basics$sqrt(
+					Math.pow(ocx, 2) + Math.pow(ocy, 2));
+				var _p14 = {ctor: '_Tuple4', _0: x01 - ocx, _1: y01 - ocy, _2: x11 - ocx, _3: y11 - ocy};
+				var ax = _p14._0;
+				var ay = _p14._1;
+				var bx = _p14._2;
+				var by = _p14._3;
+				var kc = 1 / _elm_lang$core$Basics$sin(
+					_elm_lang$core$Basics$acos(
+						((ax * bx) + (ay * by)) / (_elm_lang$core$Basics$sqrt(
+							Math.pow(ax, 2) + Math.pow(ay, 2)) * _elm_lang$core$Basics$sqrt(
+							Math.pow(bx, 2) + Math.pow(by, 2)))) / 2);
+				var _p15 = ((_elm_lang$core$Native_Utils.cmp(rc, _user$project$Visualization_Shape_Pie$epsilon) > 0) && (_elm_lang$core$Native_Utils.cmp(da, _elm_lang$core$Basics$pi) < 0)) ? {
+					ctor: '_Tuple2',
+					_0: A2(_elm_lang$core$Basics$min, rc, (r0 - lc) / (kc - 1)),
+					_1: A2(_elm_lang$core$Basics$min, rc, (r1 - lc) / (kc + 1))
+				} : {ctor: '_Tuple2', _0: rc, _1: rc};
+				var rc0 = _p15._0;
+				var rc1 = _p15._1;
+				var outerRing = function () {
+					if (_elm_lang$core$Native_Utils.cmp(da1, _user$project$Visualization_Shape_Pie$epsilon) < 1) {
+						return A3(_user$project$Visualization_Path$moveTo, x01, y01, _user$project$Visualization_Path$begin);
+					} else {
+						if (_elm_lang$core$Native_Utils.cmp(rc1, _user$project$Visualization_Shape_Pie$epsilon) > 0) {
+							var t1 = A7(_user$project$Visualization_Shape_Pie$cornerTangents, x11, y11, x10, y10, r1, rc1, cw);
+							var t0 = A7(_user$project$Visualization_Shape_Pie$cornerTangents, x00, y00, x01, y01, r1, rc1, cw);
+							var p = A3(_user$project$Visualization_Path$moveTo, t0.cx + t0.x01, t0.cy + t0.y01, _user$project$Visualization_Path$begin);
+							return (_elm_lang$core$Native_Utils.cmp(rc1, rc) < 0) ? A7(
+								_user$project$Visualization_Path$arc,
+								t0.cx,
+								t0.cy,
+								rc1,
+								A2(_elm_lang$core$Basics$atan2, t0.y01, t0.x01),
+								A2(_elm_lang$core$Basics$atan2, t1.y01, t1.x01),
+								!cw,
+								p) : A7(
+								_user$project$Visualization_Path$arc,
+								t1.cx,
+								t1.cy,
+								rc1,
+								A2(_elm_lang$core$Basics$atan2, t1.y11, t1.x11),
+								A2(_elm_lang$core$Basics$atan2, t1.y01, t1.x01),
+								!cw,
+								A7(
+									_user$project$Visualization_Path$arc,
+									0,
+									0,
+									r1,
+									A2(_elm_lang$core$Basics$atan2, t0.cy + t0.y11, t0.cx + t0.x11),
+									A2(_elm_lang$core$Basics$atan2, t1.cy + t1.y11, t1.cx + t1.x11),
+									!cw,
+									A7(
+										_user$project$Visualization_Path$arc,
+										t0.cx,
+										t0.cy,
+										rc1,
+										A2(_elm_lang$core$Basics$atan2, t0.y01, t0.x01),
+										A2(_elm_lang$core$Basics$atan2, t0.y11, t0.x11),
+										!cw,
+										p)));
+						} else {
+							return A7(
+								_user$project$Visualization_Path$arc,
+								0,
+								0,
+								r1,
+								a01,
+								a11,
+								!cw,
+								A3(_user$project$Visualization_Path$moveTo, x01, y01, _user$project$Visualization_Path$begin));
+						}
+					}
+				}();
+				if ((_elm_lang$core$Native_Utils.cmp(r0, _user$project$Visualization_Shape_Pie$epsilon) < 1) || (_elm_lang$core$Native_Utils.cmp(da0, _user$project$Visualization_Shape_Pie$epsilon) < 1)) {
+					return A3(_user$project$Visualization_Path$lineTo, x10, y10, outerRing);
+				} else {
+					if (_elm_lang$core$Native_Utils.cmp(rc0, _user$project$Visualization_Shape_Pie$epsilon) > 0) {
+						var t1 = A7(_user$project$Visualization_Shape_Pie$cornerTangents, x01, y01, x00, y00, r0, 0 - rc0, cw);
+						var t0 = A7(_user$project$Visualization_Shape_Pie$cornerTangents, x10, y10, x11, y11, r0, 0 - rc0, cw);
+						var p = A3(_user$project$Visualization_Path$lineTo, t0.cx + t0.x01, t0.cy + t0.y01, outerRing);
+						return (_elm_lang$core$Native_Utils.cmp(rc0, rc) < 0) ? A7(
+							_user$project$Visualization_Path$arc,
+							t0.cx,
+							t0.cy,
+							rc0,
+							A2(_elm_lang$core$Basics$atan2, t0.y01, t0.x01),
+							A2(_elm_lang$core$Basics$atan2, t1.y01, t1.x01),
+							!cw,
+							p) : A7(
+							_user$project$Visualization_Path$arc,
+							t1.cx,
+							t1.cy,
+							rc0,
+							A2(_elm_lang$core$Basics$atan2, t1.y11, t1.x11),
+							A2(_elm_lang$core$Basics$atan2, t1.y01, t1.x01),
+							!cw,
+							A7(
+								_user$project$Visualization_Path$arc,
+								0,
+								0,
+								r0,
+								A2(_elm_lang$core$Basics$atan2, t0.cy + t0.y11, t0.cx + t0.x11),
+								A2(_elm_lang$core$Basics$atan2, t1.cy + t1.y11, t1.cx + t1.x11),
+								cw,
+								A7(
+									_user$project$Visualization_Path$arc,
+									t0.cx,
+									t0.cy,
+									rc0,
+									A2(_elm_lang$core$Basics$atan2, t0.y01, t0.x01),
+									A2(_elm_lang$core$Basics$atan2, t0.y11, t0.x11),
+									!cw,
+									p)));
+					} else {
+						return A7(_user$project$Visualization_Path$arc, 0, 0, r0, a10, a00, cw, outerRing);
+					}
+				}
+			}
+		}
+	}();
+	return _user$project$Visualization_Path$toAttrString(
+		_user$project$Visualization_Path$close(path));
 };
-var _user$project$Visualization_Shape$sortByInsideOut = F2(
+var _user$project$Visualization_Shape_Stack$sortByInsideOut = F2(
 	function (toNumber, items) {
 		var folder = F2(
 			function (_p1, _p0) {
@@ -40554,40 +40822,282 @@ var _user$project$Visualization_Shape$sortByInsideOut = F2(
 			_elm_lang$core$List$reverse(bottom),
 			top);
 	});
-var _user$project$Visualization_Shape$stackOffsetWiggle = _user$project$Visualization_StackOffset$wiggle;
-var _user$project$Visualization_Shape$stackOffsetSilhouette = _user$project$Visualization_StackOffset$silhouette;
-var _user$project$Visualization_Shape$stackOffsetExpand = _user$project$Visualization_StackOffset$expand;
-var _user$project$Visualization_Shape$stackOffsetDiverging = _user$project$Visualization_StackOffset$diverging;
-var _user$project$Visualization_Shape$stackOffsetNone = _user$project$Visualization_StackOffset$none;
-var _user$project$Visualization_Shape$calculateExtremes = function (coords) {
+var _user$project$Visualization_Shape_Stack$pairwise = F2(
+	function (f, list) {
+		var _p11 = list;
+		if (_p11.ctor === '[]') {
+			return {ctor: '[]'};
+		} else {
+			return A3(_elm_lang$core$List$map2, f, list, _p11._1);
+		}
+	});
+var _user$project$Visualization_Shape_Stack$offsetDiverging = function (series) {
+	var _p12 = series;
+	if (_p12.ctor === '[]') {
+		return {ctor: '[]'};
+	} else {
+		var folder = F2(
+			function (_p14, _p13) {
+				var _p15 = _p14;
+				var _p20 = _p15._1;
+				var _p16 = _p13;
+				var _p19 = _p16._0;
+				var _p18 = _p16._1;
+				var _p17 = _p16._2;
+				var dy = _p20 - _p15._0;
+				return (_elm_lang$core$Native_Utils.cmp(dy, 0) > -1) ? {
+					ctor: '_Tuple3',
+					_0: _p19 + dy,
+					_1: _p18,
+					_2: {
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: _p19, _1: _p19 + dy},
+						_1: _p17
+					}
+				} : ((_elm_lang$core$Native_Utils.cmp(dy, 0) < 0) ? {
+					ctor: '_Tuple3',
+					_0: _p19,
+					_1: _p18 + dy,
+					_2: {
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: _p18 + dy, _1: _p18},
+						_1: _p17
+					}
+				} : {
+					ctor: '_Tuple3',
+					_0: _p19,
+					_1: _p18,
+					_2: {
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: _p19, _1: _p20},
+						_1: _p17
+					}
+				});
+			});
+		var modifyColumn = function (column) {
+			return _elm_lang$core$List$reverse(
+				function (_p21) {
+					var _p22 = _p21;
+					return _p22._2;
+				}(
+					A3(
+						_elm_lang$core$List$foldl,
+						folder,
+						{
+							ctor: '_Tuple3',
+							_0: 0,
+							_1: 0,
+							_2: {ctor: '[]'}
+						},
+						column)));
+		};
+		return _elm_community$list_extra$List_Extra$transpose(
+			A2(
+				_elm_lang$core$List$map,
+				modifyColumn,
+				_elm_community$list_extra$List_Extra$transpose(series)));
+	}
+};
+var _user$project$Visualization_Shape_Stack$offsetNone = function (series) {
+	var _p23 = series;
+	if (_p23.ctor === '[]') {
+		return {ctor: '[]'};
+	} else {
+		var weirdAdd = F2(
+			function (_p25, _p24) {
+				var _p26 = _p25;
+				var _p30 = _p26._1;
+				var _p27 = _p24;
+				var _p29 = _p27._1;
+				var _p28 = _p27._0;
+				return _elm_lang$core$Basics$isNaN(_p29) ? {ctor: '_Tuple2', _0: _p28, _1: _p30 + _p28} : {ctor: '_Tuple2', _0: _p29, _1: _p30 + _p29};
+			});
+		var helper = F2(
+			function (s1, _p31) {
+				var _p32 = _p31;
+				var _p33 = _p32._0;
+				return {
+					ctor: '_Tuple2',
+					_0: A3(_elm_lang$core$List$map2, weirdAdd, s1, _p33),
+					_1: {ctor: '::', _0: _p33, _1: _p32._1}
+				};
+			});
+		return _elm_lang$core$List$reverse(
+			A2(
+				_elm_lang$core$Basics$uncurry,
+				F2(
+					function (x, y) {
+						return {ctor: '::', _0: x, _1: y};
+					}),
+				A3(
+					_elm_lang$core$List$foldl,
+					helper,
+					{
+						ctor: '_Tuple2',
+						_0: _p23._0,
+						_1: {ctor: '[]'}
+					},
+					_p23._1)));
+	}
+};
+var _user$project$Visualization_Shape_Stack$offsetExpand = function (series) {
+	var normalizeColumn = function (column) {
+		var deltas = A2(
+			_elm_lang$core$List$map,
+			function (_p34) {
+				return _elm_lang$core$Basics$abs(
+					A2(
+						_elm_lang$core$Basics$uncurry,
+						F2(
+							function (x, y) {
+								return x - y;
+							}),
+						_p34));
+			},
+			column);
+		var total = _elm_lang$core$List$sum(deltas);
+		return A2(
+			_elm_lang$core$List$map,
+			function (value) {
+				return {ctor: '_Tuple2', _0: 0, _1: value / total};
+			},
+			deltas);
+	};
+	return _user$project$Visualization_Shape_Stack$offsetNone(
+		_elm_community$list_extra$List_Extra$transpose(
+			A2(
+				_elm_lang$core$List$map,
+				normalizeColumn,
+				_elm_community$list_extra$List_Extra$transpose(series))));
+};
+var _user$project$Visualization_Shape_Stack$offsetSilhouette = function (series) {
+	var _p35 = series;
+	if (_p35.ctor === '[]') {
+		return {ctor: '[]'};
+	} else {
+		var ys = A2(
+			_elm_lang$core$List$map,
+			function (_p36) {
+				return _elm_lang$core$List$sum(
+					A2(_elm_lang$core$List$map, _elm_lang$core$Tuple$second, _p36));
+			},
+			_elm_community$list_extra$List_Extra$transpose(series));
+		return _user$project$Visualization_Shape_Stack$offsetNone(
+			{
+				ctor: '::',
+				_0: A3(
+					_elm_lang$core$List$map2,
+					F2(
+						function (_p37, newY) {
+							var _p38 = _p37;
+							return {ctor: '_Tuple2', _0: (0 - newY) / 2, _1: _p38._1 + ((0 - newY) / 2)};
+						}),
+					_p35._0,
+					ys),
+				_1: _p35._1
+			});
+	}
+};
+var _user$project$Visualization_Shape_Stack$offsetWiggle = function (series) {
+	var _p39 = series;
+	if (_p39.ctor === '[]') {
+		return {ctor: '[]'};
+	} else {
+		var safeDivision = F2(
+			function (a, b) {
+				return _elm_lang$core$Native_Utils.eq(b, 0) ? 0 : (a / b);
+			});
+		var scanner = F2(
+			function (_p40, yValue) {
+				var _p41 = _p40;
+				return yValue - A2(safeDivision, _p41._1, _p41._0);
+			});
+		var folder = F2(
+			function (_p43, _p42) {
+				var _p44 = _p43;
+				var _p47 = _p44._1;
+				var _p45 = _p42;
+				var _p46 = _p45._0;
+				var delta = _p47 - _p44._0;
+				return {ctor: '_Tuple2', _0: delta + _p46, _1: ((_p46 + (delta / 2)) * _p47) + _p45._1};
+			});
+		var deltaFractions = F2(
+			function (previous, current) {
+				return _elm_lang$core$Tuple$second(
+					A3(
+						_elm_lang$core$List$foldl,
+						folder,
+						{ctor: '_Tuple2', _0: 0, _1: 0},
+						A3(
+							_elm_lang$core$List$map2,
+							F2(
+								function (v0, v1) {
+									return {ctor: '_Tuple2', _0: v0, _1: v1};
+								}),
+							previous,
+							current)));
+			});
+		var columns = _elm_community$list_extra$List_Extra$transpose(
+			A2(
+				_elm_lang$core$List$map,
+				_elm_lang$core$List$map(_elm_lang$core$Tuple$second),
+				series));
+		var newFirst = A3(
+			_elm_lang$core$List$map2,
+			F2(
+				function (_p48, yValue) {
+					var _p49 = _p48;
+					return {ctor: '_Tuple2', _0: yValue, _1: _p49._1 + yValue};
+				}),
+			_p39._0,
+			A3(
+				_elm_lang$core$List$scanl,
+				scanner,
+				0,
+				A3(
+					_elm_lang$core$List$map2,
+					F2(
+						function (v0, v1) {
+							return {ctor: '_Tuple2', _0: v0, _1: v1};
+						}),
+					A2(
+						_elm_lang$core$List$map,
+						_elm_lang$core$List$sum,
+						A2(_elm_lang$core$List$drop, 1, columns)),
+					A2(_user$project$Visualization_Shape_Stack$pairwise, deltaFractions, columns))));
+		return _user$project$Visualization_Shape_Stack$offsetNone(
+			{ctor: '::', _0: newFirst, _1: _p39._1});
+	}
+};
+var _user$project$Visualization_Shape_Stack$calculateExtremes = function (coords) {
 	var folder = F2(
-		function (_p12, _p11) {
-			var _p13 = _p12;
-			var _p16 = _p13._1;
-			var _p15 = _p13._0;
-			var _p14 = _p11;
+		function (_p51, _p50) {
+			var _p52 = _p51;
+			var _p55 = _p52._1;
+			var _p54 = _p52._0;
+			var _p53 = _p50;
 			return {
 				ctor: '_Tuple2',
 				_0: A2(
 					_elm_lang$core$Basics$min,
-					_p14._0,
-					A2(_elm_lang$core$Basics$min, _p15, _p16)),
+					_p53._0,
+					A2(_elm_lang$core$Basics$min, _p54, _p55)),
 				_1: A2(
 					_elm_lang$core$Basics$max,
-					_p14._1,
-					A2(_elm_lang$core$Basics$max, _p15, _p16))
+					_p53._1,
+					A2(_elm_lang$core$Basics$max, _p54, _p55))
 			};
 		});
 	return A3(
 		_elm_lang$core$List$foldl,
 		F2(
-			function (_p18, _p17) {
-				var _p19 = _p18;
-				var _p20 = _p17;
+			function (_p57, _p56) {
+				var _p58 = _p57;
+				var _p59 = _p56;
 				return {
 					ctor: '_Tuple2',
-					_0: A2(_elm_lang$core$Basics$min, _p19._0, _p20._0),
-					_1: A2(_elm_lang$core$Basics$max, _p19._1, _p20._1)
+					_0: A2(_elm_lang$core$Basics$min, _p58._0, _p59._0),
+					_1: A2(_elm_lang$core$Basics$max, _p58._1, _p59._1)
 				};
 			}),
 		{ctor: '_Tuple2', _0: 0, _1: 0},
@@ -40599,13 +41109,13 @@ var _user$project$Visualization_Shape$calculateExtremes = function (coords) {
 				{ctor: '_Tuple2', _0: 0, _1: 0}),
 			coords));
 };
-var _user$project$Visualization_Shape$stack = function (_p21) {
-	var _p22 = _p21;
-	var _p23 = _elm_lang$core$List$unzip(
-		_p22.order(_p22.data));
-	var labels = _p23._0;
-	var values = _p23._1;
-	var stacked = _p22.offset(
+var _user$project$Visualization_Shape_Stack$computeStack = function (_p60) {
+	var _p61 = _p60;
+	var _p62 = _elm_lang$core$List$unzip(
+		_p61.order(_p61.data));
+	var labels = _p62._0;
+	var values = _p62._1;
+	var stacked = _p61.offset(
 		A2(
 			_elm_lang$core$List$map,
 			_elm_lang$core$List$map(
@@ -40616,354 +41126,73 @@ var _user$project$Visualization_Shape$stack = function (_p21) {
 	return {
 		values: stacked,
 		labels: labels,
-		extent: _user$project$Visualization_Shape$calculateExtremes(stacked)
+		extent: _user$project$Visualization_Shape_Stack$calculateExtremes(stacked)
 	};
 };
-var _user$project$Visualization_Shape$pie = F2(
-	function (settings, data) {
-		var unsafeGet = F2(
-			function (index, array) {
-				var _p24 = A2(_elm_lang$core$Array$get, index, array);
-				if (_p24.ctor === 'Just') {
-					return _p24._0;
-				} else {
-					return _elm_lang$core$Native_Utils.crashCase(
-						'Visualization.Shape',
-						{
-							start: {line: 725, column: 13},
-							end: {line: 730, column: 59}
-						},
-						_p24)('This should never happen');
-				}
-			});
-		var dataArray = _elm_lang$core$Array$fromList(data);
-		var sortedIndices = function (_p26) {
-			return A2(
-				_elm_lang$core$List$map,
-				_elm_lang$core$Tuple$first,
-				A2(
-					_elm_lang$core$List$sortWith,
-					F2(
-						function (_p28, _p27) {
-							var _p29 = _p28;
-							var _p30 = _p27;
-							return A2(settings.sortingFn, _p29._1, _p30._1);
-						}),
-					A2(
-						_elm_lang$core$List$indexedMap,
-						F2(
-							function (v0, v1) {
-								return {ctor: '_Tuple2', _0: v0, _1: v1};
-							}),
-						_p26)));
-		};
-		var da = A2(
-			_elm_lang$core$Basics$min,
-			2 * _elm_lang$core$Basics$pi,
-			A2(_elm_lang$core$Basics$max, -2 * _elm_lang$core$Basics$pi, settings.endAngle - settings.startAngle));
-		var p = A2(
-			_elm_lang$core$Basics$min,
-			_elm_lang$core$Basics$abs(da) / _elm_lang$core$Basics$toFloat(
-				_elm_lang$core$List$length(data)),
-			settings.padAngle);
-		var pa = p * ((_elm_lang$core$Native_Utils.cmp(da, 0) < 0) ? -1 : 1);
-		var summer = F2(
-			function (a, b) {
-				var v = settings.valueFn(a);
-				return (_elm_lang$core$Native_Utils.cmp(v, 0) > 0) ? (v + b) : b;
-			});
-		var sum = A3(_elm_lang$core$List$foldr, summer, 0, data);
-		var k = _elm_lang$core$Native_Utils.eq(sum, 0) ? 0 : ((da - (_elm_lang$core$Basics$toFloat(
-			_elm_lang$core$List$length(data)) * pa)) / sum);
-		var computeValue = F2(
-			function (el, angle) {
-				var value = settings.valueFn(el);
-				return {
-					innerRadius: settings.innerRadius,
-					outerRadius: settings.outerRadius,
-					cornerRadius: settings.cornerRadius,
-					startAngle: angle,
-					endAngle: (angle + ((_elm_lang$core$Native_Utils.cmp(value, 0) > 0) ? (value * k) : 0)) + pa,
-					padAngle: p,
-					padRadius: settings.padRadius
-				};
-			});
-		var helper = F2(
-			function (index, _p31) {
-				var _p32 = _p31;
-				var r = A2(
-					computeValue,
-					A2(unsafeGet, index, dataArray),
-					_p32._0);
-				return {
-					ctor: '_Tuple2',
-					_0: r.endAngle,
-					_1: A3(_elm_lang$core$Dict$insert, index, r, _p32._1)
-				};
-			});
-		return _elm_lang$core$Dict$values(
-			_elm_lang$core$Tuple$second(
-				A3(
-					_elm_lang$core$List$foldl,
-					helper,
-					{ctor: '_Tuple2', _0: settings.startAngle, _1: _elm_lang$core$Dict$empty},
-					sortedIndices(data))));
+var _user$project$Visualization_Shape$sortByInsideOut = _user$project$Visualization_Shape_Stack$sortByInsideOut;
+var _user$project$Visualization_Shape$stackOffsetWiggle = _user$project$Visualization_Shape_Stack$offsetWiggle;
+var _user$project$Visualization_Shape$stackOffsetSilhouette = _user$project$Visualization_Shape_Stack$offsetSilhouette;
+var _user$project$Visualization_Shape$stackOffsetExpand = _user$project$Visualization_Shape_Stack$offsetExpand;
+var _user$project$Visualization_Shape$stackOffsetDiverging = _user$project$Visualization_Shape_Stack$offsetDiverging;
+var _user$project$Visualization_Shape$stackOffsetNone = _user$project$Visualization_Shape_Stack$offsetNone;
+var _user$project$Visualization_Shape$stack = _user$project$Visualization_Shape_Stack$computeStack;
+var _user$project$Visualization_Shape$adapter = F2(
+	function (curveFn, _p0) {
+		var _p1 = _p0;
+		return _user$project$Visualization_Path_Conversion$subpathToVizPath(
+			curveFn(_p1._0));
 	});
+var _user$project$Visualization_Shape$linearCurve = _user$project$Visualization_Shape$adapter(_folkertdev$one_true_path_experiment$Curve$linear);
+var _user$project$Visualization_Shape$basisCurve = _user$project$Visualization_Shape$adapter(_folkertdev$one_true_path_experiment$Curve$basis);
+var _user$project$Visualization_Shape$basisCurveClosed = _user$project$Visualization_Shape$adapter(_folkertdev$one_true_path_experiment$Curve$basisClosed);
+var _user$project$Visualization_Shape$basisCurveOpen = _user$project$Visualization_Shape$adapter(_folkertdev$one_true_path_experiment$Curve$basisOpen);
+var _user$project$Visualization_Shape$bundleCurve = function (beta) {
+	return _user$project$Visualization_Shape$adapter(
+		_folkertdev$one_true_path_experiment$Curve$bundle(
+			A3(_elm_lang$core$Basics$clamp, 0, 1, beta)));
+};
+var _user$project$Visualization_Shape$cardinalCurve = function (tension) {
+	return _user$project$Visualization_Shape$adapter(
+		_folkertdev$one_true_path_experiment$Curve$cardinal(
+			A3(_elm_lang$core$Basics$clamp, 0, 1, tension)));
+};
+var _user$project$Visualization_Shape$cardinalCurveClosed = function (tension) {
+	return _user$project$Visualization_Shape$adapter(
+		_folkertdev$one_true_path_experiment$Curve$cardinalClosed(
+			A3(_elm_lang$core$Basics$clamp, 0, 1, tension)));
+};
+var _user$project$Visualization_Shape$cardinalCurveOpen = function (tension) {
+	return _user$project$Visualization_Shape$adapter(
+		_folkertdev$one_true_path_experiment$Curve$cardinalOpen(
+			A3(_elm_lang$core$Basics$clamp, 0, 1, tension)));
+};
+var _user$project$Visualization_Shape$catmullRomCurve = function (alpha) {
+	return _user$project$Visualization_Shape$adapter(
+		_folkertdev$one_true_path_experiment$Curve$catmullRom(
+			A3(_elm_lang$core$Basics$clamp, 0, 1, alpha)));
+};
+var _user$project$Visualization_Shape$catmullRomCurveClosed = function (alpha) {
+	return _user$project$Visualization_Shape$adapter(
+		_folkertdev$one_true_path_experiment$Curve$catmullRomClosed(
+			A3(_elm_lang$core$Basics$clamp, 0, 1, alpha)));
+};
+var _user$project$Visualization_Shape$catmullRomCurveOpen = function (alpha) {
+	return _user$project$Visualization_Shape$adapter(
+		_folkertdev$one_true_path_experiment$Curve$catmullRomOpen(
+			A3(_elm_lang$core$Basics$clamp, 0, 1, alpha)));
+};
+var _user$project$Visualization_Shape$monotoneInXCurve = _user$project$Visualization_Shape$adapter(_folkertdev$one_true_path_experiment$Curve$monotoneX);
+var _user$project$Visualization_Shape$monotoneInYCurve = _user$project$Visualization_Shape$adapter(_folkertdev$one_true_path_experiment$Curve$monotoneY);
+var _user$project$Visualization_Shape$naturalCurve = _user$project$Visualization_Shape$adapter(_folkertdev$one_true_path_experiment$Curve$natural);
+var _user$project$Visualization_Shape$stepCurve = function (factor) {
+	return _user$project$Visualization_Shape$adapter(
+		_folkertdev$one_true_path_experiment$Curve$step(
+			A3(_elm_lang$core$Basics$clamp, 0, 1, factor)));
+};
+var _user$project$Visualization_Shape$pie = _user$project$Visualization_Shape_Pie$pie;
 var _user$project$Visualization_Shape$defaultPieConfig = {startAngle: 0, endAngle: 2 * _elm_lang$core$Basics$pi, padAngle: 0, sortingFn: _elm_lang$core$Basics$compare, valueFn: _elm_lang$core$Basics$identity, innerRadius: 0, outerRadius: 100, cornerRadius: 0, padRadius: 0};
-var _user$project$Visualization_Shape$centroid = function (arcData) {
-	var a = ((arcData.startAngle + arcData.endAngle) / 2) - (_elm_lang$core$Basics$pi / 2);
-	var r = (arcData.innerRadius + arcData.outerRadius) / 2;
-	return {
-		ctor: '_Tuple2',
-		_0: _elm_lang$core$Basics$cos(a) * r,
-		_1: _elm_lang$core$Basics$sin(a) * r
-	};
-};
-var _user$project$Visualization_Shape$myAsin = function (x) {
-	return (_elm_lang$core$Native_Utils.cmp(x, 1) > -1) ? (_elm_lang$core$Basics$pi / 2) : ((_elm_lang$core$Native_Utils.cmp(x, -1) < 1) ? ((0 - _elm_lang$core$Basics$pi) / 2) : _elm_lang$core$Basics$asin(x));
-};
-var _user$project$Visualization_Shape$cornerTangents = F7(
-	function (x0, y0, x1, y1, r1, rc, cw) {
-		var r = r1 - rc;
-		var y01 = y0 - y1;
-		var x01 = x0 - x1;
-		var lo = (cw ? rc : (0 - rc)) / _elm_lang$core$Basics$sqrt(
-			Math.pow(x01, 2) + Math.pow(y01, 2));
-		var ox = lo * y01;
-		var x11 = x0 + ox;
-		var x10 = x1 + ox;
-		var x00 = (x11 + x10) / 2;
-		var dx = x10 - x11;
-		var oy = (0 - lo) * x01;
-		var y11 = y0 + oy;
-		var y10 = y1 + oy;
-		var y00 = (y11 + y10) / 2;
-		var dy = y10 - y11;
-		var d2 = Math.pow(dx, 2) + Math.pow(dy, 2);
-		var dd = (x11 * y10) - (x10 * y11);
-		var d = ((_elm_lang$core$Native_Utils.cmp(dy, 0) < 0) ? -1 : 1) * _elm_lang$core$Basics$sqrt(
-			A2(
-				_elm_lang$core$Basics$max,
-				0,
-				(Math.pow(r, 2) * d2) - Math.pow(dd, 2)));
-		var cx0 = ((dd * dy) - (dx * d)) / d2;
-		var dx0 = cx0 - x00;
-		var cy0 = (((0 - dd) * dx) - (dy * d)) / d2;
-		var dy0 = cy0 - y00;
-		var cx1 = ((dd * dy) + (dx * d)) / d2;
-		var dx1 = cx1 - x00;
-		var cy1 = (((0 - dd) * dx) + (dy * d)) / d2;
-		var dy1 = cy1 - y00;
-		var _p33 = (_elm_lang$core$Native_Utils.cmp(
-			Math.pow(dx0, 2) + Math.pow(dy0, 2),
-			Math.pow(dx1, 2) + Math.pow(dy1, 2)) > 0) ? {ctor: '_Tuple2', _0: cx1, _1: cy1} : {ctor: '_Tuple2', _0: cx0, _1: cy0};
-		var fcx = _p33._0;
-		var fxy = _p33._1;
-		return {cx: fcx, cy: fxy, x01: 0 - ox, y01: 0 - oy, x11: fcx * ((r1 / r) - 1), y11: fxy * ((r1 / r) - 1)};
-	});
-var _user$project$Visualization_Shape$intersect = F8(
-	function (x0, y0, x1, y1, x2, y2, x3, y3) {
-		var y32 = y3 - y2;
-		var x32 = x3 - x2;
-		var y10 = y1 - y0;
-		var x10 = x1 - x0;
-		var t = ((x32 * (y0 - y2)) - (y32 * (x0 - x2))) / ((y32 * x10) - (x32 * y10));
-		return {ctor: '_Tuple2', _0: x0 + (t * x10), _1: y0 + (t * y10)};
-	});
-var _user$project$Visualization_Shape$epsilon = 1.0e-12;
-var _user$project$Visualization_Shape$arc = function (arcData) {
-	var a1 = arcData.endAngle - (_elm_lang$core$Basics$pi / 2);
-	var a0 = arcData.startAngle - (_elm_lang$core$Basics$pi / 2);
-	var da = _elm_lang$core$Basics$abs(a1 - a0);
-	var cw = _elm_lang$core$Native_Utils.cmp(a1, a0) > 0;
-	var _p34 = (_elm_lang$core$Native_Utils.cmp(arcData.innerRadius, arcData.outerRadius) > 0) ? {ctor: '_Tuple2', _0: arcData.outerRadius, _1: arcData.innerRadius} : {ctor: '_Tuple2', _0: arcData.innerRadius, _1: arcData.outerRadius};
-	var r0 = _p34._0;
-	var r1 = _p34._1;
-	var path = function () {
-		if (_elm_lang$core$Native_Utils.cmp(r1, _user$project$Visualization_Shape$epsilon) < 1) {
-			return A3(_user$project$Visualization_Path$moveTo, 0, 0, _user$project$Visualization_Path$begin);
-		} else {
-			if (_elm_lang$core$Native_Utils.cmp(da, (2 * _elm_lang$core$Basics$pi) - _user$project$Visualization_Shape$epsilon) > 0) {
-				var p = A7(
-					_user$project$Visualization_Path$arc,
-					0,
-					0,
-					r1,
-					a0,
-					a1,
-					!cw,
-					A3(
-						_user$project$Visualization_Path$moveTo,
-						r1 * _elm_lang$core$Basics$cos(a0),
-						r1 * _elm_lang$core$Basics$sin(a0),
-						_user$project$Visualization_Path$begin));
-				return (_elm_lang$core$Native_Utils.cmp(r0, _user$project$Visualization_Shape$epsilon) > 0) ? A7(
-					_user$project$Visualization_Path$arc,
-					0,
-					0,
-					r0,
-					a1,
-					a0,
-					cw,
-					A3(
-						_user$project$Visualization_Path$moveTo,
-						r0 * _elm_lang$core$Basics$cos(a1),
-						r0 * _elm_lang$core$Basics$sin(a1),
-						p)) : p;
-			} else {
-				var rc = A2(
-					_elm_lang$core$Basics$min,
-					_elm_lang$core$Basics$abs(r1 - r0) / 2,
-					arcData.cornerRadius);
-				var ap = arcData.padAngle / 2;
-				var rp = (_elm_lang$core$Native_Utils.cmp(ap, _user$project$Visualization_Shape$epsilon) > 0) ? ((_elm_lang$core$Native_Utils.cmp(arcData.padRadius, 0) > 0) ? arcData.padRadius : _elm_lang$core$Basics$sqrt(
-					Math.pow(r0, 2) + Math.pow(r1, 2))) : 0;
-				var p0 = _user$project$Visualization_Shape$myAsin(
-					(rp / r0) * _elm_lang$core$Basics$sin(ap));
-				var _p35 = (_elm_lang$core$Native_Utils.cmp(rp, _user$project$Visualization_Shape$epsilon) > 0) ? ((_elm_lang$core$Native_Utils.cmp(da - (p0 * 2), _user$project$Visualization_Shape$epsilon) > 0) ? (cw ? {ctor: '_Tuple3', _0: a0 + p0, _1: a1 - p0, _2: da - (p0 * 2)} : {ctor: '_Tuple3', _0: a0 - p0, _1: a1 + p0, _2: da - (p0 * 2)}) : {ctor: '_Tuple3', _0: (a0 + a1) / 2, _1: (a0 + a1) / 2, _2: 0}) : {ctor: '_Tuple3', _0: a0, _1: a1, _2: da};
-				var a00 = _p35._0;
-				var a10 = _p35._1;
-				var da0 = _p35._2;
-				var x10 = r0 * _elm_lang$core$Basics$cos(a10);
-				var y10 = r0 * _elm_lang$core$Basics$sin(a10);
-				var x00 = r0 * _elm_lang$core$Basics$cos(a00);
-				var y00 = r0 * _elm_lang$core$Basics$sin(a00);
-				var p1 = _user$project$Visualization_Shape$myAsin(
-					(rp / r1) * _elm_lang$core$Basics$sin(ap));
-				var _p36 = (_elm_lang$core$Native_Utils.cmp(rp, _user$project$Visualization_Shape$epsilon) > 0) ? ((_elm_lang$core$Native_Utils.cmp(da - (p1 * 2), _user$project$Visualization_Shape$epsilon) > 0) ? (cw ? {ctor: '_Tuple3', _0: a0 + p1, _1: a1 - p1, _2: da - (p1 * 2)} : {ctor: '_Tuple3', _0: a0 - p1, _1: a1 + p1, _2: da - (p1 * 2)}) : {ctor: '_Tuple3', _0: (a0 + a1) / 2, _1: (a0 + a1) / 2, _2: 0}) : {ctor: '_Tuple3', _0: a0, _1: a1, _2: da};
-				var a01 = _p36._0;
-				var a11 = _p36._1;
-				var da1 = _p36._2;
-				var x01 = r1 * _elm_lang$core$Basics$cos(a01);
-				var y01 = r1 * _elm_lang$core$Basics$sin(a01);
-				var x11 = r1 * _elm_lang$core$Basics$cos(a11);
-				var y11 = r1 * _elm_lang$core$Basics$sin(a11);
-				var _p37 = (_elm_lang$core$Native_Utils.cmp(da0, _user$project$Visualization_Shape$epsilon) > 0) ? A8(_user$project$Visualization_Shape$intersect, x01, y01, x00, y00, x11, y11, x10, y10) : {ctor: '_Tuple2', _0: x10, _1: y10};
-				var ocx = _p37._0;
-				var ocy = _p37._1;
-				var lc = _elm_lang$core$Basics$sqrt(
-					Math.pow(ocx, 2) + Math.pow(ocy, 2));
-				var _p38 = {ctor: '_Tuple4', _0: x01 - ocx, _1: y01 - ocy, _2: x11 - ocx, _3: y11 - ocy};
-				var ax = _p38._0;
-				var ay = _p38._1;
-				var bx = _p38._2;
-				var by = _p38._3;
-				var kc = 1 / _elm_lang$core$Basics$sin(
-					_elm_lang$core$Basics$acos(
-						((ax * bx) + (ay * by)) / (_elm_lang$core$Basics$sqrt(
-							Math.pow(ax, 2) + Math.pow(ay, 2)) * _elm_lang$core$Basics$sqrt(
-							Math.pow(bx, 2) + Math.pow(by, 2)))) / 2);
-				var _p39 = ((_elm_lang$core$Native_Utils.cmp(rc, _user$project$Visualization_Shape$epsilon) > 0) && (_elm_lang$core$Native_Utils.cmp(da, _elm_lang$core$Basics$pi) < 0)) ? {
-					ctor: '_Tuple2',
-					_0: A2(_elm_lang$core$Basics$min, rc, (r0 - lc) / (kc - 1)),
-					_1: A2(_elm_lang$core$Basics$min, rc, (r1 - lc) / (kc + 1))
-				} : {ctor: '_Tuple2', _0: rc, _1: rc};
-				var rc0 = _p39._0;
-				var rc1 = _p39._1;
-				var outerRing = function () {
-					if (_elm_lang$core$Native_Utils.cmp(da1, _user$project$Visualization_Shape$epsilon) < 1) {
-						return A3(_user$project$Visualization_Path$moveTo, x01, y01, _user$project$Visualization_Path$begin);
-					} else {
-						if (_elm_lang$core$Native_Utils.cmp(rc1, _user$project$Visualization_Shape$epsilon) > 0) {
-							var t1 = A7(_user$project$Visualization_Shape$cornerTangents, x11, y11, x10, y10, r1, rc1, cw);
-							var t0 = A7(_user$project$Visualization_Shape$cornerTangents, x00, y00, x01, y01, r1, rc1, cw);
-							var p = A3(_user$project$Visualization_Path$moveTo, t0.cx + t0.x01, t0.cy + t0.y01, _user$project$Visualization_Path$begin);
-							return (_elm_lang$core$Native_Utils.cmp(rc1, rc) < 0) ? A7(
-								_user$project$Visualization_Path$arc,
-								t0.cx,
-								t0.cy,
-								rc1,
-								A2(_elm_lang$core$Basics$atan2, t0.y01, t0.x01),
-								A2(_elm_lang$core$Basics$atan2, t1.y01, t1.x01),
-								!cw,
-								p) : A7(
-								_user$project$Visualization_Path$arc,
-								t1.cx,
-								t1.cy,
-								rc1,
-								A2(_elm_lang$core$Basics$atan2, t1.y11, t1.x11),
-								A2(_elm_lang$core$Basics$atan2, t1.y01, t1.x01),
-								!cw,
-								A7(
-									_user$project$Visualization_Path$arc,
-									0,
-									0,
-									r1,
-									A2(_elm_lang$core$Basics$atan2, t0.cy + t0.y11, t0.cx + t0.x11),
-									A2(_elm_lang$core$Basics$atan2, t1.cy + t1.y11, t1.cx + t1.x11),
-									!cw,
-									A7(
-										_user$project$Visualization_Path$arc,
-										t0.cx,
-										t0.cy,
-										rc1,
-										A2(_elm_lang$core$Basics$atan2, t0.y01, t0.x01),
-										A2(_elm_lang$core$Basics$atan2, t0.y11, t0.x11),
-										!cw,
-										p)));
-						} else {
-							return A7(
-								_user$project$Visualization_Path$arc,
-								0,
-								0,
-								r1,
-								a01,
-								a11,
-								!cw,
-								A3(_user$project$Visualization_Path$moveTo, x01, y01, _user$project$Visualization_Path$begin));
-						}
-					}
-				}();
-				if ((_elm_lang$core$Native_Utils.cmp(r0, _user$project$Visualization_Shape$epsilon) < 1) || (_elm_lang$core$Native_Utils.cmp(da0, _user$project$Visualization_Shape$epsilon) < 1)) {
-					return A3(_user$project$Visualization_Path$lineTo, x10, y10, outerRing);
-				} else {
-					if (_elm_lang$core$Native_Utils.cmp(rc0, _user$project$Visualization_Shape$epsilon) > 0) {
-						var t1 = A7(_user$project$Visualization_Shape$cornerTangents, x01, y01, x00, y00, r0, 0 - rc0, cw);
-						var t0 = A7(_user$project$Visualization_Shape$cornerTangents, x10, y10, x11, y11, r0, 0 - rc0, cw);
-						var p = A3(_user$project$Visualization_Path$lineTo, t0.cx + t0.x01, t0.cy + t0.y01, outerRing);
-						return (_elm_lang$core$Native_Utils.cmp(rc0, rc) < 0) ? A7(
-							_user$project$Visualization_Path$arc,
-							t0.cx,
-							t0.cy,
-							rc0,
-							A2(_elm_lang$core$Basics$atan2, t0.y01, t0.x01),
-							A2(_elm_lang$core$Basics$atan2, t1.y01, t1.x01),
-							!cw,
-							p) : A7(
-							_user$project$Visualization_Path$arc,
-							t1.cx,
-							t1.cy,
-							rc0,
-							A2(_elm_lang$core$Basics$atan2, t1.y11, t1.x11),
-							A2(_elm_lang$core$Basics$atan2, t1.y01, t1.x01),
-							!cw,
-							A7(
-								_user$project$Visualization_Path$arc,
-								0,
-								0,
-								r0,
-								A2(_elm_lang$core$Basics$atan2, t0.cy + t0.y11, t0.cx + t0.x11),
-								A2(_elm_lang$core$Basics$atan2, t1.cy + t1.y11, t1.cx + t1.x11),
-								cw,
-								A7(
-									_user$project$Visualization_Path$arc,
-									t0.cx,
-									t0.cy,
-									rc0,
-									A2(_elm_lang$core$Basics$atan2, t0.y01, t0.x01),
-									A2(_elm_lang$core$Basics$atan2, t0.y11, t0.x11),
-									!cw,
-									p)));
-					} else {
-						return A7(_user$project$Visualization_Path$arc, 0, 0, r0, a10, a00, cw, outerRing);
-					}
-				}
-			}
-		}
-	}();
-	return _user$project$Visualization_Path$toAttrString(
-		_user$project$Visualization_Path$close(path));
-};
+var _user$project$Visualization_Shape$centroid = _user$project$Visualization_Shape_Pie$centroid;
+var _user$project$Visualization_Shape$arc = _user$project$Visualization_Shape_Pie$arc;
 var _user$project$Visualization_Shape$Arc = F7(
 	function (a, b, c, d, e, f, g) {
 		return {innerRadius: a, outerRadius: b, cornerRadius: c, startAngle: d, endAngle: e, padAngle: f, padRadius: g};
@@ -40980,206 +41209,45 @@ var _user$project$Visualization_Shape$StackResult = F3(
 	function (a, b, c) {
 		return {values: a, labels: b, extent: c};
 	});
-var _user$project$Visualization_Shape$Area = function (a) {
-	return {ctor: 'Area', _0: a};
+var _user$project$Visualization_Shape$Curve = function (a) {
+	return {ctor: 'Curve', _0: a};
 };
-var _user$project$Visualization_Shape$area = F2(
-	function (curve, data) {
-		var makeCurves = F2(
-			function (datum, _p40) {
-				var _p41 = _p40;
-				var _p42 = {ctor: '_Tuple3', _0: _p41._0, _1: datum, _2: _p41._1};
-				if (_p42._1.ctor === 'Nothing') {
-					return {ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: _p42._2};
-				} else {
-					if (_p42._0.ctor === 'Nothing') {
-						var _p43 = _p42._1._0;
-						return {
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Maybe$Just(_p43),
-							_1: {
-								ctor: '::',
-								_0: _user$project$Visualization_Shape$Area(
-									{
-										ctor: '::',
-										_0: _p43,
-										_1: {ctor: '[]'}
-									}),
-								_1: _p42._2
-							}
-						};
-					} else {
-						if ((_p42._2.ctor === '::') && (_p42._2._0.ctor === 'Area')) {
-							var _p44 = _p42._1._0;
-							return {
-								ctor: '_Tuple2',
-								_0: _elm_lang$core$Maybe$Just(_p44),
-								_1: {
-									ctor: '::',
-									_0: _user$project$Visualization_Shape$Area(
-										{ctor: '::', _0: _p44, _1: _p42._2._0._0}),
-									_1: _p42._2._1
-								}
-							};
-						} else {
-							var _p45 = _p42._1._0;
-							return {
-								ctor: '_Tuple2',
-								_0: _elm_lang$core$Maybe$Just(_p45),
-								_1: {
-									ctor: '::',
-									_0: _user$project$Visualization_Shape$Area(
-										{
-											ctor: '::',
-											_0: _p45,
-											_1: {ctor: '[]'}
-										}),
-									_1: _p42._2
-								}
-							};
-						}
-					}
-				}
-			});
-		return _user$project$Visualization_Path$toAttrString(
-			A2(
-				_elm_lang$core$List$concatMap,
-				curve,
-				_elm_lang$core$Tuple$second(
-					A3(
-						_elm_lang$core$List$foldr,
-						makeCurves,
-						{
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Maybe$Nothing,
-							_1: {ctor: '[]'}
-						},
-						data))));
-	});
-var _user$project$Visualization_Shape$Line = function (a) {
-	return {ctor: 'Line', _0: a};
+var _user$project$Visualization_Shape$line = function (curve) {
+	return _user$project$Visualization_Shape_Generators$line(
+		function (_p2) {
+			return curve(
+				_user$project$Visualization_Shape$Curve(_p2));
+		});
 };
-var _user$project$Visualization_Shape$applyRecursivelyForArea = F2(
-	function (fn, points) {
-		var points1 = _elm_lang$core$List$reverse(
-			A2(_elm_lang$core$List$map, _elm_lang$core$Tuple$second, points));
-		var points0 = A2(_elm_lang$core$List$map, _elm_lang$core$Tuple$first, points);
-		var _p46 = {
-			ctor: '_Tuple2',
-			_0: fn(
-				_user$project$Visualization_Shape$Line(points1)),
-			_1: points1
-		};
-		if ((((_p46.ctor === '_Tuple2') && (_p46._0.ctor === '::')) && (_p46._1.ctor === '::')) && (_p46._1._0.ctor === '_Tuple2')) {
-			return A2(
-				_elm_lang$core$Basics_ops['++'],
-				A3(
-					_user$project$Visualization_Path$lineTo,
-					_p46._1._0._0,
-					_p46._1._0._1,
-					fn(
-						_user$project$Visualization_Shape$Line(points0))),
-				_user$project$Visualization_Path$close(_p46._0._1));
-		} else {
-			return {ctor: '[]'};
-		}
-	});
-var _user$project$Visualization_Shape$adapter = F2(
-	function (curveFn, part) {
-		var _p47 = part;
-		if (_p47.ctor === 'Line') {
-			return _user$project$Visualization_Internal_PathConversion$subpathToVizPath(
-				curveFn(_p47._0));
-		} else {
-			return A2(
-				_user$project$Visualization_Shape$applyRecursivelyForArea,
-				_user$project$Visualization_Shape$adapter(curveFn),
-				_p47._0);
-		}
-	});
-var _user$project$Visualization_Shape$linearCurve = _user$project$Visualization_Shape$adapter(_folkertdev$one_true_path_experiment$Curve$linear);
-var _user$project$Visualization_Shape$basisCurve = _user$project$Visualization_Shape$adapter(_folkertdev$one_true_path_experiment$Curve$basis);
-var _user$project$Visualization_Shape$basisCurveClosed = _user$project$Visualization_Shape$adapter(_folkertdev$one_true_path_experiment$Curve$basisClosed);
-var _user$project$Visualization_Shape$basisCurveOpen = _user$project$Visualization_Shape$adapter(_folkertdev$one_true_path_experiment$Curve$basisOpen);
-var _user$project$Visualization_Shape$monotoneInXCurve = _user$project$Visualization_Shape$adapter(_folkertdev$one_true_path_experiment$Curve$monotoneX);
-var _user$project$Visualization_Shape$stepCurve = function (factor) {
-	return _user$project$Visualization_Shape$adapter(
-		_folkertdev$one_true_path_experiment$Curve$step(
-			A3(_elm_lang$core$Basics$clamp, 0, 1, factor)));
+var _user$project$Visualization_Shape$lineRadial = function (curve) {
+	return _user$project$Visualization_Shape_Generators$line(
+		function (_p3) {
+			return curve(
+				_user$project$Visualization_Shape$Curve(
+					A2(
+						_folkertdev$one_true_path_experiment$Curve$toPolarWithCenter,
+						{ctor: '_Tuple2', _0: 0, _1: 0},
+						_p3)));
+		});
 };
-var _user$project$Visualization_Shape$line = F2(
-	function (curve, data) {
-		var makeCurves = F2(
-			function (datum, _p48) {
-				var _p49 = _p48;
-				var _p50 = {ctor: '_Tuple3', _0: _p49._0, _1: datum, _2: _p49._1};
-				if (_p50._1.ctor === 'Nothing') {
-					return {ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: _p50._2};
-				} else {
-					if (_p50._0.ctor === 'Nothing') {
-						var _p51 = _p50._1._0;
-						return {
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Maybe$Just(_p51),
-							_1: {
-								ctor: '::',
-								_0: _user$project$Visualization_Shape$Line(
-									{
-										ctor: '::',
-										_0: _p51,
-										_1: {ctor: '[]'}
-									}),
-								_1: _p50._2
-							}
-						};
-					} else {
-						if ((_p50._2.ctor === '::') && (_p50._2._0.ctor === 'Line')) {
-							var _p52 = _p50._1._0;
-							return {
-								ctor: '_Tuple2',
-								_0: _elm_lang$core$Maybe$Just(_p52),
-								_1: {
-									ctor: '::',
-									_0: _user$project$Visualization_Shape$Line(
-										{ctor: '::', _0: _p52, _1: _p50._2._0._0}),
-									_1: _p50._2._1
-								}
-							};
-						} else {
-							var _p53 = _p50._1._0;
-							return {
-								ctor: '_Tuple2',
-								_0: _elm_lang$core$Maybe$Just(_p53),
-								_1: {
-									ctor: '::',
-									_0: _user$project$Visualization_Shape$Line(
-										{
-											ctor: '::',
-											_0: _p53,
-											_1: {ctor: '[]'}
-										}),
-									_1: _p50._2
-								}
-							};
-						}
-					}
-				}
-			});
-		return _user$project$Visualization_Path$toAttrString(
-			A2(
-				_elm_lang$core$List$concatMap,
-				curve,
-				_elm_lang$core$Tuple$second(
-					A3(
-						_elm_lang$core$List$foldr,
-						makeCurves,
-						{
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Maybe$Nothing,
-							_1: {ctor: '[]'}
-						},
-						data))));
-	});
+var _user$project$Visualization_Shape$area = function (curve) {
+	return _user$project$Visualization_Shape_Generators$area(
+		function (_p4) {
+			return curve(
+				_user$project$Visualization_Shape$Curve(_p4));
+		});
+};
+var _user$project$Visualization_Shape$areaRadial = function (curve) {
+	return _user$project$Visualization_Shape_Generators$area(
+		function (_p5) {
+			return curve(
+				_user$project$Visualization_Shape$Curve(
+					A2(
+						_folkertdev$one_true_path_experiment$Curve$toPolarWithCenter,
+						{ctor: '_Tuple2', _0: 0, _1: 0},
+						_p5)));
+		});
+};
 var _user$project$NorwegianCarSales$translate = F2(
 	function (x, y) {
 		return _elm_lang$svg$Svg_Attributes$transform(

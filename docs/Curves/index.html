@@ -144,8 +144,7 @@ hue-6-2: #c18401
 
 
 <span class="hljs-keyword">import</span> Html <span class="hljs-keyword">exposing</span> (div, p, a)
-<span class="hljs-keyword">import</span> Html.Attributes <span class="hljs-keyword">exposing</span> (href)
-<span class="hljs-keyword">import</span> Html.Events <span class="hljs-keyword">exposing</span> (onClick)
+<span class="hljs-keyword">import</span> Color.Convert <span class="hljs-keyword">exposing</span> (colorToCssRgb)
 <span class="hljs-keyword">import</span> Visualization.Scale <span class="hljs-keyword">as</span> Scale <span class="hljs-keyword">exposing</span> (<span class="hljs-type">ContinuousScale</span>)
 <span class="hljs-keyword">import</span> Visualization.Shape <span class="hljs-keyword">as</span> Shape
 <span class="hljs-keyword">import</span> Svg <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Svg</span>, svg, rect, path, g, line, text, text_)
@@ -173,14 +172,14 @@ hue-6-2: #c18401
 <span class="hljs-title">points</span> =
     [ ( <span class="hljs-number">0.1</span>, <span class="hljs-number">0.1</span> )
     , ( <span class="hljs-number">0.2</span>, <span class="hljs-number">0.6</span> )
-    , ( <span class="hljs-number">0.35</span>, <span class="hljs-number">0.9</span> )
-    , ( <span class="hljs-number">0.45</span>, <span class="hljs-number">0.9</span> )
-    , ( <span class="hljs-number">0.6</span>, <span class="hljs-number">0.3</span> )
+    , ( <span class="hljs-number">0.35</span>, <span class="hljs-number">0.3</span> )
+    , ( <span class="hljs-number">0.45</span>, <span class="hljs-number">0.3</span> )
+    , ( <span class="hljs-number">0.6</span>, <span class="hljs-number">0.2</span> )
     , ( <span class="hljs-number">0.9</span>, <span class="hljs-number">0.8</span> )
     , ( <span class="hljs-number">1.2</span>, <span class="hljs-number">0.6</span> )
-    , ( <span class="hljs-number">1.5</span>, <span class="hljs-number">0.4</span> )
+    , ( <span class="hljs-number">1.5</span>, <span class="hljs-number">0.9</span> )
     , ( <span class="hljs-number">1.7</span>, <span class="hljs-number">0.2</span> )
-    , ( <span class="hljs-number">1.9</span>, <span class="hljs-number">0.7</span> )
+    , ( <span class="hljs-number">1.9</span>, <span class="hljs-number">0.1</span> )
     ]
 
 
@@ -268,21 +267,39 @@ hue-6-2: #c18401
         }
 
 
-<span class="hljs-keyword">type</span> <span class="hljs-type">Views</span>
-    = <span class="hljs-type">Linear</span>
-    | <span class="hljs-type">MonotoneInX</span>
-    | <span class="hljs-type">Step</span>
+<span class="hljs-title">basic</span> : <span class="hljs-type">String</span> -&gt; <span class="hljs-type">Curve</span> -&gt; <span class="hljs-type">List</span> ( <span class="hljs-type">String</span>, <span class="hljs-type">Curve</span>, <span class="hljs-type">String</span> )
+<span class="hljs-title">basic</span> prefix curveFn =
+    [ ( prefix, curveFn, <span class="hljs-string">"#000"</span> ) ]
+
+
+<span class="hljs-title">parametrized</span> : <span class="hljs-type">String</span> -&gt; (<span class="hljs-type">Float</span> -&gt; <span class="hljs-type">Curve</span>) -&gt; <span class="hljs-type">List</span> ( <span class="hljs-type">String</span>, <span class="hljs-type">Curve</span>, <span class="hljs-type">String</span> )
+<span class="hljs-title">parametrized</span> prefix curveFn =
+    <span class="hljs-keyword">let</span>
+        scale =
+            <span class="hljs-type">Scale</span>.sequential ( <span class="hljs-number">0</span>, <span class="hljs-number">1</span> ) <span class="hljs-type">Scale</span>.magmaInterpolator
+
+        stops =
+            [ <span class="hljs-number">0</span>, <span class="hljs-number">0.25</span>, <span class="hljs-number">0.5</span>, <span class="hljs-number">0.75</span>, <span class="hljs-number">1</span> ]
+    <span class="hljs-keyword">in</span>
+        stops
+            |&gt; <span class="hljs-type">List</span>.map (\s -&gt; ( prefix ++ <span class="hljs-string">" "</span> ++ toString s, curveFn s, <span class="hljs-type">Scale</span>.convert scale s |&gt; colorToCssRgb ))
 
 
 <span class="hljs-title">exampleData</span> =
-    [ ( <span class="hljs-string">"Linear"</span>, [ ( <span class="hljs-string">"linearCurve"</span>, <span class="hljs-type">Shape</span>.linearCurve, <span class="hljs-string">"#000"</span> ) ] )
-    , ( <span class="hljs-string">"MonotoneInX"</span>, [ ( <span class="hljs-string">"monotoneInXCurve"</span>, <span class="hljs-type">Shape</span>.monotoneInXCurve, <span class="hljs-string">"#000"</span> ) ] )
-    , ( <span class="hljs-string">"Step"</span>
-      , [ ( <span class="hljs-string">"stepCurve 0"</span>, <span class="hljs-type">Shape</span>.stepCurve <span class="hljs-number">0</span>, <span class="hljs-string">"rgba(85, 106, 55, 0.4)"</span> )
-        , ( <span class="hljs-string">"stepCurve 0.5"</span>, <span class="hljs-type">Shape</span>.stepCurve <span class="hljs-number">0.5</span>, <span class="hljs-string">"#000"</span> )
-        , ( <span class="hljs-string">"stepCurve 1"</span>, <span class="hljs-type">Shape</span>.stepCurve <span class="hljs-number">1</span>, <span class="hljs-string">"rgba(106, 55, 55, 0.4)"</span> )
-        ]
-      )
+    [ ( <span class="hljs-string">"Linear"</span>, basic <span class="hljs-string">"linearCurve"</span> <span class="hljs-type">Shape</span>.linearCurve )
+    , ( <span class="hljs-string">"Basis"</span>, basic <span class="hljs-string">"basisCurve"</span> <span class="hljs-type">Shape</span>.basisCurve )
+    , ( <span class="hljs-string">"BasisClosed"</span>, basic <span class="hljs-string">"basisCurveClosed"</span> <span class="hljs-type">Shape</span>.basisCurveClosed )
+    , ( <span class="hljs-string">"BasisOpen"</span>, basic <span class="hljs-string">"basisCurveOpen"</span> <span class="hljs-type">Shape</span>.basisCurveOpen )
+    , ( <span class="hljs-string">"Bundle"</span>, parametrized <span class="hljs-string">"bundleCurve"</span> <span class="hljs-type">Shape</span>.bundleCurve )
+    , ( <span class="hljs-string">"Cardinal"</span>, parametrized <span class="hljs-string">"cardinalCurve"</span> <span class="hljs-type">Shape</span>.cardinalCurve )
+    , ( <span class="hljs-string">"CardinalClosed"</span>, parametrized <span class="hljs-string">"cardinalCurveClosed"</span> <span class="hljs-type">Shape</span>.cardinalCurveClosed )
+    , ( <span class="hljs-string">"CardinalOpen"</span>, parametrized <span class="hljs-string">"cardinalCurveOpen"</span> <span class="hljs-type">Shape</span>.cardinalCurveOpen )
+    , ( <span class="hljs-string">"CatmullRom"</span>, parametrized <span class="hljs-string">"catmullRomCurve"</span> <span class="hljs-type">Shape</span>.catmullRomCurve )
+    , ( <span class="hljs-string">"CatmullRomClosed"</span>, parametrized <span class="hljs-string">"catmullRomCurveClosed"</span> <span class="hljs-type">Shape</span>.catmullRomCurveClosed )
+    , ( <span class="hljs-string">"CatmullRomOpen"</span>, parametrized <span class="hljs-string">"catmullRomCurveOpen"</span> <span class="hljs-type">Shape</span>.catmullRomCurveOpen )
+    , ( <span class="hljs-string">"MonotoneInX"</span>, basic <span class="hljs-string">"monotoneInXCurve"</span> <span class="hljs-type">Shape</span>.monotoneInXCurve )
+    , ( <span class="hljs-string">"Step"</span>, parametrized <span class="hljs-string">"stepCurve"</span> <span class="hljs-type">Shape</span>.stepCurve )
+    , ( <span class="hljs-string">"Natural"</span>, basic <span class="hljs-string">"naturalCurve"</span> <span class="hljs-type">Shape</span>.naturalCurve )
     ]
 
 
@@ -292,7 +309,7 @@ hue-6-2: #c18401
 
 
 
-<span class="hljs-comment">{- {"additionalShots": ["linear", "monotoneinx", "step"]} -}</span>
+<span class="hljs-comment">{- {"additionalShots": ["linear", "basis", "basisclosed", "basisopen", "bundle", "cardinal", "cardinalclosed", "cardinalopen", "catmullrom", "catmullromclosed", "catmullromopen", "monotoneinx", "step", "natural"], "options": {"linear": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "basis": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "basisclosed": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "basisopen": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "bundle": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "cardinal": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "cardinalclosed": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "cardinalopen": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "catmullrom": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "catmullromclosed": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "catmullromopen": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "monotoneinx": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "step": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "natural": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}}} -}</span>
 </code></pre>
       
         <hr />
