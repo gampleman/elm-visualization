@@ -23,6 +23,8 @@ mass *m = 1* for all particles. As a result, a force *F* acting on a particle is
 acceleration *a* over the time interval *Δt*, and can be simulated simply by adding to the particle’s velocity,
 which is then added to the particle’s position.
 
+<a href="http://code.gampleman.eu/elm-visualization/ForceDirectedGraph/"><img style="max-width: 100%" src="http://code.gampleman.eu/elm-visualization/ForceDirectedGraph/preview@2x.png" alt="force directed graph illustration" /></a>
+
 In the domain of information visualization, physical simulations are useful for studying networks and hierarchies!
 
 

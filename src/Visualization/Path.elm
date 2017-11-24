@@ -7,6 +7,12 @@ publicly exposed and alternative renderers can be built in e.g. Canvas or WebGL.
 
 The functions here are modeled after the [Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#Paths).
 
+*Deprecated:* In a future major release this module will be removed in favor of [folkertdev/one-true-path-experiment][otp] or
+it's successors, as they provide a safe, high quality wrapper over path based drawing that should be interoperable with
+other packages. To make migration easier, the `toOneTruePath` function is provided, so that downstream code can
+start working with [folkertdev/one-true-path-experiment][otp],
+rather than the datatypes provided in this module, yet still inter-operate.
+
 
 # Datatype
 
@@ -455,11 +461,6 @@ toAttrString path =
 {-| Transforms the path to a path from the [folkertdev/one-true-path-experiment][otp]
 library. This allows you to do fancy math on the path data - with the hope that this will enable animation library authors
 to build general purpose transitions between these.
-
-*Note:* In a future major release this module will be removed in favor of [folkertdev/one-true-path-experiment][otp] or
-it's successors, as they provide a safe, high quality wrapper over path based drawing that should be interoperable with
-other packages. Hence this method is provided, so that downstream code can start working with [folkertdev/one-true-path-experiment][otp],
-rather than the datatypes provided in this module, yet still inter-operate.
 
 [otp]: https://github.com/folkertdev/one-true-path-experiment
 

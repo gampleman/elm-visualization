@@ -377,7 +377,7 @@ infernoInterpolator =
     Colors.inferno
 
 
-{-| ![magma](http://code.gampleman.eu/elm-visualization/misc/magme.png)
+{-| ![magma](http://code.gampleman.eu/elm-visualization/misc/magma.png)
 
 Given a number t in the range [0,1], returns the corresponding
 color from the “magma” perceptually-uniform color scheme designed
