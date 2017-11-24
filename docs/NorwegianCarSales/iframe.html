@@ -38524,32 +38524,97 @@ var _user$project$Visualization_List$ticks = F3(
 			_elm_lang$core$Basics$floor(stop / step)) * step) + (step / 2);
 		return A3(_user$project$Visualization_List$range, beg, end, step);
 	});
+var _user$project$Visualization_Scale_Internal$toFixed = F2(
+	function (precision, value) {
+		var pad = function (num) {
+			var _p0 = num;
+			_v0_2:
+			do {
+				if (_p0.ctor === '::') {
+					if (_p0._1.ctor === '::') {
+						if (_p0._1._1.ctor === '[]') {
+							return {
+								ctor: '::',
+								_0: _p0._0,
+								_1: {
+									ctor: '::',
+									_0: A3(
+										_elm_lang$core$String$padRight,
+										precision,
+										_elm_lang$core$Native_Utils.chr('0'),
+										_p0._1._0),
+									_1: {ctor: '[]'}
+								}
+							};
+						} else {
+							break _v0_2;
+						}
+					} else {
+						var _p1 = _p0._0;
+						return (_elm_lang$core$Native_Utils.cmp(precision, 0) > 0) ? {
+							ctor: '::',
+							_0: _p1,
+							_1: {
+								ctor: '::',
+								_0: A3(
+									_elm_lang$core$String$padRight,
+									precision,
+									_elm_lang$core$Native_Utils.chr('0'),
+									''),
+								_1: {ctor: '[]'}
+							}
+						} : {
+							ctor: '::',
+							_0: _p1,
+							_1: {ctor: '[]'}
+						};
+					}
+				} else {
+					break _v0_2;
+				}
+			} while(false);
+			return _p0;
+		};
+		var power = Math.pow(
+			_elm_lang$core$Basics$toFloat(10),
+			_elm_lang$core$Basics$toFloat(precision));
+		return A2(
+			_elm_lang$core$String$join,
+			'.',
+			pad(
+				A2(
+					_elm_lang$core$String$split,
+					'.',
+					_elm_lang$core$Basics$toString(
+						_elm_lang$core$Basics$toFloat(
+							_elm_lang$core$Basics$round(value * power)) / power))));
+	});
 var _user$project$Visualization_Scale_Internal$interpolateFloat = F3(
 	function (from, to, time) {
 		return from + ((to - from) * time);
 	});
 var _user$project$Visualization_Scale_Internal$bimap = F4(
-	function (_p1, _p0, deinterpolate, reinterpolate) {
-		var _p2 = _p1;
-		var _p9 = _p2._1;
-		var _p8 = _p2._0;
-		var _p3 = _p0;
-		var _p7 = _p3._1;
-		var _p6 = _p3._0;
-		var _p4 = (_elm_lang$core$Native_Utils.cmp(_p9, _p8) < 0) ? {
+	function (_p3, _p2, deinterpolate, reinterpolate) {
+		var _p4 = _p3;
+		var _p11 = _p4._1;
+		var _p10 = _p4._0;
+		var _p5 = _p2;
+		var _p9 = _p5._1;
+		var _p8 = _p5._0;
+		var _p6 = (_elm_lang$core$Native_Utils.cmp(_p11, _p10) < 0) ? {
 			ctor: '_Tuple2',
-			_0: A2(deinterpolate, _p9, _p8),
-			_1: A2(reinterpolate, _p7, _p6)
+			_0: A2(deinterpolate, _p11, _p10),
+			_1: A2(reinterpolate, _p9, _p8)
 		} : {
 			ctor: '_Tuple2',
-			_0: A2(deinterpolate, _p8, _p9),
-			_1: A2(reinterpolate, _p6, _p7)
+			_0: A2(deinterpolate, _p10, _p11),
+			_1: A2(reinterpolate, _p8, _p9)
 		};
-		var de = _p4._0;
-		var re = _p4._1;
-		return function (_p5) {
+		var de = _p6._0;
+		var re = _p6._1;
+		return function (_p7) {
 			return re(
-				de(_p5));
+				de(_p7));
 		};
 	});
 var _user$project$Visualization_Scale_Linear$interpolate = _user$project$Visualization_Scale_Internal$interpolateFloat;
@@ -38571,9 +38636,22 @@ var _user$project$Visualization_Scale_Linear$convert = F2(
 	function (domain, range) {
 		return A4(_user$project$Visualization_Scale_Internal$bimap, domain, range, _user$project$Visualization_Scale_Linear$deinterpolate, _user$project$Visualization_Scale_Internal$interpolateFloat);
 	});
+var _user$project$Visualization_Scale_Linear$exponent = function (x) {
+	return _elm_lang$core$Native_Utils.eq(x, 0) ? 0 : ((_elm_lang$core$Native_Utils.cmp(x, 1) < 0) ? (1 + _user$project$Visualization_Scale_Linear$exponent(x * 10)) : 0);
+};
+var _user$project$Visualization_Scale_Linear$precisionFixed = function (step) {
+	return A2(
+		_elm_lang$core$Basics$max,
+		0,
+		_user$project$Visualization_Scale_Linear$exponent(
+			_elm_lang$core$Basics$abs(step)));
+};
 var _user$project$Visualization_Scale_Linear$tickFormat = F2(
-	function (_p3, _p2) {
-		return _elm_lang$core$Basics$toString;
+	function (_p2, count) {
+		var _p3 = _p2;
+		return _user$project$Visualization_Scale_Internal$toFixed(
+			_user$project$Visualization_Scale_Linear$precisionFixed(
+				A3(_user$project$Visualization_List$tickStep, _p3._0, _p3._1, count)));
 	});
 var _user$project$Visualization_Scale_Linear$nice = F2(
 	function (_p4, count) {

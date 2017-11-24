@@ -5,7 +5,6 @@ module Histogram exposing (main)
 
 import Random.Pcg as Random exposing (Generator, Seed)
 import Visualization.Histogram as Histogram exposing (Bin, HistogramGenerator)
-import Visualization.List as List
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Visualization.Axis as Axis exposing (defaultOptions)

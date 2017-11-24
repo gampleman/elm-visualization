@@ -1,7 +1,7 @@
 module Visualization.Scale.Linear exposing (convert, invert, deinterpolate, ticks, tickFormat, nice, rangeExtent)
 
 import Visualization.List as List
-import Visualization.Scale.Internal exposing (bimap, interpolateFloat)
+import Visualization.Scale.Internal exposing (bimap, interpolateFloat, toFixed)
 
 
 rangeExtent : ( Float, Float ) -> ( Float, Float ) -> ( Float, Float )
@@ -20,8 +20,23 @@ nice ( start, stop ) count =
         ( toFloat (floor (start / step1)) * step1, toFloat (ceiling (stop / step1)) * step1 )
 
 
-tickFormat _ _ =
-    toString
+exponent x =
+    if x == 0 then
+        0
+    else if x < 1 then
+        1 + exponent (x * 10)
+    else
+        0
+
+
+precisionFixed step =
+    max 0 (exponent (abs step))
+
+
+tickFormat ( start, stop ) count =
+    List.tickStep start stop count
+        |> precisionFixed
+        |> toFixed
 
 
 convert domain range =
