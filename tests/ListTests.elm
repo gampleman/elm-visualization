@@ -1,4 +1,4 @@
-module ListTests exposing (tickStep, range)
+module ListTests exposing (tickStep, range, variance, quantile, deviation)
 
 import Expect
 import Fuzz exposing (..)
@@ -195,4 +195,113 @@ range =
                     , VList.range 2.0e300 1.0e300 -3.0e299
                         |> Expect.equal [ 2.0e300 - 3.0e299 * 0, 2.0e300 - 3.0e299 * 1, 2.0e300 - 3.0e299 * 2, 2.0e300 - 3.0e299 * 3 ]
                     ]
+        ]
+
+
+variance : Test
+variance =
+    describe "variance"
+        [ test "returns the variance of the specified numbers" <|
+            \() ->
+                expectAll
+                    [ VList.variance [ 5, 1, 2, 3, 4 ]
+                        |> Expect.equal (Just 2.5)
+                    , VList.variance [ 20, 3 ]
+                        |> Expect.equal (Just 144.5)
+                    ]
+        , test "returns nothing if the list has fewer than two numbers" <|
+            \() ->
+                expectAll
+                    [ VList.variance [ 5 ]
+                        |> Expect.equal Nothing
+                    , VList.variance []
+                        |> Expect.equal Nothing
+                    ]
+        ]
+
+
+deviation : Test
+deviation =
+    describe "deviation"
+        [ test "returns the deviation of the specified numbers" <|
+            \() ->
+                expectAll
+                    [ VList.deviation [ 5, 1, 2, 3, 4 ]
+                        |> Expect.equal (Just (sqrt 2.5))
+                    , VList.deviation [ 20, 3 ]
+                        |> Expect.equal (Just (sqrt 144.5))
+                    ]
+        , test "returns nothing if the list has fewer than two numbers" <|
+            \() ->
+                expectAll
+                    [ VList.deviation [ 5 ]
+                        |> Expect.equal Nothing
+                    , VList.deviation []
+                        |> Expect.equal Nothing
+                    ]
+        ]
+
+
+quantile : Test
+quantile =
+    describe "quantile"
+        [ test "requires sorted numeric input" <|
+            \() ->
+                expectAll
+                    [ VList.quantile 0 [ 1, 2, 3, 4 ]
+                        |> Expect.equal (Just 1)
+                    , VList.quantile 1 [ 1, 2, 3, 4 ]
+                        |> Expect.equal (Just 4)
+                    , VList.quantile 0 [ 4, 3, 2, 1 ]
+                        |> Expect.equal (Just 4)
+                    , VList.quantile 1 [ 4, 3, 2, 1 ]
+                        |> Expect.equal (Just 1)
+                    ]
+        , test "uses the r7 method" <|
+            \() ->
+                let
+                    dataEven =
+                        [ 3, 6, 7, 8, 8, 10, 13, 15, 16, 20 ]
+
+                    dataOdd =
+                        [ 3, 6, 7, 8, 8, 9, 10, 13, 15, 16, 20 ]
+                in
+                    expectAll
+                        [ VList.quantile 0 dataEven
+                            |> Expect.equal (Just 3)
+                        , VList.quantile 0.25 dataEven
+                            |> Expect.equal (Just 7.25)
+                        , VList.quantile 0.5 dataEven
+                            |> Expect.equal (Just 9)
+                        , VList.quantile 0.75 dataEven
+                            |> Expect.equal (Just 14.5)
+                        , VList.quantile 1 dataEven
+                            |> Expect.equal (Just 20)
+                        , VList.quantile 0 dataOdd
+                            |> Expect.equal (Just 3)
+                        , VList.quantile 0.25 dataOdd
+                            |> Expect.equal (Just 7.5)
+                        , VList.quantile 0.5 dataOdd
+                            |> Expect.equal (Just 9)
+                        , VList.quantile 0.75 dataOdd
+                            |> Expect.equal (Just 14)
+                        , VList.quantile 1 dataOdd
+                            |> Expect.equal (Just 20)
+                        ]
+        , test "returns an exact value for integer p-values" <|
+            \() ->
+                expectAll
+                    [ VList.quantile (1 / 3) [ 1, 2, 3, 4 ]
+                        |> Expect.equal (Just 2)
+                    , VList.quantile (2 / 3) [ 1, 2, 3, 4 ]
+                        |> Expect.equal (Just 3)
+                    ]
+        , test "returns the first value for p=0" <|
+            \() ->
+                VList.quantile 0 [ 1, 2, 3, 4 ]
+                    |> Expect.equal (Just 1)
+        , test "returns the last value for p=1" <|
+            \() ->
+                VList.quantile 1 [ 1, 2, 3, 4 ]
+                    |> Expect.equal (Just 4)
         ]
