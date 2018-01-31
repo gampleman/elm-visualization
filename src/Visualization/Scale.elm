@@ -717,9 +717,10 @@ always within the scale’s range.
 
     scale : ContinuousScale
     scale = linear ( 10, 100 ) ( 50, 100 )
+
     convert scale 1 --> 45
 
-    convert (clamp scale) 1 --> 50
+    convert (Visualization.Scale.clamp scale) 1 --> 50
 
 -}
 clamp : Scale { a | convert : ( Float, Float ) -> range -> Float -> result } -> Scale { a | convert : ( Float, Float ) -> range -> Float -> result }
