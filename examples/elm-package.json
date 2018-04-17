@@ -9,6 +9,7 @@
     ],
     "exposed-modules": [],
     "dependencies": {
+      "Skinney/elm-array-exploration": "2.0.5 <= v < 3.0.0",
         "elm-community/graph": "2.0.0 <= v < 3.0.0",
         "elm-community/intdict": "2.0.0 <= v < 3.0.0",
         "elm-community/list-extra": "6.1.0 <= v < 7.0.0",
