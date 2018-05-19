@@ -1,4 +1,4 @@
-module Visualization.Voronoi.Delaunator exposing (..)
+module Visualization.Voronoi.Delaunator exposing (delaunator)
 
 {- Based on https://github.com/mapbox/delaunator/blob/master/index.js -}
 
@@ -40,13 +40,9 @@ infinity =
 
 delaunator :
     Array Float
-    -> Result String { halfedges : IntDict Int, triangles : Array Int }
+    -> Result String { halfedges : IntDict Int, triangles : Array Int, points : Array Float, hull : Zipper { x : Float, y : Float, t : Int, i : Int } }
 delaunator coords =
     let
-        _ =
-            Debug.log "running" "delaunator"
-
-        -- divide by two and floor
         n =
             Array.length coords |> Bitwise.shiftRightBy 1
 
@@ -158,7 +154,6 @@ delaunator coords =
         ids =
             List.range 0 (n - 1)
                 |> List.sortBy (\id -> ( dist centerx centery (force (id * 2) coords) (force (id * 2 + 1) coords), (force (id * 2) coords), (force (id * 2 + 1) coords), (id % 2 * -1) * id ))
-                |> Debug.log "ids"
 
         hashSize =
             ceiling (sqrt (toFloat n))
@@ -183,9 +178,6 @@ delaunator coords =
 
                 y =
                     force (i * 2 + 1) coords
-
-                _ =
-                    ( Debug.log "iteration id" i, Debug.log "hash" (IntDict.toList <| IntDict.map (\_ { i } -> i) hash) )
             in
                 if (x == xp && y == yp) then
                     --  skip duplicate points
@@ -208,7 +200,7 @@ delaunator coords =
                         startItem =
                             case startItemMaybe of
                                 Just item ->
-                                    Debug.log "start" item
+                                    item
 
                                 Nothing ->
                                     Debug.crash "oh shit"
@@ -233,9 +225,6 @@ delaunator coords =
 
                         shouldWalkBack =
                             startItem == e
-
-                        _ =
-                            ( Debug.log "triangles" (Array.toList triangles), Debug.log "halfedges" (IntDict.toList halfedges), Debug.log "hull_0" (Zipper.toList hull_0), Debug.log "hull_2" (Zipper.toList hull_2) )
 
                         ( t, triangles_0, halfedges_0 ) =
                             addTriangle e.i i (.i (Zipper.next hull_0)) -1 -1 e.t triangles halfedges
@@ -263,7 +252,7 @@ delaunator coords =
                                 hull_1
 
                         res =
-                            while (\{ hull } -> Debug.log "forward area" (area x y (.x (Zipper.current hull)) (.y (Zipper.current hull)) (.x (Zipper.next hull)) (.y (Zipper.next hull))) < 0)
+                            while (\{ hull } -> (area x y (.x (Zipper.current hull)) (.y (Zipper.current hull)) (.x (Zipper.next hull)) (.y (Zipper.next hull))) < 0)
                                 (\{ triangles, halfedges, hull, hash } ->
                                     let
                                         ( t, triangles_0, halfedges_0 ) =
@@ -281,9 +270,6 @@ delaunator coords =
                                             else
                                                 hash
 
-                                        _ =
-                                            ( Debug.log "forward hash removing" (hashKey (.x (Zipper.current hull)) (.y (Zipper.current hull))), Debug.log "hash after forward removal" (IntDict.toList <| IntDict.map (\_ { i } -> i) hash_0) )
-
                                         hull_0 =
                                             hull
                                                 |> Zipper.backward
@@ -297,7 +283,7 @@ delaunator coords =
 
                         res1 =
                             if shouldWalkBack then
-                                while (\{ hull } -> Debug.log "backward area" (area x y (.x (Zipper.previous hull)) (.y (Zipper.previous hull)) (.x (Zipper.current hull)) (.y (Zipper.current hull))) < 0)
+                                while (\{ hull } -> (area x y (.x (Zipper.previous hull)) (.y (Zipper.previous hull)) (.x (Zipper.current hull)) (.y (Zipper.current hull))) < 0)
                                     (\{ triangles, halfedges, hull, hash } ->
                                         let
                                             ( t, triangles_0, halfedges_0 ) =
@@ -322,14 +308,6 @@ delaunator coords =
                                                     |> Zipper.forward
                                                     |> Zipper.remove
                                                     |> Zipper.backward
-
-                                            _ =
-                                                ( Debug.log "halfedges at start of backward" (IntDict.toList halfedges)
-                                                , Debug.log "addTriangle"
-                                                    [ (.i (Zipper.previous hull)), i, (.i (Zipper.current hull)), -1, (.t (Zipper.current hull)), (.t (Zipper.previous hull)) ]
-                                                , Debug.log "halfedges in backward after addTriangle" (IntDict.toList halfedges_0)
-                                                , Debug.log "halfedges at end of backward" (IntDict.toList halfedges_1)
-                                                )
                                         in
                                             { triangles = triangles_1, halfedges = halfedges_1, hull = hull_0, hash = hash_0 }
                                     )
@@ -367,13 +345,13 @@ delaunator coords =
                     |> IntDict.insert (hashKey i2x i2y) { x = i2x, y = i2y, i = i2, t = 2 }
             }
 
-        { triangles, halfedges } =
+        { triangles, halfedges, hull } =
             List.foldl compute initial ids
     in
         if minRadius == infinity then
             Err "No Delaunay triangulation exists for this input."
         else
-            Ok { triangles = triangles, halfedges = halfedges }
+            Ok { triangles = triangles, halfedges = halfedges, points = coords, hull = hull }
 
 
 type alias Node =
