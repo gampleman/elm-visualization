@@ -783,3 +783,8 @@ specifications and designs developed by Cynthia Brewer (colorbrewer2.org).
 category20c : List Color
 category20c =
     Colors.cat20c
+
+
+mapInput : (a -> b) -> Scale ({ c | mapInput : (a -> b) -> g -> d } as g) -> Scale d
+mapInput f (Scale scale) =
+    Scale (scale.mapInput f scale)

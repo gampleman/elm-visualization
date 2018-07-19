@@ -5,11 +5,11 @@ module BarChart exposing (main)
 
 import Date exposing (Date)
 import Date.Extra as Date
+import SampleData exposing (timeSeries)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Visualization.Axis as Axis exposing (defaultOptions)
 import Visualization.Scale as Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
-import SampleData exposing (timeSeries)
 
 
 w : Float
@@ -39,7 +39,7 @@ yScale =
 
 xAxis : List ( Date, Float ) -> Svg msg
 xAxis model =
-    Axis.axis { defaultOptions | orientation = Axis.Bottom, tickFormat = Just (Date.toFormattedString "dd MMM") } (Scale.toRenderable (xScale model))
+    Axis.axis { defaultOptions | orientation = Axis.Bottom, tickFormat = Just (Date.toFormattedString "dd MMMM") } (Scale.toRenderable (xScale model))
 
 
 yAxis : Svg msg
@@ -68,14 +68,19 @@ column xScale ( date, value ) =
 
 view : List ( Date, Float ) -> Svg msg
 view model =
-    svg [ width (toString w ++ "px"), height (toString h ++ "px") ]
+    svg [ width (toString w ++ "px"), height (toString (h + 10) ++ "px") ]
         [ Svg.style [] [ text """
             .column rect { fill: rgba(118, 214, 78, 0.8); }
             .column text { display: none; }
             .column:hover rect { fill: rgb(118, 214, 78); }
             .column:hover text { display: inline; }
+            .x-axis .tick text {
+              transform-origin: 0 0;
+              text-anchor: start;
+              transform: rotate(45deg);
+            }
           """ ]
-        , g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString (h - padding) ++ ")") ]
+        , g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString (h - padding) ++ ")"), class "x-axis" ]
             [ xAxis model ]
         , g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString padding ++ ")") ]
             [ yAxis ]
