@@ -116,7 +116,7 @@ insertBy toPoint vertex qtree =
                             List.foldl folder initial (vertex :: first :: rest)
                     in
                         Node
-                            { boundingBox = leaf.boundingBox
+                            { boundingBox = BoundingBox2d.hull leaf.boundingBox (BoundingBox2d.singleton (toPoint vertex))
                             , ne = fromList toPoint byQuadrant.ne
                             , se = fromList toPoint byQuadrant.se
                             , nw = fromList toPoint byQuadrant.nw

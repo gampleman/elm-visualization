@@ -314,7 +314,7 @@ manyBody =
 -}
 manyBodyStrength : Float -> List comparable -> Force comparable
 manyBodyStrength strength =
-    ManyBody 0.9 1 (1 / 0) << Dict.fromList << List.map (\key -> ( key, { strength = strength } ))
+    ManyBody 0.9 0 (1 / 0) << Dict.fromList << List.map (\key -> ( key, { strength = strength } ))
 
 
 {-| The link force pushes linked nodes together or apart according to the desired link distance. The strength of the
