@@ -39,6 +39,7 @@ In the domain of information visualization, physical simulations are useful for 
 
 -}
 
+import ManyBody
 import Dict exposing (Dict)
 
 
@@ -159,38 +160,7 @@ applyForce alpha force entities =
                 links
 
         ManyBody theta distanceMin2 distanceMax2 entityStrengths ->
-            -- TODO: optimize performance with quadtree implementation
-            Dict.map
-                (\key opEntity ->
-                    Dict.foldr
-                        (\key2 entity2 entity ->
-                            if key /= key2 then
-                                let
-                                    x =
-                                        entity2.x - entity.x
-
-                                    y =
-                                        entity2.y - entity.y
-
-                                    l =
-                                        x ^ 2 + y ^ 2
-
-                                    strength =
-                                        Dict.get key2 entityStrengths
-                                            |> Maybe.map .strength
-                                            |> Maybe.withDefault 0
-
-                                    w =
-                                        strength * alpha / l
-                                in
-                                    { entity | vx = entity.vx + x * w, vy = entity.vy + y * w }
-                            else
-                                entity
-                        )
-                        opEntity
-                        entities
-                )
-                entities
+            ManyBody.wrapper alpha theta entityStrengths entities
 
         X directionalParamidDict ->
             Debug.crash "not implemented"
