@@ -84,45 +84,27 @@ insertBy toPoint vertex qtree =
                 newSize =
                     2 + List.length rest
 
-                -- this seems to be a good choice.
+                -- splitting at 32 items seems to be a good choice.
                 -- normally, all vertices are put into one large leaf. When it reaches this size
                 -- the leaf is split. From then on the node will resize when it encounters a point outside of its bounding box.
                 -- resizing is expensive, so we wait a while before splitting. On the other hand, if we never split at all,
-                -- we get none of the benefits of using an quadtree.
+                -- we get none of the benefits of using a quadtree.
                 maxSize =
                     32
             in
                 if newSize >= maxSize then
                     let
                         initial =
-                            { ne = [], nw = [], se = [], sw = [] }
-
-                        folder element accum =
-                            case quadrant leaf.boundingBox (toPoint element) of
-                                NE ->
-                                    { accum | ne = element :: accum.ne }
-
-                                SE ->
-                                    { accum | se = element :: accum.se }
-
-                                NW ->
-                                    { accum | nw = element :: accum.nw }
-
-                                SW ->
-                                    { accum | sw = element :: accum.sw }
-
-                        byQuadrant : { ne : List vertex, nw : List vertex, se : List vertex, sw : List vertex }
-                        byQuadrant =
-                            List.foldl folder initial (vertex :: first :: rest)
+                            Node
+                                { boundingBox = BoundingBox2d.hull leaf.boundingBox (BoundingBox2d.singleton (toPoint vertex))
+                                , ne = Empty
+                                , se = Empty
+                                , nw = Empty
+                                , sw = Empty
+                                , aggregate = ()
+                                }
                     in
-                        Node
-                            { boundingBox = BoundingBox2d.hull leaf.boundingBox (BoundingBox2d.singleton (toPoint vertex))
-                            , ne = fromList toPoint byQuadrant.ne
-                            , se = fromList toPoint byQuadrant.se
-                            , nw = fromList toPoint byQuadrant.nw
-                            , sw = fromList toPoint byQuadrant.sw
-                            , aggregate = ()
-                            }
+                        List.foldl (insertBy toPoint) initial (first :: rest)
                 else
                     Leaf
                         { boundingBox = BoundingBox2d.hull leaf.boundingBox (BoundingBox2d.singleton (toPoint vertex))
@@ -136,7 +118,7 @@ insertBy toPoint vertex qtree =
                     toPoint vertex
             in
                 if BoundingBox2d.contains point node.boundingBox then
-                    case quadrant node.boundingBox (toPoint vertex) of
+                    case quadrant node.boundingBox point of
                         NE ->
                             Node { node | ne = insertBy toPoint vertex node.ne }
 
@@ -156,7 +138,7 @@ insertBy toPoint vertex qtree =
                         ( width, height ) =
                             BoundingBox2d.dimensions node.boundingBox
                     in
-                        case quadrant node.boundingBox (toPoint vertex) of
+                        case quadrant node.boundingBox point of
                             NE ->
                                 Node
                                     { boundingBox = BoundingBox2d.with { minX = minX, maxX = maxX + width, minY = minY, maxY = maxY + height }
@@ -282,12 +264,7 @@ aggregate ({ combineAggregates, combineVertices } as config) vanillaQuadTree =
                     aggregate config node.se
 
                 subresults =
-                    List.filterMap identity
-                        [ getAggregate newNw
-                        , getAggregate newSw
-                        , getAggregate newNe
-                        , getAggregate newSe
-                        ]
+                    List.filterMap getAggregate [ newNw, newSw, newNe, newSe ]
             in
                 case subresults of
                     [] ->
