@@ -39,7 +39,7 @@ In the domain of information visualization, physical simulations are useful for 
 
 -}
 
-import ManyBody
+import Visualization.Force.ManyBody as ManyBody
 import Dict exposing (Dict)
 
 

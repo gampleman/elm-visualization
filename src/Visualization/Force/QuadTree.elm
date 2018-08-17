@@ -1,4 +1,4 @@
-module AggregateQuadTree exposing (..)
+module Visualization.Force.QuadTree exposing (..)
 
 {-| A quadtree that can store an aggregate in the nodes.
 Intended for use in n-body simulation, specifically Barnes-Hut
@@ -11,16 +11,16 @@ import OpenSolid.BoundingBox2d as BoundingBox2d exposing (BoundingBox2d)
 import OpenSolid.Point2d as Point2d exposing (Point2d)
 
 
-type AggregateQuadTree aggregate item
+type QuadTree aggregate item
     = Empty
     | Leaf { boundingBox : BoundingBox2d, aggregate : aggregate, children : ( item, List item ) }
     | Node
         { boundingBox : BoundingBox2d
         , aggregate : aggregate
-        , nw : AggregateQuadTree aggregate item
-        , ne : AggregateQuadTree aggregate item
-        , se : AggregateQuadTree aggregate item
-        , sw : AggregateQuadTree aggregate item
+        , nw : QuadTree aggregate item
+        , ne : QuadTree aggregate item
+        , se : QuadTree aggregate item
+        , sw : QuadTree aggregate item
         }
 
 
@@ -33,14 +33,14 @@ type alias Config aggregate vertex =
 
 {-| An empty aggregate tree
 -}
-empty : AggregateQuadTree aggregate item
+empty : QuadTree aggregate item
 empty =
     Empty
 
 
 {-| A singleton tree, using () as the aggregate
 -}
-singleton : (vertex -> Point2d) -> vertex -> AggregateQuadTree () vertex
+singleton : (vertex -> Point2d) -> vertex -> QuadTree () vertex
 singleton toPoint vertex =
     Leaf
         { boundingBox = BoundingBox2d.singleton (toPoint vertex)
@@ -49,7 +49,7 @@ singleton toPoint vertex =
         }
 
 
-size : AggregateQuadTree aggregate vertex -> Int
+size : QuadTree aggregate vertex -> Int
 size qtree =
     case qtree of
         Empty ->
@@ -66,7 +66,7 @@ size qtree =
             size node.nw + size node.ne + size node.se + size node.sw
 
 
-insertBy : (vertex -> Point2d) -> vertex -> AggregateQuadTree () vertex -> AggregateQuadTree () vertex
+insertBy : (vertex -> Point2d) -> vertex -> QuadTree () vertex -> QuadTree () vertex
 insertBy toPoint vertex qtree =
     case qtree of
         Empty ->
@@ -228,12 +228,12 @@ quadrant boundingBox point =
             SW
 
 
-fromList : (vertex -> Point2d) -> List vertex -> AggregateQuadTree () vertex
+fromList : (vertex -> Point2d) -> List vertex -> QuadTree () vertex
 fromList toPoint =
     List.foldl (insertBy toPoint) empty
 
 
-toList : AggregateQuadTree x a -> List a
+toList : QuadTree x a -> List a
 toList qtree =
     case qtree of
         Empty ->
@@ -250,7 +250,7 @@ toList qtree =
             toList node.nw ++ toList node.ne ++ toList node.se ++ toList node.sw
 
 
-aggregate : Config aggregate vertex -> AggregateQuadTree x vertex -> AggregateQuadTree aggregate vertex
+aggregate : Config aggregate vertex -> QuadTree x vertex -> QuadTree aggregate vertex
 aggregate ({ combineAggregates, combineVertices } as config) vanillaQuadTree =
     case vanillaQuadTree of
         Empty ->
@@ -304,7 +304,7 @@ aggregate ({ combineAggregates, combineVertices } as config) vanillaQuadTree =
                             }
 
 
-getAggregate : AggregateQuadTree aggregate vertex -> Maybe aggregate
+getAggregate : QuadTree aggregate vertex -> Maybe aggregate
 getAggregate qtree =
     case qtree of
         Empty ->

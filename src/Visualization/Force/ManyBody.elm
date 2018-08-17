@@ -1,60 +1,56 @@
-module ManyBody exposing (..)
+module Visualization.Force.ManyBody exposing (..)
 
 import Dict exposing (Dict)
 import OpenSolid.Point2d as Point2d exposing (Point2d)
 import OpenSolid.Vector2d as Vector2d exposing (Vector2d)
 import OpenSolid.BoundingBox2d as BoundingBox2d exposing (BoundingBox2d)
-import AggregateQuadTree exposing (AggregateQuadTree)
-
-
-type alias ManyBody comparable =
-    { theta : Float
-    , distanceMinSquared : Float
-    , distanceMaxSquared : Float
-    , entityStrengths : Dict comparable { strength : Float }
-    }
-
-
-type alias AggregateVertex =
-    { position : Point2d, strength : Float }
+import Visualization.Force.QuadTree as QuadTree exposing (QuadTree)
 
 
 type alias Vertex comparable =
     { key : comparable, position : Point2d, strength : Float, velocity : Vector2d }
 
 
-config : AggregateQuadTree.Config AggregateVertex (Vertex a)
-config =
+type alias AggregateVertex =
+    { position : Point2d, strength : Float }
+
+
+{-| Combine a non-empty list of points into one superpoint
+with the average position and accumulated strength
+-}
+constructSuperPoint :
+    { a | position : Point2d, strength : Float }
+    -> List { a | position : Point2d, strength : Float }
+    -> AggregateVertex
+constructSuperPoint first rest =
     let
-        -- combine a non-empty list of points into one superpoint
-        -- with the average position and accumulated strength
-        combiner =
-            \first rest ->
-                let
-                    ( initialX, initialY ) =
-                        Point2d.coordinates first.position
+        ( initialX, initialY ) =
+            Point2d.coordinates first.position
 
-                    initialStrength =
-                        first.strength
+        initialStrength =
+            first.strength
 
-                    folder point ( accumX, accumY, strength, size ) =
-                        let
-                            ( x, y ) =
-                                Point2d.coordinates point.position
-                        in
-                            ( accumX + x, accumY + y, strength + point.strength, size + 1 )
+        folder point ( accumX, accumY, strength, size ) =
+            let
+                ( x, y ) =
+                    Point2d.coordinates point.position
+            in
+                ( accumX + x, accumY + y, strength + point.strength, size + 1 )
 
-                    ( totalX, totalY, totalStrength, totalSize ) =
-                        List.foldl folder ( initialX, initialY, initialStrength, 1 ) rest
-                in
-                    { position = Point2d.fromCoordinates ( totalX / totalSize, totalY / totalSize )
-                    , strength = totalStrength / totalSize
-                    }
+        ( totalX, totalY, totalStrength, totalSize ) =
+            List.foldl folder ( initialX, initialY, initialStrength, 1 ) rest
     in
-        { toPoint = .position
-        , combineVertices = combiner
-        , combineAggregates = combiner
+        { position = Point2d.fromCoordinates ( totalX / totalSize, totalY / totalSize )
+        , strength = totalStrength
         }
+
+
+config : QuadTree.Config AggregateVertex (Vertex a)
+config =
+    { toPoint = .position
+    , combineVertices = constructSuperPoint
+    , combineAggregates = constructSuperPoint
+    }
 
 
 wrapper :
@@ -103,8 +99,8 @@ manyBody : Float -> Float -> List (Vertex comparable) -> List (Vertex comparable
 manyBody alpha theta vertices =
     let
         withAggregates =
-            (AggregateQuadTree.fromList .position vertices)
-                |> AggregateQuadTree.aggregate config
+            (QuadTree.fromList .position vertices)
+                |> QuadTree.aggregate config
 
         updateVertex vertex =
             { vertex | velocity = Vector2d.sum vertex.velocity (applyForce alpha theta withAggregates vertex) }
@@ -112,7 +108,7 @@ manyBody alpha theta vertices =
         List.map updateVertex vertices
 
 
-applyForce : Float -> Float -> AggregateQuadTree.AggregateQuadTree AggregateVertex (Vertex comparable) -> Vertex comparable -> Vector2d
+applyForce : Float -> Float -> QuadTree.QuadTree AggregateVertex (Vertex comparable) -> Vertex comparable -> Vector2d
 applyForce alpha theta qtree vertex =
     let
         -- based on https://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation#Calculating_the_force_acting_on_a_body
@@ -121,22 +117,26 @@ applyForce alpha theta qtree vertex =
         isFarAway : { a | boundingBox : BoundingBox2d, aggregate : AggregateVertex } -> Bool
         isFarAway treePart =
             let
-                ( s, _ ) =
+                ( width, _ ) =
                     BoundingBox2d.dimensions treePart.boundingBox
 
-                d =
+                distance =
                     Point2d.distanceFrom vertex.position treePart.aggregate.position
             in
-                s / d < theta
+                width / distance < theta
 
         useAggregate : { a | boundingBox : BoundingBox2d, aggregate : AggregateVertex } -> Vector2d
         useAggregate treePart =
+            calculateVelocity vertex treePart.aggregate
+
+        calculateVelocity : { a | position : Point2d } -> { b | position : Point2d, strength : Float } -> Vector2d
+        calculateVelocity target source =
             let
                 delta =
-                    Vector2d.from vertex.position treePart.aggregate.position
+                    Vector2d.from target.position source.position
 
                 weight =
-                    treePart.aggregate.strength * alpha / (Vector2d.squaredLength delta)
+                    source.strength * alpha / (Vector2d.squaredLength delta)
             in
                 -- in rare cases, the delta can be the zero vector, and weight becomes NaN
                 if isNaN weight then
@@ -145,10 +145,10 @@ applyForce alpha theta qtree vertex =
                     Vector2d.scaleBy weight delta
     in
         case qtree of
-            AggregateQuadTree.Empty ->
+            QuadTree.Empty ->
                 Vector2d.zero
 
-            AggregateQuadTree.Leaf leaf ->
+            QuadTree.Leaf leaf ->
                 if isFarAway leaf then
                     useAggregate leaf
                 else
@@ -161,22 +161,11 @@ applyForce alpha theta qtree vertex =
                             if point.key == vertex.key then
                                 accum
                             else
-                                let
-                                    delta =
-                                        Vector2d.from vertex.position point.position
-
-                                    weight =
-                                        point.strength * alpha / (Vector2d.squaredLength delta)
-                                in
-                                    -- in rare cases, the delta can be the zero vector, and weight becomes NaN
-                                    if isNaN weight then
-                                        accum
-                                    else
-                                        Vector2d.sum (Vector2d.scaleBy weight delta) accum
+                                Vector2d.sum (calculateVelocity vertex point) accum
                     in
                         List.foldl applyForceFromPoint Vector2d.zero (first :: rest)
 
-            AggregateQuadTree.Node node ->
+            QuadTree.Node node ->
                 if isFarAway node then
                     useAggregate node
                 else
