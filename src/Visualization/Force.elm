@@ -39,6 +39,7 @@ In the domain of information visualization, physical simulations are useful for 
 
 -}
 
+import Visualization.Force.ManyBody as ManyBody
 import Dict exposing (Dict)
 
 
@@ -61,10 +62,12 @@ type alias Entity comparable a =
     }
 
 
+initialRadius : Float
 initialRadius =
     10
 
 
+initialAngle : Float
 initialAngle =
     pi * (3 - sqrt 5)
 
@@ -87,7 +90,7 @@ computeSimulation state entities =
             computeSimulation newState newEntities
 
 
-{-| This is a conveninence function for wrapping data up as Entities. The initial position of entities is arranged
+{-| This is a convenience function for wrapping data up as Entities. The initial position of entities is arranged
 in a [phylotaxic pattern](http://code.gampleman.eu/elm-visualization/Petals/).
 -}
 entity : Int -> a -> Entity Int { value : a }
@@ -158,39 +161,8 @@ applyForce alpha force entities =
                 entities
                 links
 
-        ManyBody theta distanceMin2 distanceMax2 entityStrengths ->
-            -- TODO: optimize performance with quadtree implementation
-            Dict.map
-                (\key opEntity ->
-                    Dict.foldr
-                        (\key2 entity2 entity ->
-                            if key /= key2 then
-                                let
-                                    x =
-                                        entity2.x - entity.x
-
-                                    y =
-                                        entity2.y - entity.y
-
-                                    l =
-                                        x ^ 2 + y ^ 2
-
-                                    strength =
-                                        Dict.get key2 entityStrengths
-                                            |> Maybe.map .strength
-                                            |> Maybe.withDefault 0
-
-                                    w =
-                                        strength * alpha / l
-                                in
-                                    { entity | vx = entity.vx + x * w, vy = entity.vy + y * w }
-                            else
-                                entity
-                        )
-                        opEntity
-                        entities
-                )
-                entities
+        ManyBody theta entityStrengths ->
+            ManyBody.wrapper alpha theta entityStrengths entities
 
         X directionalParamidDict ->
             Debug.crash "not implemented"
@@ -311,7 +283,7 @@ type Force comparable
     = Center Float Float
     | Collision Float (Dict comparable CollisionParam)
     | Links Int (List (LinkParam comparable))
-    | ManyBody Float Float Float (Dict comparable ManyBodyParam)
+    | ManyBody Float (Dict comparable ManyBodyParam)
     | X (Dict comparable DirectionalParam)
     | Y (Dict comparable DirectionalParam)
 
@@ -344,7 +316,7 @@ manyBody =
 -}
 manyBodyStrength : Float -> List comparable -> Force comparable
 manyBodyStrength strength =
-    ManyBody 0.9 1 (1 / 0) << Dict.fromList << List.map (\key -> ( key, { strength = strength } ))
+    ManyBody 0 << Dict.fromList << List.map (\key -> ( key, { strength = strength } ))
 
 
 {-| The link force pushes linked nodes together or apart according to the desired link distance. The strength of the
