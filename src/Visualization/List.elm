@@ -1,4 +1,4 @@
-module Visualization.List exposing (range, ticks, tickStep, extent, extentWith)
+module Visualization.List exposing (range, ticks, tickStep, extent, extentWith, variance, deviation, quantile)
 
 {-| This module exposes functions on list which are useful for the domain of data
 visualization. Most of these work with Lists of numbers.
@@ -16,6 +16,8 @@ Methods for transforming list and for generating new lists.
 @docs ticks, tickStep, range
 
 -}
+
+import List.Extra
 
 
 {-| Returns a List containing an arithmetic progression, similar to the Python
@@ -225,3 +227,91 @@ extentWith fn list =
 
             x :: xs ->
                 Just <| helper xs ( x, x )
+
+
+{-| Returns an [unbiased estimator of the population variance](http://mathworld.wolfram.com/SampleVariance.html) of the
+given list of numbers. If the list has fewer than two values, returns Nothing.
+-}
+variance : List Float -> Maybe Float
+variance nums =
+    let
+        compute value ( mean, i, sum ) =
+            let
+                delta =
+                    value - mean
+
+                newMean =
+                    mean + delta / (i + 1)
+            in
+                ( newMean, i + 1, sum + delta * (value - newMean) )
+
+        ( _, length, sum ) =
+            List.foldr compute ( 0, 0, 0 ) nums
+    in
+        if length > 1 then
+            Just (sum / (length - 1))
+        else
+            Nothing
+
+
+{-| Returns the standard deviation, defined as the square root of the [bias-corrected variance](#variance), of the given
+list of numbers. If the list has fewer than two values, returns Nothing.
+-}
+deviation : List Float -> Maybe Float
+deviation =
+    variance >> Maybe.map sqrt
+
+
+{-| Returns the p-quantile of the given **sorted** list of numbers, where `p` is a number in the range [0, 1]. For
+example, the median can be computed using p = 0.5, the first quartile at p = 0.25, and the third quartile at p = 0.75.
+This particular implementation uses the [R-7 method](https://en.wikipedia.org/wiki/Quantile#Quantiles_of_a_population),
+which is the default for the R programming language and Excel. For example:
+
+    a : List Float
+    a = [0, 10, 30]
+
+    quantile 0 a --> Just 0
+
+    quantile 0.5 a --> Just 10
+
+    quantile 1 a --> Just 30
+
+    quantile 0.25 a --> Just 5
+
+    quantile 0.75 a --> Just 20
+
+    quantile 0.1 a --> Just 2
+
+-}
+quantile : Float -> List Float -> Maybe Float
+quantile p values =
+    if p <= 0 then
+        List.head values
+    else if p >= 1 then
+        List.Extra.last values
+    else
+        case values of
+            [] ->
+                Nothing
+
+            [ head ] ->
+                Just head
+
+            x :: y :: tail ->
+                let
+                    n =
+                        List.length values |> toFloat
+
+                    i =
+                        (n - 1) * p
+
+                    i0 =
+                        floor i
+
+                    value0 =
+                        List.Extra.getAt i0 values |> Maybe.withDefault x
+
+                    value1 =
+                        List.Extra.getAt (i0 + 1) values |> Maybe.withDefault y
+                in
+                    Just <| value0 + (value1 - value0) * (i - toFloat i0)
