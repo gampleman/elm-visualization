@@ -71,7 +71,7 @@ init =
             , Force.center (screenWidth / 2) (screenHeight / 2)
             ]
     in
-        ( Model Nothing graph (Force.simulation forces), Cmd.none )
+    ( Model Nothing graph (Force.simulation forces), Cmd.none )
 
 
 updateNode : Position -> NodeContext Entity () -> NodeContext Entity ()
@@ -80,7 +80,7 @@ updateNode pos nodeCtx =
         nodeValue =
             nodeCtx.node.label
     in
-        updateContextWithValue nodeCtx { nodeValue | x = toFloat pos.x, y = toFloat pos.y }
+    updateContextWithValue nodeCtx { nodeValue | x = toFloat pos.x, y = toFloat pos.y }
 
 
 updateContextWithValue : NodeContext Entity () -> Entity -> NodeContext Entity ()
@@ -89,7 +89,7 @@ updateContextWithValue nodeCtx value =
         node =
             nodeCtx.node
     in
-        { nodeCtx | node = { node | label = value } }
+    { nodeCtx | node = { node | label = value } }
 
 
 updateGraphWithList : Graph Entity () -> List Entity -> Graph Entity ()
@@ -98,7 +98,7 @@ updateGraphWithList =
         graphUpdater value =
             Maybe.map (\ctx -> updateContextWithValue ctx value)
     in
-        List.foldr (\node graph -> Graph.update node.id (graphUpdater node) graph)
+    List.foldr (\node graph -> Graph.update node.id (graphUpdater node) graph)
 
 
 update : Msg -> Model -> Model
@@ -109,12 +109,12 @@ update msg ({ drag, graph, simulation } as model) =
                 ( newState, list ) =
                     Force.tick simulation <| List.map .label <| Graph.nodes graph
             in
-                case drag of
-                    Nothing ->
-                        Model drag (updateGraphWithList graph list) newState
+            case drag of
+                Nothing ->
+                    Model drag (updateGraphWithList graph list) newState
 
-                    Just { current, index } ->
-                        Model drag (Graph.update index (Maybe.map (updateNode current)) (updateGraphWithList graph list)) newState
+                Just { current, index } ->
+                    Model drag (Graph.update index (Maybe.map (updateNode current)) (updateGraphWithList graph list)) newState
 
         DragStart index xy ->
             Model (Just (Drag xy xy index)) graph simulation
@@ -146,6 +146,7 @@ subscriptions model =
             -- to the rAF.
             if Force.isCompleted model.simulation then
                 Sub.none
+
             else
                 AnimationFrame.times Tick
 
@@ -166,15 +167,15 @@ linkElement graph edge =
         target =
             Maybe.withDefault (Force.entity 0 "") <| Maybe.map (.node >> .label) <| Graph.get edge.to graph
     in
-        line
-            [ strokeWidth "1"
-            , stroke "#aaa"
-            , x1 (toString source.x)
-            , y1 (toString source.y)
-            , x2 (toString target.x)
-            , y2 (toString target.y)
-            ]
-            []
+    line
+        [ strokeWidth "1"
+        , stroke "#aaa"
+        , x1 (toString source.x)
+        , y1 (toString source.y)
+        , x2 (toString target.x)
+        , y2 (toString target.y)
+        ]
+        []
 
 
 nodeElement node =

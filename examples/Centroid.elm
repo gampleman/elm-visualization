@@ -5,11 +5,11 @@ not the geometric center of the arc, which may be outside the arc; this method
 is merely a convenience for positioning labels.
 -}
 
-import Visualization.Shape as Shape exposing (defaultPieConfig, Arc)
-import Visualization.Path as Path
 import Array exposing (Array)
-import Svg exposing (Svg, svg, g, path, text)
-import Svg.Attributes exposing (transform, d, style, dy, width, height, textAnchor)
+import Svg exposing (Svg, g, path, svg, text)
+import Svg.Attributes exposing (d, dy, height, style, textAnchor, transform, width)
+import Visualization.Path as Path
+import Visualization.Shape as Shape exposing (Arc, defaultPieConfig)
 
 
 screenWidth : Float
@@ -57,10 +57,10 @@ circular arcs =
         makeDot datum =
             path [ d dot, transform ("translate" ++ toString (Shape.centroid datum)) ] []
     in
-        g [ transform ("translate(" ++ toString radius ++ "," ++ toString radius ++ ")") ]
-            [ g [] <| List.indexedMap makeSlice arcs
-            , g [] <| List.map makeDot arcs
-            ]
+    g [ transform ("translate(" ++ toString radius ++ "," ++ toString radius ++ ")") ]
+        [ g [] <| List.indexedMap makeSlice arcs
+        , g [] <| List.map makeDot arcs
+        ]
 
 
 annular : List Arc -> Svg msg
@@ -72,10 +72,10 @@ annular arcs =
         makeDot datum =
             path [ d dot, transform ("translate" ++ toString (Shape.centroid { datum | innerRadius = radius - 60 })) ] []
     in
-        g [ transform ("translate(" ++ toString (3 * radius + 20) ++ "," ++ toString radius ++ ")") ]
-            [ g [] <| List.indexedMap makeSlice arcs
-            , g [] <| List.map makeDot arcs
-            ]
+    g [ transform ("translate(" ++ toString (3 * radius + 20) ++ "," ++ toString radius ++ ")") ]
+        [ g [] <| List.indexedMap makeSlice arcs
+        , g [] <| List.map makeDot arcs
+        ]
 
 
 view : List Float -> Svg msg
@@ -84,10 +84,10 @@ view model =
         pieData =
             model |> Shape.pie { defaultPieConfig | outerRadius = radius }
     in
-        svg [ width (toString screenWidth ++ "px"), height (toString screenHeight ++ "px") ]
-            [ circular pieData
-            , annular pieData
-            ]
+    svg [ width (toString screenWidth ++ "px"), height (toString screenHeight ++ "px") ]
+        [ circular pieData
+        , annular pieData
+        ]
 
 
 model : List Float

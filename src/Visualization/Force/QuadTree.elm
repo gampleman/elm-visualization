@@ -1,14 +1,14 @@
-module Visualization.Force.QuadTree exposing (..)
+module Visualization.Force.QuadTree exposing (Config, QuadTree(..), Quadrant(..), empty, fromList, getAggregate, insertBy, performAggregate, quadrant, singleton, size, toList)
 
 {-| A quadtree that can store an aggregate in the nodes.
 Intended for use in n-body simulation, specifically Barnes-Hut
 
-https://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation#Calculating_the_force_acting_on_a_body
+[[[[<https://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation#Calculating_the_force_acting_on_a_body>](https://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation#Calculating_the_force_acting_on_a_body)](https://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation#Calculating_the_force_acting_on_a_body)](https://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation#Calculating_the_force_acting_on_a_body)](https://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation#Calculating_the_force_acting_on_a_body)
 
 -}
 
-import OpenSolid.BoundingBox2d as BoundingBox2d exposing (BoundingBox2d)
-import OpenSolid.Point2d as Point2d exposing (Point2d)
+import BoundingBox2d exposing (BoundingBox2d)
+import Point2d exposing (Point2d)
 
 
 type QuadTree aggregate item
@@ -60,7 +60,7 @@ size qtree =
                 ( _, rest ) =
                     leaf.children
             in
-                1 + List.length rest
+            1 + List.length rest
 
         Node node ->
             size node.nw + size node.ne + size node.se + size node.sw
@@ -92,92 +92,92 @@ insertBy toPoint vertex qtree =
                 maxSize =
                     32
             in
-                if newSize >= maxSize then
-                    let
-                        initial =
-                            Node
-                                { boundingBox = BoundingBox2d.hull leaf.boundingBox (BoundingBox2d.singleton (toPoint vertex))
-                                , ne = Empty
-                                , se = Empty
-                                , nw = Empty
-                                , sw = Empty
-                                , aggregate = ()
-                                }
-                    in
-                        List.foldl (insertBy toPoint) initial (first :: rest)
-                else
-                    Leaf
-                        { boundingBox = BoundingBox2d.hull leaf.boundingBox (BoundingBox2d.singleton (toPoint vertex))
-                        , children = ( vertex, first :: rest )
-                        , aggregate = ()
-                        }
+            if newSize >= maxSize then
+                let
+                    initial =
+                        Node
+                            { boundingBox = BoundingBox2d.hull leaf.boundingBox (BoundingBox2d.singleton (toPoint vertex))
+                            , ne = Empty
+                            , se = Empty
+                            , nw = Empty
+                            , sw = Empty
+                            , aggregate = ()
+                            }
+                in
+                List.foldl (insertBy toPoint) initial (first :: rest)
+            else
+                Leaf
+                    { boundingBox = BoundingBox2d.hull leaf.boundingBox (BoundingBox2d.singleton (toPoint vertex))
+                    , children = ( vertex, first :: rest )
+                    , aggregate = ()
+                    }
 
         Node node ->
             let
                 point =
                     toPoint vertex
             in
-                if BoundingBox2d.contains point node.boundingBox then
-                    case quadrant node.boundingBox point of
-                        NE ->
-                            Node { node | ne = insertBy toPoint vertex node.ne }
+            if BoundingBox2d.contains point node.boundingBox then
+                case quadrant node.boundingBox point of
+                    NE ->
+                        Node { node | ne = insertBy toPoint vertex node.ne }
 
-                        SE ->
-                            Node { node | se = insertBy toPoint vertex node.se }
+                    SE ->
+                        Node { node | se = insertBy toPoint vertex node.se }
 
-                        NW ->
-                            Node { node | nw = insertBy toPoint vertex node.nw }
+                    NW ->
+                        Node { node | nw = insertBy toPoint vertex node.nw }
 
-                        SW ->
-                            Node { node | sw = insertBy toPoint vertex node.sw }
-                else
-                    let
-                        { minX, minY, maxX, maxY } =
-                            BoundingBox2d.extrema node.boundingBox
+                    SW ->
+                        Node { node | sw = insertBy toPoint vertex node.sw }
+            else
+                let
+                    { minX, minY, maxX, maxY } =
+                        BoundingBox2d.extrema node.boundingBox
 
-                        ( width, height ) =
-                            BoundingBox2d.dimensions node.boundingBox
-                    in
-                        case quadrant node.boundingBox point of
-                            NE ->
-                                Node
-                                    { boundingBox = BoundingBox2d.with { minX = minX, maxX = maxX + width, minY = minY, maxY = maxY + height }
-                                    , ne = singleton toPoint vertex
-                                    , sw = qtree
-                                    , se = Empty
-                                    , nw = Empty
-                                    , aggregate = ()
-                                    }
+                    ( width, height ) =
+                        BoundingBox2d.dimensions node.boundingBox
+                in
+                case quadrant node.boundingBox point of
+                    NE ->
+                        Node
+                            { boundingBox = BoundingBox2d.fromExtrema { minX = minX, maxX = maxX + width, minY = minY, maxY = maxY + height }
+                            , ne = singleton toPoint vertex
+                            , sw = qtree
+                            , se = Empty
+                            , nw = Empty
+                            , aggregate = ()
+                            }
 
-                            SE ->
-                                Node
-                                    { boundingBox = BoundingBox2d.with { maxY = maxY, minX = minX, maxX = maxX + width, minY = minY - height }
-                                    , se = singleton toPoint vertex
-                                    , nw = qtree
-                                    , sw = Empty
-                                    , ne = Empty
-                                    , aggregate = ()
-                                    }
+                    SE ->
+                        Node
+                            { boundingBox = BoundingBox2d.fromExtrema { maxY = maxY, minX = minX, maxX = maxX + width, minY = minY - height }
+                            , se = singleton toPoint vertex
+                            , nw = qtree
+                            , sw = Empty
+                            , ne = Empty
+                            , aggregate = ()
+                            }
 
-                            NW ->
-                                Node
-                                    { boundingBox = BoundingBox2d.with { maxX = maxX, minY = minY, maxY = maxY + height, minX = minX - width }
-                                    , nw = singleton toPoint vertex
-                                    , se = qtree
-                                    , sw = Empty
-                                    , ne = Empty
-                                    , aggregate = ()
-                                    }
+                    NW ->
+                        Node
+                            { boundingBox = BoundingBox2d.fromExtrema { maxX = maxX, minY = minY, maxY = maxY + height, minX = minX - width }
+                            , nw = singleton toPoint vertex
+                            , se = qtree
+                            , sw = Empty
+                            , ne = Empty
+                            , aggregate = ()
+                            }
 
-                            SW ->
-                                Node
-                                    { boundingBox = BoundingBox2d.with { maxX = maxX, maxY = maxY, minX = minX - width, minY = minY - height }
-                                    , sw = singleton toPoint vertex
-                                    , ne = qtree
-                                    , se = Empty
-                                    , nw = Empty
-                                    , aggregate = ()
-                                    }
+                    SW ->
+                        Node
+                            { boundingBox = BoundingBox2d.fromExtrema { maxX = maxX, maxY = maxY, minX = minX - width, minY = minY - height }
+                            , sw = singleton toPoint vertex
+                            , ne = qtree
+                            , se = Empty
+                            , nw = Empty
+                            , aggregate = ()
+                            }
 
 
 type Quadrant
@@ -199,15 +199,15 @@ quadrant boundingBox point =
         ( x, y ) =
             Point2d.coordinates point
     in
-        if y >= midY then
-            if x >= midX then
-                NE
-            else
-                NW
-        else if x >= midX then
-            SE
+    if y >= midY then
+        if x >= midX then
+            NE
         else
-            SW
+            NW
+    else if x >= midX then
+        SE
+    else
+        SW
 
 
 fromList : (vertex -> Point2d) -> List vertex -> QuadTree () vertex
@@ -226,14 +226,14 @@ toList qtree =
                 ( first, rest ) =
                     leaf.children
             in
-                first :: rest
+            first :: rest
 
         Node node ->
             toList node.nw ++ toList node.ne ++ toList node.se ++ toList node.sw
 
 
-aggregate : Config aggregate vertex -> QuadTree x vertex -> QuadTree aggregate vertex
-aggregate ({ combineAggregates, combineVertices } as config) vanillaQuadTree =
+performAggregate : Config aggregate vertex -> QuadTree x vertex -> QuadTree aggregate vertex
+performAggregate ({ combineAggregates, combineVertices } as config) vanillaQuadTree =
     case vanillaQuadTree of
         Empty ->
             Empty
@@ -243,42 +243,42 @@ aggregate ({ combineAggregates, combineVertices } as config) vanillaQuadTree =
                 ( first, rest ) =
                     leaf.children
             in
-                Leaf
-                    { boundingBox = leaf.boundingBox
-                    , children = ( first, rest )
-                    , aggregate = combineVertices first rest
-                    }
+            Leaf
+                { boundingBox = leaf.boundingBox
+                , children = ( first, rest )
+                , aggregate = combineVertices first rest
+                }
 
         Node node ->
             let
                 newNw =
-                    aggregate config node.nw
+                    performAggregate config node.nw
 
                 newSw =
-                    aggregate config node.sw
+                    performAggregate config node.sw
 
                 newNe =
-                    aggregate config node.ne
+                    performAggregate config node.ne
 
                 newSe =
-                    aggregate config node.se
+                    performAggregate config node.se
 
                 subresults =
                     List.filterMap getAggregate [ newNw, newSw, newNe, newSe ]
             in
-                case subresults of
-                    [] ->
-                        Empty
+            case subresults of
+                [] ->
+                    Empty
 
-                    x :: xs ->
-                        Node
-                            { boundingBox = node.boundingBox
-                            , aggregate = combineAggregates x xs
-                            , nw = newNw
-                            , sw = newSw
-                            , ne = newNe
-                            , se = newSe
-                            }
+                x :: xs ->
+                    Node
+                        { boundingBox = node.boundingBox
+                        , aggregate = combineAggregates x xs
+                        , nw = newNw
+                        , sw = newSw
+                        , ne = newNe
+                        , se = newSe
+                        }
 
 
 getAggregate : QuadTree aggregate vertex -> Maybe aggregate

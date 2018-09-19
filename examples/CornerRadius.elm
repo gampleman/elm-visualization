@@ -3,10 +3,10 @@ module CornerRadius exposing (main)
 {-| A demonstration of cornerRadius for arcs
 -}
 
-import Visualization.Shape as Shape exposing (defaultPieConfig, Arc)
 import Array exposing (Array)
-import Svg exposing (Svg, svg, g, path, text)
-import Svg.Attributes exposing (transform, d, style, dy, width, height, textAnchor)
+import Svg exposing (Svg, g, path, svg, text)
+import Svg.Attributes exposing (d, dy, height, style, textAnchor, transform, width)
+import Visualization.Shape as Shape exposing (Arc, defaultPieConfig)
 
 
 screenWidth : Float
@@ -86,10 +86,10 @@ circular arcs =
             , corner endAngle (outerRadius - cornerRadius) -1
             ]
     in
-        g [ transform ("translate(" ++ toString radius ++ "," ++ toString radius ++ ")") ]
-            [ g [] <| List.indexedMap makeSlice arcs
-            , g [] <| List.concatMap makeCorners arcs
-            ]
+    g [ transform ("translate(" ++ toString radius ++ "," ++ toString radius ++ ")") ]
+        [ g [] <| List.indexedMap makeSlice arcs
+        , g [] <| List.concatMap makeCorners arcs
+        ]
 
 
 annular : List Arc -> Svg msg
@@ -105,10 +105,10 @@ annular arcs =
             , corner startAngle (radius - 60 + cornerRadius) 1
             ]
     in
-        g [ transform ("translate(" ++ toString (3 * radius + 20) ++ "," ++ toString radius ++ ")") ]
-            [ g [] <| List.indexedMap makeSlice arcs
-            , g [] <| List.concatMap makeCorners arcs
-            ]
+    g [ transform ("translate(" ++ toString (3 * radius + 20) ++ "," ++ toString radius ++ ")") ]
+        [ g [] <| List.indexedMap makeSlice arcs
+        , g [] <| List.concatMap makeCorners arcs
+        ]
 
 
 view : List Float -> Svg msg
@@ -117,10 +117,10 @@ view model =
         pieData =
             model |> Shape.pie { defaultPieConfig | outerRadius = radius, cornerRadius = cornerRadius }
     in
-        svg [ width (toString screenWidth ++ "px"), height (toString screenHeight ++ "px") ]
-            [ circular pieData
-            , annular pieData
-            ]
+    svg [ width (toString screenWidth ++ "px"), height (toString screenHeight ++ "px") ]
+        [ circular pieData
+        , annular pieData
+        ]
 
 
 model : List Float

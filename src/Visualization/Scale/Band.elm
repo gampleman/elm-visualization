@@ -1,4 +1,4 @@
-module Visualization.Scale.Band exposing (convert, bandwidth)
+module Visualization.Scale.Band exposing (bandwidth, convert)
 
 import Json.Decode exposing (index)
 
@@ -24,6 +24,7 @@ bandwidth cfg domain ( d0, d1 ) =
         ( start, stop ) =
             if d0 < d1 then
                 ( d0, d1 )
+
             else
                 ( d1, d0 )
 
@@ -33,7 +34,7 @@ bandwidth cfg domain ( d0, d1 ) =
         step =
             (stop - start) / max 1 (n - paddingInner + paddingOuter * 2)
     in
-        step * (1 - paddingInner)
+    step * (1 - paddingInner)
 
 
 computePositions index cfg n ( start, stop ) =
@@ -47,7 +48,7 @@ computePositions index cfg n ( start, stop ) =
         start2 =
             start + (stop - start - step * (n - paddingInner)) * align
     in
-        ( start2, step )
+    ( start2, step )
 
 
 convert : Config -> List a -> ( Float, Float ) -> a -> Float
@@ -58,18 +59,19 @@ convert cfg domain ( start, stop ) value =
                 n =
                     toFloat <| List.length domain
             in
-                if start < stop then
-                    let
-                        ( start2, step ) =
-                            computePositions index cfg n ( start, stop )
-                    in
-                        start2 + step * index
-                else
-                    let
-                        ( stop2, step ) =
-                            computePositions index cfg n ( stop, start )
-                    in
-                        stop2 + step * (n - index - 1)
+            if start < stop then
+                let
+                    ( start2, step ) =
+                        computePositions index cfg n ( start, stop )
+                in
+                start2 + step * index
+
+            else
+                let
+                    ( stop2, step ) =
+                        computePositions index cfg n ( stop, start )
+                in
+                stop2 + step * (n - index - 1)
 
         Nothing ->
             0 / 0
@@ -87,5 +89,6 @@ indexOfHelp index value list =
         x :: xs ->
             if value == x then
                 Just index
+
             else
                 indexOfHelp (index + 1) value xs

@@ -1,4 +1,11 @@
-module Visualization.List exposing (range, ticks, tickStep, extent, extentWith)
+module Visualization.List
+    exposing
+        ( extent
+        , extentWith
+        , range
+        , tickStep
+        , ticks
+        )
 
 {-| This module exposes functions on list which are useful for the domain of data
 visualization. Most of these work with Lists of numbers.
@@ -65,7 +72,7 @@ rangePositive begin stop step =
             else
                 helper (s + step) (s :: list)
     in
-        helper begin [] |> List.reverse
+    helper begin [] |> List.reverse
 
 
 rangeNegative begin stop step =
@@ -78,7 +85,7 @@ rangeNegative begin stop step =
             else
                 helper (s + step) (s :: list)
     in
-        helper begin [] |> List.reverse
+    helper begin [] |> List.reverse
 
 
 
@@ -133,7 +140,7 @@ ticks start stop count =
         end =
             toFloat (floor (stop / step)) * step + step / 2
     in
-        range beg end step
+    range beg end step
 
 
 {-| Returns the difference between adjacent tick values if the same arguments
@@ -168,10 +175,10 @@ tickStep start stop count =
             else
                 step1
     in
-        if stop < start then
-            -step2
-        else
-            step2
+    if stop < start then
+        -step2
+    else
+        step2
 
 
 {-| Returns the minimum and maximum value in the list.
@@ -211,17 +218,17 @@ extentWith fn list =
             else
                 b
 
-        helper list ( mini, maxi ) =
-            case list of
+        helper l ( mini, maxi ) =
+            case l of
                 [] ->
                     ( mini, maxi )
 
                 x :: xs ->
                     helper xs ( min mini x, max maxi x )
     in
-        case list of
-            [] ->
-                Nothing
+    case list of
+        [] ->
+            Nothing
 
-            x :: xs ->
-                Just <| helper xs ( x, x )
+        x :: xs ->
+            Just <| helper xs ( x, x )

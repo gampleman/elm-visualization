@@ -3,10 +3,10 @@ module PieChart exposing (main)
 {-| An example showing how to render a basic pie chart.
 -}
 
-import Visualization.Shape as Shape exposing (defaultPieConfig)
 import Array exposing (Array)
-import Svg exposing (Svg, svg, g, path, text_, text)
-import Svg.Attributes exposing (transform, d, style, dy, width, height, textAnchor)
+import Svg exposing (Svg, g, path, svg, text, text_)
+import Svg.Attributes exposing (d, dy, height, style, textAnchor, transform, width)
+import Visualization.Shape as Shape exposing (defaultPieConfig)
 
 
 screenWidth : Float
@@ -46,12 +46,12 @@ view model =
                 ]
                 [ text label ]
     in
-        svg [ width (toString screenWidth ++ "px"), height (toString screenHeight ++ "px") ]
-            [ g [ transform ("translate(" ++ toString (screenWidth / 2) ++ "," ++ toString (screenHeight / 2) ++ ")") ]
-                [ g [] <| List.indexedMap makeSlice pieData
-                , g [] <| List.map2 makeLabel pieData model
-                ]
+    svg [ width (toString screenWidth ++ "px"), height (toString screenHeight ++ "px") ]
+        [ g [ transform ("translate(" ++ toString (screenWidth / 2) ++ "," ++ toString (screenHeight / 2) ++ ")") ]
+            [ g [] <| List.indexedMap makeSlice pieData
+            , g [] <| List.map2 makeLabel pieData model
             ]
+        ]
 
 
 model : List ( String, Float )

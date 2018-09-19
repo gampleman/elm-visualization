@@ -5,13 +5,13 @@ the primitives provided in this library.
 -}
 
 import Date exposing (Date)
+import SampleData exposing (timeSeries)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Visualization.Axis as Axis exposing (defaultOptions)
 import Visualization.List as List
 import Visualization.Scale as Scale exposing (ContinuousScale, ContinuousTimeScale)
 import Visualization.Shape as Shape
-import SampleData exposing (timeSeries)
 
 
 w : Float

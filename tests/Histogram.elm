@@ -22,9 +22,9 @@ histogram =
                     minI =
                         Maybe.withDefault head <| List.minimum (head :: tail)
                 in
-                    Histogram.float
-                        |> Histogram.compute (head :: tail)
-                        |> List.foldl (\item ( fail, minV ) -> ( fail && item.x0 == minV, item.x1 )) ( True, minI )
-                        |> Tuple.first
-                        |> Expect.true "Expected ranges to be continous"
+                Histogram.float
+                    |> Histogram.compute (head :: tail)
+                    |> List.foldl (\item ( fail, minV ) -> ( fail && item.x0 == minV, item.x1 )) ( True, minI )
+                    |> Tuple.first
+                    |> Expect.true "Expected ranges to be continous"
         ]

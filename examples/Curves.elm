@@ -3,14 +3,14 @@ module Curves exposing (main)
 {-| Here we demonstrate the various curve functions provided.
 -}
 
-import Html exposing (div, p, a)
 import Color.Convert exposing (colorToCssRgb)
-import Visualization.Scale as Scale exposing (ContinuousScale)
-import Visualization.Shape as Shape
-import Svg exposing (Svg, svg, rect, path, g, line, text, text_)
+import Example
+import Html exposing (a, div, p)
+import Svg exposing (Svg, g, line, path, rect, svg, text, text_)
 import Svg.Attributes exposing (..)
 import Visualization.Path
-import Example
+import Visualization.Scale as Scale exposing (ContinuousScale)
+import Visualization.Shape as Shape
 
 
 screenWidth : Float
@@ -66,7 +66,7 @@ xGridLine index tick =
         , x1 (toString (Scale.convert xScale tick))
         , x2 (toString (Scale.convert xScale tick))
         , stroke "white"
-        , strokeWidth (toString (Basics.max (toFloat (index % 2)) 0.5))
+        , strokeWidth (toString (Basics.max (toFloat (modBy 2 index)) 0.5))
         ]
         []
 
@@ -79,7 +79,7 @@ yGridLine index tick =
         , y1 (toString (Scale.convert yScale tick))
         , y2 (toString (Scale.convert yScale tick))
         , stroke "white"
-        , strokeWidth (toString (Basics.max (toFloat (index % 2)) 0.5))
+        , strokeWidth (toString (Basics.max (toFloat (modBy 2 index)) 0.5))
         ]
         []
 
@@ -141,8 +141,8 @@ parametrized prefix curveFn =
         stops =
             [ 0, 0.25, 0.5, 0.75, 1 ]
     in
-        stops
-            |> List.map (\s -> ( prefix ++ " " ++ toString s, curveFn s, Scale.convert scale s |> colorToCssRgb ))
+    stops
+        |> List.map (\s -> ( prefix ++ " " ++ toString s, curveFn s, Scale.convert scale s |> colorToCssRgb ))
 
 
 exampleData =

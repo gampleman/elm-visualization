@@ -1,4 +1,4 @@
-module ListTests exposing (tickStep, range)
+module ListTests exposing (range, tickStep)
 
 import Expect
 import Fuzz exposing (..)
@@ -14,7 +14,7 @@ tickStep =
             \start stop count ->
                 expectAny
                     [ VList.tickStep start stop count
-                        |> Expect.equal (-(VList.tickStep stop start count))
+                        |> Expect.equal -(VList.tickStep stop start count)
                     , Expect.true "was not NaN" <| isNaN <| VList.tickStep start stop count
                     ]
         , test "returns approximately count + 1 tickStep when start < stop" <|
@@ -163,7 +163,7 @@ range =
             \a b ->
                 VList.range (min a b) (max a b) 1
                     -- account for List.range being inclusive
-                    |> (flip List.append) [ max a b ]
+                    |> (\x y -> List.append y x) [ max a b ]
                     |> Expect.equal (List.range (min a b) (max a b))
 
         -- These tests are waiting for the better implementation, but that will be a breaking change.

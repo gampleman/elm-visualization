@@ -1,7 +1,6 @@
 module Histogram.ArrayTests exposing (bisectRight)
 
 import Array exposing (Array)
-import Array.Hamt as Hamt
 import Expect
 import Fuzz exposing (..)
 import Helper exposing (expectAll, expectAny)
@@ -23,23 +22,17 @@ bisectRight =
                     bisection =
                         Array.bisectRight item sorted Nothing
 
-                    -- HAMT is needed in 0.18 because Core array crashes
-                    hamtSorted =
-                        list
-                            |> List.sort
-                            |> Hamt.fromList
-
                     before =
-                        Hamt.slice 0 bisection hamtSorted |> Hamt.toList
+                        Array.slice 0 bisection sorted |> Array.toList
 
                     after =
-                        Hamt.slice bisection (Hamt.length hamtSorted) hamtSorted |> Hamt.toList
+                        Array.slice bisection (Array.length sorted) sorted |> Array.toList
 
                     allSmaller i =
-                        Expect.true ("Expected " ++ toString i ++ " to be smaller than " ++ toString after) <| List.all ((<=) item) after
+                        Expect.true ("Expected " ++ String.fromInt i ++ " to be smaller than " ++ Debug.toString after) <| List.all ((<=) item) after
 
                     allGreater i =
-                        Expect.true ("Expected " ++ toString i ++ " to be greater than " ++ toString before) <| List.all ((>) item) before
+                        Expect.true ("Expected " ++ String.fromInt i ++ " to be greater than " ++ Debug.toString before) <| List.all ((>) item) before
                 in
-                    Expect.all [ allGreater, allSmaller ] item
+                Expect.all [ allGreater, allSmaller ] item
         ]

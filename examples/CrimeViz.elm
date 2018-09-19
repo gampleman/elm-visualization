@@ -85,7 +85,7 @@ view model =
                 |> List.map (.year >> toFloat)
                 |> List.extent
                 |> Maybe.withDefault ( 1900, 1901 )
-                |> flip Scale.linear ( 0, w - 2 * padding )
+                |> (\a -> Scale.linear a ( 0, w - 2 * padding ))
 
         yScale : ContinuousScale
         yScale =
@@ -93,9 +93,9 @@ view model =
                 |> List.map (values >> List.maximum >> Maybe.withDefault 0)
                 |> List.maximum
                 |> Maybe.withDefault 0
-                |> (,) 0
-                |> flip Scale.linear ( h - 2 * padding, 0 )
-                |> flip Scale.nice 4
+                |> (\b -> ( 0, b ))
+                |> (\a -> Scale.linear a ( h - 2 * padding, 0 ))
+                |> (\a -> Scale.nice a 4)
 
         xAxis : Svg msg
         xAxis =
@@ -115,26 +115,26 @@ view model =
                 |> List.map lineGenerator
                 |> Shape.line Shape.monotoneInXCurve
     in
-        svg [ width (toString w ++ "px"), height (toString h ++ "px") ]
-            [ g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString (h - padding) ++ ")") ]
-                [ xAxis ]
-            , g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString padding ++ ")") ]
-                [ yAxis, text_ [ fontFamily "sans-serif", fontSize "10", x "5", y "5" ] [ text "Occurences" ] ]
-            , g [ transform ("translate(" ++ toString padding ++ ", " ++ toString padding ++ ")"), class "series" ]
-                (List.map (\{ accessor, label } -> Svg.path [ d (line accessor), stroke (colorString label), strokeWidth "3px", fill "none" ] []) series)
-            , g [ fontFamily "sans-serif", fontSize "10" ]
-                (List.map
-                    (\{ accessor, label } ->
-                        g [ transform ("translate(" ++ toString (w - padding + 10) ++ ", " ++ toString (padding + Scale.convert yScale (toFloat (accessor last))) ++ ")") ]
-                            [ text_ [ fill (colorString label) ] [ text label ] ]
-                    )
-                    series
+    svg [ width (toString w ++ "px"), height (toString h ++ "px") ]
+        [ g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString (h - padding) ++ ")") ]
+            [ xAxis ]
+        , g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString padding ++ ")") ]
+            [ yAxis, text_ [ fontFamily "sans-serif", fontSize "10", x "5", y "5" ] [ text "Occurences" ] ]
+        , g [ transform ("translate(" ++ toString padding ++ ", " ++ toString padding ++ ")"), class "series" ]
+            (List.map (\{ accessor, label } -> Svg.path [ d (line accessor), stroke (colorString label), strokeWidth "3px", fill "none" ] []) series)
+        , g [ fontFamily "sans-serif", fontSize "10" ]
+            (List.map
+                (\{ accessor, label } ->
+                    g [ transform ("translate(" ++ toString (w - padding + 10) ++ ", " ++ toString (padding + Scale.convert yScale (toFloat (accessor last))) ++ ")") ]
+                        [ text_ [ fill (colorString label) ] [ text label ] ]
                 )
-            , g [ transform ("translate(" ++ toString (w - padding) ++ ", " ++ toString (padding + 20) ++ ")") ]
-                [ text_ [ fontFamily "sans-serif", fontSize "20", textAnchor "end" ] [ text "Violent Crime in the US" ]
-                , text_ [ fontFamily "sans-serif", fontSize "10", textAnchor "end", dy "1em" ] [ text "Source: fbi.gov" ]
-                ]
+                series
+            )
+        , g [ transform ("translate(" ++ toString (w - padding) ++ ", " ++ toString (padding + 20) ++ ")") ]
+            [ text_ [ fontFamily "sans-serif", fontSize "20", textAnchor "end" ] [ text "Violent Crime in the US" ]
+            , text_ [ fontFamily "sans-serif", fontSize "10", textAnchor "end", dy "1em" ] [ text "Source: fbi.gov" ]
             ]
+        ]
 
 
 main =

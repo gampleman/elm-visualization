@@ -1,10 +1,10 @@
 module Scale.Linear exposing (all)
 
-import Test exposing (..)
 import Expect
-import Visualization.Scale as Scale
 import Fuzz exposing (..)
-import Helper exposing (isAbout, isBetween, expectAll)
+import Helper exposing (expectAll, isAbout, isBetween)
+import Test exposing (..)
+import Visualization.Scale as Scale
 
 
 all : Test
@@ -31,19 +31,20 @@ all =
                     double =
                         Scale.convert scale val |> Scale.invert scale
                 in
-                    if r0 == r1 || d0 == d1 then
-                        -- this is a special case, since the inversion cannot know to which end of the domain to go
-                        double |> isAbout d0
-                    else
-                        double
-                            |> isAbout val
+                if r0 == r1 || d0 == d1 then
+                    -- this is a special case, since the inversion cannot know to which end of the domain to go
+                    double |> isAbout d0
+
+                else
+                    double
+                        |> isAbout val
         , fuzz (tuple3 ( tuple ( float, float ), tuple ( float, float ), float )) "clamp limits output value to the range" <|
             \( domain, range, val ) ->
                 let
                     convert =
                         Scale.convert (Scale.clamp (Scale.linear domain range)) val
                 in
-                    convert |> isBetween range
+                convert |> isBetween range
         , fuzz (tuple3 ( tuple ( float, float ), tuple ( float, float ), float )) "rangeExtent returns the range" <|
             \( domain, range, val ) ->
                 Scale.rangeExtent (Scale.linear domain range) |> Expect.equal range

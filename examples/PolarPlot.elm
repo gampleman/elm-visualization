@@ -56,15 +56,16 @@ spoke angle =
             , textAnchor
                 (if angle < 270 && angle > 90 then
                     "end"
+
                  else
                     "inherit"
                 )
             , transform
-                ((if angle < 270 && angle > 90 then
+                (if angle < 270 && angle > 90 then
                     "rotate(180 " ++ toString (radius + 6) ++ ",0)"
-                  else
+
+                 else
                     ""
-                 )
                 )
             ]
             [ text (toString angle ++ "°") ]

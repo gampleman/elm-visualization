@@ -5,11 +5,11 @@ module BarChart exposing (main)
 
 import Date exposing (Date)
 import Date.Extra as Date
+import SampleData exposing (timeSeries)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Visualization.Axis as Axis exposing (defaultOptions)
 import Visualization.Scale as Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
-import SampleData exposing (timeSeries)
 
 
 w : Float

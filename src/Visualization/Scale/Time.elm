@@ -1,26 +1,27 @@
-module Visualization.Scale.Time exposing (convert, invert, ticks, tickFormat, nice, rangeExtent)
+module Visualization.Scale.Time exposing (convert, invert, nice, rangeExtent, tickFormat, ticks)
 
-import Date.Extra as Date exposing (range, Interval(..))
-import Date exposing (Date)
+import DateFormat
+import Time
+import Time.Extra exposing (Interval(..))
 import Visualization.Scale.Internal exposing (bimap, interpolateFloat)
 import Visualization.Scale.Linear as Linear
 
 
 toTime ( a, b ) =
-    ( Date.toTime a, Date.toTime b )
+    ( Time.posixToMillis a |> toFloat, Time.posixToMillis b |> toFloat )
 
 
-convert : ( Date, Date ) -> ( Float, Float ) -> Date -> Float
+convert : ( Time.Posix, Time.Posix ) -> ( Float, Float ) -> Time.Posix -> Float
 convert domain range =
-    bimap (toTime domain) range (\d r v -> deinterpolate d r (Date.toTime v)) interpolateFloat
+    bimap (toTime domain) range (\d r v -> deinterpolate d r (Time.posixToMillis v |> toFloat)) interpolateFloat
 
 
-invert : ( Date, Date ) -> ( Float, Float ) -> Float -> Date
+invert : ( Time.Posix, Time.Posix ) -> ( Float, Float ) -> Float -> Time.Posix
 invert domain range =
-    bimap range (toTime domain) deinterpolate (\d r v -> Date.fromTime (interpolate d r v))
+    bimap range (toTime domain) deinterpolate (\d r v -> Time.millisToPosix (round (interpolate d r v)))
 
 
-rangeExtent : ( Date, Date ) -> ( Float, Float ) -> ( Float, Float )
+rangeExtent : ( Time.Posix, Time.Posix ) -> ( Float, Float ) -> ( Float, Float )
 rangeExtent d r =
     r
 
@@ -33,19 +34,19 @@ interpolate a b =
     interpolateFloat a b
 
 
-ticks : ( Date, Date ) -> Int -> List Date
-ticks domain count =
+ticks : Time.Zone -> ( Time.Posix, Time.Posix ) -> Int -> List Time.Posix
+ticks zone domain count =
     let
         ( start, end ) =
             toTime domain
 
         target =
-            abs (start - end) / (toFloat count)
+            abs (start - end) / toFloat count
 
         ( interval, step ) =
             findInterval target tickIntervals
     in
-        Date.range interval (round step) (Date.fromTime start) (Date.fromTime end)
+    Time.Extra.range interval (round step) zone (Tuple.first domain) (Tuple.second domain)
 
 
 tickIntervals =
@@ -116,50 +117,67 @@ findInterval target intervals =
                 ratio_ =
                     (step_ * timeLength interval_) / target
             in
-                if ratio < ratio_ then
-                    ( interval, step )
-                else
-                    findInterval target (( interval_, step_ ) :: xs)
+            if ratio < ratio_ then
+                ( interval, step )
+            else
+                findInterval target (( interval_, step_ ) :: xs)
 
         x :: xs ->
             x
 
 
-tickFormat : ( Date, Date ) -> Int -> Date -> String
-tickFormat _ _ date =
+tickFormat : Time.Zone -> ( Time.Posix, Time.Posix ) -> Int -> Time.Posix -> String
+tickFormat zone _ _ date =
     let
         time =
-            Date.toTime date
+            Time.posixToMillis date
 
         significant interval =
-            Date.toTime (Date.floor interval date) < time
+            Time.posixToMillis (Time.Extra.floor interval zone date) < time
     in
-        if significant Second then
-            Date.toFormattedString ".SSS" date
-        else if significant Minute then
-            Date.toFormattedString ":ss" date
-        else if significant Hour then
-            Date.toFormattedString "hh:mm" date
-        else if significant Day then
-            Date.toFormattedString "hh a" date
-        else if significant Month then
-            Date.toFormattedString "dd MMM" date
-        else if significant Year then
-            Date.toFormattedString "MMMM" date
-        else
-            Date.toFormattedString "yyyy" date
+    if significant Second then
+        "." ++ toFixedLength 3 (Time.toMillis zone date)
+    else if significant Minute then
+        DateFormat.format [ DateFormat.text ":", DateFormat.secondFixed ] zone date
+    else if significant Hour then
+        DateFormat.format [ DateFormat.hourFixed, DateFormat.text ":", DateFormat.minuteFixed ] zone date
+    else if significant Day then
+        DateFormat.format [ DateFormat.hourFixed, DateFormat.text " ", DateFormat.amPmLowercase ] zone date
+    else if significant Month then
+        DateFormat.format [ DateFormat.dayOfMonthFixed, DateFormat.text " ", DateFormat.monthNameFirstThree ] zone date
+    else if significant Year then
+        DateFormat.format [ DateFormat.monthNameFull ] zone date
+    else
+        DateFormat.format [ DateFormat.yearNumber ] zone date
 
 
-nice : ( Date, Date ) -> Int -> ( Date, Date )
-nice domain count =
+toFixedLength : Int -> Int -> String
+toFixedLength totalChars num =
+    let
+        numStr =
+            String.fromInt num
+
+        numZerosNeeded =
+            totalChars - String.length numStr
+
+        zeros =
+            List.range 1 numZerosNeeded
+                |> List.map (\_ -> "0")
+                |> String.join ""
+    in
+    zeros ++ numStr
+
+
+nice : Time.Zone -> ( Time.Posix, Time.Posix ) -> Int -> ( Time.Posix, Time.Posix )
+nice zone domain count =
     let
         ( start, end ) =
             toTime domain
 
         target =
-            abs (start - end) / (toFloat count)
+            abs (start - end) / toFloat count
 
         ( interval, _ ) =
             findInterval target tickIntervals
     in
-        ( Date.floor interval (Date.fromTime start), Date.ceiling interval (Date.fromTime end) )
+    ( Time.Extra.floor interval zone (Tuple.first domain), Time.Extra.ceiling interval zone (Tuple.second domain) )

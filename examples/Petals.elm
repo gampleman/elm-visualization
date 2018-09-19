@@ -5,8 +5,8 @@ module Petals exposing (main)
 
 import Color.Convert exposing (colorToCssRgb)
 import Html
-import Svg exposing (Svg, svg, circle)
-import Svg.Attributes exposing (width, height, viewBox, cx, cy, r, fill)
+import Svg exposing (Svg, circle, svg)
+import Svg.Attributes exposing (cx, cy, fill, height, r, viewBox, width)
 import Visualization.Force as Force
 import Visualization.Scale as Scale
 
@@ -33,9 +33,9 @@ makePetal i =
             Force.entity i ()
 
         angle =
-            floor (toFloat i * (3 - sqrt 5) * pi * 180 - sqrt (toFloat i) * 4) % 360
+            modBy 360 (floor (toFloat i * (3 - sqrt 5) * pi * 180 - sqrt (toFloat i) * 4))
     in
-        circle [ cx (toString x), cy (toString y), r "5", fill (color angle) ] []
+    circle [ cx (toString x), cy (toString y), r "5", fill (color angle) ] []
 
 
 view : List Int -> Svg msg

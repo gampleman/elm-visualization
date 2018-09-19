@@ -4,10 +4,10 @@ module Histogram exposing (main)
 -}
 
 import Random.Pcg as Random exposing (Generator, Seed)
-import Visualization.Histogram as Histogram exposing (Bin, HistogramGenerator)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Visualization.Axis as Axis exposing (defaultOptions)
+import Visualization.Histogram as Histogram exposing (Bin, HistogramGenerator)
 import Visualization.Scale as Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
 
 
@@ -61,8 +61,8 @@ yScale bins =
         |> List.maximum
         |> Maybe.withDefault 0
         |> toFloat
-        |> (,) 0
-        |> flip Scale.linear ( h - 2 * padding, 0 )
+        |> (\b -> ( 0, b ))
+        |> (\a -> Scale.linear a ( h - 2 * padding, 0 ))
 
 
 xAxis : List Float -> Svg msg
@@ -94,14 +94,14 @@ view model =
         bins =
             Debug.log "bins" <| histogram model
     in
-        svg [ width (toString w ++ "px"), height (toString h ++ "px") ]
-            [ g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString (h - padding) ++ ")") ]
-                [ xAxis model ]
-            , g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString padding ++ ")") ]
-                [ yAxis bins ]
-            , g [ transform ("translate(" ++ toString padding ++ ", " ++ toString padding ++ ")"), class "series" ] <|
-                List.map (column xScale (yScale bins)) bins
-            ]
+    svg [ width (toString w ++ "px"), height (toString h ++ "px") ]
+        [ g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString (h - padding) ++ ")") ]
+            [ xAxis model ]
+        , g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString padding ++ ")") ]
+            [ yAxis bins ]
+        , g [ transform ("translate(" ++ toString padding ++ ", " ++ toString padding ++ ")"), class "series" ] <|
+            List.map (column xScale (yScale bins)) bins
+        ]
 
 
 main =

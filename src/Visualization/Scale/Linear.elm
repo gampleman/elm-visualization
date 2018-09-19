@@ -1,4 +1,4 @@
-module Visualization.Scale.Linear exposing (convert, invert, deinterpolate, ticks, tickFormat, nice, rangeExtent)
+module Visualization.Scale.Linear exposing (convert, deinterpolate, invert, nice, rangeExtent, tickFormat, ticks)
 
 import Visualization.List as List
 import Visualization.Scale.Internal exposing (bimap, interpolateFloat, toFixed)
@@ -17,7 +17,7 @@ nice ( start, stop ) count =
         step1 =
             List.tickStep (toFloat (floor (start / step0)) * step0) (toFloat (ceiling (stop / step0)) * step0) count
     in
-        ( toFloat (floor (start / step1)) * step1, toFloat (ceiling (stop / step1)) * step1 )
+    ( toFloat (floor (start / step1)) * step1, toFloat (ceiling (stop / step1)) * step1 )
 
 
 exponent x =
@@ -52,10 +52,10 @@ deinterpolate a b x =
         normalizedB =
             b - a
     in
-        if normalizedB == 0 then
-            0
-        else
-            (x - a) / normalizedB
+    if normalizedB == 0 then
+        0
+    else
+        (x - a) / normalizedB
 
 
 ticks ( start, end ) count =

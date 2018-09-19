@@ -3,10 +3,10 @@ module PadAngle exposing (main)
 {-| A demonstration of padAngle for arcs
 -}
 
-import Visualization.Shape as Shape exposing (defaultPieConfig, Arc)
 import Array exposing (Array)
-import Svg exposing (Svg, svg, g, path, text_, text)
-import Svg.Attributes exposing (transform, d, style, dy, width, height, textAnchor)
+import Svg exposing (Svg, g, path, svg, text, text_)
+import Svg.Attributes exposing (d, dy, height, style, textAnchor, transform, width)
+import Visualization.Shape as Shape exposing (Arc, defaultPieConfig)
 
 
 screenWidth : Float
@@ -51,9 +51,9 @@ circular arcs =
         makeSlice index datum =
             path [ d (Shape.arc datum), style ("fill:" ++ (Maybe.withDefault "#000" <| Array.get index colors) ++ "; stroke: #000;") ] []
     in
-        g [ transform ("translate(" ++ toString radius ++ "," ++ toString radius ++ ")") ]
-            [ g [] <| List.indexedMap makeSlice arcs
-            ]
+    g [ transform ("translate(" ++ toString radius ++ "," ++ toString radius ++ ")") ]
+        [ g [] <| List.indexedMap makeSlice arcs
+        ]
 
 
 annular : List Arc -> Svg msg
@@ -62,9 +62,9 @@ annular arcs =
         makeSlice index datum =
             path [ d (Shape.arc { datum | innerRadius = radius - 60 }), style ("fill:" ++ (Maybe.withDefault "#000" <| Array.get index colors) ++ "; stroke: #000;") ] []
     in
-        g [ transform ("translate(" ++ toString (3 * radius + 20) ++ "," ++ toString radius ++ ")") ]
-            [ g [] <| List.indexedMap makeSlice arcs
-            ]
+    g [ transform ("translate(" ++ toString (3 * radius + 20) ++ "," ++ toString radius ++ ")") ]
+        [ g [] <| List.indexedMap makeSlice arcs
+        ]
 
 
 view : List Float -> Svg msg
@@ -73,10 +73,10 @@ view model =
         pieData =
             model |> Shape.pie { defaultPieConfig | outerRadius = radius, padAngle = 0.03 }
     in
-        svg [ width (toString screenWidth ++ "px"), height (toString screenHeight ++ "px") ]
-            [ circular pieData
-            , annular pieData
-            ]
+    svg [ width (toString screenWidth ++ "px"), height (toString screenHeight ++ "px") ]
+        [ circular pieData
+        , annular pieData
+        ]
 
 
 model : List Float

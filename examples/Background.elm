@@ -4,13 +4,16 @@ module Background exposing (main)
 -}
 
 import Color exposing (Color)
-import Color.Convert exposing (colorToCssRgb)
 import Graph exposing (Edge, Graph, Node, NodeId)
 import IntDict
 import List exposing (range)
 import SampleData exposing (miserablesGraph)
-import Svg exposing (..)
-import Svg.Attributes as Attr exposing (..)
+import Svg exposing (Svg)
+import Svg.Attributes exposing (fill, stroke)
+import TypedSvg exposing (circle, g, line, polygon, svg, title)
+import TypedSvg.Attributes exposing (class, points)
+import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, strokeWidth, width, x1, x2, y1, y2)
+import TypedSvg.Core exposing (text)
 import Visualization.Force as Force exposing (State)
 import Visualization.Scale as Scale exposing (SequentialScale)
 
@@ -44,7 +47,7 @@ init =
         graph =
             Graph.mapContexts
                 (\({ node, incoming, outgoing } as ctx) ->
-                    { ctx | node = { label = Force.entity node.id (CustomNode (IntDict.size incoming + IntDict.size outgoing) node.label), id = node.id } }
+                    { incoming = incoming, outgoing = outgoing, node = { label = Force.entity node.id (CustomNode (IntDict.size incoming + IntDict.size outgoing) node.label), id = node.id } }
                 )
                 miserablesGraph
 
@@ -59,7 +62,7 @@ init =
             , Force.center (screenWidth / 2) (screenHeight / 2)
             ]
     in
-        updateGraphWithList graph (Force.computeSimulation (Force.simulation forces) <| List.map .label <| Graph.nodes graph)
+    updateGraphWithList graph (Force.computeSimulation (Force.simulation forces) <| List.map .label <| Graph.nodes graph)
 
 
 updateGraphWithList : Graph Entity () -> List Entity -> Graph Entity ()
@@ -68,7 +71,7 @@ updateGraphWithList =
         graphUpdater value =
             Maybe.map (\ctx -> updateContextWithValue ctx value)
     in
-        List.foldr (\node graph -> Graph.update node.id (graphUpdater node) graph)
+    List.foldr (\node graph -> Graph.update node.id (graphUpdater node) graph)
 
 
 updateContextWithValue nodeCtx value =
@@ -76,7 +79,7 @@ updateContextWithValue nodeCtx value =
         node =
             nodeCtx.node
     in
-        { nodeCtx | node = { node | label = value } }
+    { nodeCtx | node = { node | label = value } }
 
 
 linkElement : Graph Entity () -> Edge () -> Svg msg
@@ -91,15 +94,15 @@ linkElement graph edge =
         target =
             retrieveEntity <| Graph.get edge.to graph
     in
-        line
-            [ strokeWidth "1"
-            , stroke <| colorToCssRgb <| Scale.convert colorScale source.x
-            , x1 (toString source.x)
-            , y1 (toString source.y)
-            , x2 (toString target.x)
-            , y2 (toString target.y)
-            ]
-            []
+    line
+        [ strokeWidth 1
+        , stroke <| Color.toCssString <| Scale.convert colorScale source.x
+        , x1 source.x
+        , y1 source.y
+        , x2 target.x
+        , y2 target.y
+        ]
+        []
 
 
 hexagon ( x, y ) size attrs =
@@ -110,21 +113,19 @@ hexagon ( x, y ) size attrs =
         p =
             range 0 6
                 |> List.map toFloat
-                |> List.map (\a -> ( x + (cos (a * angle)) * size, y + (sin (a * angle)) * size ))
-                |> List.map (\( x, y ) -> toString x ++ "," ++ toString y)
-                |> String.join " "
+                |> List.map (\a -> ( x + cos (a * angle) * size, y + sin (a * angle) * size ))
                 |> points
     in
-        polygon
-            (p :: attrs)
+    polygon
+        (p :: attrs)
 
 
 nodeSize size node =
     hexagon ( node.x, node.y )
         size
-        [ fill <| colorToCssRgb <| Scale.convert colorScale node.x
+        [ fill <| Color.toCssString <| Scale.convert colorScale node.x
         ]
-        [ Svg.title [] [ text node.value.name ] ]
+        [ title [] [ text node.value.name ] ]
 
 
 nodeElement node =
@@ -132,15 +133,15 @@ nodeElement node =
         nodeSize 4 node.label
     else if node.label.value.rank < 9 then
         nodeSize 7 node.label
-    else if node.label.value.rank % 2 == 0 then
+    else if modBy 2 node.label.value.rank == 0 then
         g []
             [ nodeSize 9 node.label
             , circle
-                [ r "12"
-                , cx <| toString node.label.x
-                , cy <| toString node.label.y
+                [ r 12
+                , cx node.label.x
+                , cy node.label.y
                 , fill "none"
-                , stroke <| colorToCssRgb <| Scale.convert colorScale node.label.x
+                , stroke <| Color.toCssString <| Scale.convert colorScale node.label.x
                 ]
                 []
             ]
@@ -149,9 +150,9 @@ nodeElement node =
 
 
 view model =
-    svg [ width (toString screenWidth ++ "px"), height (toString screenHeight ++ "px") ]
-        [ g [ class "links" ] <| List.map (linkElement model) <| Graph.edges model
-        , g [ class "nodes" ] <| List.map nodeElement <| Graph.nodes model
+    svg [ width screenWidth, height screenHeight ]
+        [ g [ class [ "links" ] ] <| List.map (linkElement model) <| Graph.edges model
+        , g [ class [ "nodes" ] ] <| List.map nodeElement <| Graph.nodes model
         ]
 
 

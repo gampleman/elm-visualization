@@ -3,14 +3,14 @@ module CustomPieChart exposing (main)
 {-| An example showing how to render a basic pie chart.
 -}
 
-import Visualization.Shape as Shape exposing (defaultPieConfig)
 import Array exposing (Array)
-import Svg exposing (Svg, svg, g, path, text_, text)
-import Svg.Attributes exposing (transform, d, style, dy, width, height, textAnchor)
-import Html exposing (Html, div, input, label, br, h2)
-import Html.Attributes exposing (type_, value, step)
+import Html exposing (Html, br, div, h2, input, label)
+import Html.Attributes exposing (step, type_, value)
 import Html.Events exposing (onInput)
 import String
+import Svg exposing (Svg, g, path, svg, text, text_)
+import Svg.Attributes exposing (d, dy, height, style, textAnchor, transform, width)
+import Visualization.Shape as Shape exposing (defaultPieConfig)
 
 
 screenWidth : Float
@@ -82,12 +82,12 @@ drawChart config model =
                 ]
                 [ text label ]
     in
-        svg [ width (toString (radius * 2) ++ "px"), height (toString (radius * 2) ++ "px") ]
-            [ g [ transform ("translate(" ++ toString radius ++ "," ++ toString radius ++ ")") ]
-                [ g [] <| List.indexedMap makeSlice pieData
-                , g [] <| List.map2 makeLabel pieData model
-                ]
+    svg [ width (toString (radius * 2) ++ "px"), height (toString (radius * 2) ++ "px") ]
+        [ g [ transform ("translate(" ++ toString radius ++ "," ++ toString radius ++ ")") ]
+            [ g [] <| List.indexedMap makeSlice pieData
+            , g [] <| List.map2 makeLabel pieData model
             ]
+        ]
 
 
 update : Msg -> Model -> Model
@@ -96,21 +96,21 @@ update msg model =
         config =
             model.config
     in
-        case msg of
-            UpdateOuterRadius amount ->
-                { model | config = { config | outerRadius = Result.withDefault 0 <| String.toFloat amount } }
+    case msg of
+        UpdateOuterRadius amount ->
+            { model | config = { config | outerRadius = Result.withDefault 0 <| String.toFloat amount } }
 
-            UpdateInnerRadius amount ->
-                { model | config = { config | innerRadius = Result.withDefault 0 <| String.toFloat amount } }
+        UpdateInnerRadius amount ->
+            { model | config = { config | innerRadius = Result.withDefault 0 <| String.toFloat amount } }
 
-            UpdatePadAngle amount ->
-                { model | config = { config | padAngle = Result.withDefault 0 <| String.toFloat amount } }
+        UpdatePadAngle amount ->
+            { model | config = { config | padAngle = Result.withDefault 0 <| String.toFloat amount } }
 
-            UpdateCornerRadius amount ->
-                { model | config = { config | cornerRadius = Result.withDefault 0 <| String.toFloat amount } }
+        UpdateCornerRadius amount ->
+            { model | config = { config | cornerRadius = Result.withDefault 0 <| String.toFloat amount } }
 
-            UpdateLabelPosition amount ->
-                { model | config = { config | labelPosition = Result.withDefault 0 <| String.toFloat amount } }
+        UpdateLabelPosition amount ->
+            { model | config = { config | labelPosition = Result.withDefault 0 <| String.toFloat amount } }
 
 
 view : Model -> Html Msg

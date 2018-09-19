@@ -1,16 +1,16 @@
 module Visualization.Histogram
     exposing
-        ( HistogramGenerator
+        ( Bin
+        , HistogramGenerator
+        , Threshold
         , binCount
+        , compute
+        , custom
         , float
         , generator
-        , custom
-        , withDomain
-        , Threshold
-        , sturges
         , steps
-        , Bin
-        , compute
+        , sturges
+        , withDomain
         )
 
 {-| A histogram is an accurate graphical representation of the distribution of
@@ -89,7 +89,7 @@ binCount ( x0, x1 ) num =
         tz =
             VList.tickStep x0 x1 num
     in
-        VList.range (toFloat (ceiling (x0 / tz)) * tz) (toFloat (floor (x1 / tz)) * tz) tz
+    VList.range (toFloat (ceiling (x0 / tz)) * tz) (toFloat (floor (x1 / tz)) * tz) tz
 
 
 {-| For creating an appropriate Threshold value if you already have appropriate
@@ -207,7 +207,7 @@ compute list (H { value, threshold, domain }) =
                     Maybe.withDefault (initBin 0 defaultValue)
 
                 -- this is for escaping maybes
-                bins =
+                defaultBins =
                     Array.indexedMap initBin thresholds
                         |> Array.push (initBin thresholdsCount <| Maybe.withDefault defaultValue <| Array.get (thresholdsCount - 1) thresholds)
 
@@ -222,6 +222,6 @@ compute list (H { value, threshold, domain }) =
                         newBin =
                             { oldBin | values = item :: oldBin.values, length = oldBin.length + 1 }
                     in
-                        Array.set threshIndex newBin bins
+                    Array.set threshIndex newBin bins
             in
-                List.foldl binify bins list |> Array.toList
+            List.foldl binify defaultBins list |> Array.toList

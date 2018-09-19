@@ -1,13 +1,13 @@
-module Axis exposing (..)
+module Axis exposing (defaultOptionsTest, renderingTest)
 
-import Test exposing (..)
 import Expect
+import Fuzz exposing (..)
+import Helper exposing (expectAll, isAbout, isBetween)
+import Svg exposing (g, line, path, text, text_)
+import Svg.Attributes exposing (class, d, dy, fill, fontFamily, fontSize, stroke, textAnchor, transform, x, x1, x2, y, y1, y2)
+import Test exposing (..)
 import Visualization.Axis as Axis
 import Visualization.Scale as Scale
-import Fuzz exposing (..)
-import Helper exposing (isAbout, isBetween, expectAll)
-import Svg exposing (g, path, line, text, text_)
-import Svg.Attributes exposing (class, stroke, fill, transform, d, fontSize, fontFamily, x, y, x1, x2, y1, y2, dy, textAnchor)
 
 
 defaultOptionsTest : Test
@@ -63,5 +63,5 @@ renderingTest =
                 options =
                     Axis.defaultOptions
             in
-                Axis.axis { options | tickCount = 5 } (Scale.linear ( 0, 5 ) ( 290, 0 ))
-                    |> Expect.equal expected
+            Axis.axis { options | tickCount = 5 } (Scale.linear ( 0, 5 ) ( 290, 0 ))
+                |> Expect.equal expected

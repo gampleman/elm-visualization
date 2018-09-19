@@ -1,4 +1,4 @@
-module Example exposing (switchableViews, linkTo, navigation)
+module Example exposing (linkTo, navigation, switchableViews)
 
 import Html exposing (Html, text)
 import Html.Attributes exposing (href)
@@ -72,4 +72,4 @@ linkTo view attrs children =
         attributes =
             clickHandler :: hrefAttr :: attrs
     in
-        Html.a attributes children
+    Html.a attributes children

@@ -3,20 +3,20 @@ module NorwegianCarSales exposing (main)
 {-| This example demonstates using different kinds of layouts for stacked graphs.
 -}
 
-import SampleData
-import Color.Convert exposing (colorToCssRgb)
-import Visualization.Scale as Scale exposing (ContinuousScale, OrdinalScale, Scale)
-import Visualization.Axis as Axis exposing (Orientation(..))
-import List.Extra as List
 import Color exposing (Color)
-import Svg exposing (..)
-import Html exposing (div)
-import Html.Attributes
-import Svg.Attributes exposing (..)
-import Visualization.Shape as Shape exposing (StackConfig, StackResult)
+import Color.Convert exposing (colorToCssRgb)
 import Date exposing (Date, Month(..))
 import Date.Extra as Date
 import Example
+import Html exposing (div)
+import Html.Attributes
+import List.Extra as List
+import SampleData
+import Svg exposing (..)
+import Svg.Attributes exposing (..)
+import Visualization.Axis as Axis exposing (Orientation(..))
+import Visualization.Scale as Scale exposing (ContinuousScale, OrdinalScale, Scale)
+import Visualization.Shape as Shape exposing (StackConfig, StackResult)
 
 
 exampleConfig : List ( String, StackConfig String )
@@ -97,7 +97,7 @@ view { values, labels, extent } =
         yScale : ContinuousScale
         yScale =
             Scale.linear extent ( height - padding, padding )
-                |> flip Scale.nice 4
+                |> (\a -> Scale.nice a 4)
 
         axisOptions =
             Axis.defaultOptions
@@ -126,29 +126,29 @@ view { values, labels, extent } =
                         |> (\( y1, y2 ) -> (y2 + y1) / 2)
                         |> Scale.convert yScale
             in
-                List.map position values
+            List.map position values
 
         labelElement : String -> Float -> Svg msg
         labelElement label yPosition =
             g [ translate (width - padding - labelsWidth + 10) yPosition ]
                 [ text_ [ fill (sampleColor label |> colorToCssRgb) ] [ text label ] ]
     in
-        div []
-            [ titleNavigation
-            , Svg.svg [ Svg.Attributes.width (toString width ++ "px"), Svg.Attributes.height (toString height ++ "px") ]
-                [ g [ translate (padding - 1) (height - padding) ]
-                    [ xAxis ]
-                , g [ class "series" ] paths
-                , g [ fontFamily "sans-serif", fontSize "10" ]
-                    (List.map2 labelElement labels labelPositions)
-                ]
+    div []
+        [ titleNavigation
+        , Svg.svg [ Svg.Attributes.width (toString width ++ "px"), Svg.Attributes.height (toString height ++ "px") ]
+            [ g [ translate (padding - 1) (height - padding) ]
+                [ xAxis ]
+            , g [ class "series" ] paths
+            , g [ fontFamily "sans-serif", fontSize "10" ]
+                (List.map2 labelElement labels labelPositions)
             ]
+        ]
 
 
 titleNavigation : Html.Html String
 titleNavigation =
-    div [ Html.Attributes.style [ ( "padding", toString padding ++ "px" ), ( "font-family", "sans-serif" ), ( "position", "absolute" ) ] ]
-        [ Html.h1 [ Html.Attributes.style [ ( "margin-top", "0px" ), ( "font-size", "20px" ) ] ] [ text "Car Sales in Norway" ]
+    div [ Html.Attributes.style "padding" (toString padding ++ "px"), Html.Attributes.style "font-family" "sans-serif", Html.Attributes.style "position" "absolute" ]
+        [ Html.h1 [ Html.Attributes.style "margin-top" "0px", Html.Attributes.style "font-size" "20px" ] [ text "Car Sales in Norway" ]
         , Example.navigation "Layout" exampleConfig
         ]
 
@@ -176,16 +176,17 @@ toArea ( scaleX, scaleY ) ys =
                 ( low, high ) =
                     if y1 < y2 then
                         ( y1, y2 )
+
                     else
                         ( y2, y1 )
             in
-                Just
-                    ( ( xCoord, Scale.convert scaleY low )
-                    , ( xCoord, Scale.convert scaleY high )
-                    )
+            Just
+                ( ( xCoord, Scale.convert scaleY low )
+                , ( xCoord, Scale.convert scaleY high )
+                )
     in
-        List.indexedMap mapper ys
-            |> Shape.area Shape.monotoneInXCurve
+    List.indexedMap mapper ys
+        |> Shape.area Shape.monotoneInXCurve
 
 
 translate : number -> number -> Svg.Attribute msg

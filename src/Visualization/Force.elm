@@ -1,26 +1,26 @@
 module Visualization.Force
     exposing
-        ( entity
-        , tick
-        , simulation
-        , isCompleted
-        , reheat
-        , iterations
+        ( Entity
+        , Force
+        , State
         , center
+        , computeSimulation
+        , customLinks
+        , entity
+        , isCompleted
+        , iterations
+        , links
         , manyBody
         , manyBodyStrength
-        , links
-        , customLinks
-        , Entity
-        , State
-        , Force
-        , computeSimulation
+        , reheat
+        , simulation
+        , tick
         )
 
 {-| This module implements a velocity Verlet numerical integrator for simulating physical forces on particles.
-The simulation is simplified: it assumes a constant unit time step *Δt = 1* for each step, and a constant unit
-mass *m = 1* for all particles. As a result, a force *F* acting on a particle is equivalent to a constant
-acceleration *a* over the time interval *Δt*, and can be simulated simply by adding to the particle’s velocity,
+The simulation is simplified: it assumes a constant unit time step _Δt = 1_ for each step, and a constant unit
+mass _m = 1_ for all particles. As a result, a force _F_ acting on a particle is equivalent to a constant
+acceleration _a_ over the time interval _Δt_, and can be simulated simply by adding to the particle’s velocity,
 which is then added to the particle’s position.
 
 <a href="http://code.gampleman.eu/elm-visualization/ForceDirectedGraph/"><img style="max-width: 100%" src="http://code.gampleman.eu/elm-visualization/ForceDirectedGraph/preview@2x.png" alt="force directed graph illustration" /></a>
@@ -39,8 +39,8 @@ In the domain of information visualization, physical simulations are useful for 
 
 -}
 
-import Visualization.Force.ManyBody as ManyBody
 import Dict exposing (Dict)
+import Visualization.Force.ManyBody as ManyBody
 
 
 {-| Visualization.Force needs to compute and update positions and velocities on any objects that it is simulating.
@@ -87,7 +87,7 @@ computeSimulation state entities =
             ( newState, newEntities ) =
                 tick state entities
         in
-            computeSimulation newState newEntities
+        computeSimulation newState newEntities
 
 
 {-| This is a convenience function for wrapping data up as Entities. The initial position of entities is arranged
@@ -102,13 +102,13 @@ entity index a =
         angle =
             toFloat index * initialAngle
     in
-        { x = radius * cos angle
-        , y = radius * sin angle
-        , vx = 0.0
-        , vy = 0.0
-        , id = index
-        , value = a
-        }
+    { x = radius * cos angle
+    , y = radius * sin angle
+    , vx = 0.0
+    , vy = 0.0
+    , id = index
+    , value = a
+    }
 
 
 applyForce : Float -> Force comparable -> Dict comparable (Entity comparable a) -> Dict comparable (Entity comparable a)
@@ -117,7 +117,7 @@ applyForce alpha force entities =
         Center x y ->
             let
                 ( sumx, sumy ) =
-                    Dict.foldr (\_ ent ( sx, sy ) -> ( sx + ent.x, sy + ent.y )) ( 0, 0 ) entities
+                    Dict.foldr (\_ ent ( sx0, sy0 ) -> ( sx0 + ent.x, sy0 + ent.y )) ( 0, 0 ) entities
 
                 n =
                     toFloat <| Dict.size entities
@@ -128,12 +128,13 @@ applyForce alpha force entities =
                 sy =
                     sumy / n - y
             in
-                Dict.map (\_ ent -> { ent | x = ent.x - sx, y = ent.y - sy }) entities
+            Dict.map (\_ ent -> { ent | x = ent.x - sx, y = ent.y - sy }) entities
 
         Collision float collisionParamidDict ->
-            Debug.crash "not implemented"
+            --Debug.crash "not implemented"
+            entities
 
-        Links iterations links ->
+        Links iters lnks ->
             List.foldl
                 (\{ source, target, distance, strength, bias } ents ->
                     case ( Dict.get source ents, Dict.get target ents ) of
@@ -151,24 +152,26 @@ applyForce alpha force entities =
                                 l =
                                     (d - distance) / d * alpha * strength
                             in
-                                ents
-                                    |> Dict.update target (Maybe.map (\sn -> { sn | vx = sn.vx - x * l * bias, vy = sn.vy - y * l * bias }))
-                                    |> Dict.update source (Maybe.map (\tn -> { tn | vx = tn.vx + x * l * (1 - bias), vy = tn.vy + y * l * (1 - bias) }))
+                            ents
+                                |> Dict.update target (Maybe.map (\sn -> { sn | vx = sn.vx - x * l * bias, vy = sn.vy - y * l * bias }))
+                                |> Dict.update source (Maybe.map (\tn -> { tn | vx = tn.vx + x * l * (1 - bias), vy = tn.vy + y * l * (1 - bias) }))
 
                         otherwise ->
                             ents
                 )
                 entities
-                links
+                lnks
 
         ManyBody theta entityStrengths ->
             ManyBody.wrapper alpha theta entityStrengths entities
 
         X directionalParamidDict ->
-            Debug.crash "not implemented"
+            --Debug.crash "not implemented"
+            entities
 
         Y directionalParamidDict ->
-            Debug.crash "not implemented"
+            --Debug.crash "not implemented"
+            entities
 
 
 {-| Advances the simulation a single tick, returning both updated entities and a new State of the simulation.
@@ -193,7 +196,7 @@ tick (State state) nodes =
                 , vy = ent.vy * state.velocityDecay
             }
     in
-        ( State { state | alpha = alpha }, List.map updateEntity <| Dict.values newNodes )
+    ( State { state | alpha = alpha }, List.map updateEntity <| Dict.values newNodes )
 
 
 {-| Create a new simulation by passing a list of forces.
@@ -217,8 +220,8 @@ longer, but typically produce better results.
 
 -}
 iterations : Int -> State comparable -> State comparable
-iterations iterations (State config) =
-    State { config | alphaDecay = 1 - config.minAlpha ^ (1 / toFloat iterations) }
+iterations iters (State config) =
+    State { config | alphaDecay = 1 - config.minAlpha ^ (1 / toFloat iters) }
 
 
 {-| Resets the computation. This is useful if you need to change the parameters at runtime, such as the position or
@@ -316,7 +319,7 @@ manyBody =
 -}
 manyBodyStrength : Float -> List comparable -> Force comparable
 manyBodyStrength strength =
-    ManyBody 0 << Dict.fromList << List.map (\key -> ( key, { strength = strength } ))
+    ManyBody 0.9 << Dict.fromList << List.map (\key -> ( key, { strength = strength } ))
 
 
 {-| The link force pushes linked nodes together or apart according to the desired link distance. The strength of the
@@ -337,7 +340,7 @@ links =
 however this parameter is currently ignored (so set it to 1). This will change in a future release.
 -}
 customLinks : Int -> List { source : comparable, target : comparable, distance : Float, strength : Maybe Float } -> Force comparable
-customLinks iterations list =
+customLinks iters list =
     let
         counts =
             List.foldr
@@ -354,14 +357,14 @@ customLinks iterations list =
         count key =
             Dict.get key counts |> Maybe.withDefault 0
     in
-        list
-            |> List.map
-                (\{ source, target, distance, strength } ->
-                    { source = source
-                    , target = target
-                    , distance = distance
-                    , strength = Maybe.withDefault (1 / min (count source) (count target)) strength
-                    , bias = count source / (count source + count target)
-                    }
-                )
-            |> Links iterations
+    list
+        |> List.map
+            (\{ source, target, distance, strength } ->
+                { source = source
+                , target = target
+                , distance = distance
+                , strength = Maybe.withDefault (1 / min (count source) (count target)) strength
+                , bias = count source / (count source + count target)
+                }
+            )
+        |> Links iters

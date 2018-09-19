@@ -27,23 +27,23 @@ convert =
                     scale =
                         Scale.band defaultBandConfig [ "foo", "bar" ] ( 0, 960 )
                 in
-                    expectAll
-                        [ Scale.convert scale "foo"
-                            |> Expect.equal 0
-                        , Scale.convert scale "bar"
-                            |> Expect.equal 480
-                        ]
+                expectAll
+                    [ Scale.convert scale "foo"
+                        |> Expect.equal 0
+                    , Scale.convert scale "bar"
+                        |> Expect.equal 480
+                    ]
         , test "returns NaN for values outside the domain" <|
             \() ->
                 let
                     scale =
                         Scale.band defaultBandConfig [ "foo", "bar" ] ( 0, 960 )
                 in
-                    expectAll
-                        [ Scale.convert scale "baz"
-                            |> isNaN
-                            >> Expect.true "isNan"
-                        ]
+                expectAll
+                    [ Scale.convert scale "baz"
+                        |> isNaN
+                        >> Expect.true "isNan"
+                    ]
         , test "range values can be descending" <|
             \() ->
                 let
@@ -53,11 +53,11 @@ convert =
                     scale =
                         Scale.band defaultBandConfig domain ( 120, 0 )
                 in
-                    expectAll
-                        [ domain
-                            |> List.map (Scale.convert scale)
-                            |> Expect.equal [ 80, 40, 0 ]
-                        , Scale.bandwidth scale
-                            |> Expect.equal 40
-                        ]
+                expectAll
+                    [ domain
+                        |> List.map (Scale.convert scale)
+                        |> Expect.equal [ 80, 40, 0 ]
+                    , Scale.bandwidth scale
+                        |> Expect.equal 40
+                    ]
         ]
