@@ -459,7 +459,7 @@ arc arcData =
                     -- Or is the inner ring just a circular arc?
                 else
                     [ outerRing
-                        |> makeArc 0 0 r0 a10 a00 cw
+                        |> SubPath.connect (arc_ 0 0 r0 a10 a00 cw)
                         |> SubPath.close
                     ]
     in

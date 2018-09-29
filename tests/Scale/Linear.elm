@@ -1,6 +1,6 @@
 module Scale.Linear exposing (all)
 
-import Expect
+import Expect exposing (FloatingPointTolerance(..))
 import Fuzz exposing (..)
 import Helper exposing (expectAll, isAbout, isBetween)
 import Test exposing (..)
@@ -13,7 +13,7 @@ all =
         [ test "convert maps a domain value x to range value y" <|
             \() ->
                 Scale.convert (Scale.linear ( 0, 1 ) ( 1, 2 )) 0.5
-                    |> Expect.equal 1.5
+                    |> Expect.within (Absolute 0.0001) 1.5
         , test "maps an empty domain to the range start" <|
             \() ->
                 expectAll
@@ -34,7 +34,6 @@ all =
                 if r0 == r1 || d0 == d1 then
                     -- this is a special case, since the inversion cannot know to which end of the domain to go
                     double |> isAbout d0
-
                 else
                     double
                         |> isAbout val

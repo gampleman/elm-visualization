@@ -1,10 +1,14 @@
 module ListTests exposing (range, tickStep)
 
-import Expect
+import Expect exposing (FloatingPointTolerance(..))
 import Fuzz exposing (..)
 import Helper exposing (expectAll, expectAny)
 import Test exposing (..)
 import Visualization.List as VList
+
+
+tolerance =
+    Absolute 0.00001
 
 
 tickStep : Test
@@ -14,72 +18,72 @@ tickStep =
             \start stop count ->
                 expectAny
                     [ VList.tickStep start stop count
-                        |> Expect.equal -(VList.tickStep stop start count)
+                        |> Expect.within tolerance -(VList.tickStep stop start count)
                     , Expect.true "was not NaN" <| isNaN <| VList.tickStep start stop count
                     ]
         , test "returns approximately count + 1 tickStep when start < stop" <|
             \() ->
                 expectAll
                     [ VList.tickStep 0 1 10
-                        |> Expect.equal 0.1
+                        |> Expect.within tolerance 0.1
                     , VList.tickStep 0 1 9
-                        |> Expect.equal 0.1
+                        |> Expect.within tolerance 0.1
                     , VList.tickStep 0 1 8
-                        |> Expect.equal 0.1
+                        |> Expect.within tolerance 0.1
                     , VList.tickStep 0 1 7
-                        |> Expect.equal 0.2
+                        |> Expect.within tolerance 0.2
                     , VList.tickStep 0 1 6
-                        |> Expect.equal 0.2
+                        |> Expect.within tolerance 0.2
                     , VList.tickStep 0 1 5
-                        |> Expect.equal 0.2
+                        |> Expect.within tolerance 0.2
                     , VList.tickStep 0 1 4
-                        |> Expect.equal 0.2
+                        |> Expect.within tolerance 0.2
                     , VList.tickStep 0 1 3
-                        |> Expect.equal 0.5
+                        |> Expect.within tolerance 0.5
                     , VList.tickStep 0 1 2
-                        |> Expect.equal 0.5
+                        |> Expect.within tolerance 0.5
                     , VList.tickStep 0 1 1
-                        |> Expect.equal 1.0
+                        |> Expect.within tolerance 1.0
                     , VList.tickStep 0 10 10
-                        |> Expect.equal 1
+                        |> Expect.within tolerance 1
                     , VList.tickStep 0 10 9
-                        |> Expect.equal 1
+                        |> Expect.within tolerance 1
                     , VList.tickStep 0 10 8
-                        |> Expect.equal 1
+                        |> Expect.within tolerance 1
                     , VList.tickStep 0 10 7
-                        |> Expect.equal 2
+                        |> Expect.within tolerance 2
                     , VList.tickStep 0 10 6
-                        |> Expect.equal 2
+                        |> Expect.within tolerance 2
                     , VList.tickStep 0 10 5
-                        |> Expect.equal 2
+                        |> Expect.within tolerance 2
                     , VList.tickStep 0 10 4
-                        |> Expect.equal 2
+                        |> Expect.within tolerance 2
                     , VList.tickStep 0 10 3
-                        |> Expect.equal 5
+                        |> Expect.within tolerance 5
                     , VList.tickStep 0 10 2
-                        |> Expect.equal 5
+                        |> Expect.within tolerance 5
                     , VList.tickStep 0 10 1
-                        |> Expect.equal 10
+                        |> Expect.within tolerance 10
                     , VList.tickStep -10 10 10
-                        |> Expect.equal 2
+                        |> Expect.within tolerance 2
                     , VList.tickStep -10 10 9
-                        |> Expect.equal 2
+                        |> Expect.within tolerance 2
                     , VList.tickStep -10 10 8
-                        |> Expect.equal 2
+                        |> Expect.within tolerance 2
                     , VList.tickStep -10 10 7
-                        |> Expect.equal 2
+                        |> Expect.within tolerance 2
                     , VList.tickStep -10 10 6
-                        |> Expect.equal 5
+                        |> Expect.within tolerance 5
                     , VList.tickStep -10 10 5
-                        |> Expect.equal 5
+                        |> Expect.within tolerance 5
                     , VList.tickStep -10 10 4
-                        |> Expect.equal 5
+                        |> Expect.within tolerance 5
                     , VList.tickStep -10 10 3
-                        |> Expect.equal 5
+                        |> Expect.within tolerance 5
                     , VList.tickStep -10 10 2
-                        |> Expect.equal 10
+                        |> Expect.within tolerance 10
                     , VList.tickStep -10 10 1
-                        |> Expect.equal 20
+                        |> Expect.within tolerance 20
                     ]
         ]
 
