@@ -3,11 +3,11 @@ module Histogram exposing (main)
 {-| Renders a histogram of a randomly generated data set
 -}
 
+import Color
 import Random exposing (Generator, Seed)
 import TypedSvg exposing (g, rect, svg)
 import TypedSvg.Attributes exposing (class, fill, transform)
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
-import TypedSvg.Color exposing (rgb)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
 import Visualization.Axis as Axis exposing (defaultOptions)
@@ -87,7 +87,7 @@ column yScale { length, x0, x1 } =
         , y <| Scale.convert yScale (toFloat length)
         , width <| Scale.convert xScale x1 - Scale.convert xScale x0
         , height <| h - Scale.convert yScale (toFloat length) - 2 * padding
-        , fill <| Fill <| rgb 46 118 149
+        , fill <| Fill <| Color.rgb255 46 118 149
         ]
         []
 

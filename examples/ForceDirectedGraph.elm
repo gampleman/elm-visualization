@@ -6,29 +6,29 @@ based on their co-occurence in a scene. Try dragging the nodes!
 
 import Browser
 import Browser.Events
+import Color
 import Graph exposing (Edge, Graph, Node, NodeContext, NodeId)
 import Html
 import Html.Events exposing (on)
 import Html.Events.Extra.Mouse as Mouse
 import Json.Decode as Decode
 import SampleData exposing (miserablesGraph)
-import Svg exposing (title)
-import Svg.Attributes exposing (fill, stroke)
 import Time
-import TypedSvg exposing (circle, g, line, svg)
-import TypedSvg.Attributes exposing (class)
+import TypedSvg exposing (circle, g, line, svg, title)
+import TypedSvg.Attributes exposing (class, fill, stroke)
 import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, strokeWidth, width, x1, x2, y1, y2)
 import TypedSvg.Core exposing (Attribute, Svg, text)
+import TypedSvg.Types exposing (Fill(..))
 import Visualization.Force as Force exposing (State)
 
 
-screenWidth : Float
-screenWidth =
+w : Float
+w =
     990
 
 
-screenHeight : Float
-screenHeight =
+h : Float
+h =
     504
 
 
@@ -77,7 +77,7 @@ init _ =
         forces =
             [ Force.links <| List.map link <| Graph.edges graph
             , Force.manyBody <| List.map .id <| Graph.nodes graph
-            , Force.center (screenWidth / 2) (screenHeight / 2)
+            , Force.center (w / 2) (h / 2)
             ]
     in
     ( Model Nothing graph (Force.simulation forces), Cmd.none )
@@ -181,7 +181,7 @@ linkElement graph edge =
     in
     line
         [ strokeWidth 1
-        , stroke "#aaa"
+        , stroke (Color.rgb255 170 170 170)
         , x1 source.x
         , y1 source.y
         , x2 target.x
@@ -193,8 +193,8 @@ linkElement graph edge =
 nodeElement node =
     circle
         [ r 2.5
-        , fill "#000"
-        , stroke "transparent"
+        , fill (Fill Color.black)
+        , stroke (Color.rgba 0 0 0 0)
         , strokeWidth 7
         , onMouseDown node.id
         , cx node.label.x
@@ -205,7 +205,7 @@ nodeElement node =
 
 view : Model -> Svg Msg
 view model =
-    svg [ width screenWidth, height screenHeight ]
+    svg [ width w, height h ]
         [ g [ class [ "links" ] ] <| List.map (linkElement model.graph) <| Graph.edges model.graph
         , g [ class [ "nodes" ] ] <| List.map nodeElement <| Graph.nodes model.graph
         ]

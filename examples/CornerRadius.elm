@@ -4,13 +4,13 @@ module CornerRadius exposing (main)
 -}
 
 import Array exposing (Array)
+import Color exposing (Color)
 import Path exposing (Path)
-import Svg.Attributes exposing (fill, stroke)
 import TypedSvg exposing (circle, g, svg)
-import TypedSvg.Attributes exposing (transform)
+import TypedSvg.Attributes exposing (fill, stroke, transform)
 import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, width)
 import TypedSvg.Core exposing (Svg)
-import TypedSvg.Types exposing (Transform(..))
+import TypedSvg.Types exposing (Fill(..), Transform(..))
 import Visualization.Shape as Shape exposing (Arc, defaultPieConfig)
 
 
@@ -29,19 +29,24 @@ cornerRadius =
     12
 
 
-colors : Array String
+rgba255 : Int -> Int -> Int -> Float -> Color
+rgba255 r g b a =
+    Color.fromRgba { red = toFloat r / 255, green = toFloat g / 255, blue = toFloat b / 255, alpha = a }
+
+
+colors : Array Color
 colors =
     Array.fromList
-        [ "rgba(31, 119, 180, 0.5)"
-        , "rgba(255, 127, 14, 0.5)"
-        , "rgba(44, 159, 44, 0.5)"
-        , "rgba(214, 39, 40, 0.5)"
-        , "rgba(148, 103, 189, 0.5)"
-        , "rgba(140, 86, 75, 0.5)"
-        , "rgba(227, 119, 194, 0.5)"
-        , "rgba(128, 128, 128, 0.5)"
-        , "rgba(188, 189, 34, 0.5)"
-        , "rgba(23, 190, 207, 0.5)"
+        [ rgba255 31 119 180 0.5
+        , rgba255 255 127 14 0.5
+        , rgba255 44 159 44 0.5
+        , rgba255 214 39 40 0.5
+        , rgba255 148 103 189 0.5
+        , rgba255 140 86 75 0.5
+        , rgba255 227 119 194 0.5
+        , rgba255 128 128 128 0.5
+        , rgba255 188 189 34 0.5
+        , rgba255 23 190 207 0.5
         ]
 
 
@@ -72,8 +77,8 @@ corner angle radius sign =
                 (sign * cornerRadius * cos angle + sqrt (radius ^ 2 - cornerRadius ^ 2) * sin angle)
                 (sign * cornerRadius * sin angle - sqrt (radius ^ 2 - cornerRadius ^ 2) * cos angle)
             ]
-        , stroke "#000"
-        , fill "none"
+        , stroke Color.black
+        , fill FillNone
         ]
 
 
@@ -81,7 +86,7 @@ circular : List Arc -> Svg msg
 circular arcs =
     let
         makeSlice index datum =
-            Path.element (Shape.arc datum) [ fill (Maybe.withDefault "#000" <| Array.get index colors), stroke "#fff" ]
+            Path.element (Shape.arc datum) [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors, stroke Color.white ]
 
         makeCorners : { a | startAngle : Float, endAngle : Float, outerRadius : Float } -> List (Svg msg)
         makeCorners { startAngle, endAngle, outerRadius } =
@@ -99,7 +104,7 @@ annular : List Arc -> Svg msg
 annular arcs =
     let
         makeSlice index datum =
-            Path.element (Shape.arc { datum | innerRadius = mainRadius - 60 }) [ fill (Maybe.withDefault "#000" <| Array.get index colors), stroke "#fff" ]
+            Path.element (Shape.arc { datum | innerRadius = mainRadius - 60 }) [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors, stroke Color.white ]
 
         makeCorners { startAngle, endAngle, outerRadius, innerRadius } =
             [ corner startAngle (outerRadius - cornerRadius) 1

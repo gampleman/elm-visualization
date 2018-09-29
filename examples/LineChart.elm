@@ -4,14 +4,13 @@ module LineChart exposing (main)
 the primitives provided in this library.
 -}
 
+import Color
 import Path exposing (Path)
 import SampleData exposing (timeSeries)
-import Svg.Attributes exposing (stroke)
 import Time
 import TypedSvg exposing (g, svg)
-import TypedSvg.Attributes exposing (class, fill, transform)
+import TypedSvg.Attributes exposing (class, fill, stroke, transform)
 import TypedSvg.Attributes.InPx exposing (height, strokeWidth, width)
-import TypedSvg.Color exposing (rgba)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
 import Visualization.Axis as Axis exposing (defaultOptions)
@@ -88,8 +87,8 @@ view model =
         , g [ transform [ Translate (padding - 1) padding ] ]
             [ yAxis ]
         , g [ transform [ Translate padding padding ], class [ "series" ] ]
-            [ Path.element (area model) [ stroke "none", strokeWidth 3, fill <| Fill <| rgba 255 0 0 0.54 ]
-            , Path.element (line model) [ stroke "red", strokeWidth 3, fill FillNone ]
+            [ Path.element (area model) [ strokeWidth 3, fill <| Fill <| Color.rgba 1 0 0 0.54 ]
+            , Path.element (line model) [ stroke (Color.rgb 1 0 0), strokeWidth 3, fill FillNone ]
             ]
         ]
 

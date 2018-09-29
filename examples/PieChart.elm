@@ -4,14 +4,13 @@ module PieChart exposing (main)
 -}
 
 import Array exposing (Array)
+import Color exposing (Color)
 import Path
-import Svg.Attributes exposing (fill)
 import TypedSvg exposing (g, svg, text_)
-import TypedSvg.Attributes exposing (dy, stroke, textAnchor, transform)
+import TypedSvg.Attributes exposing (dy, fill, stroke, textAnchor, transform)
 import TypedSvg.Attributes.InPx exposing (height, width)
-import TypedSvg.Color exposing (white)
 import TypedSvg.Core exposing (Svg, text)
-import TypedSvg.Types exposing (AnchorAlignment(..), Transform(..), em)
+import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..), em)
 import Visualization.Shape as Shape exposing (defaultPieConfig)
 
 
@@ -25,9 +24,17 @@ h =
     504
 
 
-colors : Array String
+colors : Array Color
 colors =
-    Array.fromList [ "#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00" ]
+    Array.fromList
+        [ Color.rgb255 152 171 198
+        , Color.rgb255 138 137 166
+        , Color.rgb255 123 104 136
+        , Color.rgb255 107 72 107
+        , Color.rgb255 159 92 85
+        , Color.rgb255 208 116 60
+        , Color.rgb255 255 96 0
+        ]
 
 
 radius : Float
@@ -42,7 +49,7 @@ view model =
             model |> List.map Tuple.second |> Shape.pie { defaultPieConfig | outerRadius = radius }
 
         makeSlice index datum =
-            Path.element (Shape.arc datum) [ fill (Maybe.withDefault "#000" <| Array.get index colors), stroke white ]
+            Path.element (Shape.arc datum) [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors, stroke Color.white ]
 
         makeLabel slice ( label, value ) =
             let

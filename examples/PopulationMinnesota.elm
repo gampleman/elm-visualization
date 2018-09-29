@@ -1,14 +1,13 @@
 module PopulationMinnesota exposing (main)
 
-import Color
+import Color exposing (Color)
 import List.Extra as List
 import SampleData exposing (Gender(..))
-import Svg.Attributes exposing (fill)
 import TypedSvg exposing (g, rect, svg, text_)
-import TypedSvg.Attributes exposing (class, dy, fontFamily, textAnchor, transform)
+import TypedSvg.Attributes exposing (class, dy, fill, fontFamily, textAnchor, transform)
 import TypedSvg.Attributes.InPx exposing (fontSize, height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
-import TypedSvg.Types exposing (AnchorAlignment(..), Transform(..), em)
+import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..), em)
 import Visualization.Axis as Axis exposing (Orientation(..))
 import Visualization.List
 import Visualization.Scale as Scale exposing (BandScale, ContinuousScale, OrdinalScale, QuantizeScale, Scale, defaultBandConfig)
@@ -73,12 +72,11 @@ config =
     }
 
 
-colors : List String
+colors : List Color
 colors =
     [ Scale.viridisInterpolator 0.3
     , Scale.viridisInterpolator 0.7
     ]
-        |> List.map Color.toCssString
 
 
 column : BandScale Int -> ( Int, List ( Float, Float ) ) -> Svg msg
@@ -93,7 +91,7 @@ column yScale ( year, values ) =
                 , x lowerY
                 , height bandwidth
                 , width (abs <| upperY - lowerY)
-                , fill color
+                , fill (Fill color)
                 ]
                 []
     in

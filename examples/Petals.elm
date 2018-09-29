@@ -3,12 +3,12 @@ module Petals exposing (main)
 {-| Based on the arrangement of petals in a sunflower. Demonstrates the initial layout of Force.entity.
 -}
 
-import Color
-import Svg.Attributes exposing (fill)
+import Color exposing (Color)
 import TypedSvg exposing (circle, svg)
-import TypedSvg.Attributes exposing (viewBox)
+import TypedSvg.Attributes exposing (fill, viewBox)
 import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, width)
 import TypedSvg.Core exposing (Svg)
+import TypedSvg.Types exposing (Fill(..))
 import Visualization.Force as Force
 import Visualization.Scale as Scale
 
@@ -23,9 +23,9 @@ h =
     504
 
 
-color : Int -> String
+color : Int -> Color
 color =
-    Color.toCssString << Scale.convert (Scale.sequential ( 0, 360 ) Scale.viridisInterpolator) << toFloat
+    Scale.convert (Scale.sequential ( 0, 360 ) Scale.viridisInterpolator) << toFloat
 
 
 makePetal : Int -> Svg msg
@@ -37,7 +37,7 @@ makePetal i =
         angle =
             modBy 360 (floor (toFloat i * (3 - sqrt 5) * pi * 180 - sqrt (toFloat i) * 4))
     in
-    circle [ cx x, cy y, r 5, fill (color angle) ] []
+    circle [ cx x, cy y, r 5, fill (Fill (color angle)) ] []
 
 
 view : List Int -> Svg msg

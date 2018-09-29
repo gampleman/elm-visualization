@@ -10,14 +10,13 @@ import Html.Attributes
 import List.Extra as List
 import Path exposing (Path)
 import SampleData
-import Svg.Attributes exposing (fill)
 import Time exposing (Month(..))
 import Time.Extra exposing (Parts)
 import TypedSvg exposing (g, svg, text_)
-import TypedSvg.Attributes exposing (class, fontFamily, transform)
+import TypedSvg.Attributes exposing (class, fill, fontFamily, transform)
 import TypedSvg.Attributes.InPx exposing (fontSize, height, width)
 import TypedSvg.Core exposing (Svg)
-import TypedSvg.Types exposing (Transform(..))
+import TypedSvg.Types exposing (Fill(..), Transform(..))
 import Visualization.Axis as Axis exposing (Orientation(..))
 import Visualization.Scale as Scale exposing (ContinuousScale, OrdinalScale, Scale)
 import Visualization.Shape as Shape exposing (StackConfig, StackResult)
@@ -140,7 +139,7 @@ view { values, labels, extent } =
         labelElement : String -> Float -> Svg msg
         labelElement label yPosition =
             g [ transform [ Translate (w - padding - labelsWidth + 10) yPosition ] ]
-                [ text_ [ fill (sampleColor label |> Color.toCssString) ] [ text label ] ]
+                [ text_ [ fill (sampleColor label |> Fill) ] [ text label ] ]
     in
     div []
         [ titleNavigation
@@ -166,7 +165,7 @@ titleNavigation =
 -}
 renderStream : ( ContinuousScale, ContinuousScale ) -> Color -> List ( Float, Float ) -> Svg msg
 renderStream scales color coords =
-    Path.element (toArea scales coords) [ fill (Color.toCssString color) ]
+    Path.element (toArea scales coords) [ fill (Fill color) ]
 
 
 {-| Create a svg path string that draws the area between two lines

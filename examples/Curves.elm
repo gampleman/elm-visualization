@@ -3,29 +3,27 @@ module Curves exposing (main)
 {-| Here we demonstrate the various curve functions provided.
 -}
 
-import Color
+import Color exposing (Color)
 import Example
 import Html exposing (a, div, p)
 import Path exposing (Path)
 import SubPath exposing (SubPath)
-import Svg.Attributes exposing (fill, style)
 import TypedSvg exposing (g, line, rect, svg, text_)
-import TypedSvg.Attributes as Explicit exposing (stroke, transform)
+import TypedSvg.Attributes as Explicit exposing (fill, fontFamily, stroke, transform)
 import TypedSvg.Attributes.InPx exposing (height, strokeWidth, width, x, x1, x2, y, y1, y2)
-import TypedSvg.Color exposing (black, white)
 import TypedSvg.Core exposing (Svg, text)
-import TypedSvg.Types exposing (Transform(..), percent)
+import TypedSvg.Types exposing (Fill(..), Transform(..), percent)
 import Visualization.Scale as Scale exposing (ContinuousScale)
 import Visualization.Shape as Shape
 
 
-screenWidth : Float
-screenWidth =
+w : Float
+w =
     990
 
 
-screenHeight : Float
-screenHeight =
+h : Float
+h =
     450
 
 
@@ -51,12 +49,12 @@ points =
 
 xScale : ContinuousScale
 xScale =
-    Scale.linear ( 0, 2 ) ( padding, screenWidth - padding )
+    Scale.linear ( 0, 2 ) ( padding, w - padding )
 
 
 yScale : ContinuousScale
 yScale =
-    Scale.linear ( 0, 1 ) ( screenHeight - padding, padding )
+    Scale.linear ( 0, 1 ) ( h - padding, padding )
 
 
 preparedPoints : List ( Float, Float )
@@ -71,7 +69,7 @@ xGridLine index tick =
         , Explicit.y2 (percent 100)
         , x1 (Scale.convert xScale tick)
         , x2 (Scale.convert xScale tick)
-        , stroke white
+        , stroke Color.white
         , strokeWidth (Basics.max (toFloat (modBy 2 index)) 0.5)
         ]
         []
@@ -84,7 +82,7 @@ yGridLine index tick =
         , Explicit.x2 (percent 100)
         , y1 (Scale.convert yScale tick)
         , y2 (Scale.convert yScale tick)
-        , stroke white
+        , stroke Color.white
         , strokeWidth (Basics.max (toFloat (modBy 2 index)) 0.5)
         ]
         []
@@ -94,29 +92,29 @@ type alias Curve =
     List ( Float, Float ) -> SubPath
 
 
-drawCurve : ( String, Curve, String ) -> Svg msg
+drawCurve : ( String, Curve, Color ) -> Svg msg
 drawCurve ( name, curve, color ) =
     List.map Just preparedPoints
         |> Shape.line curve
-        |> (\path -> Path.element path [ Svg.Attributes.stroke color, fill "none", strokeWidth 2 ])
+        |> (\path -> Path.element path [ stroke color, fill FillNone, strokeWidth 2 ])
 
 
-drawLegend : Int -> ( String, Curve, String ) -> Svg msg
+drawLegend : Int -> ( String, Curve, Color ) -> Svg msg
 drawLegend index ( name, curve, color ) =
-    text_ [ style ("fill: " ++ color ++ "; font-family: monospace"), x padding, y (toFloat index * 20 + padding) ] [ text name ]
+    text_ [ fill (Fill color), fontFamily [ "monospace" ], x padding, y (toFloat index * 20 + padding) ] [ text name ]
 
 
-view : List ( String, Curve, String ) -> Svg String
+view : List ( String, Curve, Color ) -> Svg String
 view model =
     div []
         [ Example.navigation "Curve type" exampleData
-        , svg [ width screenWidth, height screenHeight ]
-            [ rect [ width screenWidth, height screenHeight, fill "#dfdfdf" ] []
+        , svg [ width w, height h ]
+            [ rect [ width w, height h, fill <| Fill <| Color.rgb255 223 223 223 ] []
             , g [] <| List.indexedMap yGridLine <| Scale.ticks yScale 10
             , g [] <| List.indexedMap xGridLine <| Scale.ticks xScale 20
             , g [] <|
                 List.map drawCurve model
-            , g [] <| List.map (\( dx, dy ) -> Path.element circle [ fill "white", stroke black, transform [ Translate dx dy ] ]) preparedPoints
+            , g [] <| List.map (\( dx, dy ) -> Path.element circle [ fill (Fill Color.white), stroke Color.black, transform [ Translate dx dy ] ]) preparedPoints
             , g [] <| List.indexedMap drawLegend <| model
             ]
         ]
@@ -135,12 +133,12 @@ circle =
         }
 
 
-basic : String -> Curve -> List ( String, Curve, String )
+basic : String -> Curve -> List ( String, Curve, Color )
 basic prefix curveFn =
-    [ ( prefix, curveFn, "#000" ) ]
+    [ ( prefix, curveFn, Color.black ) ]
 
 
-parametrized : String -> (Float -> Curve) -> List ( String, Curve, String )
+parametrized : String -> (Float -> Curve) -> List ( String, Curve, Color )
 parametrized prefix curveFn =
     let
         scale =
@@ -150,7 +148,7 @@ parametrized prefix curveFn =
             [ 0, 0.25, 0.5, 0.75, 1 ]
     in
     stops
-        |> List.map (\s -> ( prefix ++ " " ++ String.fromFloat s, curveFn s, Scale.convert scale s |> Color.toCssString ))
+        |> List.map (\s -> ( prefix ++ " " ++ String.fromFloat s, curveFn s, Scale.convert scale s ))
 
 
 exampleData =

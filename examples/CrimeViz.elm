@@ -7,13 +7,12 @@ the primitives provided in this library.
 import Color exposing (Color)
 import Path exposing (Path)
 import SampleData exposing (CrimeRate, crimeRates)
-import Svg.Attributes exposing (fill, stroke)
 import Time
 import TypedSvg exposing (g, svg, text_)
-import TypedSvg.Attributes exposing (class, dy, fontFamily, textAnchor, transform)
+import TypedSvg.Attributes exposing (class, dy, fill, fontFamily, stroke, textAnchor, transform)
 import TypedSvg.Attributes.InPx exposing (fontSize, height, strokeWidth, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
-import TypedSvg.Types exposing (AnchorAlignment(..), Transform(..), em)
+import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..), em)
 import Visualization.Axis as Axis exposing (defaultOptions)
 import Visualization.List as List
 import Visualization.Scale as Scale exposing (ContinuousScale, OrdinalScale)
@@ -66,9 +65,9 @@ colorScale =
     Scale.ordinal (List.map .label series) Scale.category10
 
 
-colorString : String -> String
-colorString =
-    Scale.convert colorScale >> Maybe.withDefault Color.black >> Color.toCssString
+color : String -> Color
+color =
+    Scale.convert colorScale >> Maybe.withDefault Color.black
 
 
 view : List CrimeRate -> Svg msg
@@ -125,7 +124,7 @@ view model =
         , g [ transform [ Translate (padding - 1) padding ] ]
             [ yAxis, text_ [ fontFamily [ "sans-serif" ], fontSize 10, x 5, y 5 ] [ text "Occurences" ] ]
         , g [ transform [ Translate padding padding ], class [ "series" ] ]
-            (List.map (\{ accessor, label } -> Path.element (line accessor) [ stroke (colorString label), strokeWidth 3, fill "none" ]) series)
+            (List.map (\{ accessor, label } -> Path.element (line accessor) [ stroke (color label), strokeWidth 3, fill FillNone ]) series)
         , g [ fontFamily [ "sans-serif" ], fontSize 10 ]
             (List.map
                 (\{ accessor, label } ->

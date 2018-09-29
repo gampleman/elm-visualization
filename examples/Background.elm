@@ -8,23 +8,22 @@ import Graph exposing (Edge, Graph, Node, NodeId)
 import IntDict
 import List exposing (range)
 import SampleData exposing (miserablesGraph)
-import Svg exposing (Svg)
-import Svg.Attributes exposing (fill, stroke)
 import TypedSvg exposing (circle, g, line, polygon, svg, title)
-import TypedSvg.Attributes exposing (class, points)
+import TypedSvg.Attributes exposing (class, fill, points, stroke)
 import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, strokeWidth, width, x1, x2, y1, y2)
-import TypedSvg.Core exposing (text)
+import TypedSvg.Core exposing (Svg, text)
+import TypedSvg.Types exposing (Fill(..))
 import Visualization.Force as Force exposing (State)
 import Visualization.Scale as Scale exposing (SequentialScale)
 
 
-screenWidth : Float
-screenWidth =
+w : Float
+w =
     990
 
 
-screenHeight : Float
-screenHeight =
+h : Float
+h =
     504
 
 
@@ -59,7 +58,7 @@ init =
         forces =
             [ Force.customLinks 1 links
             , Force.manyBodyStrength -30 <| List.map .id <| Graph.nodes graph
-            , Force.center (screenWidth / 2) (screenHeight / 2)
+            , Force.center (w / 2) (h / 2)
             ]
     in
     updateGraphWithList graph (Force.computeSimulation (Force.simulation forces) <| List.map .label <| Graph.nodes graph)
@@ -96,7 +95,7 @@ linkElement graph edge =
     in
     line
         [ strokeWidth 1
-        , stroke <| Color.toCssString <| Scale.convert colorScale source.x
+        , stroke <| Scale.convert colorScale source.x
         , x1 source.x
         , y1 source.y
         , x2 target.x
@@ -123,7 +122,7 @@ hexagon ( x, y ) size attrs =
 nodeSize size node =
     hexagon ( node.x, node.y )
         size
-        [ fill <| Color.toCssString <| Scale.convert colorScale node.x
+        [ fill <| Fill <| Scale.convert colorScale node.x
         ]
         [ title [] [ text node.value.name ] ]
 
@@ -140,8 +139,8 @@ nodeElement node =
                 [ r 12
                 , cx node.label.x
                 , cy node.label.y
-                , fill "none"
-                , stroke <| Color.toCssString <| Scale.convert colorScale node.label.x
+                , fill FillNone
+                , stroke <| Scale.convert colorScale node.label.x
                 ]
                 []
             ]
@@ -150,7 +149,7 @@ nodeElement node =
 
 
 view model =
-    svg [ width screenWidth, height screenHeight ]
+    svg [ width w, height h ]
         [ g [ class [ "links" ] ] <| List.map (linkElement model) <| Graph.edges model
         , g [ class [ "nodes" ] ] <| List.map nodeElement <| Graph.nodes model
         ]

@@ -3,12 +3,11 @@ module StackedBarChart exposing (main)
 import Color exposing (Color)
 import List.Extra as List
 import SampleData exposing (CrimeRate)
-import Svg.Attributes exposing (fill)
 import TypedSvg exposing (g, rect, svg)
-import TypedSvg.Attributes exposing (class, transform)
+import TypedSvg.Attributes exposing (class, fill, transform)
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg)
-import TypedSvg.Types exposing (Transform(..))
+import TypedSvg.Types exposing (Fill(..), Transform(..))
 import Visualization.Axis as Axis exposing (defaultOptions)
 import Visualization.Scale as Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
 import Visualization.Shape as Shape exposing (StackConfig, StackResult)
@@ -80,7 +79,7 @@ sampleColor progression =
     Scale.viridisInterpolator (1 - progression)
 
 
-colors : Int -> List String
+colors : Int -> List Color
 colors size =
     let
         -- given an index, give a value in [0,1] (0 for first, 1 for final)
@@ -89,7 +88,7 @@ colors size =
                 |> Scale.convert
     in
     List.range 0 (size - 1)
-        |> List.map (Color.toCssString << sampleColor << lengthScale << toFloat)
+        |> List.map (sampleColor << lengthScale << toFloat)
 
 
 column : BandScale Year -> ( Year, List ( Float, Float ) ) -> Svg msg
@@ -101,7 +100,7 @@ column xScale ( year, values ) =
                 , y <| lowerY
                 , width <| Scale.bandwidth xScale
                 , height <| (abs <| upperY - lowerY)
-                , fill color
+                , fill (Fill color)
                 ]
                 []
     in
