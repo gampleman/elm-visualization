@@ -20,7 +20,7 @@
             "elm-community/intdict": "3.0.0",
             "elm-community/list-extra": "8.0.0",
             "elm-community/typed-svg": "4.0.0",
-            "folkertdev/one-true-path-experiment": "4.0.0",
+            "folkertdev/one-true-path-experiment": "4.0.1",
             "ianmackenzie/elm-geometry": "1.1.0",
             "justinmimbs/time-extra": "1.0.1",
             "mpizenberg/elm-pointer-events": "3.0.0",
