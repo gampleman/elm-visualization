@@ -4,18 +4,24 @@ module PadAngle exposing (main)
 -}
 
 import Array exposing (Array)
-import Svg exposing (Svg, g, path, svg, text, text_)
-import Svg.Attributes exposing (d, dy, height, style, textAnchor, transform, width)
+import Path
+import Svg.Attributes exposing (fill)
+import TypedSvg exposing (g, svg)
+import TypedSvg.Attributes exposing (stroke, transform)
+import TypedSvg.Attributes.InPx exposing (height, width)
+import TypedSvg.Color exposing (black)
+import TypedSvg.Core exposing (Svg)
+import TypedSvg.Types exposing (Transform(..))
 import Visualization.Shape as Shape exposing (Arc, defaultPieConfig)
 
 
-screenWidth : Float
-screenWidth =
+w : Float
+w =
     990
 
 
-screenHeight : Float
-screenHeight =
+h : Float
+h =
     504
 
 
@@ -42,16 +48,16 @@ colors =
 
 radius : Float
 radius =
-    min (screenWidth / 2) screenHeight / 2 - 10
+    min (w / 2) h / 2 - 10
 
 
 circular : List Arc -> Svg msg
 circular arcs =
     let
         makeSlice index datum =
-            path [ d (Shape.arc datum), style ("fill:" ++ (Maybe.withDefault "#000" <| Array.get index colors) ++ "; stroke: #000;") ] []
+            Path.element (Shape.arc datum) [ fill (Maybe.withDefault "#000" <| Array.get index colors), stroke black ]
     in
-    g [ transform ("translate(" ++ toString radius ++ "," ++ toString radius ++ ")") ]
+    g [ transform [ Translate radius radius ] ]
         [ g [] <| List.indexedMap makeSlice arcs
         ]
 
@@ -60,9 +66,9 @@ annular : List Arc -> Svg msg
 annular arcs =
     let
         makeSlice index datum =
-            path [ d (Shape.arc { datum | innerRadius = radius - 60 }), style ("fill:" ++ (Maybe.withDefault "#000" <| Array.get index colors) ++ "; stroke: #000;") ] []
+            Path.element (Shape.arc { datum | innerRadius = radius - 60 }) [ fill <| Maybe.withDefault "#000" <| Array.get index colors, stroke black ]
     in
-    g [ transform ("translate(" ++ toString (3 * radius + 20) ++ "," ++ toString radius ++ ")") ]
+    g [ transform [ Translate (3 * radius + 20) radius ] ]
         [ g [] <| List.indexedMap makeSlice arcs
         ]
 
@@ -73,17 +79,17 @@ view model =
         pieData =
             model |> Shape.pie { defaultPieConfig | outerRadius = radius, padAngle = 0.03 }
     in
-    svg [ width (toString screenWidth ++ "px"), height (toString screenHeight ++ "px") ]
+    svg [ width w, height h ]
         [ circular pieData
         , annular pieData
         ]
 
 
-model : List Float
-model =
+data : List Float
+data =
     [ 1, 1, 2, 3, 5, 8, 13 ]
 
 
 main : Svg msg
 main =
-    view model
+    view data

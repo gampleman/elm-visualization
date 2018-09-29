@@ -1,11 +1,14 @@
 module StackedBarChart exposing (main)
 
 import Color exposing (Color)
-import Color.Convert exposing (colorToCssRgb)
 import List.Extra as List
 import SampleData exposing (CrimeRate)
-import Svg exposing (..)
-import Svg.Attributes exposing (..)
+import Svg.Attributes exposing (fill)
+import TypedSvg exposing (g, rect, svg)
+import TypedSvg.Attributes exposing (class, transform)
+import TypedSvg.Attributes.InPx exposing (height, width, x, y)
+import TypedSvg.Core exposing (Svg)
+import TypedSvg.Types exposing (Transform(..))
 import Visualization.Axis as Axis exposing (defaultOptions)
 import Visualization.Scale as Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
 import Visualization.Shape as Shape exposing (StackConfig, StackResult)
@@ -42,14 +45,17 @@ samples =
     List.map (\{ label, accessor } -> ( label, List.map (toFloat << accessor) SampleData.crimeRates )) series
 
 
-canvas : { width : Float, height : Float }
-canvas =
-    { width = 990
-    , height = 504
-    }
+w : Float
+w =
+    990
 
 
-padding : { bottom : number, left : number1, right : number2, top : number3 }
+h : Float
+h =
+    504
+
+
+padding : { bottom : Float, left : Float, right : Float, top : Float }
 padding =
     { top = 30
     , left = 60
@@ -83,7 +89,7 @@ colors size =
                 |> Scale.convert
     in
     List.range 0 (size - 1)
-        |> List.map (colorToCssRgb << sampleColor << lengthScale << toFloat)
+        |> List.map (Color.toCssString << sampleColor << lengthScale << toFloat)
 
 
 column : BandScale Year -> ( Year, List ( Float, Float ) ) -> Svg msg
@@ -91,15 +97,15 @@ column xScale ( year, values ) =
     let
         block color ( upperY, lowerY ) =
             rect
-                [ x <| toString <| Scale.convert xScale year
-                , y <| toString <| lowerY
-                , width <| toString <| Scale.bandwidth xScale
-                , height <| toString <| (abs <| upperY - lowerY)
+                [ x <| Scale.convert xScale year
+                , y <| lowerY
+                , width <| Scale.bandwidth xScale
+                , height <| (abs <| upperY - lowerY)
                 , fill color
                 ]
                 []
     in
-    g [ class "column" ] (List.map2 block (colors (List.length values)) values)
+    g [ class [ "column" ] ] (List.map2 block (colors (List.length values)) values)
 
 
 view : StackResult String -> Svg msg
@@ -114,11 +120,11 @@ view { values, labels, extent } =
 
         xScale : BandScale Year
         xScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } years ( 0, canvas.width - (padding.top + padding.bottom) )
+            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } years ( 0, w - (padding.top + padding.bottom) )
 
         yScale : ContinuousScale
         yScale =
-            Scale.linear extent ( canvas.height - (padding.left + padding.right), 0 )
+            Scale.linear extent ( h - (padding.left + padding.right), 0 )
                 |> (\a -> Scale.nice a 4)
 
         axisOptions =
@@ -126,7 +132,7 @@ view { values, labels, extent } =
 
         xAxis : Svg msg
         xAxis =
-            Axis.axis { axisOptions | orientation = Axis.Bottom, tickCount = 10 } (Scale.toRenderable xScale)
+            Axis.axis { axisOptions | orientation = Axis.Bottom, tickCount = 10 } (Scale.toRenderable String.fromInt xScale)
 
         yAxis : Svg msg
         yAxis =
@@ -135,16 +141,11 @@ view { values, labels, extent } =
         scaledValues =
             List.map (List.map (\( y1, y2 ) -> ( Scale.convert yScale y1, Scale.convert yScale y2 ))) yearValues
     in
-    svg [ width (toString canvas.width ++ "px"), height (toString canvas.height ++ "px") ]
-        [ g [ translate (padding.left - 1) (canvas.height - padding.bottom) ]
+    svg [ width w, height h ]
+        [ g [ transform [ Translate (padding.left - 1) (h - padding.bottom) ] ]
             [ xAxis ]
-        , g [ translate (padding.left - 1) padding.top ]
+        , g [ transform [ Translate (padding.left - 1) padding.top ] ]
             [ yAxis ]
-        , g [ translate padding.left padding.top, class "series" ] <|
+        , g [ transform [ Translate padding.left padding.top ], class [ "series" ] ] <|
             List.map (column xScale) (List.map2 (\a b -> ( a, b )) years scaledValues)
         ]
-
-
-translate : number -> number -> Svg.Attribute msg
-translate x y =
-    transform ("translate(" ++ toString x ++ ", " ++ toString y ++ ")")

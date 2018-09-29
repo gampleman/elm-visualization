@@ -134,38 +134,24 @@ tickFormat zone _ _ date =
 
         significant interval =
             Time.posixToMillis (Time.Extra.floor interval zone date) < time
+
+        format =
+            if significant Second then
+                [ DateFormat.text ".", DateFormat.millisecondFixed ]
+            else if significant Minute then
+                [ DateFormat.text ":", DateFormat.secondFixed ]
+            else if significant Hour then
+                [ DateFormat.hourFixed, DateFormat.text ":", DateFormat.minuteFixed ]
+            else if significant Day then
+                [ DateFormat.hourFixed, DateFormat.text " ", DateFormat.amPmLowercase ]
+            else if significant Month then
+                [ DateFormat.dayOfMonthFixed, DateFormat.text " ", DateFormat.monthNameAbbreviated ]
+            else if significant Year then
+                [ DateFormat.monthNameFull ]
+            else
+                [ DateFormat.yearNumber ]
     in
-    if significant Second then
-        "." ++ toFixedLength 3 (Time.toMillis zone date)
-    else if significant Minute then
-        DateFormat.format [ DateFormat.text ":", DateFormat.secondFixed ] zone date
-    else if significant Hour then
-        DateFormat.format [ DateFormat.hourFixed, DateFormat.text ":", DateFormat.minuteFixed ] zone date
-    else if significant Day then
-        DateFormat.format [ DateFormat.hourFixed, DateFormat.text " ", DateFormat.amPmLowercase ] zone date
-    else if significant Month then
-        DateFormat.format [ DateFormat.dayOfMonthFixed, DateFormat.text " ", DateFormat.monthNameFirstThree ] zone date
-    else if significant Year then
-        DateFormat.format [ DateFormat.monthNameFull ] zone date
-    else
-        DateFormat.format [ DateFormat.yearNumber ] zone date
-
-
-toFixedLength : Int -> Int -> String
-toFixedLength totalChars num =
-    let
-        numStr =
-            String.fromInt num
-
-        numZerosNeeded =
-            totalChars - String.length numStr
-
-        zeros =
-            List.range 1 numZerosNeeded
-                |> List.map (\_ -> "0")
-                |> String.join ""
-    in
-    zeros ++ numStr
+    DateFormat.format format zone date
 
 
 nice : Time.Zone -> ( Time.Posix, Time.Posix ) -> Int -> ( Time.Posix, Time.Posix )

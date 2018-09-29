@@ -3,8 +3,12 @@ module PolarPlot exposing (main)
 {-| A polar plot of `sin(2x)cos(2x)`.
 -}
 
-import Svg exposing (..)
-import Svg.Attributes exposing (..)
+import Path
+import TypedSvg exposing (circle, g, line, style, svg, text_)
+import TypedSvg.Attributes exposing (class, dy, textAnchor, transform)
+import TypedSvg.Attributes.InPx exposing (fontSize, height, r, width, x, x2, y)
+import TypedSvg.Core exposing (Svg, text)
+import TypedSvg.Types exposing (AnchorAlignment(..), Transform(..), em)
 import Visualization.List exposing (range)
 import Visualization.Scale as Scale exposing (ContinuousScale)
 import Visualization.Shape as Shape
@@ -25,14 +29,14 @@ padding =
     30
 
 
-radius : Float
-radius =
+mainRadius : Float
+mainRadius =
     Basics.min w h / 2 - padding
 
 
 radiusScale : ContinuousScale
 radiusScale =
-    Scale.linear ( 0, 0.5 ) ( 0, radius )
+    Scale.linear ( 0, 0.5 ) ( 0, mainRadius )
 
 
 fn : Float -> Float
@@ -48,35 +52,33 @@ data =
 
 spoke : Float -> Svg msg
 spoke angle =
-    g [ transform ("rotate(" ++ toString -angle ++ ")") ]
-        [ line [ x2 (toString radius) ] []
+    g [ transform [ Rotate -angle 0 0 ] ]
+        [ line [ x2 mainRadius ] []
         , text_
-            [ radius + 6 |> toString |> x
-            , dy ".35em"
+            [ x (mainRadius + 6)
+            , dy (em 0.35)
             , textAnchor
                 (if angle < 270 && angle > 90 then
-                    "end"
-
+                    AnchorEnd
                  else
-                    "inherit"
+                    AnchorInherit
                 )
             , transform
                 (if angle < 270 && angle > 90 then
-                    "rotate(180 " ++ toString (radius + 6) ++ ",0)"
-
+                    [ Rotate 180 (mainRadius + 6) 0 ]
                  else
-                    ""
+                    []
                 )
             ]
-            [ text (toString angle ++ "°") ]
+            [ text (String.fromFloat angle ++ "°") ]
         ]
 
 
 radialAxis : Float -> Svg msg
 radialAxis radius =
     g []
-        [ circle [ Scale.convert radiusScale radius |> toString |> r ] []
-        , text_ [ Scale.convert radiusScale radius * -1 - 4 |> toString |> y, transform "rotate(15)", textAnchor "middle" ]
+        [ circle [ r <| Scale.convert radiusScale radius ] []
+        , text_ [ y <| Scale.convert radiusScale radius * -1 - 4, transform [ Rotate 15 0 0 ], textAnchor AnchorMiddle ]
             [ radius |> Scale.tickFormat radiusScale 5 |> text ]
         ]
 
@@ -119,20 +121,20 @@ css =
 
 main : Svg msg
 main =
-    svg [ width (toString w ++ "px"), height (toString h ++ "px") ]
-        [ Svg.style [] [ text css ]
-        , g [ class "label", transform ("translate" ++ toString ( padding * 2, h / 2 )) ]
-            [ text_ [ fontSize "20" ] [ text "sin(2x)cos(2x)" ]
-            , text_ [ fontSize "12", y "20" ] [ text "A polar plot." ]
+    svg [ width w, height h ]
+        [ style [] [ text css ]
+        , g [ class [ "label" ], transform [ Translate (padding * 2) (h / 2) ] ]
+            [ text_ [ fontSize 20 ] [ text "sin(2x)cos(2x)" ]
+            , text_ [ fontSize 12, y 20 ] [ text "A polar plot." ]
             ]
-        , g [ transform ("translate" ++ toString ( w / 2 + radius, h / 2 )) ]
+        , g [ transform [ Translate (w / 2 + mainRadius) (h / 2) ] ]
             [ Scale.ticks radiusScale 5
                 |> List.drop 1
                 |> List.map radialAxis
-                |> g [ class "r axis" ]
+                |> g [ class [ "r", "axis" ] ]
             , range 0 360 30
                 |> List.map spoke
-                |> g [ class "a axis" ]
-            , Svg.path [ d <| Shape.lineRadial Shape.linearCurve data, class "line" ] []
+                |> g [ class [ "a", "axis" ] ]
+            , Path.element (Shape.lineRadial Shape.linearCurve data) [ class [ "line" ] ]
             ]
         ]

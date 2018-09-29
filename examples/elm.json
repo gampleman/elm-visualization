@@ -8,11 +8,14 @@
     "dependencies": {
         "direct": {
             "avh4/elm-color": "1.0.0",
+            "elm/browser": "1.0.0",
             "elm/core": "1.0.0",
             "elm/html": "1.0.0",
             "elm/json": "1.0.0",
+            "elm/random": "1.0.0",
             "elm/svg": "1.0.1",
             "elm/time": "1.0.0",
+            "elm/url": "1.0.0",
             "elm-community/graph": "6.0.0",
             "elm-community/intdict": "3.0.0",
             "elm-community/list-extra": "8.0.0",
@@ -20,7 +23,8 @@
             "folkertdev/one-true-path-experiment": "4.0.0",
             "ianmackenzie/elm-geometry": "1.1.0",
             "justinmimbs/time-extra": "1.0.1",
-            "ryannhg/date-format": "1.0.0"
+            "mpizenberg/elm-pointer-events": "3.0.0",
+            "ryannhg/date-format": "2.0.0"
         },
         "indirect": {
             "avh4/elm-fifo": "1.0.4",

@@ -4,16 +4,21 @@ module ForceDirectedGraph exposing (main)
 based on their co-occurence in a scene. Try dragging the nodes!
 -}
 
-import AnimationFrame
+import Browser
+import Browser.Events
 import Graph exposing (Edge, Graph, Node, NodeContext, NodeId)
 import Html
 import Html.Events exposing (on)
+import Html.Events.Extra.Mouse as Mouse
 import Json.Decode as Decode
-import Mouse exposing (Position)
 import SampleData exposing (miserablesGraph)
-import Svg exposing (..)
-import Svg.Attributes as Attr exposing (..)
-import Time exposing (Time)
+import Svg exposing (title)
+import Svg.Attributes exposing (fill, stroke)
+import Time
+import TypedSvg exposing (circle, g, line, svg)
+import TypedSvg.Attributes exposing (class)
+import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, strokeWidth, width, x1, x2, y1, y2)
+import TypedSvg.Core exposing (Attribute, Svg, text)
 import Visualization.Force as Force exposing (State)
 
 
@@ -28,10 +33,10 @@ screenHeight =
 
 
 type Msg
-    = DragStart NodeId Position
-    | DragAt Position
-    | DragEnd Position
-    | Tick Time
+    = DragStart NodeId ( Float, Float )
+    | DragAt ( Float, Float )
+    | DragEnd ( Float, Float )
+    | Tick Time.Posix
 
 
 type alias Model =
@@ -42,8 +47,8 @@ type alias Model =
 
 
 type alias Drag =
-    { start : Position
-    , current : Position
+    { start : ( Float, Float )
+    , current : ( Float, Float )
     , index : NodeId
     }
 
@@ -52,15 +57,19 @@ type alias Entity =
     Force.Entity NodeId { value : String }
 
 
-init : ( Model, Cmd Msg )
-init =
+initializeNode : NodeContext String () -> NodeContext Entity ()
+initializeNode ctx =
+    { node = { label = Force.entity ctx.node.id ctx.node.label, id = ctx.node.id }
+    , incoming = ctx.incoming
+    , outgoing = ctx.outgoing
+    }
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
     let
         graph =
-            Graph.mapContexts
-                (\({ node } as ctx) ->
-                    { ctx | node = { label = Force.entity node.id node.label, id = node.id } }
-                )
-                miserablesGraph
+            Graph.mapContexts initializeNode miserablesGraph
 
         link { from, to } =
             ( from, to )
@@ -74,13 +83,13 @@ init =
     ( Model Nothing graph (Force.simulation forces), Cmd.none )
 
 
-updateNode : Position -> NodeContext Entity () -> NodeContext Entity ()
-updateNode pos nodeCtx =
+updateNode : ( Float, Float ) -> NodeContext Entity () -> NodeContext Entity ()
+updateNode ( x, y ) nodeCtx =
     let
         nodeValue =
             nodeCtx.node.label
     in
-    updateContextWithValue nodeCtx { nodeValue | x = toFloat pos.x, y = toFloat pos.y }
+    updateContextWithValue nodeCtx { nodeValue | x = x, y = y }
 
 
 updateContextWithValue : NodeContext Entity () -> Entity -> NodeContext Entity ()
@@ -146,17 +155,20 @@ subscriptions model =
             -- to the rAF.
             if Force.isCompleted model.simulation then
                 Sub.none
-
             else
-                AnimationFrame.times Tick
+                Browser.Events.onAnimationFrame Tick
 
         Just _ ->
-            Sub.batch [ Mouse.moves DragAt, Mouse.ups DragEnd, AnimationFrame.times Tick ]
+            Sub.batch
+                [ Browser.Events.onMouseMove (Decode.map (.clientPos >> DragAt) Mouse.eventDecoder)
+                , Browser.Events.onMouseUp (Decode.map (.clientPos >> DragEnd) Mouse.eventDecoder)
+                , Browser.Events.onAnimationFrame Tick
+                ]
 
 
 onMouseDown : NodeId -> Attribute Msg
 onMouseDown index =
-    on "mousedown" (Decode.map (DragStart index) Mouse.position)
+    Mouse.onDown (.clientPos >> DragStart index)
 
 
 linkElement graph edge =
@@ -168,40 +180,40 @@ linkElement graph edge =
             Maybe.withDefault (Force.entity 0 "") <| Maybe.map (.node >> .label) <| Graph.get edge.to graph
     in
     line
-        [ strokeWidth "1"
+        [ strokeWidth 1
         , stroke "#aaa"
-        , x1 (toString source.x)
-        , y1 (toString source.y)
-        , x2 (toString target.x)
-        , y2 (toString target.y)
+        , x1 source.x
+        , y1 source.y
+        , x2 target.x
+        , y2 target.y
         ]
         []
 
 
 nodeElement node =
     circle
-        [ r "2.5"
+        [ r 2.5
         , fill "#000"
         , stroke "transparent"
-        , strokeWidth "7px"
+        , strokeWidth 7
         , onMouseDown node.id
-        , cx (toString node.label.x)
-        , cy (toString node.label.y)
+        , cx node.label.x
+        , cy node.label.y
         ]
-        [ Svg.title [] [ text node.label.value ] ]
+        [ title [] [ text node.label.value ] ]
 
 
 view : Model -> Svg Msg
 view model =
-    svg [ width (toString screenWidth ++ "px"), height (toString screenHeight ++ "px") ]
-        [ g [ class "links" ] <| List.map (linkElement model.graph) <| Graph.edges model.graph
-        , g [ class "nodes" ] <| List.map nodeElement <| Graph.nodes model.graph
+    svg [ width screenWidth, height screenHeight ]
+        [ g [ class [ "links" ] ] <| List.map (linkElement model.graph) <| Graph.edges model.graph
+        , g [ class [ "nodes" ] ] <| List.map nodeElement <| Graph.nodes model.graph
         ]
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Html.program
+    Browser.element
         { init = init
         , view = view
         , update = \msg model -> ( update msg model, Cmd.none )

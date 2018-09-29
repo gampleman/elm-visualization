@@ -6,19 +6,25 @@ is merely a convenience for positioning labels.
 -}
 
 import Array exposing (Array)
-import Svg exposing (Svg, g, path, svg, text)
-import Svg.Attributes exposing (d, dy, height, style, textAnchor, transform, width)
-import Visualization.Path as Path
+import LowLevel.Command exposing (arcTo, clockwise, largestArc, moveTo)
+import Path
+import SubPath exposing (SubPath)
+import Svg.Attributes exposing (fill, stroke)
+import TypedSvg exposing (circle, g, svg)
+import TypedSvg.Attributes exposing (transform)
+import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, width)
+import TypedSvg.Core exposing (Svg)
+import TypedSvg.Types exposing (Transform(..))
 import Visualization.Shape as Shape exposing (Arc, defaultPieConfig)
 
 
-screenWidth : Float
-screenWidth =
+w : Float
+w =
     990
 
 
-screenHeight : Float
-screenHeight =
+h : Float
+h =
     504
 
 
@@ -40,24 +46,37 @@ colors =
 
 radius : Float
 radius =
-    min (screenWidth / 2) screenHeight / 2 - 10
+    min (w / 2) h / 2 - 10
 
 
-dot : String
+dot : SubPath
 dot =
-    Path.begin |> Path.moveTo 5 5 |> Path.arc 0 0 5 0 (2 * pi) False |> Path.toAttrString
+    SubPath.with (moveTo ( 5, 5 ))
+        [ arcTo
+            [ { radii = ( 5, 5 )
+              , xAxisRotate = 0
+              , arcFlag = largestArc
+              , direction = clockwise
+              , target = ( 5, 5 )
+              }
+            ]
+        ]
 
 
 circular : List Arc -> Svg msg
 circular arcs =
     let
         makeSlice index datum =
-            path [ d (Shape.arc datum), style ("fill:" ++ (Maybe.withDefault "#000" <| Array.get index colors) ++ "; stroke: #000;") ] []
+            Path.element (Shape.arc datum) [ fill (Maybe.withDefault "#000" <| Array.get index colors), stroke "#000" ]
 
         makeDot datum =
-            path [ d dot, transform ("translate" ++ toString (Shape.centroid datum)) ] []
+            let
+                ( x, y ) =
+                    Shape.centroid datum
+            in
+            circle [ cx x, cy y, r 5 ] []
     in
-    g [ transform ("translate(" ++ toString radius ++ "," ++ toString radius ++ ")") ]
+    g [ transform [ Translate radius radius ] ]
         [ g [] <| List.indexedMap makeSlice arcs
         , g [] <| List.map makeDot arcs
         ]
@@ -67,12 +86,16 @@ annular : List Arc -> Svg msg
 annular arcs =
     let
         makeSlice index datum =
-            path [ d (Shape.arc { datum | innerRadius = radius - 60 }), style ("fill:" ++ (Maybe.withDefault "#000" <| Array.get index colors) ++ "; stroke: #000;") ] []
+            Path.element (Shape.arc { datum | innerRadius = radius - 60 }) [ fill (Maybe.withDefault "#000" <| Array.get index colors), stroke "#000" ]
 
         makeDot datum =
-            path [ d dot, transform ("translate" ++ toString (Shape.centroid { datum | innerRadius = radius - 60 })) ] []
+            let
+                ( x, y ) =
+                    Shape.centroid { datum | innerRadius = radius - 60 }
+            in
+            circle [ cx x, cy y, r 5 ] []
     in
-    g [ transform ("translate(" ++ toString (3 * radius + 20) ++ "," ++ toString radius ++ ")") ]
+    g [ transform [ Translate (3 * radius + 20) radius ] ]
         [ g [] <| List.indexedMap makeSlice arcs
         , g [] <| List.map makeDot arcs
         ]
@@ -84,17 +107,17 @@ view model =
         pieData =
             model |> Shape.pie { defaultPieConfig | outerRadius = radius }
     in
-    svg [ width (toString screenWidth ++ "px"), height (toString screenHeight ++ "px") ]
+    svg [ width w, height h ]
         [ circular pieData
         , annular pieData
         ]
 
 
-model : List Float
-model =
+data : List Float
+data =
     [ 1, 1, 2, 3, 5, 8, 13 ]
 
 
 main : Svg msg
 main =
-    view model
+    view data

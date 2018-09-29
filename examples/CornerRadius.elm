@@ -4,18 +4,23 @@ module CornerRadius exposing (main)
 -}
 
 import Array exposing (Array)
-import Svg exposing (Svg, g, path, svg, text)
-import Svg.Attributes exposing (d, dy, height, style, textAnchor, transform, width)
+import Path exposing (Path)
+import Svg.Attributes exposing (fill, stroke)
+import TypedSvg exposing (circle, g, svg)
+import TypedSvg.Attributes exposing (transform)
+import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, width)
+import TypedSvg.Core exposing (Svg)
+import TypedSvg.Types exposing (Transform(..))
 import Visualization.Shape as Shape exposing (Arc, defaultPieConfig)
 
 
-screenWidth : Float
-screenWidth =
+w : Float
+w =
     990
 
 
-screenHeight : Float
-screenHeight =
+h : Float
+h =
     504
 
 
@@ -40,12 +45,12 @@ colors =
         ]
 
 
-radius : Float
-radius =
-    min (screenWidth / 2) screenHeight / 2 - 10
+mainRadius : Float
+mainRadius =
+    min (w / 2) h / 2 - 10
 
 
-circle : String
+circle : Path
 circle =
     Shape.arc
         { innerRadius = 0
@@ -60,25 +65,23 @@ circle =
 
 corner : Float -> Float -> Float -> Svg msg
 corner angle radius sign =
-    path
+    Path.element
+        circle
         [ transform
-            ("translate"
-                ++ toString
-                    ( sign * cornerRadius * cos angle + sqrt (radius ^ 2 - cornerRadius ^ 2) * sin angle
-                    , sign * cornerRadius * sin angle - sqrt (radius ^ 2 - cornerRadius ^ 2) * cos angle
-                    )
-            )
-        , style "stroke: #000; fill: none"
-        , d circle
+            [ Translate
+                (sign * cornerRadius * cos angle + sqrt (radius ^ 2 - cornerRadius ^ 2) * sin angle)
+                (sign * cornerRadius * sin angle - sqrt (radius ^ 2 - cornerRadius ^ 2) * cos angle)
+            ]
+        , stroke "#000"
+        , fill "none"
         ]
-        []
 
 
 circular : List Arc -> Svg msg
 circular arcs =
     let
         makeSlice index datum =
-            path [ d (Shape.arc datum), style ("fill:" ++ (Maybe.withDefault "#000" <| Array.get index colors) ++ "; stroke: #fff;") ] []
+            Path.element (Shape.arc datum) [ fill (Maybe.withDefault "#000" <| Array.get index colors), stroke "#fff" ]
 
         makeCorners : { a | startAngle : Float, endAngle : Float, outerRadius : Float } -> List (Svg msg)
         makeCorners { startAngle, endAngle, outerRadius } =
@@ -86,7 +89,7 @@ circular arcs =
             , corner endAngle (outerRadius - cornerRadius) -1
             ]
     in
-    g [ transform ("translate(" ++ toString radius ++ "," ++ toString radius ++ ")") ]
+    g [ transform [ Translate mainRadius mainRadius ] ]
         [ g [] <| List.indexedMap makeSlice arcs
         , g [] <| List.concatMap makeCorners arcs
         ]
@@ -96,16 +99,16 @@ annular : List Arc -> Svg msg
 annular arcs =
     let
         makeSlice index datum =
-            path [ d (Shape.arc { datum | innerRadius = radius - 60 }), style ("fill:" ++ (Maybe.withDefault "#000" <| Array.get index colors) ++ "; stroke: #fff;") ] []
+            Path.element (Shape.arc { datum | innerRadius = mainRadius - 60 }) [ fill (Maybe.withDefault "#000" <| Array.get index colors), stroke "#fff" ]
 
         makeCorners { startAngle, endAngle, outerRadius, innerRadius } =
             [ corner startAngle (outerRadius - cornerRadius) 1
             , corner endAngle (outerRadius - cornerRadius) -1
-            , corner endAngle (radius - 60 + cornerRadius) -1
-            , corner startAngle (radius - 60 + cornerRadius) 1
+            , corner endAngle (mainRadius - 60 + cornerRadius) -1
+            , corner startAngle (mainRadius - 60 + cornerRadius) 1
             ]
     in
-    g [ transform ("translate(" ++ toString (3 * radius + 20) ++ "," ++ toString radius ++ ")") ]
+    g [ transform [ Translate (3 * mainRadius + 20) mainRadius ] ]
         [ g [] <| List.indexedMap makeSlice arcs
         , g [] <| List.concatMap makeCorners arcs
         ]
@@ -115,19 +118,19 @@ view : List Float -> Svg msg
 view model =
     let
         pieData =
-            model |> Shape.pie { defaultPieConfig | outerRadius = radius, cornerRadius = cornerRadius }
+            model |> Shape.pie { defaultPieConfig | outerRadius = mainRadius, cornerRadius = cornerRadius }
     in
-    svg [ width (toString screenWidth ++ "px"), height (toString screenHeight ++ "px") ]
+    svg [ width w, height h ]
         [ circular pieData
         , annular pieData
         ]
 
 
-model : List Float
-model =
+data : List Float
+data =
     [ 1, 1, 2, 3, 5, 8, 13 ]
 
 
 main : Svg msg
 main =
-    view model
+    view data

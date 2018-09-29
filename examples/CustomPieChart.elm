@@ -4,22 +4,28 @@ module CustomPieChart exposing (main)
 -}
 
 import Array exposing (Array)
+import Browser
 import Html exposing (Html, br, div, h2, input, label)
-import Html.Attributes exposing (step, type_, value)
+import Html.Attributes exposing (step, style, type_, value)
 import Html.Events exposing (onInput)
-import String
-import Svg exposing (Svg, g, path, svg, text, text_)
-import Svg.Attributes exposing (d, dy, height, style, textAnchor, transform, width)
+import Path
+import Svg.Attributes exposing (fill)
+import TypedSvg exposing (g, svg, text_)
+import TypedSvg.Attributes exposing (dy, stroke, textAnchor, transform)
+import TypedSvg.Attributes.InPx exposing (height, width)
+import TypedSvg.Color exposing (white)
+import TypedSvg.Core exposing (Svg, text)
+import TypedSvg.Types exposing (AnchorAlignment(..), Transform(..), em)
 import Visualization.Shape as Shape exposing (defaultPieConfig)
 
 
-screenWidth : Float
-screenWidth =
+w : Float
+w =
     990
 
 
-screenHeight : Float
-screenHeight =
+h : Float
+h =
     504
 
 
@@ -30,7 +36,7 @@ colors =
 
 radius : Float
 radius =
-    min screenWidth screenHeight / 2
+    min w h / 2
 
 
 type alias ChartConfig =
@@ -72,18 +78,22 @@ drawChart config model =
                     }
 
         makeSlice index datum =
-            path [ d (Shape.arc datum), style ("fill:" ++ (Maybe.withDefault "#000" <| Array.get index colors) ++ "; stroke: #fff;") ] []
+            Path.element (Shape.arc datum) [ fill (Maybe.withDefault "#000" <| Array.get index colors), stroke white ]
 
         makeLabel slice ( label, value ) =
+            let
+                labelPosition =
+                    Shape.centroid { slice | innerRadius = config.labelPosition, outerRadius = config.labelPosition }
+            in
             text_
-                [ transform ("translate" ++ toString (Shape.centroid { slice | innerRadius = config.labelPosition, outerRadius = config.labelPosition }))
-                , dy ".35em"
-                , textAnchor "middle"
+                [ transform [ Translate (Tuple.first labelPosition) (Tuple.second labelPosition) ]
+                , dy (em 0.35)
+                , textAnchor AnchorMiddle
                 ]
                 [ text label ]
     in
-    svg [ width (toString (radius * 2) ++ "px"), height (toString (radius * 2) ++ "px") ]
-        [ g [ transform ("translate(" ++ toString radius ++ "," ++ toString radius ++ ")") ]
+    svg [ width (radius * 2), height (radius * 2) ]
+        [ g [ transform [ Translate radius radius ] ]
             [ g [] <| List.indexedMap makeSlice pieData
             , g [] <| List.map2 makeLabel pieData model
             ]
@@ -98,46 +108,46 @@ update msg model =
     in
     case msg of
         UpdateOuterRadius amount ->
-            { model | config = { config | outerRadius = Result.withDefault 0 <| String.toFloat amount } }
+            { model | config = { config | outerRadius = Maybe.withDefault 0 <| String.toFloat amount } }
 
         UpdateInnerRadius amount ->
-            { model | config = { config | innerRadius = Result.withDefault 0 <| String.toFloat amount } }
+            { model | config = { config | innerRadius = Maybe.withDefault 0 <| String.toFloat amount } }
 
         UpdatePadAngle amount ->
-            { model | config = { config | padAngle = Result.withDefault 0 <| String.toFloat amount } }
+            { model | config = { config | padAngle = Maybe.withDefault 0 <| String.toFloat amount } }
 
         UpdateCornerRadius amount ->
-            { model | config = { config | cornerRadius = Result.withDefault 0 <| String.toFloat amount } }
+            { model | config = { config | cornerRadius = Maybe.withDefault 0 <| String.toFloat amount } }
 
         UpdateLabelPosition amount ->
-            { model | config = { config | labelPosition = Result.withDefault 0 <| String.toFloat amount } }
+            { model | config = { config | labelPosition = Maybe.withDefault 0 <| String.toFloat amount } }
 
 
 view : Model -> Html Msg
 view model =
-    div [ style "display: flex;  justify-content: space-around" ]
+    div [ style "display" "flex", style "justify-content" "space-around" ]
         [ drawChart model.config model.data
         , div []
             [ h2 [] [ text "Pie Configuration" ]
             , label [] [ text "Outer Radius" ]
-            , input [ type_ "range", onInput UpdateOuterRadius, value (toString model.config.outerRadius), Html.Attributes.min "0", Html.Attributes.max (toString radius) ] []
-            , text (toString model.config.outerRadius)
+            , input [ type_ "range", onInput UpdateOuterRadius, value (String.fromFloat model.config.outerRadius), Html.Attributes.min "0", Html.Attributes.max (String.fromFloat radius) ] []
+            , text (String.fromFloat model.config.outerRadius)
             , br [] []
             , label [] [ text "Inner Radius" ]
-            , input [ type_ "range", onInput UpdateInnerRadius, value (toString model.config.innerRadius), Html.Attributes.min "0", Html.Attributes.max (toString radius) ] []
-            , text (toString model.config.innerRadius)
+            , input [ type_ "range", onInput UpdateInnerRadius, value (String.fromFloat model.config.innerRadius), Html.Attributes.min "0", Html.Attributes.max (String.fromFloat radius) ] []
+            , text (String.fromFloat model.config.innerRadius)
             , br [] []
             , label [] [ text "Pad Angle" ]
-            , input [ type_ "range", onInput UpdatePadAngle, value (toString model.config.padAngle), Html.Attributes.min "0", Html.Attributes.max "0.8", step "0.01" ] []
-            , text (toString model.config.padAngle)
+            , input [ type_ "range", onInput UpdatePadAngle, value (String.fromFloat model.config.padAngle), Html.Attributes.min "0", Html.Attributes.max "0.8", step "0.01" ] []
+            , text (String.fromFloat model.config.padAngle)
             , br [] []
             , label [] [ text "Corner Radius" ]
-            , input [ type_ "range", onInput UpdateCornerRadius, value (toString model.config.cornerRadius), Html.Attributes.min "0", Html.Attributes.max "20", step "0.25" ] []
-            , text (toString model.config.cornerRadius)
+            , input [ type_ "range", onInput UpdateCornerRadius, value (String.fromFloat model.config.cornerRadius), Html.Attributes.min "0", Html.Attributes.max "20", step "0.25" ] []
+            , text (String.fromFloat model.config.cornerRadius)
             , br [] []
             , label [] [ text "Label Position" ]
-            , input [ type_ "range", onInput UpdateLabelPosition, value (toString model.config.labelPosition), Html.Attributes.min "0", Html.Attributes.max (toString radius) ] []
-            , text (toString model.config.labelPosition)
+            , input [ type_ "range", onInput UpdateLabelPosition, value (String.fromFloat model.config.labelPosition), Html.Attributes.min "0", Html.Attributes.max (String.fromFloat radius) ] []
+            , text (String.fromFloat model.config.labelPosition)
             , br [] []
             ]
         ]
@@ -155,8 +165,8 @@ data =
     ]
 
 
-model : { config : ChartConfig, data : List ( String, Float ) }
-model =
+init : { config : ChartConfig, data : List ( String, Float ) }
+init =
     { config =
         { outerRadius = 210
         , innerRadius = 200
@@ -168,10 +178,10 @@ model =
     }
 
 
-main : Program Never { config : ChartConfig, data : List ( String, Float ) } Msg
+main : Program () { config : ChartConfig, data : List ( String, Float ) } Msg
 main =
-    Html.beginnerProgram
-        { model = model
+    Browser.sandbox
+        { init = init
         , update = update
         , view = view
         }

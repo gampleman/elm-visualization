@@ -4,16 +4,20 @@ module NorwegianCarSales exposing (main)
 -}
 
 import Color exposing (Color)
-import Color.Convert exposing (colorToCssRgb)
-import Date exposing (Date, Month(..))
-import Date.Extra as Date
 import Example
-import Html exposing (div)
+import Html exposing (div, text)
 import Html.Attributes
 import List.Extra as List
+import Path exposing (Path)
 import SampleData
-import Svg exposing (..)
-import Svg.Attributes exposing (..)
+import Svg.Attributes exposing (fill)
+import Time exposing (Month(..))
+import Time.Extra exposing (Parts)
+import TypedSvg exposing (g, svg, text_)
+import TypedSvg.Attributes exposing (class, fontFamily, transform)
+import TypedSvg.Attributes.InPx exposing (fontSize, height, width)
+import TypedSvg.Core exposing (Svg)
+import TypedSvg.Types exposing (Transform(..))
 import Visualization.Axis as Axis exposing (Orientation(..))
 import Visualization.Scale as Scale exposing (ContinuousScale, OrdinalScale, Scale)
 import Visualization.Shape as Shape exposing (StackConfig, StackResult)
@@ -62,19 +66,24 @@ colors labels =
     List.map sampleColor labels
 
 
-width : number
-width =
+w : Float
+w =
     990
 
 
-height : number
-height =
+h : Float
+h =
     504
 
 
-padding : number
+padding : Float
 padding =
     40
+
+
+fromCalendarDate : Int -> Month -> Int -> Time.Posix
+fromCalendarDate year month day =
+    Time.Extra.partsToPosix Time.utc (Parts year month day 0 0 0 0)
 
 
 view : StackResult String -> Svg String
@@ -92,11 +101,11 @@ view { values, labels, extent } =
         xScale : ContinuousScale
         xScale =
             -- map an index to screen space
-            Scale.linear ( 0, toFloat size - 1 ) ( padding, width - padding - labelsWidth )
+            Scale.linear ( 0, toFloat size - 1 ) ( padding, w - padding - labelsWidth )
 
         yScale : ContinuousScale
         yScale =
-            Scale.linear extent ( height - padding, padding )
+            Scale.linear extent ( h - padding, padding )
                 |> (\a -> Scale.nice a 4)
 
         axisOptions =
@@ -107,7 +116,7 @@ view { values, labels, extent } =
             -- construct the time domain for display
             -- the data is per-month, so we have to pick a day
             -- to get the ticks to show up correctly, the upper bound needs to be Jan 2 (Jan 1 does not work).
-            Scale.time ( Date.fromCalendarDate 2007 Jan 1, Date.fromCalendarDate 2017 Jan 2 ) ( 0, width - padding * 2 - labelsWidth )
+            Scale.time Time.utc ( fromCalendarDate 2007 Jan 1, fromCalendarDate 2017 Jan 2 ) ( 0, w - padding * 2 - labelsWidth )
                 |> Axis.axis { axisOptions | orientation = Axis.Bottom, tickCount = 1 }
 
         yAxis : Svg msg
@@ -130,16 +139,16 @@ view { values, labels, extent } =
 
         labelElement : String -> Float -> Svg msg
         labelElement label yPosition =
-            g [ translate (width - padding - labelsWidth + 10) yPosition ]
-                [ text_ [ fill (sampleColor label |> colorToCssRgb) ] [ text label ] ]
+            g [ transform [ Translate (w - padding - labelsWidth + 10) yPosition ] ]
+                [ text_ [ fill (sampleColor label |> Color.toCssString) ] [ text label ] ]
     in
     div []
         [ titleNavigation
-        , Svg.svg [ Svg.Attributes.width (toString width ++ "px"), Svg.Attributes.height (toString height ++ "px") ]
-            [ g [ translate (padding - 1) (height - padding) ]
+        , svg [ width w, height h ]
+            [ g [ transform [ Translate (padding - 1) (h - padding) ] ]
                 [ xAxis ]
-            , g [ class "series" ] paths
-            , g [ fontFamily "sans-serif", fontSize "10" ]
+            , g [ class [ "series" ] ] paths
+            , g [ fontFamily [ "sans-serif" ], fontSize 10 ]
                 (List.map2 labelElement labels labelPositions)
             ]
         ]
@@ -147,7 +156,7 @@ view { values, labels, extent } =
 
 titleNavigation : Html.Html String
 titleNavigation =
-    div [ Html.Attributes.style "padding" (toString padding ++ "px"), Html.Attributes.style "font-family" "sans-serif", Html.Attributes.style "position" "absolute" ]
+    div [ Html.Attributes.style "padding" (String.fromFloat padding ++ "px"), Html.Attributes.style "font-family" "sans-serif", Html.Attributes.style "position" "absolute" ]
         [ Html.h1 [ Html.Attributes.style "margin-top" "0px", Html.Attributes.style "font-size" "20px" ] [ text "Car Sales in Norway" ]
         , Example.navigation "Layout" exampleConfig
         ]
@@ -157,12 +166,12 @@ titleNavigation =
 -}
 renderStream : ( ContinuousScale, ContinuousScale ) -> Color -> List ( Float, Float ) -> Svg msg
 renderStream scales color coords =
-    Svg.path [ fill (colorToCssRgb color), d (toArea scales coords) ] []
+    Path.element (toArea scales coords) [ fill (Color.toCssString color) ]
 
 
 {-| Create a svg path string that draws the area between two lines
 -}
-toArea : ( ContinuousScale, ContinuousScale ) -> List ( Float, Float ) -> String
+toArea : ( ContinuousScale, ContinuousScale ) -> List ( Float, Float ) -> Path
 toArea ( scaleX, scaleY ) ys =
     let
         mapper : Int -> ( Float, Float ) -> Maybe ( ( Float, Float ), ( Float, Float ) )
@@ -176,7 +185,6 @@ toArea ( scaleX, scaleY ) ys =
                 ( low, high ) =
                     if y1 < y2 then
                         ( y1, y2 )
-
                     else
                         ( y2, y1 )
             in
@@ -189,12 +197,6 @@ toArea ( scaleX, scaleY ) ys =
         |> Shape.area Shape.monotoneInXCurve
 
 
-translate : number -> number -> Svg.Attribute msg
-translate x y =
-    transform ("translate(" ++ toString x ++ ", " ++ toString y ++ ")")
-
-
-main : Program Never String String
 main =
     Example.switchableViews exampleConfig (Shape.stack >> view)
 
