@@ -354,7 +354,7 @@ sequential domain_ interpolator =
         }
 
 
-{-| ![Viridis](http://code.gampleman.eu/elm-visualization/misc/viridis.png)
+{-| ![Viridis](https://code.gampleman.eu/elm-visualization/misc/viridis.png)
 
 Given a number t in the range [0,1], returns the corresponding
 color from the “viridis” perceptually-uniform color scheme designed
@@ -367,7 +367,7 @@ viridisInterpolator =
     Colors.viridis
 
 
-{-| ![Inferno](http://code.gampleman.eu/elm-visualization/misc/inferno.png)
+{-| ![Inferno](https://code.gampleman.eu/elm-visualization/misc/inferno.png)
 
 Given a number t in the range [0,1], returns the corresponding
 color from the “inferno” perceptually-uniform color scheme designed
@@ -380,7 +380,7 @@ infernoInterpolator =
     Colors.inferno
 
 
-{-| ![magma](http://code.gampleman.eu/elm-visualization/misc/magma.png)
+{-| ![magma](https://code.gampleman.eu/elm-visualization/misc/magma.png)
 
 Given a number t in the range [0,1], returns the corresponding
 color from the “magma” perceptually-uniform color scheme designed
@@ -393,7 +393,7 @@ magmaInterpolator =
     Colors.magma
 
 
-{-| ![Plasma](http://code.gampleman.eu/elm-visualization/misc/plasma.png)
+{-| ![Plasma](https://code.gampleman.eu/elm-visualization/misc/plasma.png)
 
 Given a number t in the range [0,1], returns the corresponding
 color from the “plasma” perceptually-uniform color scheme designed
@@ -576,7 +576,7 @@ bandwidth (Scale scale) =
     scale.bandwidth
 
 
-{-| This converts a BandScale into a [RenderableScale](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization-Axis#RenderableScale)
+{-| This converts a BandScale into a [RenderableScale](https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization-Axis#RenderableScale)
 suitable for rendering Axes. This has the same domain and range, but the convert output is shifted by half a `bandwidth`
 in order for ticks and labels to align nicely.
 -}
@@ -732,7 +732,7 @@ nice (Scale scale) count =
     Scale { scale | domain = scale.nice scale.domain count }
 
 
-{-| ![category10](http://code.gampleman.eu/elm-visualization/misc/category10.png)
+{-| ![category10](https://code.gampleman.eu/elm-visualization/misc/category10.png)
 
 A list of ten categorical colors
 
@@ -742,7 +742,7 @@ category10 =
     Colors.cat10
 
 
-{-| ![category20a](http://code.gampleman.eu/elm-visualization/misc/category20a.png)
+{-| ![category20a](https://code.gampleman.eu/elm-visualization/misc/category20a.png)
 
 A list of twenty categorical colors
 
@@ -752,7 +752,7 @@ category20a =
     Colors.cat20a
 
 
-{-| ![category20b](http://code.gampleman.eu/elm-visualization/misc/category20b.png)
+{-| ![category20b](https://code.gampleman.eu/elm-visualization/misc/category20b.png)
 
 A list of twenty categorical colors
 
@@ -762,7 +762,7 @@ category20b =
     Colors.cat20b
 
 
-{-| ![category20c](http://code.gampleman.eu/elm-visualization/misc/category20c.png)
+{-| ![category20c](https://code.gampleman.eu/elm-visualization/misc/category20c.png)
 
 A list of twenty categorical colors. This color scale includes color
 specifications and designs developed by Cynthia Brewer (colorbrewer2.org).

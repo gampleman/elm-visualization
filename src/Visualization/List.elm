@@ -39,7 +39,7 @@ contain an infinite number of values, an empty range is returned.
 The arguments are not required to be whole numbers; however, the results are more
 predictable if they are.
 
-Differences from [List.range from the standard library](http://package.elm-lang.org/packages/elm-lang/core/5.1.1/List#range):
+Differences from [List.range from the standard library](https://package.elm-lang.org/packages/elm/core/latest/List#range):
 
   - `List.range` is inclusive, meaning that the stop value will be included in the result
   - `List.range` only supports `Int`, whereas this supports any number types
