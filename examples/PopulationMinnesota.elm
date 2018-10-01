@@ -1,17 +1,17 @@
 module PopulationMinnesota exposing (main)
 
+import Axis exposing (Orientation(..))
 import Color exposing (Color)
+import List
 import List.Extra as List
 import SampleData exposing (Gender(..))
+import Scale exposing (BandScale, ContinuousScale, OrdinalScale, QuantizeScale, Scale, defaultBandConfig)
+import Shape exposing (StackConfig, StackResult)
 import TypedSvg exposing (g, rect, svg, text_)
 import TypedSvg.Attributes exposing (class, dy, fill, fontFamily, textAnchor, transform)
 import TypedSvg.Attributes.InPx exposing (fontSize, height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..), em)
-import Visualization.Axis as Axis exposing (Orientation(..))
-import Visualization.List
-import Visualization.Scale as Scale exposing (BandScale, ContinuousScale, OrdinalScale, QuantizeScale, Scale, defaultBandConfig)
-import Visualization.Shape as Shape exposing (StackConfig, StackResult)
 
 
 main : Svg msg
@@ -43,7 +43,7 @@ populationMinnesota1850 =
     { categories = categories
     , data = [ ( 1850, List.map (.people >> toFloat) m ), ( 1850, List.map (.people >> toFloat >> negate) f ) ]
     , extent =
-        Visualization.List.extent categories
+        List.extent categories
             |> Maybe.map (\( a, b ) -> ( toFloat a, toFloat b ))
             |> Maybe.withDefault ( 0, 0 )
     }

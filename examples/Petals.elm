@@ -4,13 +4,13 @@ module Petals exposing (main)
 -}
 
 import Color exposing (Color)
+import Force
+import Scale
 import TypedSvg exposing (circle, svg)
 import TypedSvg.Attributes exposing (fill, viewBox)
 import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, width)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..))
-import Visualization.Force as Force
-import Visualization.Scale as Scale
 
 
 w : Float

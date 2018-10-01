@@ -3,6 +3,7 @@ module NorwegianCarSales exposing (main)
 {-| This example demonstates using different kinds of layouts for stacked graphs.
 -}
 
+import Axis exposing (Orientation(..))
 import Color exposing (Color)
 import Example
 import Html exposing (div, text)
@@ -10,6 +11,8 @@ import Html.Attributes
 import List.Extra as List
 import Path exposing (Path)
 import SampleData
+import Scale exposing (ContinuousScale, OrdinalScale, Scale)
+import Shape exposing (StackConfig, StackResult)
 import Time exposing (Month(..))
 import Time.Extra exposing (Parts)
 import TypedSvg exposing (g, svg, text_)
@@ -17,9 +20,6 @@ import TypedSvg.Attributes exposing (class, fill, fontFamily, transform)
 import TypedSvg.Attributes.InPx exposing (fontSize, height, width)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
-import Visualization.Axis as Axis exposing (Orientation(..))
-import Visualization.Scale as Scale exposing (ContinuousScale, OrdinalScale, Scale)
-import Visualization.Shape as Shape exposing (StackConfig, StackResult)
 
 
 exampleConfig : List ( String, StackConfig String )

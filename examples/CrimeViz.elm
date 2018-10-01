@@ -4,19 +4,19 @@ module CrimeViz exposing (main)
 the primitives provided in this library.
 -}
 
+import Axis exposing (defaultOptions)
 import Color exposing (Color)
+import List
 import Path exposing (Path)
 import SampleData exposing (CrimeRate, crimeRates)
+import Scale exposing (ContinuousScale, OrdinalScale)
+import Shape
 import Time
 import TypedSvg exposing (g, svg, text_)
 import TypedSvg.Attributes exposing (class, dy, fill, fontFamily, stroke, textAnchor, transform)
 import TypedSvg.Attributes.InPx exposing (fontSize, height, strokeWidth, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..), em)
-import Visualization.Axis as Axis exposing (defaultOptions)
-import Visualization.List as List
-import Visualization.Scale as Scale exposing (ContinuousScale, OrdinalScale)
-import Visualization.Shape as Shape
 
 
 w : Float

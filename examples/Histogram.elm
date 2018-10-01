@@ -3,16 +3,16 @@ module Histogram exposing (main)
 {-| Renders a histogram of a randomly generated data set
 -}
 
+import Axis exposing (defaultOptions)
 import Color
+import Histogram exposing (Bin, HistogramGenerator)
 import Random exposing (Generator, Seed)
+import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
 import TypedSvg exposing (g, rect, svg)
 import TypedSvg.Attributes exposing (class, fill, transform)
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
-import Visualization.Axis as Axis exposing (defaultOptions)
-import Visualization.Histogram as Histogram exposing (Bin, HistogramGenerator)
-import Visualization.Scale as Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
 
 
 {-| We use addition here to approximate normal distribution.

@@ -7,14 +7,14 @@ import Color exposing (Color)
 import Example
 import Html exposing (a, div, p)
 import Path exposing (Path)
+import Scale exposing (ContinuousScale)
+import Shape
 import SubPath exposing (SubPath)
 import TypedSvg exposing (g, line, rect, svg, text_)
 import TypedSvg.Attributes as Explicit exposing (fill, fontFamily, stroke, transform)
 import TypedSvg.Attributes.InPx exposing (height, strokeWidth, width, x, x1, x2, y, y1, y2)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (Fill(..), Transform(..), percent)
-import Visualization.Scale as Scale exposing (ContinuousScale)
-import Visualization.Shape as Shape
 
 
 w : Float

@@ -4,17 +4,17 @@ module Background exposing (main)
 -}
 
 import Color exposing (Color)
+import Force exposing (State)
 import Graph exposing (Edge, Graph, Node, NodeId)
 import IntDict
 import List exposing (range)
 import SampleData exposing (miserablesGraph)
+import Scale exposing (SequentialScale)
 import TypedSvg exposing (circle, g, line, polygon, svg, title)
 import TypedSvg.Attributes exposing (class, fill, points, stroke)
 import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, strokeWidth, width, x1, x2, y1, y2)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (Fill(..))
-import Visualization.Force as Force exposing (State)
-import Visualization.Scale as Scale exposing (SequentialScale)
 
 
 w : Float

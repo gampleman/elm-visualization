@@ -4,8 +4,8 @@ import Array exposing (Array)
 import Expect
 import Fuzz exposing (..)
 import Helper exposing (expectAll, expectAny)
+import Histogram.Array as Array
 import Test exposing (..)
-import Visualization.Histogram.Array as Array
 
 
 bisectRight : Test

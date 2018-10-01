@@ -6,12 +6,12 @@ module CornerRadius exposing (main)
 import Array exposing (Array)
 import Color exposing (Color)
 import Path exposing (Path)
+import Shape exposing (Arc, defaultPieConfig)
 import TypedSvg exposing (circle, g, svg)
 import TypedSvg.Attributes exposing (fill, stroke, transform)
 import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, width)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
-import Visualization.Shape as Shape exposing (Arc, defaultPieConfig)
 
 
 w : Float

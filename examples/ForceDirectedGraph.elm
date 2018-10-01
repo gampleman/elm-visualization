@@ -7,6 +7,7 @@ based on their co-occurence in a scene. Try dragging the nodes!
 import Browser
 import Browser.Events
 import Color
+import Force exposing (State)
 import Graph exposing (Edge, Graph, Node, NodeContext, NodeId)
 import Html
 import Html.Events exposing (on)
@@ -19,7 +20,6 @@ import TypedSvg.Attributes exposing (class, fill, stroke)
 import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, strokeWidth, width, x1, x2, y1, y2)
 import TypedSvg.Core exposing (Attribute, Svg, text)
 import TypedSvg.Types exposing (Fill(..))
-import Visualization.Force as Force exposing (State)
 
 
 w : Float

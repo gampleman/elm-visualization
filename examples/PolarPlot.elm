@@ -3,15 +3,15 @@ module PolarPlot exposing (main)
 {-| A polar plot of `sin(2x)cos(2x)`.
 -}
 
+import List exposing (range)
 import Path
+import Scale exposing (ContinuousScale)
+import Shape
 import TypedSvg exposing (circle, g, line, style, svg, text_)
 import TypedSvg.Attributes exposing (class, dy, textAnchor, transform)
 import TypedSvg.Attributes.InPx exposing (fontSize, height, r, width, x, x2, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), Transform(..), em)
-import Visualization.List exposing (range)
-import Visualization.Scale as Scale exposing (ContinuousScale)
-import Visualization.Shape as Shape
 
 
 w : Float

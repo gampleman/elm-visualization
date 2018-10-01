@@ -3,16 +3,16 @@ module BarChart exposing (main)
 {-| This module shows how to build a simple bar chart.
 -}
 
+import Axis exposing (defaultOptions)
 import DateFormat
 import SampleData exposing (timeSeries)
+import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
 import Time
 import TypedSvg exposing (g, rect, style, svg, text_)
 import TypedSvg.Attributes exposing (class, textAnchor, transform)
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), Transform(..))
-import Visualization.Axis as Axis exposing (defaultOptions)
-import Visualization.Scale as Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
 
 
 w : Float

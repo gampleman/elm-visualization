@@ -10,12 +10,12 @@ import Html exposing (Html, br, div, h2, input, label)
 import Html.Attributes exposing (step, style, type_, value)
 import Html.Events exposing (onInput)
 import Path
+import Shape exposing (defaultPieConfig)
 import TypedSvg exposing (g, svg, text_)
 import TypedSvg.Attributes exposing (dy, fill, stroke, textAnchor, transform)
 import TypedSvg.Attributes.InPx exposing (height, width)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..), em)
-import Visualization.Shape as Shape exposing (defaultPieConfig)
 
 
 w : Float

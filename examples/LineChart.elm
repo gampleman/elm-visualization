@@ -4,19 +4,19 @@ module LineChart exposing (main)
 the primitives provided in this library.
 -}
 
+import Axis exposing (defaultOptions)
 import Color
+import List
 import Path exposing (Path)
 import SampleData exposing (timeSeries)
+import Scale exposing (ContinuousScale, ContinuousTimeScale)
+import Shape
 import Time
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes exposing (class, fill, stroke, transform)
 import TypedSvg.Attributes.InPx exposing (height, strokeWidth, width)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
-import Visualization.Axis as Axis exposing (defaultOptions)
-import Visualization.List as List
-import Visualization.Scale as Scale exposing (ContinuousScale, ContinuousTimeScale)
-import Visualization.Shape as Shape
 
 
 w : Float

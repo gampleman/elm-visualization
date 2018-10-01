@@ -1,16 +1,16 @@
 module StackedBarChart exposing (main)
 
+import Axis exposing (defaultOptions)
 import Color exposing (Color)
 import List.Extra as List
 import SampleData exposing (CrimeRate)
+import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
+import Shape exposing (StackConfig, StackResult)
 import TypedSvg exposing (g, rect, svg)
 import TypedSvg.Attributes exposing (class, fill, transform)
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
-import Visualization.Axis as Axis exposing (defaultOptions)
-import Visualization.Scale as Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
-import Visualization.Shape as Shape exposing (StackConfig, StackResult)
 
 
 main : Svg msg
