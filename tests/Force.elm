@@ -62,7 +62,7 @@ integrationTest =
                             x
 
                         Nothing ->
-                            Debug.crash "Forced a nothing"
+                            Force.entity 0 ()
 
                 dist n1 n2 =
                     sqrt ((n1.x - n2.x) ^ 2 + (n1.y - n2.y) ^ 2)
@@ -78,10 +78,10 @@ integrationTest =
                         n2 =
                             forceMaybe <| Array.get 2 array
                     in
-                        [ dist n0 n1, dist n1 n2, dist n2 n0 ]
+                    [ dist n0 n1, dist n1 n2, dist n2 n0 ]
             in
-                Force.computeSimulation simulation entities
-                    |> Array.fromList
-                    |> computeDistances
-                    |> List.map round
-                    |> Expect.equal [ 34, 34, 34 ]
+            Force.computeSimulation simulation entities
+                |> Array.fromList
+                |> computeDistances
+                |> List.map round
+                |> Expect.equal [ 34, 34, 34 ]

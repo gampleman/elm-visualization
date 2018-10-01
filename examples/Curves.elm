@@ -3,23 +3,27 @@ module Curves exposing (main)
 {-| Here we demonstrate the various curve functions provided.
 -}
 
-import Html exposing (div, p, a)
-import Color.Convert exposing (colorToCssRgb)
+import Color exposing (Color)
+import Example
+import Html exposing (a, div, p)
+import Path exposing (Path)
+import SubPath exposing (SubPath)
+import TypedSvg exposing (g, line, rect, svg, text_)
+import TypedSvg.Attributes as Explicit exposing (fill, fontFamily, stroke, transform)
+import TypedSvg.Attributes.InPx exposing (height, strokeWidth, width, x, x1, x2, y, y1, y2)
+import TypedSvg.Core exposing (Svg, text)
+import TypedSvg.Types exposing (Fill(..), Transform(..), percent)
 import Visualization.Scale as Scale exposing (ContinuousScale)
 import Visualization.Shape as Shape
-import Svg exposing (Svg, svg, rect, path, g, line, text, text_)
-import Svg.Attributes exposing (..)
-import Visualization.Path
-import Example
 
 
-screenWidth : Float
-screenWidth =
+w : Float
+w =
     990
 
 
-screenHeight : Float
-screenHeight =
+h : Float
+h =
     450
 
 
@@ -45,12 +49,12 @@ points =
 
 xScale : ContinuousScale
 xScale =
-    Scale.linear ( 0, 2 ) ( padding, screenWidth - padding )
+    Scale.linear ( 0, 2 ) ( padding, w - padding )
 
 
 yScale : ContinuousScale
 yScale =
-    Scale.linear ( 0, 1 ) ( screenHeight - padding, padding )
+    Scale.linear ( 0, 1 ) ( h - padding, padding )
 
 
 preparedPoints : List ( Float, Float )
@@ -61,12 +65,12 @@ preparedPoints =
 xGridLine : Int -> Float -> Svg msg
 xGridLine index tick =
     line
-        [ y1 "0"
-        , y2 "100%"
-        , x1 (toString (Scale.convert xScale tick))
-        , x2 (toString (Scale.convert xScale tick))
-        , stroke "white"
-        , strokeWidth (toString (Basics.max (toFloat (index % 2)) 0.5))
+        [ y1 0
+        , Explicit.y2 (percent 100)
+        , x1 (Scale.convert xScale tick)
+        , x2 (Scale.convert xScale tick)
+        , stroke Color.white
+        , strokeWidth (Basics.max (toFloat (modBy 2 index)) 0.5)
         ]
         []
 
@@ -74,47 +78,49 @@ xGridLine index tick =
 yGridLine : Int -> Float -> Svg msg
 yGridLine index tick =
     line
-        [ x1 "0"
-        , x2 "100%"
-        , y1 (toString (Scale.convert yScale tick))
-        , y2 (toString (Scale.convert yScale tick))
-        , stroke "white"
-        , strokeWidth (toString (Basics.max (toFloat (index % 2)) 0.5))
+        [ x1 0
+        , Explicit.x2 (percent 100)
+        , y1 (Scale.convert yScale tick)
+        , y2 (Scale.convert yScale tick)
+        , stroke Color.white
+        , strokeWidth (Basics.max (toFloat (modBy 2 index)) 0.5)
         ]
         []
 
 
 type alias Curve =
-    Shape.Curve -> List Visualization.Path.PathSegment
+    List ( Float, Float ) -> SubPath
 
 
-drawCurve : ( String, Curve, String ) -> Svg msg
+drawCurve : ( String, Curve, Color ) -> Svg msg
 drawCurve ( name, curve, color ) =
-    Svg.path [ d (Shape.line curve (List.map Just preparedPoints)), stroke color, fill "none", strokeWidth "2" ] []
+    List.map Just preparedPoints
+        |> Shape.line curve
+        |> (\path -> Path.element path [ stroke color, fill FillNone, strokeWidth 2 ])
 
 
-drawLegend : Int -> ( String, Curve, String ) -> Svg msg
+drawLegend : Int -> ( String, Curve, Color ) -> Svg msg
 drawLegend index ( name, curve, color ) =
-    text_ [ style ("fill: " ++ color ++ "; font-family: monospace"), x (toString padding), y (toString (toFloat index * 20 + padding)) ] [ text name ]
+    text_ [ fill (Fill color), fontFamily [ "monospace" ], x padding, y (toFloat index * 20 + padding) ] [ text name ]
 
 
-view : List ( String, Curve, String ) -> Svg String
+view : List ( String, Curve, Color ) -> Svg String
 view model =
     div []
         [ Example.navigation "Curve type" exampleData
-        , svg [ width (toString screenWidth), height (toString screenHeight) ]
-            [ rect [ width "100%", height "100%", fill "#dfdfdf" ] []
+        , svg [ width w, height h ]
+            [ rect [ width w, height h, fill <| Fill <| Color.rgb255 223 223 223 ] []
             , g [] <| List.indexedMap yGridLine <| Scale.ticks yScale 10
             , g [] <| List.indexedMap xGridLine <| Scale.ticks xScale 20
             , g [] <|
                 List.map drawCurve model
-            , g [] <| List.map (\point -> Svg.path [ d circle, fill "white", stroke "black", transform ("translate" ++ toString point) ] []) preparedPoints
+            , g [] <| List.map (\( dx, dy ) -> Path.element circle [ fill (Fill Color.white), stroke Color.black, transform [ Translate dx dy ] ]) preparedPoints
             , g [] <| List.indexedMap drawLegend <| model
             ]
         ]
 
 
-circle : String
+circle : Path
 circle =
     Shape.arc
         { innerRadius = 0
@@ -127,12 +133,12 @@ circle =
         }
 
 
-basic : String -> Curve -> List ( String, Curve, String )
+basic : String -> Curve -> List ( String, Curve, Color )
 basic prefix curveFn =
-    [ ( prefix, curveFn, "#000" ) ]
+    [ ( prefix, curveFn, Color.black ) ]
 
 
-parametrized : String -> (Float -> Curve) -> List ( String, Curve, String )
+parametrized : String -> (Float -> Curve) -> List ( String, Curve, Color )
 parametrized prefix curveFn =
     let
         scale =
@@ -141,8 +147,8 @@ parametrized prefix curveFn =
         stops =
             [ 0, 0.25, 0.5, 0.75, 1 ]
     in
-        stops
-            |> List.map (\s -> ( prefix ++ " " ++ toString s, curveFn s, Scale.convert scale s |> colorToCssRgb ))
+    stops
+        |> List.map (\s -> ( prefix ++ " " ++ String.fromFloat s, curveFn s, Scale.convert scale s ))
 
 
 exampleData =
@@ -163,7 +169,6 @@ exampleData =
     ]
 
 
-main : Program Never String String
 main =
     Example.switchableViews exampleData view
 

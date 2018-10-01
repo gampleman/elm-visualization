@@ -1,4 +1,4 @@
-module Visualization.Scale.Quantize exposing (convert, invertExtent, ticks, tickFormat, nice, rangeExtent)
+module Visualization.Scale.Quantize exposing (convert, invertExtent, nice, rangeExtent, tickFormat, ticks)
 
 import Visualization.List as VList
 import Visualization.Scale.Linear as Linear
@@ -18,16 +18,16 @@ computeDomain ( mi, ma ) tail =
         step =
             (ma - mi) / toFloat (l + 1)
     in
-        Maybe.withDefault [ 0 ] <| List.tail <| VList.range mi ma step
+    Maybe.withDefault [ 0 ] <| List.tail <| VList.range mi ma step
 
 
 convert : ( Float, Float ) -> ( a, List a ) -> Float -> a
 convert domain ( head, tail ) val =
     let
-        last head tail =
+        last h t =
             case tail of
                 [] ->
-                    head
+                    h
 
                 x :: xs ->
                     last x xs
@@ -45,7 +45,7 @@ convert domain ( head, tail ) val =
                 d :: ds ->
                     case range of
                         [] ->
-                            Debug.crash "Invariant breached: ran out of range"
+                            head
 
                         r :: rs ->
                             if val > d then
@@ -53,7 +53,7 @@ convert domain ( head, tail ) val =
                             else
                                 r
     in
-        helper (computeDomain domain tail) (head :: tail)
+    helper (computeDomain domain tail) (head :: tail)
 
 
 invertExtent : ( Float, Float ) -> ( a, List a ) -> a -> Maybe ( Float, Float )
@@ -62,28 +62,28 @@ invertExtent ( mi, ma ) ( head, tail ) val =
         domain =
             computeDomain ( mi, ma ) tail
 
-        helper domain range =
+        helper dmn range =
             case range of
                 [] ->
                     Nothing
 
                 x :: xs ->
                     if x == val then
-                        case domain of
+                        case dmn of
                             a :: b :: _ ->
                                 Just ( a, b )
 
                             _ ->
                                 Nothing
                     else
-                        case domain of
+                        case dmn of
                             [] ->
                                 Nothing
 
                             d :: ds ->
                                 helper ds xs
     in
-        helper (mi :: domain ++ [ ma ]) (head :: tail)
+    helper (mi :: domain ++ [ ma ]) (head :: tail)
 
 
 ticks : ( Float, Float ) -> ( a, List a ) -> Int -> List Float
@@ -91,9 +91,9 @@ ticks ( start, end ) domain count =
     VList.ticks start end count
 
 
-tickFormat : ( Float, Float ) -> ( a, List a ) -> Int -> Float -> String
-tickFormat _ _ _ =
-    toString
+tickFormat : ( Float, Float ) -> Int -> Float -> String
+tickFormat =
+    Linear.tickFormat
 
 
 nice : ( Float, Float ) -> Int -> ( Float, Float )

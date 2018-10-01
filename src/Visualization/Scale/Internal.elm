@@ -1,6 +1,6 @@
 module Visualization.Scale.Internal exposing (bimap, interpolateFloat, toFixed)
 
-import String exposing (padRight, split, join)
+import String exposing (join, padRight, split)
 
 
 bimap :
@@ -17,7 +17,7 @@ bimap ( d0, d1 ) ( r0, r1 ) deinterpolate reinterpolate =
             else
                 ( deinterpolate d0 d1, reinterpolate r0 r1 )
     in
-        re << de
+    re << de
 
 
 interpolateFloat : Float -> Float -> Float -> Float
@@ -29,7 +29,7 @@ toFixed : Int -> Float -> String
 toFixed precision value =
     let
         power =
-            toFloat 10 ^ (toFloat precision)
+            toFloat 10 ^ toFloat precision
 
         pad num =
             case num of
@@ -45,9 +45,9 @@ toFixed precision value =
                 val ->
                     val
     in
-        (round (value * power) |> toFloat)
-            / power
-            |> toString
-            |> String.split "."
-            |> pad
-            |> String.join "."
+    (round (value * power) |> toFloat)
+        / power
+        |> String.fromFloat
+        |> String.split "."
+        |> pad
+        |> String.join "."

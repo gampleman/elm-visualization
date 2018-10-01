@@ -3,13 +3,16 @@ module BarChart exposing (main)
 {-| This module shows how to build a simple bar chart.
 -}
 
-import Date exposing (Date)
-import Date.Extra as Date
-import Svg exposing (..)
-import Svg.Attributes exposing (..)
+import DateFormat
+import SampleData exposing (timeSeries)
+import Time
+import TypedSvg exposing (g, rect, style, svg, text_)
+import TypedSvg.Attributes exposing (class, textAnchor, transform)
+import TypedSvg.Attributes.InPx exposing (height, width, x, y)
+import TypedSvg.Core exposing (Svg, text)
+import TypedSvg.Types exposing (AnchorAlignment(..), Transform(..))
 import Visualization.Axis as Axis exposing (defaultOptions)
 import Visualization.Scale as Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
-import SampleData exposing (timeSeries)
 
 
 w : Float
@@ -27,7 +30,7 @@ padding =
     30
 
 
-xScale : List ( Date, Float ) -> BandScale Date
+xScale : List ( Time.Posix, Float ) -> BandScale Time.Posix
 xScale model =
     Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } (List.map Tuple.first model) ( 0, w - 2 * padding )
 
@@ -37,9 +40,14 @@ yScale =
     Scale.linear ( 0, 5 ) ( h - 2 * padding, 0 )
 
 
-xAxis : List ( Date, Float ) -> Svg msg
+dateFormat : Time.Posix -> String
+dateFormat =
+    DateFormat.format [ DateFormat.dayOfMonthFixed, DateFormat.text " ", DateFormat.monthNameAbbreviated ] Time.utc
+
+
+xAxis : List ( Time.Posix, Float ) -> Svg msg
 xAxis model =
-    Axis.axis { defaultOptions | orientation = Axis.Bottom, tickFormat = Just (Date.toFormattedString "dd MMM") } (Scale.toRenderable (xScale model))
+    Axis.axis { defaultOptions | orientation = Axis.Bottom } (Scale.toRenderable dateFormat (xScale model))
 
 
 yAxis : Svg msg
@@ -47,39 +55,39 @@ yAxis =
     Axis.axis { defaultOptions | orientation = Axis.Left, tickCount = 5 } yScale
 
 
-column : BandScale Date -> ( Date, Float ) -> Svg msg
-column xScale ( date, value ) =
-    g [ class "column" ]
+column : BandScale Time.Posix -> ( Time.Posix, Float ) -> Svg msg
+column scale ( date, value ) =
+    g [ class [ "column" ] ]
         [ rect
-            [ x <| toString <| Scale.convert xScale date
-            , y <| toString <| Scale.convert yScale value
-            , width <| toString <| Scale.bandwidth xScale
-            , height <| toString <| h - Scale.convert yScale value - 2 * padding
+            [ x <| Scale.convert scale date
+            , y <| Scale.convert yScale value
+            , width <| Scale.bandwidth scale
+            , height <| h - Scale.convert yScale value - 2 * padding
             ]
             []
         , text_
-            [ x <| toString <| Scale.convert (Scale.toRenderable xScale) date
-            , y <| toString <| Scale.convert yScale value - 5
-            , textAnchor "middle"
+            [ x <| Scale.convert (Scale.toRenderable dateFormat scale) date
+            , y <| Scale.convert yScale value - 5
+            , textAnchor AnchorMiddle
             ]
-            [ text <| toString value ]
+            [ text <| String.fromFloat value ]
         ]
 
 
-view : List ( Date, Float ) -> Svg msg
+view : List ( Time.Posix, Float ) -> Svg msg
 view model =
-    svg [ width (toString w ++ "px"), height (toString h ++ "px") ]
-        [ Svg.style [] [ text """
+    svg [ width w, height h ]
+        [ style [] [ text """
             .column rect { fill: rgba(118, 214, 78, 0.8); }
             .column text { display: none; }
             .column:hover rect { fill: rgb(118, 214, 78); }
             .column:hover text { display: inline; }
           """ ]
-        , g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString (h - padding) ++ ")") ]
+        , g [ transform [ Translate (padding - 1) (h - padding) ] ]
             [ xAxis model ]
-        , g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString padding ++ ")") ]
+        , g [ transform [ Translate (padding - 1) padding ] ]
             [ yAxis ]
-        , g [ transform ("translate(" ++ toString padding ++ ", " ++ toString padding ++ ")"), class "series" ] <|
+        , g [ transform [ Translate padding padding ], class [ "series" ] ] <|
             List.map (column (xScale model)) model
         ]
 

@@ -1,19 +1,19 @@
-module SampleData exposing (timeSeries, crimeRates, CrimeRate, miserablesGraph, norwegianCarSales, Gender(..), Population, populationMinnesota1850, norwegianCarSalesMiddlePlayers)
+module SampleData exposing (CrimeRate, Gender(..), Population, crimeRates, miserablesGraph, norwegianCarSales, norwegianCarSalesMiddlePlayers, populationMinnesota1850, timeSeries)
 
-import Graph
-import Date exposing (Date)
 import Dict exposing (Dict)
+import Graph
+import Time
 
 
-timeSeries : List ( Date, Float )
+timeSeries : List ( Time.Posix, Float )
 timeSeries =
-    [ ( Date.fromTime 1448928000000, 2.5 )
-    , ( Date.fromTime 1451606400000, 2 )
-    , ( Date.fromTime 1452211200000, 3.5 )
-    , ( Date.fromTime 1452816000000, 2 )
-    , ( Date.fromTime 1453420800000, 3 )
-    , ( Date.fromTime 1454284800000, 1 )
-    , ( Date.fromTime 1456790400000, 1.2 )
+    [ ( Time.millisToPosix 1448928000000, 2.5 )
+    , ( Time.millisToPosix 1451606400000, 2 )
+    , ( Time.millisToPosix 1452211200000, 3.5 )
+    , ( Time.millisToPosix 1452816000000, 2 )
+    , ( Time.millisToPosix 1453420800000, 3 )
+    , ( Time.millisToPosix 1454284800000, 1 )
+    , ( Time.millisToPosix 1456790400000, 1.2 )
     ]
 
 
@@ -66,57 +66,45 @@ type alias Population =
 
 populationMinnesota1850 : List Population
 populationMinnesota1850 =
-    let
-        parse ( year, age, gender, people ) =
-            Population year
-                age
-                (if gender == 1 then
-                    M
-                 else
-                    F
-                )
-                people
-    in
-        List.map parse
-            [ ( 1850, 0, 1, 1483789 )
-            , ( 1850, 0, 2, 1450376 )
-            , ( 1850, 5, 1, 1411067 )
-            , ( 1850, 5, 2, 1359668 )
-            , ( 1850, 10, 1, 1260099 )
-            , ( 1850, 10, 2, 1216114 )
-            , ( 1850, 15, 1, 1077133 )
-            , ( 1850, 15, 2, 1110619 )
-            , ( 1850, 20, 1, 1017281 )
-            , ( 1850, 20, 2, 1003841 )
-            , ( 1850, 25, 1, 862547 )
-            , ( 1850, 25, 2, 799482 )
-            , ( 1850, 30, 1, 730638 )
-            , ( 1850, 30, 2, 639636 )
-            , ( 1850, 35, 1, 588487 )
-            , ( 1850, 35, 2, 505012 )
-            , ( 1850, 40, 1, 475911 )
-            , ( 1850, 40, 2, 428185 )
-            , ( 1850, 45, 1, 384211 )
-            , ( 1850, 45, 2, 341254 )
-            , ( 1850, 50, 1, 321343 )
-            , ( 1850, 50, 2, 286580 )
-            , ( 1850, 55, 1, 194080 )
-            , ( 1850, 55, 2, 187208 )
-            , ( 1850, 60, 1, 174976 )
-            , ( 1850, 60, 2, 162236 )
-            , ( 1850, 65, 1, 106827 )
-            , ( 1850, 65, 2, 105534 )
-            , ( 1850, 70, 1, 73677 )
-            , ( 1850, 70, 2, 71762 )
-            , ( 1850, 75, 1, 40834 )
-            , ( 1850, 75, 2, 40229 )
-            , ( 1850, 80, 1, 23449 )
-            , ( 1850, 80, 2, 22949 )
-            , ( 1850, 85, 1, 8186 )
-            , ( 1850, 85, 2, 10511 )
-            , ( 1850, 90, 1, 5259 )
-            , ( 1850, 90, 2, 6569 )
-            ]
+    [ Population 1850 0 M 1483789
+    , Population 1850 0 F 1450376
+    , Population 1850 5 M 1411067
+    , Population 1850 5 F 1359668
+    , Population 1850 10 M 1260099
+    , Population 1850 10 F 1216114
+    , Population 1850 15 M 1077133
+    , Population 1850 15 F 1110619
+    , Population 1850 20 M 1017281
+    , Population 1850 20 F 1003841
+    , Population 1850 25 M 862547
+    , Population 1850 25 F 799482
+    , Population 1850 30 M 730638
+    , Population 1850 30 F 639636
+    , Population 1850 35 M 588487
+    , Population 1850 35 F 505012
+    , Population 1850 40 M 475911
+    , Population 1850 40 F 428185
+    , Population 1850 45 M 384211
+    , Population 1850 45 F 341254
+    , Population 1850 50 M 321343
+    , Population 1850 50 F 286580
+    , Population 1850 55 M 194080
+    , Population 1850 55 F 187208
+    , Population 1850 60 M 174976
+    , Population 1850 60 F 162236
+    , Population 1850 65 M 106827
+    , Population 1850 65 F 105534
+    , Population 1850 70 M 73677
+    , Population 1850 70 F 71762
+    , Population 1850 75 M 40834
+    , Population 1850 75 F 40229
+    , Population 1850 80 M 23449
+    , Population 1850 80 F 22949
+    , Population 1850 85 M 8186
+    , Population 1850 85 F 10511
+    , Population 1850 90 M 5259
+    , Population 1850 90 F 6569
+    ]
 
 
 miserablesGraph =
@@ -459,52 +447,52 @@ miserablesGraph =
 norwegianCarSalesMiddlePlayers : List ( String, List Float )
 norwegianCarSalesMiddlePlayers =
     let
-        emptyYear : List number
+        emptyYear : List Float
         emptyYear =
             List.repeat 12 0
 
-        yearValues : unused -> Dict Int (Dict Int number) -> List Float
+        yearValues : unused -> Dict Int (Dict Int Float) -> List Float
         yearValues make years =
             List.range 2007 2016
                 |> List.map (yearValue (Dict.map monthValues years))
                 |> List.concat
 
-        yearValue : Dict comparable (List number) -> comparable -> List number
+        yearValue : Dict comparable (List Float) -> comparable -> List Float
         yearValue year index =
             Dict.get index year
                 |> Maybe.withDefault emptyYear
 
-        monthValues : unused -> Dict Int number -> List Float
+        monthValues : unused -> Dict Int Float -> List Float
         monthValues year months =
             List.range 1 12
                 |> List.map (monthValue months)
 
-        monthValue : Dict Int number -> Int -> Float
+        monthValue : Dict Int Float -> Int -> Float
         monthValue months index =
             Dict.get index months
                 |> Maybe.withDefault 0
-                |> toFloat
     in
-        -- first, for every make convert the nested dict into a rectangular matrix (size: length data x 12), padding with 0s when data is missing
-        -- then, sort and select the middle brands:
-        -- they have more variation, which makes for a more interesting graph.
-        norwegianCarSales
-            |> Dict.map yearValues
-            |> Dict.toList
-            |> List.sortBy (Tuple.second >> List.sum >> negate)
-            |> List.drop 4
-            |> List.take 8
+    -- first, for every make convert the nested dict into a rectangular matrix (size: length data x 12), padding with 0s when data is missing
+    -- then, sort and select the middle brands:
+    -- they have more variation, which makes for a more interesting graph.
+    norwegianCarSales
+        |> Dict.map yearValues
+        |> Dict.toList
+        |> List.sortBy (Tuple.second >> List.sum >> negate)
+        |> List.drop 4
+        |> List.take 8
 
 
 {-| Subset of a kaggle dataset
 
-https://www.kaggle.com/dmi3kno/newcarsalesnorway
+<https://www.kaggle.com/dmi3kno/newcarsalesnorway>
 
 which in turn is based on (I assume scraped from)
 
-http://www.ofvas.no/bilsalget/category404.html
+<http://www.ofvas.no/bilsalget/category404.html>
+
 -}
-norwegianCarSales : Dict String (Dict Int (Dict Int Int))
+norwegianCarSales : Dict String (Dict Int (Dict Int Float))
 norwegianCarSales =
     Dict.fromList
         [ ( "Audi"

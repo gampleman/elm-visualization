@@ -1,8 +1,113 @@
 module Visualization.Shape.Pie exposing (..)
 
 import Array
-import Visualization.Path as Path exposing (..)
 import Dict
+import LowLevel.Command exposing (..)
+import Path exposing (Path)
+import SubPath exposing (SubPath)
+
+
+boolToDirection b =
+    if b then
+        counterClockwise
+    else
+        clockwise
+
+
+boolToArc b =
+    if b then
+        largestArc
+    else
+        smallestArc
+
+
+mod : Float -> Float -> Float
+mod a b =
+    let
+        frac =
+            a / b
+    in
+    (frac - toFloat (truncate frac)) * b
+
+
+makeArc : Float -> Float -> Float -> Float -> Float -> Bool -> SubPath -> SubPath
+makeArc x y radius a0 a1 ccw =
+    SubPath.continue (arc_ x y radius a0 a1 ccw)
+
+
+arc_ x y radius a0 a1 ccw =
+    let
+        r =
+            abs radius
+
+        dx =
+            r * cos a0
+
+        dy =
+            r * sin a0
+
+        x0_ =
+            x + dx
+
+        y0_ =
+            y + dy
+
+        cw =
+            boolToDirection (not ccw)
+
+        tau =
+            2 * pi
+
+        da =
+            if ccw then
+                a0 - a1
+            else
+                a1 - a0
+
+        origin =
+            moveTo ( x0_, y0_ )
+    in
+    if r == 0 then
+        SubPath.empty
+    else if da > (tau - epsilon) then
+        -- Is this a complete circle? Draw two arcs to complete the circle.
+        SubPath.with origin
+            [ arcTo
+                [ { radii = ( r, r )
+                  , xAxisRotate = 0
+                  , arcFlag = largestArc
+                  , direction = cw
+                  , target = ( x - dx, y - dy )
+                  }
+                ]
+            , arcTo
+                [ { radii = ( r, r )
+                  , xAxisRotate = 0
+                  , arcFlag = largestArc
+                  , direction = cw
+                  , target = ( x0_, y0_ )
+                  }
+                ]
+            ]
+    else
+        let
+            da_ =
+                if da < 0 then
+                    mod da tau + tau
+                else
+                    da
+        in
+        -- Otherwise, draw an arc!
+        SubPath.with origin
+            [ arcTo
+                [ { radii = ( r, r )
+                  , xAxisRotate = 0
+                  , arcFlag = boolToArc (da_ >= pi)
+                  , direction = cw
+                  , target = ( x + r * cos a1, y + r * sin a1 )
+                  }
+                ]
+            ]
 
 
 epsilon : Float
@@ -28,7 +133,7 @@ intersect x0 y0 x1 y1 x2 y2 x3 y3 =
         t =
             (x32 * (y0 - y2) - y32 * (x0 - x2)) / (y32 * x10 - x32 * y10)
     in
-        ( x0 + t * x10, y0 + t * y10 )
+    ( x0 + t * x10, y0 + t * y10 )
 
 
 cornerTangents : Float -> Float -> Float -> Float -> Float -> Float -> Bool -> { cx : Float, cy : Float, x01 : Float, y01 : Float, x11 : Float, y11 : Float }
@@ -125,13 +230,13 @@ cornerTangents x0 y0 x1 y1 r1 rc cw =
             else
                 ( cx0, cy0 )
     in
-        { cx = fcx
-        , cy = fxy
-        , x01 = -ox
-        , y01 = -oy
-        , x11 = fcx * (r1 / r - 1)
-        , y11 = fxy * (r1 / r - 1)
-        }
+    { cx = fcx
+    , cy = fxy
+    , x01 = -ox
+    , y01 = -oy
+    , x11 = fcx * (r1 / r - 1)
+    , y11 = fxy * (r1 / r - 1)
+    }
 
 
 myAsin : Float -> Float
@@ -154,7 +259,7 @@ arc :
         , startAngle : Float
         , padRadius : Float
     }
-    -> String
+    -> Path
 arc arcData =
     let
         ( r0, r1 ) =
@@ -178,21 +283,22 @@ arc arcData =
         path =
             -- Is it a point?
             if r1 <= epsilon then
-                Path.begin |> moveTo 0 0
+                [ SubPath.with (moveTo ( 0, 0 )) [] |> SubPath.close ]
                 -- Or is it a circle or annulus?
             else if da > 2 * pi - epsilon then
                 let
                     p =
-                        Path.begin
-                            |> moveTo (r1 * cos a0) (r1 * sin a0)
-                            |> Path.arc 0 0 r1 a0 a1 (not cw)
+                        SubPath.with (moveTo ( r1 * cos a0, r1 * sin a0 )) []
+                            |> makeArc 0 0 r1 a0 a1 (not cw)
                 in
-                    if r0 > epsilon then
-                        p
-                            |> moveTo (r0 * cos a1) (r0 * sin a1)
-                            |> Path.arc 0 0 r0 a1 a0 cw
-                    else
-                        p
+                if r0 > epsilon then
+                    [ p
+                    , SubPath.with (moveTo ( r0 * cos a1, r0 * sin a1 )) []
+                        |> makeArc 0 0 r0 a1 a0 cw
+                        |> SubPath.close
+                    ]
+                else
+                    [ p |> SubPath.close ]
                 -- Or is it a circular or annular sector?
             else
                 let
@@ -272,8 +378,11 @@ arc arcData =
                         else
                             ( x10, y10 )
 
-                    ( ax, ay, bx, by ) =
-                        ( x01 - ocx, y01 - ocy, x11 - ocx, y11 - ocy )
+                    ( ax, ay ) =
+                        ( x01 - ocx, y01 - ocy )
+
+                    ( bx, by ) =
+                        ( x11 - ocx, y11 - ocy )
 
                     kc =
                         1 / sin (acos ((ax * bx + ay * by) / (sqrt (ax ^ 2 + ay ^ 2) * sqrt (bx ^ 2 + by ^ 2))) / 2)
@@ -290,7 +399,7 @@ arc arcData =
                     outerRing =
                         -- Is the sector collapsed to a line?
                         if da1 <= epsilon then
-                            Path.begin |> Path.moveTo x01 y01
+                            SubPath.with (moveTo ( x01, y01 )) []
                             -- Does the sector’s outer ring have rounded corners?
                         else if rc1 > epsilon then
                             let
@@ -301,56 +410,60 @@ arc arcData =
                                     cornerTangents x11 y11 x10 y10 r1 rc1 cw
 
                                 p =
-                                    Path.begin
-                                        |> Path.moveTo (t0.cx + t0.x01) (t0.cy + t0.y01)
+                                    SubPath.with (moveTo ( t0.cx + t0.x01, t0.cy + t0.y01 )) []
                             in
-                                -- Have the corners merged?
-                                if rc1 < rc then
-                                    p |> Path.arc t0.cx t0.cy rc1 (atan2 t0.y01 t0.x01) (atan2 t1.y01 t1.x01) (not cw)
-                                    -- Otherwise, draw the two corners and the ring.
-                                else
-                                    p
-                                        |> Path.arc t0.cx t0.cy rc1 (atan2 t0.y01 t0.x01) (atan2 t0.y11 t0.x11) (not cw)
-                                        |> Path.arc 0 0 r1 (atan2 (t0.cy + t0.y11) (t0.cx + t0.x11)) (atan2 (t1.cy + t1.y11) (t1.cx + t1.x11)) (not cw)
-                                        |> Path.arc t1.cx t1.cy rc1 (atan2 t1.y11 t1.x11) (atan2 t1.y01 t1.x01) (not cw)
-                            -- Or is the outer ring just a circular arc?
-                        else
-                            Path.begin
-                                |> Path.moveTo x01 y01
-                                |> Path.arc 0 0 r1 a01 a11 (not cw)
-                in
-                    -- Is there no inner ring, and it’s a circular sector?
-                    -- Or perhaps it’s an annular sector collapsed due to padding?
-                    if r0 <= epsilon || da0 <= epsilon then
-                        outerRing
-                            |> lineTo x10 y10
-                        -- Does the sector’s inner ring (or point) have rounded corners?
-                    else if rc0 > epsilon then
-                        let
-                            t0 =
-                                cornerTangents x10 y10 x11 y11 r0 -rc0 cw
-
-                            t1 =
-                                cornerTangents x01 y01 x00 y00 r0 -rc0 cw
-
-                            p =
-                                outerRing
-                                    |> Path.lineTo (t0.cx + t0.x01) (t0.cy + t0.y01)
-                        in
-                            --Have the corners merged?
-                            if rc0 < rc then
-                                p |> Path.arc t0.cx t0.cy rc0 (atan2 t0.y01 t0.x01) (atan2 t1.y01 t1.x01) (not cw)
+                            -- Have the corners merged?
+                            if rc1 < rc then
+                                p |> makeArc t0.cx t0.cy rc1 (atan2 t0.y01 t0.x01) (atan2 t1.y01 t1.x01) (not cw)
+                                -- Otherwise, draw the two corners and the ring.
                             else
                                 p
-                                    |> Path.arc t0.cx t0.cy rc0 (atan2 t0.y01 t0.x01) (atan2 t0.y11 t0.x11) (not cw)
-                                    |> Path.arc 0 0 r0 (atan2 (t0.cy + t0.y11) (t0.cx + t0.x11)) (atan2 (t1.cy + t1.y11) (t1.cx + t1.x11)) cw
-                                    |> Path.arc t1.cx t1.cy rc0 (atan2 t1.y11 t1.x11) (atan2 t1.y01 t1.x01) (not cw)
-                        -- Or is the inner ring just a circular arc?
+                                    |> makeArc t0.cx t0.cy rc1 (atan2 t0.y01 t0.x01) (atan2 t0.y11 t0.x11) (not cw)
+                                    |> makeArc 0 0 r1 (atan2 (t0.cy + t0.y11) (t0.cx + t0.x11)) (atan2 (t1.cy + t1.y11) (t1.cx + t1.x11)) (not cw)
+                                    |> makeArc t1.cx t1.cy rc1 (atan2 t1.y11 t1.x11) (atan2 t1.y01 t1.x01) (not cw)
+                            -- Or is the outer ring just a circular arc?
+                        else
+                            SubPath.with (moveTo ( x01, y01 )) []
+                                |> makeArc 0 0 r1 a01 a11 (not cw)
+                in
+                -- Is there no inner ring, and it’s a circular sector?
+                -- Or perhaps it’s an annular sector collapsed due to padding?
+                if r0 <= epsilon || da0 <= epsilon then
+                    [ outerRing
+                        |> SubPath.connect (SubPath.with (moveTo ( x10, y10 )) [])
+                        |> SubPath.close
+                    ]
+                    -- Does the sector’s inner ring (or point) have rounded corners?
+                else if rc0 > epsilon then
+                    let
+                        t0 =
+                            cornerTangents x10 y10 x11 y11 r0 -rc0 cw
+
+                        t1 =
+                            cornerTangents x01 y01 x00 y00 r0 -rc0 cw
+
+                        p =
+                            outerRing
+                                |> SubPath.connect (SubPath.with (moveTo ( t0.cx + t0.x01, t0.cy + t0.y01 )) [])
+                    in
+                    --Have the corners merged?
+                    if rc0 < rc then
+                        [ p |> makeArc t0.cx t0.cy rc0 (atan2 t0.y01 t0.x01) (atan2 t1.y01 t1.x01) (not cw) |> SubPath.close ]
                     else
-                        outerRing
-                            |> Path.arc 0 0 r0 a10 a00 cw
+                        [ p
+                            |> makeArc t0.cx t0.cy rc0 (atan2 t0.y01 t0.x01) (atan2 t0.y11 t0.x11) (not cw)
+                            |> makeArc 0 0 r0 (atan2 (t0.cy + t0.y11) (t0.cx + t0.x11)) (atan2 (t1.cy + t1.y11) (t1.cx + t1.x11)) cw
+                            |> makeArc t1.cx t1.cy rc0 (atan2 t1.y11 t1.x11) (atan2 t1.y01 t1.x01) (not cw)
+                            |> SubPath.close
+                        ]
+                    -- Or is the inner ring just a circular arc?
+                else
+                    [ outerRing
+                        |> SubPath.connect (arc_ 0 0 r0 a10 a00 cw)
+                        |> SubPath.close
+                    ]
     in
-        path |> close |> toAttrString
+    path
 
 
 centroid :
@@ -369,7 +482,7 @@ centroid arcData =
         a =
             (arcData.startAngle + arcData.endAngle) / 2 - pi / 2
     in
-        ( cos a * r, sin a * r )
+    ( cos a * r, sin a * r )
 
 
 pie :
@@ -402,10 +515,10 @@ pie settings data =
                 v =
                     settings.valueFn a
             in
-                if v > 0 then
-                    v + b
-                else
-                    b
+            if v > 0 then
+                v + b
+            else
+                b
 
         sum =
             List.foldr summer 0 data
@@ -414,7 +527,7 @@ pie settings data =
             min (2 * pi) (max (-2 * pi) (settings.endAngle - settings.startAngle))
 
         p =
-            min (abs da / toFloat (List.length data)) (settings.padAngle)
+            min (abs da / toFloat (List.length data)) settings.padAngle
 
         pa =
             p
@@ -425,7 +538,7 @@ pie settings data =
                   )
 
         sortedIndices =
-            List.map Tuple.first << List.sortWith (\( _, a ) ( _, b ) -> settings.sortingFn a b) << List.indexedMap (,)
+            List.map Tuple.first << List.sortWith (\( _, a ) ( _, b ) -> settings.sortingFn a b) << List.indexedMap Tuple.pair
 
         dataArray =
             Array.fromList data
@@ -441,21 +554,21 @@ pie settings data =
                 value =
                     settings.valueFn el
             in
-                { innerRadius = settings.innerRadius
-                , outerRadius = settings.outerRadius
-                , cornerRadius = settings.cornerRadius
-                , startAngle = angle
-                , endAngle =
-                    angle
-                        + (if value > 0 then
-                            value * k
-                           else
-                            0
-                          )
-                        + pa
-                , padAngle = p
-                , padRadius = settings.padRadius
-                }
+            { innerRadius = settings.innerRadius
+            , outerRadius = settings.outerRadius
+            , cornerRadius = settings.cornerRadius
+            , startAngle = angle
+            , endAngle =
+                angle
+                    + (if value > 0 then
+                        value * k
+                       else
+                        0
+                      )
+                    + pa
+            , padAngle = p
+            , padRadius = settings.padRadius
+            }
 
         unsafeGet index array =
             case Array.get index array of
@@ -463,16 +576,16 @@ pie settings data =
                     v
 
                 Nothing ->
-                    Debug.crash "This should never happen"
+                    unsafeGet index array
 
         helper index ( angle, result ) =
             let
                 r =
                     computeValue (unsafeGet index dataArray) angle
             in
-                ( r.endAngle, Dict.insert index r result )
+            ( r.endAngle, Dict.insert index r result )
     in
-        sortedIndices data
-            |> List.foldl helper ( settings.startAngle, Dict.empty )
-            |> Tuple.second
-            |> Dict.values
+    sortedIndices data
+        |> List.foldl helper ( settings.startAngle, Dict.empty )
+        |> Tuple.second
+        |> Dict.values

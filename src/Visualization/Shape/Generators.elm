@@ -1,12 +1,13 @@
-module Visualization.Shape.Generators exposing (..)
+module Visualization.Shape.Generators exposing (area, line)
 
-import Visualization.Path exposing (toAttrString, lineTo, close)
+import Path exposing (Path)
+import SubPath exposing (SubPath)
 
 
 line :
-    (List a -> List Visualization.Path.PathSegment)
+    (List a -> SubPath)
     -> List (Maybe a)
-    -> String
+    -> Path
 line curve data =
     let
         makeCurves datum ( prev, list ) =
@@ -23,13 +24,13 @@ line curve data =
                 ( True, Just p1, l ) ->
                     ( True, [ p1 ] :: l )
     in
-        toAttrString <| List.concatMap curve <| Tuple.second <| List.foldr makeCurves ( False, [] ) data
+    List.map curve <| Tuple.second <| List.foldr makeCurves ( False, [] ) data
 
 
 area :
-    (List ( Float, Float ) -> List Visualization.Path.PathSegment)
+    (List ( Float, Float ) -> SubPath)
     -> List (Maybe ( ( Float, Float ), ( Float, Float ) ))
-    -> String
+    -> Path
 area curve data =
     let
         makeCurves acc datum ( prev, list ) =
@@ -56,16 +57,9 @@ area curve data =
                 |> List.map List.reverse
 
         makeShape topline bottomline =
-            case ( curve bottomline, bottomline ) of
-                ( _ :: tail, ( x, y ) :: _ ) ->
-                    (curve topline |> lineTo x y) ++ (tail |> close)
-
-                _ ->
-                    []
+            curve topline |> SubPath.connect (curve bottomline)
 
         shapes =
             List.map2 makeShape topLineData bottomLineData
     in
-        List.map2 makeShape topLineData bottomLineData
-            |> List.concat
-            |> toAttrString
+    List.map2 makeShape topLineData bottomLineData

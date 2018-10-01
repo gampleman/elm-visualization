@@ -4,14 +4,19 @@ module LineChart exposing (main)
 the primitives provided in this library.
 -}
 
-import Date exposing (Date)
-import Svg exposing (..)
-import Svg.Attributes exposing (..)
+import Color
+import Path exposing (Path)
+import SampleData exposing (timeSeries)
+import Time
+import TypedSvg exposing (g, svg)
+import TypedSvg.Attributes exposing (class, fill, stroke, transform)
+import TypedSvg.Attributes.InPx exposing (height, strokeWidth, width)
+import TypedSvg.Core exposing (Svg)
+import TypedSvg.Types exposing (Fill(..), Transform(..))
 import Visualization.Axis as Axis exposing (defaultOptions)
 import Visualization.List as List
 import Visualization.Scale as Scale exposing (ContinuousScale, ContinuousTimeScale)
 import Visualization.Shape as Shape
-import SampleData exposing (timeSeries)
 
 
 w : Float
@@ -31,7 +36,7 @@ padding =
 
 xScale : ContinuousTimeScale
 xScale =
-    Scale.time ( Date.fromTime 1448928000000, Date.fromTime 1456790400000 ) ( 0, w - 2 * padding )
+    Scale.time Time.utc ( Time.millisToPosix 1448928000000, Time.millisToPosix 1456790400000 ) ( 0, w - 2 * padding )
 
 
 yScale : ContinuousScale
@@ -39,7 +44,7 @@ yScale =
     Scale.linear ( 0, 5 ) ( h - 2 * padding, 0 )
 
 
-xAxis : List ( Date, Float ) -> Svg msg
+xAxis : List ( Time.Posix, Float ) -> Svg msg
 xAxis model =
     Axis.axis { defaultOptions | orientation = Axis.Bottom, tickCount = List.length model } xScale
 
@@ -49,12 +54,12 @@ yAxis =
     Axis.axis { defaultOptions | orientation = Axis.Left, tickCount = 5 } yScale
 
 
-transformToLineData : ( Date, Float ) -> Maybe ( Float, Float )
+transformToLineData : ( Time.Posix, Float ) -> Maybe ( Float, Float )
 transformToLineData ( x, y ) =
     Just ( Scale.convert xScale x, Scale.convert yScale y )
 
 
-tranfromToAreaData : ( Date, Float ) -> Maybe ( ( Float, Float ), ( Float, Float ) )
+tranfromToAreaData : ( Time.Posix, Float ) -> Maybe ( ( Float, Float ), ( Float, Float ) )
 tranfromToAreaData ( x, y ) =
     Just
         ( ( Scale.convert xScale x, Tuple.first (Scale.rangeExtent yScale) )
@@ -62,30 +67,28 @@ tranfromToAreaData ( x, y ) =
         )
 
 
-line : List ( Date, Float ) -> Attribute msg
+line : List ( Time.Posix, Float ) -> Path
 line model =
     List.map transformToLineData model
         |> Shape.line Shape.monotoneInXCurve
-        |> d
 
 
-area : List ( Date, Float ) -> Attribute msg
+area : List ( Time.Posix, Float ) -> Path
 area model =
     List.map tranfromToAreaData model
         |> Shape.area Shape.monotoneInXCurve
-        |> d
 
 
-view : List ( Date, Float ) -> Svg msg
+view : List ( Time.Posix, Float ) -> Svg msg
 view model =
-    svg [ width (toString w ++ "px"), height (toString h ++ "px") ]
-        [ g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString (h - padding) ++ ")") ]
+    svg [ width w, height h ]
+        [ g [ transform [ Translate (padding - 1) (h - padding) ] ]
             [ xAxis model ]
-        , g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString padding ++ ")") ]
+        , g [ transform [ Translate (padding - 1) padding ] ]
             [ yAxis ]
-        , g [ transform ("translate(" ++ toString padding ++ ", " ++ toString padding ++ ")"), class "series" ]
-            [ Svg.path [ area model, stroke "none", strokeWidth "3px", fill "rgba(255, 0, 0, 0.54)" ] []
-            , Svg.path [ line model, stroke "red", strokeWidth "3px", fill "none" ] []
+        , g [ transform [ Translate padding padding ], class [ "series" ] ]
+            [ Path.element (area model) [ strokeWidth 3, fill <| Fill <| Color.rgba 1 0 0 0.54 ]
+            , Path.element (line model) [ stroke (Color.rgb 1 0 0), strokeWidth 3, fill FillNone ]
             ]
         ]
 

@@ -1,4 +1,4 @@
-module Visualization.Axis exposing (..)
+module Visualization.Axis exposing (Options, Orientation(..), RenderableScale, axis, defaultOptions)
 
 {-| The axis component renders human-readable reference marks for scales. This
 alleviates one of the more tedious tasks in visualizing data.
@@ -7,9 +7,9 @@ alleviates one of the more tedious tasks in visualizing data.
 
 -}
 
-import Visualization.Scale as Scale exposing (Scale)
 import Svg exposing (..)
 import Svg.Attributes as Attrs exposing (..)
+import Visualization.Scale as Scale exposing (Scale)
 
 
 {-| -}
@@ -145,30 +145,30 @@ axis opts scale =
             Scale.convert scale
 
         horizontalAttrs =
-            ( Attrs.x << toString, Attrs.y << toString, Attrs.x1 << toString, Attrs.x2 << toString, Attrs.y1 << toString, Attrs.y2 << toString )
+            ( ( Attrs.x << String.fromFloat, Attrs.y << String.fromFloat ), ( Attrs.x1 << String.fromFloat, Attrs.x2 << String.fromFloat ), ( Attrs.y1 << String.fromFloat, Attrs.y2 << String.fromFloat ) )
 
         verticalAttrs =
-            ( Attrs.y << toString, Attrs.x << toString, Attrs.y1 << toString, Attrs.y2 << toString, Attrs.x1 << toString, Attrs.x2 << toString )
+            ( ( Attrs.y << String.fromFloat, Attrs.x << String.fromFloat ), ( Attrs.y1 << String.fromFloat, Attrs.y2 << String.fromFloat ), ( Attrs.x1 << String.fromFloat, Attrs.x2 << String.fromFloat ) )
 
         translateX point =
-            "translate(" ++ toString (position point) ++ ", 0)"
+            "translate(" ++ String.fromFloat (position point) ++ ", 0)"
 
         translateY point =
-            "translate(0, " ++ toString (position point) ++ ")"
+            "translate(0, " ++ String.fromFloat (position point) ++ ")"
 
-        ( k, dy_, textAnchorPosition, translate, ( x, y, x1, x2, y1, y2 ) ) =
+        ( ( k, dy_, textAnchorPosition ), translate, ( ( x, y ), ( x1, x2 ), ( y1, y2 ) ) ) =
             case opts.orientation of
                 Left ->
-                    ( -1, "0.32em", "end", translateY, horizontalAttrs )
+                    ( ( -1, "0.32em", "end" ), translateY, horizontalAttrs )
 
                 Top ->
-                    ( -1, "0em", "middle", translateX, verticalAttrs )
+                    ( ( -1, "0em", "middle" ), translateX, verticalAttrs )
 
                 Right ->
-                    ( 1, "0.32em", "start", translateY, horizontalAttrs )
+                    ( ( 1, "0.32em", "start" ), translateY, horizontalAttrs )
 
                 Bottom ->
-                    ( 1, "0.71em", "middle", translateX, verticalAttrs )
+                    ( ( 1, "0.71em", "middle" ), translateX, verticalAttrs )
 
         drawTick tick =
             g [ class "tick", transform (translate tick) ]
@@ -178,11 +178,11 @@ axis opts scale =
 
         domainLine =
             if opts.orientation == Left || opts.orientation == Right then
-                "M" ++ toString (k * opts.tickSizeOuter) ++ "," ++ toString range0 ++ "H0.5V" ++ toString range1 ++ "H" ++ toString (k * opts.tickSizeOuter)
+                "M" ++ String.fromFloat (k * opts.tickSizeOuter) ++ "," ++ String.fromFloat range0 ++ "H0.5V" ++ String.fromFloat range1 ++ "H" ++ String.fromFloat (k * opts.tickSizeOuter)
             else
-                "M" ++ toString range0 ++ "," ++ toString (k * opts.tickSizeOuter) ++ "V0.5H" ++ toString range1 ++ "V" ++ toString (k * opts.tickSizeOuter)
+                "M" ++ String.fromFloat range0 ++ "," ++ String.fromFloat (k * opts.tickSizeOuter) ++ "V0.5H" ++ String.fromFloat range1 ++ "V" ++ String.fromFloat (k * opts.tickSizeOuter)
     in
-        g [ fill "none", fontSize "10", fontFamily "sans-serif", textAnchor textAnchorPosition ]
-            (Svg.path [ class "domain", stroke "#000", d domainLine ] []
-                :: List.map drawTick ticks
-            )
+    g [ fill "none", fontSize "10", fontFamily "sans-serif", textAnchor textAnchorPosition ]
+        (Svg.path [ class "domain", stroke "#000", d domainLine ] []
+            :: List.map drawTick ticks
+        )

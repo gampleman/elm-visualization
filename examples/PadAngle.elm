@@ -3,19 +3,24 @@ module PadAngle exposing (main)
 {-| A demonstration of padAngle for arcs
 -}
 
-import Visualization.Shape as Shape exposing (defaultPieConfig, Arc)
 import Array exposing (Array)
-import Svg exposing (Svg, svg, g, path, text_, text)
-import Svg.Attributes exposing (transform, d, style, dy, width, height, textAnchor)
+import Color exposing (Color)
+import Path
+import TypedSvg exposing (g, svg)
+import TypedSvg.Attributes exposing (fill, stroke, transform)
+import TypedSvg.Attributes.InPx exposing (height, width)
+import TypedSvg.Core exposing (Svg)
+import TypedSvg.Types exposing (Fill(..), Transform(..))
+import Visualization.Shape as Shape exposing (Arc, defaultPieConfig)
 
 
-screenWidth : Float
-screenWidth =
+w : Float
+w =
     990
 
 
-screenHeight : Float
-screenHeight =
+h : Float
+h =
     504
 
 
@@ -24,47 +29,52 @@ cornerRadius =
     12
 
 
-colors : Array String
+rgba255 : Int -> Int -> Int -> Float -> Color
+rgba255 r g b a =
+    Color.fromRgba { red = toFloat r / 255, green = toFloat g / 255, blue = toFloat b / 255, alpha = a }
+
+
+colors : Array Color
 colors =
     Array.fromList
-        [ "rgba(31, 119, 180, 0.5)"
-        , "rgba(255, 127, 14, 0.5)"
-        , "rgba(44, 159, 44, 0.5)"
-        , "rgba(214, 39, 40, 0.5)"
-        , "rgba(148, 103, 189, 0.5)"
-        , "rgba(140, 86, 75, 0.5)"
-        , "rgba(227, 119, 194, 0.5)"
-        , "rgba(128, 128, 128, 0.5)"
-        , "rgba(188, 189, 34, 0.5)"
-        , "rgba(23, 190, 207, 0.5)"
+        [ rgba255 31 119 180 0.5
+        , rgba255 255 127 14 0.5
+        , rgba255 44 159 44 0.5
+        , rgba255 214 39 40 0.5
+        , rgba255 148 103 189 0.5
+        , rgba255 140 86 75 0.5
+        , rgba255 227 119 194 0.5
+        , rgba255 128 128 128 0.5
+        , rgba255 188 189 34 0.5
+        , rgba255 23 190 207 0.5
         ]
 
 
 radius : Float
 radius =
-    min (screenWidth / 2) screenHeight / 2 - 10
+    min (w / 2) h / 2 - 10
 
 
 circular : List Arc -> Svg msg
 circular arcs =
     let
         makeSlice index datum =
-            path [ d (Shape.arc datum), style ("fill:" ++ (Maybe.withDefault "#000" <| Array.get index colors) ++ "; stroke: #000;") ] []
+            Path.element (Shape.arc datum) [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors, stroke Color.black ]
     in
-        g [ transform ("translate(" ++ toString radius ++ "," ++ toString radius ++ ")") ]
-            [ g [] <| List.indexedMap makeSlice arcs
-            ]
+    g [ transform [ Translate radius radius ] ]
+        [ g [] <| List.indexedMap makeSlice arcs
+        ]
 
 
 annular : List Arc -> Svg msg
 annular arcs =
     let
         makeSlice index datum =
-            path [ d (Shape.arc { datum | innerRadius = radius - 60 }), style ("fill:" ++ (Maybe.withDefault "#000" <| Array.get index colors) ++ "; stroke: #000;") ] []
+            Path.element (Shape.arc { datum | innerRadius = radius - 60 }) [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors, stroke Color.black ]
     in
-        g [ transform ("translate(" ++ toString (3 * radius + 20) ++ "," ++ toString radius ++ ")") ]
-            [ g [] <| List.indexedMap makeSlice arcs
-            ]
+    g [ transform [ Translate (3 * radius + 20) radius ] ]
+        [ g [] <| List.indexedMap makeSlice arcs
+        ]
 
 
 view : List Float -> Svg msg
@@ -73,17 +83,17 @@ view model =
         pieData =
             model |> Shape.pie { defaultPieConfig | outerRadius = radius, padAngle = 0.03 }
     in
-        svg [ width (toString screenWidth ++ "px"), height (toString screenHeight ++ "px") ]
-            [ circular pieData
-            , annular pieData
-            ]
+    svg [ width w, height h ]
+        [ circular pieData
+        , annular pieData
+        ]
 
 
-model : List Float
-model =
+data : List Float
+data =
     [ 1, 1, 2, 3, 5, 8, 13 ]
 
 
 main : Svg msg
 main =
-    view model
+    view data

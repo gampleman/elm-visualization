@@ -25,5 +25,6 @@ convertHelp d r used needle =
         ( x :: xs, y :: ys ) ->
             if x == needle then
                 Just y
+
             else
                 convertHelp xs ys (y :: used) needle

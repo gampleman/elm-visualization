@@ -1,43 +1,43 @@
 module Visualization.Scale
     exposing
-        ( Scale
-        , ContinuousScale
-        , linear
-          -- , power
-        , log
-        , identity
-        , ContinuousTimeScale
-        , time
-        , SequentialScale
-        , sequential
-        , QuantizeScale
-        , quantize
-        , convert
-        , invert
-        , domain
-        , range
-        , rangeExtent
-        , ticks
-        , tickFormat
-        , clamp
-        , nice
-        , invertExtent
-        , viridisInterpolator
-        , infernoInterpolator
-        , magmaInterpolator
-        , plasmaInterpolator
-        , OrdinalScale
-        , ordinal
+        ( BandConfig
         , BandScale
+        , ContinuousScale
+        , ContinuousTimeScale
+        , OrdinalScale
+        , QuantizeScale
+        , Scale
+        , SequentialScale
         , band
         , bandwidth
-        , defaultBandConfig
         , category10
         , category20a
         , category20b
         , category20c
-        , BandConfig
+        , clamp
+        , convert
+        , defaultBandConfig
+        , domain
+        , identity
+        , infernoInterpolator
+        , invert
+        , invertExtent
+        , linear
+        , log
+        , magmaInterpolator
+        , nice
+        , ordinal
+        , plasmaInterpolator
+        , quantize
+        , range
+        , rangeExtent
+        , sequential
+        , tickFormat
+        , ticks
+        , time
         , toRenderable
+          -- , power
+        , viridisInterpolator
         )
 
 {-| Scales are a convenient abstraction for a fundamental task in visualization:
@@ -65,6 +65,8 @@ also provided.
 
 Scales have no intrinsic visual representation. However, most scales can generate
 and format ticks for reference marks to aid in the construction of [axes](Visualization-Axis).
+
+Color types come from [avh4/elm-color](https://package.elm-lang.org/packages/avh4/elm-color/latest/).
 
 
 # General notes
@@ -155,7 +157,7 @@ Band scales support the following operations:
 -}
 
 import Color exposing (Color)
-import Date exposing (Date)
+import Time
 import Visualization.Scale.Band as Band
 import Visualization.Scale.Colors as Colors
 import Visualization.Scale.Linear as Linear
@@ -163,7 +165,7 @@ import Visualization.Scale.Log as Log
 import Visualization.Scale.Ordinal as Ordinal
 import Visualization.Scale.Quantize as Quantize
 import Visualization.Scale.Sequential as Sequential
-import Visualization.Scale.Time as Time
+import Visualization.Scale.Time as TimeScale
 
 
 {-| This API is highly polymorphic as each scale has different functions exposed.
@@ -209,10 +211,10 @@ expressed as a function of the domain value x: y = mx + b.
 
 -}
 linear : ( Float, Float ) -> ( Float, Float ) -> ContinuousScale
-linear domain range =
+linear domain_ range_ =
     Scale
-        { domain = domain
-        , range = range
+        { domain = domain_
+        , range = range_
         , convert = Linear.convert
         , invert = Linear.invert
         , ticks = Linear.ticks
@@ -262,10 +264,10 @@ The arguments are `base`, `domain` and `range`.
 
 -}
 log : Float -> ( Float, Float ) -> ( Float, Float ) -> ContinuousScale
-log base domain range =
+log base domain_ range_ =
     Scale
-        { domain = domain
-        , range = range
+        { domain = domain_
+        , range = range_
         , convert = Log.convert
         , invert = Log.invert
         , ticks = Log.ticks base
@@ -278,7 +280,7 @@ log base domain range =
 {-| Identity scales are a special case of linear scales where the domain and
 range are identical; the scale and its invert method are thus the identity function.
 These scales are occasionally useful when working with pixel coordinates, say in
-conjunction with an axis or brush.
+conjunction with an axis.
 -}
 identity : ContinuousScale
 identity =
@@ -289,17 +291,17 @@ identity =
 -}
 type alias ContinuousTimeScale =
     Scale
-        { domain : ( Date, Date )
+        { domain : ( Time.Posix, Time.Posix )
         , range : ( Float, Float )
-        , convert : ( Date, Date ) -> ( Float, Float ) -> Date -> Float
+        , convert : ( Time.Posix, Time.Posix ) -> ( Float, Float ) -> Time.Posix -> Float
         , invert :
-            ( Date, Date ) -> ( Float, Float ) -> Float -> Date
+            ( Time.Posix, Time.Posix ) -> ( Float, Float ) -> Float -> Time.Posix
 
         -- , rangeRound : ( Float, Float ) -> ( Float, Float )
-        , ticks : ( Date, Date ) -> Int -> List Date
-        , tickFormat : ( Date, Date ) -> Int -> Date -> String
-        , nice : ( Date, Date ) -> Int -> ( Date, Date )
-        , rangeExtent : ( Date, Date ) -> ( Float, Float ) -> ( Float, Float )
+        , ticks : ( Time.Posix, Time.Posix ) -> Int -> List Time.Posix
+        , tickFormat : ( Time.Posix, Time.Posix ) -> Int -> Time.Posix -> String
+        , nice : ( Time.Posix, Time.Posix ) -> Int -> ( Time.Posix, Time.Posix )
+        , rangeExtent : ( Time.Posix, Time.Posix ) -> ( Float, Float ) -> ( Float, Float )
         }
 
 
@@ -307,30 +309,31 @@ type alias ContinuousTimeScale =
 values are dates rather than floats, and invert likewise returns a date.
 Time scales implement ticks based on calendar intervals, taking the pain out of
 generating axes for temporal domains.
+
+Since time scales use human time to calculate ticks and display ticks, we need the
+time zone that you will want to display your data in.
+
 -}
-time : ( Date, Date ) -> ( Float, Float ) -> ContinuousTimeScale
-time domain range =
+time : Time.Zone -> ( Time.Posix, Time.Posix ) -> ( Float, Float ) -> ContinuousTimeScale
+time zone domain_ range_ =
     Scale
-        { domain = domain
-        , range = range
-        , convert = Time.convert
-        , invert = Time.invert
-        , ticks = Time.ticks
-        , tickFormat = Time.tickFormat
-        , nice = Time.nice
-        , rangeExtent = Time.rangeExtent
+        { domain = domain_
+        , range = range_
+        , convert = TimeScale.convert
+        , invert = TimeScale.invert
+        , ticks = TimeScale.ticks zone
+        , tickFormat = TimeScale.tickFormat zone
+        , nice = TimeScale.nice zone
+        , rangeExtent = TimeScale.rangeExtent
         }
 
 
 
--- timeUtc : ( Date, Date ) -> ( Float, Float ) -> Scale (Capabilities Continuous) ( Date, Date ) ( Float, Float )
--- timeUtc range =
---     Debug.crash "not implemented"
 -- Sequential Scales
 
 
 {-| Type alias for sequential scales. This transforms a continuous `(Float, Float)`
-domain to an arbitrary range `a` defined by the interpolator function `Float -> a`.
+domain to an arbitrary range `a` defined by the interpolator function `Float -> a`, where the `Float` foes from 0 to 1.
 -}
 type alias SequentialScale a =
     Scale
@@ -343,15 +346,15 @@ type alias SequentialScale a =
 {-| Construct a sequential scale.
 -}
 sequential : ( Float, Float ) -> (Float -> a) -> SequentialScale a
-sequential domain interpolator =
+sequential domain_ interpolator =
     Scale
-        { domain = domain
+        { domain = domain_
         , range = interpolator
         , convert = Sequential.convert
         }
 
 
-{-| ![Viridis](http://code.gampleman.eu/elm-visualization/misc/viridis.png)
+{-| ![Viridis](https://code.gampleman.eu/elm-visualization/misc/viridis.png)
 
 Given a number t in the range [0,1], returns the corresponding
 color from the “viridis” perceptually-uniform color scheme designed
@@ -364,7 +367,7 @@ viridisInterpolator =
     Colors.viridis
 
 
-{-| ![Inferno](http://code.gampleman.eu/elm-visualization/misc/inferno.png)
+{-| ![Inferno](https://code.gampleman.eu/elm-visualization/misc/inferno.png)
 
 Given a number t in the range [0,1], returns the corresponding
 color from the “inferno” perceptually-uniform color scheme designed
@@ -377,7 +380,7 @@ infernoInterpolator =
     Colors.inferno
 
 
-{-| ![magma](http://code.gampleman.eu/elm-visualization/misc/magma.png)
+{-| ![magma](https://code.gampleman.eu/elm-visualization/misc/magma.png)
 
 Given a number t in the range [0,1], returns the corresponding
 color from the “magma” perceptually-uniform color scheme designed
@@ -390,7 +393,7 @@ magmaInterpolator =
     Colors.magma
 
 
-{-| ![Plasma](http://code.gampleman.eu/elm-visualization/misc/plasma.png)
+{-| ![Plasma](https://code.gampleman.eu/elm-visualization/misc/plasma.png)
 
 Given a number t in the range [0,1], returns the corresponding
 color from the “plasma” perceptually-uniform color scheme designed
@@ -420,7 +423,7 @@ type alias QuantizeScale a =
         , convert : ( Float, Float ) -> ( a, List a ) -> Float -> a
         , invertExtent : ( Float, Float ) -> ( a, List a ) -> a -> Maybe ( Float, Float )
         , ticks : ( Float, Float ) -> ( a, List a ) -> Int -> List Float
-        , tickFormat : ( Float, Float ) -> ( a, List a ) -> Int -> Float -> String
+        , tickFormat : ( Float, Float ) -> Int -> Float -> String
         , nice : ( Float, Float ) -> Int -> ( Float, Float )
         , rangeExtent : ( Float, Float ) -> ( a, List a ) -> ( a, a )
         }
@@ -430,10 +433,10 @@ type alias QuantizeScale a =
 non-empty list represented as a `(head, tail)` tuple.
 -}
 quantize : ( Float, Float ) -> ( a, List a ) -> QuantizeScale a
-quantize domain range =
+quantize domain_ range_ =
     Scale
-        { domain = domain
-        , range = range
+        { domain = domain_
+        , range = range_
         , convert = Quantize.convert
         , invertExtent = Quantize.invertExtent
         , ticks = Quantize.ticks
@@ -481,30 +484,13 @@ type alias OrdinalScale a b =
         }
 
 
-type alias ImplicitOrdinalScale a b =
-    Scale
-        { domain : List a
-        , range : ( b, List b )
-        , convert : List a -> ( b, List b ) -> a -> ( b, OrdinalScale a b )
-        }
-
-
-ordinalImplicit : List a -> ( b, List b ) -> ImplicitOrdinalScale a b
-ordinalImplicit domain range =
-    Scale
-        { domain = domain
-        , range = range
-        , convert = \a -> Debug.crash "not implemented"
-        }
-
-
 {-| Constructs an ordinal scale.
 -}
 ordinal : List a -> List b -> OrdinalScale a b
-ordinal domain range =
+ordinal domain_ range_ =
     Scale
-        { domain = domain
-        , range = range
+        { domain = domain_
+        , range = range_
         , convert = Ordinal.convert
         }
 
@@ -568,12 +554,12 @@ defaultBandConfig =
 {-| Constructs a band scale.
 -}
 band : BandConfig -> List a -> ( Float, Float ) -> BandScale a
-band config domain range =
+band config domain_ range_ =
     Scale
-        { domain = domain
-        , range = range
+        { domain = domain_
+        , range = range_
         , convert = Band.convert config
-        , bandwidth = Band.bandwidth config domain range
+        , bandwidth = Band.bandwidth config domain_ range_
         }
 
 
@@ -586,16 +572,17 @@ band config domain range =
 
 -}
 bandwidth : Scale { scale | bandwidth : Float } -> Float
-bandwidth (Scale { bandwidth }) =
-    bandwidth
+bandwidth (Scale scale) =
+    scale.bandwidth
 
 
-{-| This converts a BandScale into a [RenderableScale](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization-Axis#RenderableScale)
+{-| This converts a BandScale into a [RenderableScale](https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization-Axis#RenderableScale)
 suitable for rendering Axes. This has the same domain and range, but the convert output is shifted by half a `bandwidth`
 in order for ticks and labels to align nicely.
 -}
 toRenderable :
-    BandScale a
+    (a -> String)
+    -> BandScale a
     ->
         Scale
             { ticks : List a -> Int -> List a
@@ -605,14 +592,14 @@ toRenderable :
             , range : ( Float, Float )
             , rangeExtent : List a -> ( Float, Float ) -> ( Float, Float )
             }
-toRenderable (Scale { domain, range, convert, bandwidth }) =
+toRenderable toString (Scale scale) =
     Scale
-        { ticks = \domain _ -> domain
-        , domain = domain
+        { ticks = \dmn _ -> dmn
+        , domain = scale.domain
         , tickFormat = \_ _ -> toString
-        , convert = \domain range value -> convert domain range value + max (bandwidth - 1) 0 / 2
-        , range = range
-        , rangeExtent = \_ range -> range
+        , convert = \dmn rng value -> scale.convert dmn rng value + max (scale.bandwidth - 1) 0 / 2
+        , range = scale.range
+        , rangeExtent = \_ rng -> rng
         }
 
 
@@ -681,7 +668,7 @@ rangeExtent (Scale options) =
 
 
 {-| The second argument controls approximately how many representative values from
-the scale’s domain to return. A good default value 10. The returned tick values are uniformly spaced,
+the scale’s domain to return. A good default value is 10. The returned tick values are uniformly spaced,
 have human-readable values (such as multiples of powers of 10), and are guaranteed
 to be within the extent of the domain. Ticks are often used to display reference
 lines, or tick marks, in conjunction with the visualized data. The specified count
@@ -724,12 +711,12 @@ always within the scale’s range.
 
 -}
 clamp : Scale { a | convert : ( Float, Float ) -> range -> Float -> result } -> Scale { a | convert : ( Float, Float ) -> range -> Float -> result }
-clamp (Scale ({ convert } as scale)) =
+clamp (Scale scale) =
     let
-        convert_ ( mi, ma ) range value =
-            convert ( mi, ma ) range <| Basics.clamp (min mi ma) (max mi ma) value
+        convert_ ( mi, ma ) range_ value =
+            scale.convert ( mi, ma ) range_ <| Basics.clamp (min mi ma) (max mi ma) value
     in
-        Scale { scale | convert = convert_ }
+    Scale { scale | convert = convert_ }
 
 
 {-| Returns a new scale which extends the domain so that it lands on round values.
@@ -741,11 +728,11 @@ The second argument is the same as you would pass to ticks.
 
 -}
 nice : Scale { a | nice : domain -> Int -> domain, domain : domain } -> Int -> Scale { a | nice : domain -> Int -> domain, domain : domain }
-nice (Scale ({ nice, domain } as options)) count =
-    Scale { options | domain = nice domain count }
+nice (Scale scale) count =
+    Scale { scale | domain = scale.nice scale.domain count }
 
 
-{-| ![category10](http://code.gampleman.eu/elm-visualization/misc/category10.png)
+{-| ![category10](https://code.gampleman.eu/elm-visualization/misc/category10.png)
 
 A list of ten categorical colors
 
@@ -755,7 +742,7 @@ category10 =
     Colors.cat10
 
 
-{-| ![category20a](http://code.gampleman.eu/elm-visualization/misc/category20a.png)
+{-| ![category20a](https://code.gampleman.eu/elm-visualization/misc/category20a.png)
 
 A list of twenty categorical colors
 
@@ -765,7 +752,7 @@ category20a =
     Colors.cat20a
 
 
-{-| ![category20b](http://code.gampleman.eu/elm-visualization/misc/category20b.png)
+{-| ![category20b](https://code.gampleman.eu/elm-visualization/misc/category20b.png)
 
 A list of twenty categorical colors
 
@@ -775,7 +762,7 @@ category20b =
     Colors.cat20b
 
 
-{-| ![category20c](http://code.gampleman.eu/elm-visualization/misc/category20c.png)
+{-| ![category20c](https://code.gampleman.eu/elm-visualization/misc/category20c.png)
 
 A list of twenty categorical colors. This color scale includes color
 specifications and designs developed by Cynthia Brewer (colorbrewer2.org).

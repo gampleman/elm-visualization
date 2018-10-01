@@ -1,13 +1,16 @@
 module PopulationMinnesota exposing (main)
 
-import SampleData exposing (Gender(M, F))
-import Color.Convert exposing (colorToCssRgba)
-import Visualization.Scale as Scale exposing (ContinuousScale, OrdinalScale, Scale, BandScale, defaultBandConfig, QuantizeScale)
-import Visualization.Axis as Axis exposing (Orientation(..))
+import Color exposing (Color)
 import List.Extra as List
+import SampleData exposing (Gender(..))
+import TypedSvg exposing (g, rect, svg, text_)
+import TypedSvg.Attributes exposing (class, dy, fill, fontFamily, textAnchor, transform)
+import TypedSvg.Attributes.InPx exposing (fontSize, height, width, x, y)
+import TypedSvg.Core exposing (Svg, text)
+import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..), em)
+import Visualization.Axis as Axis exposing (Orientation(..))
 import Visualization.List
-import Svg exposing (..)
-import Svg.Attributes exposing (..)
+import Visualization.Scale as Scale exposing (BandScale, ContinuousScale, OrdinalScale, QuantizeScale, Scale, defaultBandConfig)
 import Visualization.Shape as Shape exposing (StackConfig, StackResult)
 
 
@@ -33,26 +36,26 @@ populationMinnesota1850 =
 
         ( m, f ) =
             partitioned
-                |> uncurry (List.map2 (,))
+                |> (\( a, b ) -> List.map2 Tuple.pair a b)
                 |> List.sortBy (Tuple.second >> .people)
                 |> List.unzip
     in
-        { categories = categories
-        , data = [ ( 1850, List.map (.people >> toFloat) m ), ( 1850, List.map (.people >> toFloat >> negate) f ) ]
-        , extent =
-            Visualization.List.extent categories
-                |> Maybe.map (\( a, b ) -> ( toFloat a, toFloat b ))
-                |> Maybe.withDefault ( 0, 0 )
-        }
+    { categories = categories
+    , data = [ ( 1850, List.map (.people >> toFloat) m ), ( 1850, List.map (.people >> toFloat >> negate) f ) ]
+    , extent =
+        Visualization.List.extent categories
+            |> Maybe.map (\( a, b ) -> ( toFloat a, toFloat b ))
+            |> Maybe.withDefault ( 0, 0 )
+    }
 
 
-width : number
-width =
+w : Float
+w =
     990
 
 
-height : number
-height =
+h : Float
+h =
     504
 
 
@@ -69,12 +72,11 @@ config =
     }
 
 
-colors : List String
+colors : List Color
 colors =
     [ Scale.viridisInterpolator 0.3
     , Scale.viridisInterpolator 0.7
     ]
-        |> List.map colorToCssRgba
 
 
 column : BandScale Int -> ( Int, List ( Float, Float ) ) -> Svg msg
@@ -85,17 +87,17 @@ column yScale ( year, values ) =
 
         block color ( upperY, lowerY ) =
             rect
-                [ y <| toString <| Scale.convert yScale year
-                , x <| toString <| lowerY
-                , Svg.Attributes.height <| toString <| bandwidth
-                , Svg.Attributes.width <| toString <| (abs <| upperY - lowerY)
-                , fill color
+                [ y <| Scale.convert yScale year
+                , x lowerY
+                , height bandwidth
+                , width (abs <| upperY - lowerY)
+                , fill (Fill color)
                 ]
                 []
     in
-        values
-            |> List.map2 block colors
-            |> g [ class "column" ]
+    values
+        |> List.map2 block colors
+        |> g [ class [ "column" ] ]
 
 
 view : StackResult Int -> Svg msg
@@ -111,12 +113,12 @@ view { values, labels, extent } =
 
         xScale : ContinuousScale
         xScale =
-            Scale.linear extent ( width - padding, padding )
-                |> flip Scale.nice 4
+            Scale.linear extent ( w - padding, padding )
+                |> (\a -> Scale.nice a 4)
 
         yScale : BandScale Int
         yScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } populationMinnesota1850.categories ( padding, height - padding )
+            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } populationMinnesota1850.categories ( padding, h - padding )
 
         xAxis : Svg msg
         xAxis =
@@ -131,44 +133,44 @@ view { values, labels, extent } =
                         |> Tuple.second
                         |> (\v -> round v // 10 * 2)
             in
-                Axis.axis { axisOptions | orientation = Axis.Left } (Scale.toRenderable yScale)
+            Axis.axis { axisOptions | orientation = Axis.Left } (Scale.toRenderable String.fromInt yScale)
     in
-        Svg.svg [ Svg.Attributes.width (toString width ++ "px"), Svg.Attributes.height (toString height ++ "px") ]
-            [ g [ translate 0 (height - padding) ]
-                [ xAxis ]
-            , g [ class "series" ] <|
-                List.map (column yScale) (List.map2 (,) populationMinnesota1850.categories scaledValues)
-            , g [ translate padding 0 ]
-                [ yAxis
-                , text_ [ fontFamily "sans-serif", fontSize "14", x "5", y "65" ] [ text "Age" ]
-                ]
-            , g [ translate (width - padding) (padding + 20) ]
-                [ text_ [ fontFamily "sans-serif", fontSize "20", textAnchor "end" ] [ text "1850" ]
-                , text_ [ fontFamily "sans-serif", fontSize "10", textAnchor "end", dy "1em" ] [ text "population distribution in Minnesota" ]
-                ]
-            , text_
-                [ translate (Scale.convert xScale 500000) (2 * padding)
-                , fontFamily "sans-serif"
-                , fontSize "20"
-                , textAnchor "middle"
-                ]
-                [ text "Men" ]
-            , text_
-                [ translate (Scale.convert xScale -500000) (2 * padding)
-                , fontFamily "sans-serif"
-                , fontSize "20"
-                , textAnchor "middle"
-                ]
-                [ text "Women" ]
-            , text_
-                [ translate (Scale.convert xScale 0) (height - padding / 2)
-                , fontFamily "sans-serif"
-                , fontSize "14"
-                , textAnchor "middle"
-                , dy "1em"
-                ]
-                [ text "People" ]
+    svg [ width w, height h ]
+        [ g [ transform [ Translate 0 (h - padding) ] ]
+            [ xAxis ]
+        , g [ class [ "series" ] ] <|
+            List.map (column yScale) (List.map2 (\a b -> ( a, b )) populationMinnesota1850.categories scaledValues)
+        , g [ transform [ Translate padding 0 ] ]
+            [ yAxis
+            , text_ [ fontFamily [ "sans-serif" ], fontSize 14, x 5, y 65 ] [ text "Age" ]
             ]
+        , g [ transform [ Translate (w - padding) (padding + 20) ] ]
+            [ text_ [ fontFamily [ "sans-serif" ], fontSize 20, textAnchor AnchorEnd ] [ text "1850" ]
+            , text_ [ fontFamily [ "sans-serif" ], fontSize 10, textAnchor AnchorEnd, dy (em 1) ] [ text "population distribution in Minnesota" ]
+            ]
+        , text_
+            [ transform [ Translate (Scale.convert xScale 500000) (2 * padding) ]
+            , fontFamily [ "sans-serif" ]
+            , fontSize 20
+            , textAnchor AnchorMiddle
+            ]
+            [ text "Men" ]
+        , text_
+            [ transform [ Translate (Scale.convert xScale -500000) (2 * padding) ]
+            , fontFamily [ "sans-serif" ]
+            , fontSize 20
+            , textAnchor AnchorMiddle
+            ]
+            [ text "Women" ]
+        , text_
+            [ transform [ Translate (Scale.convert xScale 0) (h - padding / 2) ]
+            , fontFamily [ "sans-serif" ]
+            , fontSize 14
+            , textAnchor AnchorMiddle
+            , dy (em 1)
+            ]
+            [ text "People" ]
+        ]
 
 
 {-| Make negative numbers appear as positive in the ticks
@@ -185,8 +187,3 @@ absoluteTickFormat :
     -> String
 absoluteTickFormat scale tickCount value =
     Scale.tickFormat scale tickCount (abs value)
-
-
-translate : number -> number -> Svg.Attribute msg
-translate x y =
-    transform ("translate(" ++ toString x ++ ", " ++ toString y ++ ")")
