@@ -1,5 +1,4 @@
-<h1><img src="http://code.gampleman.eu/elm-visualization/misc/Logo@2x.png" alt="Elm-visualization" srcset="http://code.gampleman.eu/elm-visualization/misc/Logo@2x.png, http://code.gampleman.eu/elm-visualization/misc/Logo@2x.png 2x" style="max-width: 100%" /></h1>
-
+# ![Elm-visualization](https://code.gampleman.eu/elm-visualization/misc/Logo@2x.png)
 
 [Docs](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/) | [Examples](http://code.gampleman.eu/elm-visualization/) | [GitHub](https://github.com/gampleman/elm-visualization) | [Changelog](https://github.com/gampleman/elm-visualization/releases) | `#visualization` on [Elm slack](https://elmlang.herokuapp.com)
 
@@ -9,9 +8,9 @@ charts, but it should contain all the tools to make building such charts relativ
 easy. The advantage is that you are free to design and build data visualizations
 that uniquely suite your needs.
 
-## Learn by example
+## Learn by [example](https://code.gampleman.eu/elm-visualization/)
 
-<a href="http://code.gampleman.eu/elm-visualization/"><img src="http://code.gampleman.eu/elm-visualization/misc/examples@2x.png" alt="Examples" srcset="http://code.gampleman.eu/elm-visualization/misc/examples.png, http://code.gampleman.eu/elm-visualization/misc/examples@2x.png 2x" style="max-width: 100%" /></a>
+[![Examples](https://code.gampleman.eu/elm-visualization/misc/examples@2x.png)](https://code.gampleman.eu/elm-visualization/)
 
 ## What's included?
 
@@ -27,17 +26,6 @@ sizes, colors, labels and other ways to display data.
 A component that allows you to visualize a Scale. Those little ticks that describe
 the dimensions of a plot.
 
-### [Paths](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization-Path)
-
-A thin layer that gives a simple DSL for drawing paths.
-
-~~~elm
-myPath = begin
-       |> moveTo 10 30
-       |> lineTo 40 50
-       |> arcTo 20 30 12 43 (pi / 2)
-       |> close
-~~~
 
 ### [Shapes](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization-Shape)
 
