@@ -1,4 +1,4 @@
-module AxisTests exposing (defaultOptionsTest, renderingTest)
+module AxisTests exposing (renderingTest)
 
 import Axis
 import Expect
@@ -8,22 +8,6 @@ import Scale
 import Svg exposing (g, line, path, text, text_)
 import Svg.Attributes exposing (class, d, dy, fill, fontFamily, fontSize, stroke, textAnchor, transform, x, x1, x2, y, y1, y2)
 import Test exposing (..)
-
-
-defaultOptionsTest : Test
-defaultOptionsTest =
-    test "defaultOptions returns sensible defaults" <|
-        \() ->
-            Axis.defaultOptions
-                |> Expect.equal
-                    { orientation = Axis.Left
-                    , ticks = Nothing
-                    , tickFormat = Nothing
-                    , tickCount = 10
-                    , tickSizeInner = 6
-                    , tickSizeOuter = 6
-                    , tickPadding = 3
-                    }
 
 
 renderingTest : Test
@@ -59,9 +43,6 @@ renderingTest =
                             , text_ [ fill "#000", x "-9", y "0.5", dy "0.32em" ] [ text "5" ]
                             ]
                         ]
-
-                options =
-                    Axis.defaultOptions
             in
-            Axis.axis { options | tickCount = 5 } (Scale.linear ( 0, 5 ) ( 290, 0 ))
+            Axis.left [ Axis.tickCount 5 ] (Scale.linear ( 0, 5 ) ( 290, 0 ))
                 |> Expect.equal expected

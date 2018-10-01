@@ -68,7 +68,7 @@ While lines are defined as a sequence of two-dimensional [x, y] points, and area
 defined by a topline and a baseline, there remains the task of transforming this discrete representation
 into a continuous shape: i.e., how to interpolate between the points. A variety of curves are provided for this purpose.
 
-@docs Curve, linearCurve
+@docs linearCurve
 @docs basisCurve, basisCurveClosed, basisCurveOpen
 @docs bundleCurve
 @docs cardinalCurve, cardinalCurveClosed, cardinalCurveOpen
