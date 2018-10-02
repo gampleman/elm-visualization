@@ -126,22 +126,14 @@ view { values, labels, extent } =
             Scale.linear extent ( h - (padding.left + padding.right), 0 )
                 |> (\a -> Scale.nice a 4)
 
-        xAxis : Svg msg
-        xAxis =
-            Axis.bottom [ Axis.tickCount 10 ] (Scale.toRenderable String.fromInt xScale)
-
-        yAxis : Svg msg
-        yAxis =
-            Axis.left [] yScale
-
         scaledValues =
             List.map (List.map (\( y1, y2 ) -> ( Scale.convert yScale y1, Scale.convert yScale y2 ))) yearValues
     in
     svg [ width w, height h ]
         [ g [ transform [ Translate (padding.left - 1) (h - padding.bottom) ] ]
-            [ xAxis ]
+            [ Axis.bottom [ Axis.tickCount 10 ] (Scale.toRenderable String.fromInt xScale) ]
         , g [ transform [ Translate (padding.left - 1) padding.top ] ]
-            [ yAxis ]
+            [ Axis.left [] yScale ]
         , g [ transform [ Translate padding.left padding.top ], class [ "series" ] ] <|
             List.map (column xScale) (List.map2 (\a b -> ( a, b )) years scaledValues)
         ]

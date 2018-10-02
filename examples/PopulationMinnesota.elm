@@ -116,29 +116,14 @@ view { values, labels, extent } =
         yScale : BandScale Int
         yScale =
             Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } populationMinnesota1850.categories ( padding, h - padding )
-
-        xAxis : Svg msg
-        xAxis =
-            Axis.bottom [ Axis.tickFormat (absoluteTickFormat xScale 10) ] xScale
-
-        yAxis : Svg msg
-        yAxis =
-            let
-                tickCount =
-                    populationMinnesota1850
-                        |> .extent
-                        |> Tuple.second
-                        |> (\v -> round v // 10 * 2)
-            in
-            Axis.left [] (Scale.toRenderable String.fromInt yScale)
     in
     svg [ width w, height h ]
         [ g [ transform [ Translate 0 (h - padding) ] ]
-            [ xAxis ]
+            [ Axis.bottom [ Axis.tickFormat (absoluteTickFormat xScale 10) ] xScale ]
         , g [ class [ "series" ] ] <|
             List.map (column yScale) (List.map2 (\a b -> ( a, b )) populationMinnesota1850.categories scaledValues)
         , g [ transform [ Translate padding 0 ] ]
-            [ yAxis
+            [ Axis.left [] (Scale.toRenderable String.fromInt yScale)
             , text_ [ fontFamily [ "sans-serif" ], fontSize 14, x 5, y 65 ] [ text "Age" ]
             ]
         , g [ transform [ Translate (w - padding) (padding + 20) ] ]

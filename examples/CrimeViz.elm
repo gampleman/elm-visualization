@@ -100,14 +100,6 @@ view model =
                 |> (\a -> Scale.linear a ( h - 2 * padding, 0 ))
                 |> (\a -> Scale.nice a 4)
 
-        xAxis : Svg msg
-        xAxis =
-            Axis.bottom [ Axis.tickCount 10 ] xScale
-
-        yAxis : Svg msg
-        yAxis =
-            Axis.left [ Axis.ticks (values first) ] yScale
-
         lineGenerator : ( Int, Int ) -> Maybe ( Float, Float )
         lineGenerator ( x, y ) =
             Just ( Scale.convert xScale (toFloat x), Scale.convert yScale (toFloat y) )
@@ -120,9 +112,11 @@ view model =
     in
     svg [ width w, height h ]
         [ g [ transform [ Translate (padding - 1) (h - padding) ] ]
-            [ xAxis ]
+            [ Axis.bottom [ Axis.tickCount 10 ] xScale ]
         , g [ transform [ Translate (padding - 1) padding ] ]
-            [ yAxis, text_ [ fontFamily [ "sans-serif" ], fontSize 10, x 5, y 5 ] [ text "Occurences" ] ]
+            [ Axis.left [ Axis.ticks (values first) ] yScale
+            , text_ [ fontFamily [ "sans-serif" ], fontSize 10, x 5, y 5 ] [ text "Occurences" ]
+            ]
         , g [ transform [ Translate padding padding ], class [ "series" ] ]
             (List.map (\{ accessor, label } -> Path.element (line accessor) [ stroke (color label), strokeWidth 3, fill FillNone ]) series)
         , g [ fontFamily [ "sans-serif" ], fontSize 10 ]

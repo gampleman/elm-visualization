@@ -30,7 +30,7 @@ exampleConfig =
         , order = Shape.sortByInsideOut (Tuple.second >> List.sum)
         }
       )
-    , ( "Sillhoutte"
+    , ( "Silhouette"
       , { data = samples
         , offset = Shape.stackOffsetSilhouette
         , order = Shape.sortByInsideOut (Tuple.second >> List.sum)
