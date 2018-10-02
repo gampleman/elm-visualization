@@ -3,7 +3,7 @@ module NorwegianCarSales exposing (main)
 {-| This example demonstates using different kinds of layouts for stacked graphs.
 -}
 
-import Axis exposing (Orientation(..))
+import Axis
 import Color exposing (Color)
 import Example
 import Html exposing (div, text)
@@ -107,20 +107,17 @@ view { values, labels, extent } =
             Scale.linear extent ( h - padding, padding )
                 |> (\a -> Scale.nice a 4)
 
-        axisOptions =
-            Axis.defaultOptions
-
         xAxis : Svg msg
         xAxis =
             -- construct the time domain for display
             -- the data is per-month, so we have to pick a day
             -- to get the ticks to show up correctly, the upper bound needs to be Jan 2 (Jan 1 does not work).
             Scale.time Time.utc ( fromCalendarDate 2007 Jan 1, fromCalendarDate 2017 Jan 2 ) ( 0, w - padding * 2 - labelsWidth )
-                |> Axis.axis { axisOptions | orientation = Axis.Bottom, tickCount = 1 }
+                |> Axis.bottom [ Axis.tickCount 1 ]
 
         yAxis : Svg msg
         yAxis =
-            Axis.axis { axisOptions | orientation = Axis.Left } yScale
+            Axis.left [] yScale
 
         paths =
             List.map2 (renderStream ( xScale, yScale )) (colors labels) values

@@ -1,12 +1,12 @@
 module PopulationMinnesota exposing (main)
 
-import Axis exposing (Orientation(..))
+import Axis
 import Color exposing (Color)
-import List
 import List.Extra as List
 import SampleData exposing (Gender(..))
 import Scale exposing (BandScale, ContinuousScale, OrdinalScale, QuantizeScale, Scale, defaultBandConfig)
 import Shape exposing (StackConfig, StackResult)
+import Statistics
 import TypedSvg exposing (g, rect, svg, text_)
 import TypedSvg.Attributes exposing (class, dy, fill, fontFamily, textAnchor, transform)
 import TypedSvg.Attributes.InPx exposing (fontSize, height, width, x, y)
@@ -43,7 +43,7 @@ populationMinnesota1850 =
     { categories = categories
     , data = [ ( 1850, List.map (.people >> toFloat) m ), ( 1850, List.map (.people >> toFloat >> negate) f ) ]
     , extent =
-        List.extent categories
+        Statistics.extent categories
             |> Maybe.map (\( a, b ) -> ( toFloat a, toFloat b ))
             |> Maybe.withDefault ( 0, 0 )
     }
@@ -108,9 +108,6 @@ view { values, labels, extent } =
                 |> List.transpose
                 |> List.map (List.map (\( y1, y2 ) -> ( Scale.convert xScale y1, Scale.convert xScale y2 )))
 
-        axisOptions =
-            Axis.defaultOptions
-
         xScale : ContinuousScale
         xScale =
             Scale.linear extent ( w - padding, padding )
@@ -122,7 +119,7 @@ view { values, labels, extent } =
 
         xAxis : Svg msg
         xAxis =
-            Axis.axis { axisOptions | orientation = Axis.Bottom, tickFormat = Just (absoluteTickFormat xScale 10) } xScale
+            Axis.bottom [ Axis.tickFormat (absoluteTickFormat xScale 10) ] xScale
 
         yAxis : Svg msg
         yAxis =
@@ -133,7 +130,7 @@ view { values, labels, extent } =
                         |> Tuple.second
                         |> (\v -> round v // 10 * 2)
             in
-            Axis.axis { axisOptions | orientation = Axis.Left } (Scale.toRenderable String.fromInt yScale)
+            Axis.left [] (Scale.toRenderable String.fromInt yScale)
     in
     svg [ width w, height h ]
         [ g [ transform [ Translate 0 (h - padding) ] ]

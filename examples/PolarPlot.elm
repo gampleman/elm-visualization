@@ -3,10 +3,10 @@ module PolarPlot exposing (main)
 {-| A polar plot of `sin(2x)cos(2x)`.
 -}
 
-import List exposing (range)
 import Path
 import Scale exposing (ContinuousScale)
 import Shape
+import Statistics
 import TypedSvg exposing (circle, g, line, style, svg, text_)
 import TypedSvg.Attributes exposing (class, dy, textAnchor, transform)
 import TypedSvg.Attributes.InPx exposing (fontSize, height, r, width, x, x2, y)
@@ -46,7 +46,7 @@ fn t =
 
 data : List (Maybe ( Float, Float ))
 data =
-    range 0 (2 * pi) 0.01
+    Statistics.range 0 (2 * pi) 0.01
         |> List.map (\t -> Just ( -t + pi / 2, Scale.convert radiusScale (fn t) ))
 
 
@@ -132,7 +132,7 @@ main =
                 |> List.drop 1
                 |> List.map radialAxis
                 |> g [ class [ "r", "axis" ] ]
-            , range 0 360 30
+            , Statistics.range 0 360 30
                 |> List.map spoke
                 |> g [ class [ "a", "axis" ] ]
             , Path.element (Shape.lineRadial Shape.linearCurve data) [ class [ "line" ] ]

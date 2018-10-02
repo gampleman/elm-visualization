@@ -4,7 +4,7 @@ module LineChart exposing (main)
 the primitives provided in this library.
 -}
 
-import Axis exposing (defaultOptions)
+import Axis
 import Color
 import List
 import Path exposing (Path)
@@ -46,12 +46,12 @@ yScale =
 
 xAxis : List ( Time.Posix, Float ) -> Svg msg
 xAxis model =
-    Axis.axis { defaultOptions | orientation = Axis.Bottom, tickCount = List.length model } xScale
+    Axis.bottom [ Axis.tickCount (List.length model) ] xScale
 
 
 yAxis : Svg msg
 yAxis =
-    Axis.axis { defaultOptions | orientation = Axis.Left, tickCount = 5 } yScale
+    Axis.left [ Axis.tickCount 5 ] yScale
 
 
 transformToLineData : ( Time.Posix, Float ) -> Maybe ( Float, Float )

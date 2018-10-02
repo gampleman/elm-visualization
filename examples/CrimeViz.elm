@@ -4,13 +4,13 @@ module CrimeViz exposing (main)
 the primitives provided in this library.
 -}
 
-import Axis exposing (defaultOptions)
+import Axis
 import Color exposing (Color)
-import List
 import Path exposing (Path)
 import SampleData exposing (CrimeRate, crimeRates)
 import Scale exposing (ContinuousScale, OrdinalScale)
 import Shape
+import Statistics
 import Time
 import TypedSvg exposing (g, svg, text_)
 import TypedSvg.Attributes exposing (class, dy, fill, fontFamily, stroke, textAnchor, transform)
@@ -86,7 +86,7 @@ view model =
         xScale =
             model
                 |> List.map (.year >> toFloat)
-                |> List.extent
+                |> Statistics.extent
                 |> Maybe.withDefault ( 1900, 1901 )
                 |> (\a -> Scale.linear a ( 0, w - 2 * padding ))
 
@@ -102,11 +102,11 @@ view model =
 
         xAxis : Svg msg
         xAxis =
-            Axis.axis { defaultOptions | orientation = Axis.Bottom, tickCount = 10 } xScale
+            Axis.bottom [ Axis.tickCount 10 ] xScale
 
         yAxis : Svg msg
         yAxis =
-            Axis.axis { defaultOptions | orientation = Axis.Left, ticks = Just (values first) } yScale
+            Axis.left [ Axis.ticks (values first) ] yScale
 
         lineGenerator : ( Int, Int ) -> Maybe ( Float, Float )
         lineGenerator ( x, y ) =
@@ -129,7 +129,7 @@ view model =
             (List.map
                 (\{ accessor, label } ->
                     g [ transform [ Translate (w - padding + 10) (padding + Scale.convert yScale (toFloat (accessor last))) ] ]
-                        [ text_ [ fill (colorString label) ] [ text label ] ]
+                        [ text_ [ fill (Fill (color label)) ] [ text label ] ]
                 )
                 series
             )

@@ -3,7 +3,7 @@ module BarChart exposing (main)
 {-| This module shows how to build a simple bar chart.
 -}
 
-import Axis exposing (defaultOptions)
+import Axis
 import DateFormat
 import SampleData exposing (timeSeries)
 import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
@@ -47,12 +47,12 @@ dateFormat =
 
 xAxis : List ( Time.Posix, Float ) -> Svg msg
 xAxis model =
-    Axis.axis { defaultOptions | orientation = Axis.Bottom } (Scale.toRenderable dateFormat (xScale model))
+    Axis.bottom [] (Scale.toRenderable dateFormat (xScale model))
 
 
 yAxis : Svg msg
 yAxis =
-    Axis.axis { defaultOptions | orientation = Axis.Left, tickCount = 5 } yScale
+    Axis.left [ Axis.tickCount 5 ] yScale
 
 
 column : BandScale Time.Posix -> ( Time.Posix, Float ) -> Svg msg

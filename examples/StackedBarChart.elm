@@ -1,6 +1,6 @@
 module StackedBarChart exposing (main)
 
-import Axis exposing (defaultOptions)
+import Axis
 import Color exposing (Color)
 import List.Extra as List
 import SampleData exposing (CrimeRate)
@@ -126,16 +126,13 @@ view { values, labels, extent } =
             Scale.linear extent ( h - (padding.left + padding.right), 0 )
                 |> (\a -> Scale.nice a 4)
 
-        axisOptions =
-            Axis.defaultOptions
-
         xAxis : Svg msg
         xAxis =
-            Axis.axis { axisOptions | orientation = Axis.Bottom, tickCount = 10 } (Scale.toRenderable String.fromInt xScale)
+            Axis.bottom [ Axis.tickCount 10 ] (Scale.toRenderable String.fromInt xScale)
 
         yAxis : Svg msg
         yAxis =
-            Axis.axis { axisOptions | orientation = Axis.Left } yScale
+            Axis.left [] yScale
 
         scaledValues =
             List.map (List.map (\( y1, y2 ) -> ( Scale.convert yScale y1, Scale.convert yScale y2 ))) yearValues

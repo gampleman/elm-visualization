@@ -16,7 +16,9 @@ module Statistics
 
 # Statistics
 
-@docs extent, extentWith
+@docs extent, extentBy, extentWith
+
+@docs variance, deviation, quantile
 
 
 # Transformations

@@ -1,9 +1,9 @@
-module Histogram exposing (main)
+module HistogramChart exposing (main)
 
 {-| Renders a histogram of a randomly generated data set
 -}
 
-import Axis exposing (defaultOptions)
+import Axis
 import Color
 import Histogram exposing (Bin, HistogramGenerator)
 import Random exposing (Generator, Seed)
@@ -72,12 +72,12 @@ yScaleFromBins bins =
 
 xAxis : List Float -> Svg msg
 xAxis model =
-    Axis.axis { defaultOptions | orientation = Axis.Bottom } xScale
+    Axis.bottom [] xScale
 
 
 yAxis : List (Bin Float Float) -> Svg msg
 yAxis bins =
-    Axis.axis { defaultOptions | orientation = Axis.Left, tickCount = 5 } (yScaleFromBins bins)
+    Axis.left [ Axis.tickCount 5 ] (yScaleFromBins bins)
 
 
 column : ContinuousScale -> Bin Float Float -> Svg msg
