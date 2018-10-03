@@ -24,7 +24,7 @@ convert =
             \() ->
                 let
                     scale =
-                        Scale.ordinal [ 1, 2, 3 ] [ "a", "b" ]
+                        Scale.ordinal [ "a", "b" ] [ 1, 2, 3 ]
                 in
                 Scale.convert scale 1
                     |> Expect.equal (Just "a")
@@ -32,7 +32,7 @@ convert =
             \() ->
                 let
                     scale =
-                        Scale.ordinal [ 1, 2, 3 ] [ "a", "b" ]
+                        Scale.ordinal [ "a", "b" ] [ 1, 2, 3 ]
                 in
                 Scale.convert scale 3
                     |> Expect.equal (Just "a")
@@ -40,7 +40,7 @@ convert =
             \( value, domain ) range ->
                 let
                     scale =
-                        Scale.ordinal domain range
+                        Scale.ordinal range domain
                 in
                 Scale.convert scale value
                     |> Maybe.map (expectMember range)
@@ -49,7 +49,7 @@ convert =
             \domain value ->
                 let
                     scale =
-                        Scale.ordinal domain []
+                        Scale.ordinal [] domain
                 in
                 Scale.convert scale value
                     |> Expect.equal Nothing

@@ -62,7 +62,8 @@ values i =
 
 colorScale : OrdinalScale String Color
 colorScale =
-    Scale.ordinal (List.map .label series) Scale.category10
+    List.map .label series
+        |> Scale.ordinal Scale.category10
 
 
 color : String -> Color
@@ -82,23 +83,23 @@ view model =
             List.head model
                 |> Maybe.withDefault (CrimeRate 0 0 0 0 0 0 0 0 0)
 
-        xScale : ContinuousScale
+        xScale : ContinuousScale Float
         xScale =
             model
                 |> List.map (.year >> toFloat)
                 |> Statistics.extent
                 |> Maybe.withDefault ( 1900, 1901 )
-                |> (\a -> Scale.linear a ( 0, w - 2 * padding ))
+                |> Scale.linear ( 0, w - 2 * padding )
 
-        yScale : ContinuousScale
+        yScale : ContinuousScale Float
         yScale =
             model
                 |> List.map (values >> List.maximum >> Maybe.withDefault 0)
                 |> List.maximum
                 |> Maybe.withDefault 0
                 |> (\b -> ( 0, b ))
-                |> (\a -> Scale.linear a ( h - 2 * padding, 0 ))
-                |> (\a -> Scale.nice a 4)
+                |> Scale.linear ( h - 2 * padding, 0 )
+                |> Scale.nice 4
 
         lineGenerator : ( Int, Int ) -> Maybe ( Float, Float )
         lineGenerator ( x, y ) =

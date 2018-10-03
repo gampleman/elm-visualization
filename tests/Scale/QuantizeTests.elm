@@ -20,7 +20,7 @@ all =
             \() ->
                 let
                     convert =
-                        Scale.convert (Scale.quantize ( 0, 1 ) ( 0, [ 1, 2 ] ))
+                        Scale.convert (Scale.quantize ( 0, [ 1, 2 ] ) ( 0, 1 ))
                 in
                 expectAll
                     [ convert 0.0 |> Expect.equal 0
@@ -34,7 +34,7 @@ all =
             \() ->
                 let
                     convert =
-                        Scale.convert (Scale.quantize ( 0, 1 ) ( A, [ B, C ] ))
+                        Scale.convert (Scale.quantize ( A, [ B, C ] ) ( 0, 1 ))
                 in
                 expectAll
                     [ convert -0.5 |> Expect.equal A
@@ -44,7 +44,7 @@ all =
             \() ->
                 let
                     invertExtent =
-                        Scale.invertExtent (Scale.quantize ( 0, 1 ) ( 0, [ 1, 2, 3 ] ))
+                        Scale.invertExtent (Scale.quantize ( 0, [ 1, 2, 3 ] ) ( 0, 1 ))
                 in
                 expectAll
                     [ invertExtent 0 |> Expect.equal (Just ( 0.0, 0.25 ))
@@ -56,7 +56,7 @@ all =
             \() ->
                 let
                     rangeExtent range =
-                        Scale.rangeExtent (Scale.quantize ( 0, 1 ) range)
+                        Scale.rangeExtent (Scale.quantize range ( 0, 1 ))
                 in
                 expectAll
                     [ rangeExtent ( A, [ B, C ] ) |> Expect.equal ( A, C )

@@ -25,7 +25,7 @@ convert =
             \() ->
                 let
                     scale =
-                        Scale.band defaultBandConfig [ "foo", "bar" ] ( 0, 960 )
+                        Scale.band defaultBandConfig ( 0, 960 ) [ "foo", "bar" ]
                 in
                 expectAll
                     [ Scale.convert scale "foo"
@@ -37,7 +37,7 @@ convert =
             \() ->
                 let
                     scale =
-                        Scale.band defaultBandConfig [ "foo", "bar" ] ( 0, 960 )
+                        Scale.band defaultBandConfig ( 0, 960 ) [ "foo", "bar" ]
                 in
                 expectAll
                     [ Scale.convert scale "baz"
@@ -51,7 +51,7 @@ convert =
                         [ "a", "b", "c" ]
 
                     scale =
-                        Scale.band defaultBandConfig domain ( 120, 0 )
+                        Scale.band defaultBandConfig ( 120, 0 ) domain
                 in
                 expectAll
                     [ domain

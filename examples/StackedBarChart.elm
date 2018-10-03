@@ -73,8 +73,8 @@ config =
     }
 
 
-sampleColor : Float -> Color
-sampleColor progression =
+reverseViridis : Float -> Color
+reverseViridis progression =
     -- stylistic choice: the larger boxes look better in brighter colors, so invert the interpolator
     Scale.viridisInterpolator (1 - progression)
 
@@ -82,13 +82,12 @@ sampleColor progression =
 colors : Int -> List Color
 colors size =
     let
-        -- given an index, give a value in [0,1] (0 for first, 1 for final)
-        lengthScale =
-            Scale.linear ( 0, toFloat size - 1 ) ( 0, 1 )
+        colorScale =
+            Scale.sequential reverseViridis ( 0, toFloat size - 1 )
                 |> Scale.convert
     in
     List.range 0 (size - 1)
-        |> List.map (sampleColor << lengthScale << toFloat)
+        |> List.map (colorScale << toFloat)
 
 
 column : BandScale Year -> ( Year, List ( Float, Float ) ) -> Svg msg
@@ -119,12 +118,12 @@ view { values, labels, extent } =
 
         xScale : BandScale Year
         xScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } years ( 0, w - (padding.top + padding.bottom) )
+            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( 0, w - (padding.top + padding.bottom) ) years
 
-        yScale : ContinuousScale
+        yScale : ContinuousScale Float
         yScale =
-            Scale.linear extent ( h - (padding.left + padding.right), 0 )
-                |> (\a -> Scale.nice a 4)
+            Scale.linear ( h - (padding.left + padding.right), 0 ) extent
+                |> Scale.nice 4
 
         scaledValues =
             List.map (List.map (\( y1, y2 ) -> ( Scale.convert yScale y1, Scale.convert yScale y2 ))) yearValues

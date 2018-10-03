@@ -6,10 +6,9 @@ the primitives provided in this library.
 
 import Axis
 import Color
-import List
 import Path exposing (Path)
 import SampleData exposing (timeSeries)
-import Scale exposing (ContinuousScale, ContinuousTimeScale)
+import Scale exposing (ContinuousScale)
 import Shape
 import Time
 import TypedSvg exposing (g, svg)
@@ -34,14 +33,14 @@ padding =
     30
 
 
-xScale : ContinuousTimeScale
+xScale : ContinuousScale Time.Posix
 xScale =
-    Scale.time Time.utc ( Time.millisToPosix 1448928000000, Time.millisToPosix 1456790400000 ) ( 0, w - 2 * padding )
+    Scale.time Time.utc ( 0, w - 2 * padding ) ( Time.millisToPosix 1448928000000, Time.millisToPosix 1456790400000 )
 
 
-yScale : ContinuousScale
+yScale : ContinuousScale Float
 yScale =
-    Scale.linear ( 0, 5 ) ( h - 2 * padding, 0 )
+    Scale.linear ( h - 2 * padding, 0 ) ( 0, 5 )
 
 
 xAxis : List ( Time.Posix, Float ) -> Svg msg

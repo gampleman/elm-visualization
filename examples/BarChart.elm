@@ -32,12 +32,13 @@ padding =
 
 xScale : List ( Time.Posix, Float ) -> BandScale Time.Posix
 xScale model =
-    Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } (List.map Tuple.first model) ( 0, w - 2 * padding )
+    List.map Tuple.first model
+        |> Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( 0, w - 2 * padding )
 
 
-yScale : ContinuousScale
+yScale : ContinuousScale Float
 yScale =
-    Scale.linear ( 0, 5 ) ( h - 2 * padding, 0 )
+    Scale.linear ( h - 2 * padding, 0 ) ( 0, 5 )
 
 
 dateFormat : Time.Posix -> String

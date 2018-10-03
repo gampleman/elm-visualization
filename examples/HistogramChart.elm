@@ -55,19 +55,19 @@ padding =
     30
 
 
-xScale : ContinuousScale
+xScale : ContinuousScale Float
 xScale =
-    Scale.linear ( 0, 20 ) ( 0, w - 2 * padding )
+    Scale.linear ( 0, w - 2 * padding ) ( 0, 20 )
 
 
-yScaleFromBins : List (Bin Float Float) -> ContinuousScale
+yScaleFromBins : List (Bin Float Float) -> ContinuousScale Float
 yScaleFromBins bins =
     List.map .length bins
         |> List.maximum
         |> Maybe.withDefault 0
         |> toFloat
-        |> (\b -> ( 0, b ))
-        |> (\a -> Scale.linear a ( h - 2 * padding, 0 ))
+        |> Tuple.pair 0
+        |> Scale.linear ( h - 2 * padding, 0 )
 
 
 xAxis : List Float -> Svg msg
@@ -80,7 +80,7 @@ yAxis bins =
     Axis.left [ Axis.tickCount 5 ] (yScaleFromBins bins)
 
 
-column : ContinuousScale -> Bin Float Float -> Svg msg
+column : ContinuousScale Float -> Bin Float Float -> Svg msg
 column yScale { length, x0, x1 } =
     rect
         [ x <| Scale.convert xScale x0

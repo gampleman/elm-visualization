@@ -108,14 +108,14 @@ view { values, labels, extent } =
                 |> List.transpose
                 |> List.map (List.map (\( y1, y2 ) -> ( Scale.convert xScale y1, Scale.convert xScale y2 )))
 
-        xScale : ContinuousScale
+        xScale : ContinuousScale Float
         xScale =
-            Scale.linear extent ( w - padding, padding )
-                |> (\a -> Scale.nice a 4)
+            Scale.linear ( w - padding, padding ) extent
+                |> Scale.nice 4
 
         yScale : BandScale Int
         yScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } populationMinnesota1850.categories ( padding, h - padding )
+            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( padding, h - padding ) populationMinnesota1850.categories
     in
     svg [ width w, height h ]
         [ g [ transform [ Translate 0 (h - padding) ] ]

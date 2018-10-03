@@ -44,5 +44,5 @@ renderingTest =
                             ]
                         ]
             in
-            Axis.left [ Axis.tickCount 5 ] (Scale.linear ( 0, 5 ) ( 290, 0 ))
+            Axis.left [ Axis.tickCount 5 ] (Scale.linear ( 290, 0 ) ( 0, 5 ))
                 |> Expect.equal expected

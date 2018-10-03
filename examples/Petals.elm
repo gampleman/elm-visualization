@@ -25,7 +25,7 @@ h =
 
 color : Int -> Color
 color =
-    Scale.convert (Scale.sequential ( 0, 360 ) Scale.viridisInterpolator) << toFloat
+    Scale.convert (Scale.sequential Scale.viridisInterpolator ( 0, 360 )) << toFloat
 
 
 makePetal : Int -> Svg msg

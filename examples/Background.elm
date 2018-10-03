@@ -29,7 +29,7 @@ h =
 
 colorScale : SequentialScale Color
 colorScale =
-    Scale.sequential ( 200, 700 ) Scale.viridisInterpolator
+    Scale.sequential Scale.viridisInterpolator ( 200, 700 )
 
 
 type alias CustomNode =

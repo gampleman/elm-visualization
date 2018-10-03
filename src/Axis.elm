@@ -1,9 +1,12 @@
-module Axis exposing (Attribute, RenderableScale, bottom, left, right, tickCount, tickFormat, tickPadding, tickSizeInner, tickSizeOuter, ticks, top)
+module Axis exposing
+    ( RenderableScale, left, right, bottom, top
+    , Attribute, ticks, tickFormat, tickCount, tickSizeInner, tickSizeOuter, tickPadding
+    )
 
 {-| The axis component renders human-readable reference marks for scales. This
 alleviates one of the more tedious tasks in visualizing data.
 
-Renders an Axis based on a [Scale](Visualization-Scale).
+Renders an Axis based on a <Scale>.
 
     view =
       svg []
@@ -66,6 +69,7 @@ import Svg exposing (..)
 import Svg.Attributes as Attrs exposing (..)
 
 
+{-| -}
 type Attribute data
     = Ticks (List data)
     | TickFormat (data -> String)
@@ -274,6 +278,7 @@ element { x, y, x1, x2, y1, y2, translate, horizontal } k displacement textAncho
             domainLine =
                 if horizontal then
                     "M" ++ String.fromFloat (k * opts.tickSizeOuter) ++ "," ++ String.fromFloat range0 ++ "H0.5V" ++ String.fromFloat range1 ++ "H" ++ String.fromFloat (k * opts.tickSizeOuter)
+
                 else
                     "M" ++ String.fromFloat range0 ++ "," ++ String.fromFloat (k * opts.tickSizeOuter) ++ "V0.5H" ++ String.fromFloat range1 ++ "V" ++ String.fromFloat (k * opts.tickSizeOuter)
         in

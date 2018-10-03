@@ -1,44 +1,15 @@
-module Scale
-    exposing
-        ( BandConfig
-        , BandScale
-        , ContinuousScale
-        , ContinuousTimeScale
-        , OrdinalScale
-        , QuantizeScale
-        , Scale
-        , SequentialScale
-        , band
-        , bandwidth
-        , category10
-        , category20a
-        , category20b
-        , category20c
-        , clamp
-        , convert
-        , defaultBandConfig
-        , domain
-        , identity
-        , infernoInterpolator
-        , invert
-        , invertExtent
-        , linear
-        , log
-        , magmaInterpolator
-        , nice
-        , ordinal
-        , plasmaInterpolator
-        , quantize
-        , range
-        , rangeExtent
-        , sequential
-        , tickFormat
-        , ticks
-        , time
-        , toRenderable
-          -- , power
-        , viridisInterpolator
-        )
+module Scale exposing
+    ( Scale
+    , ContinuousScale, linear, log, identity, time
+    , SequentialScale, sequential
+    , viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator
+    , QuantizeScale, quantize
+    , OrdinalScale, ordinal
+    , category10, category20a, category20b, category20c
+    , BandScale, band, BandConfig, defaultBandConfig
+    , convert, invert, invertExtent, domain, range, rangeExtent, ticks, tickFormat, clamp, nice, bandwidth, toRenderable
+    -- , power
+    )
 
 {-| Scales are a convenient abstraction for a fundamental task in visualization:
 mapping a dimension of abstract data to a visual representation. Although most
@@ -48,39 +19,37 @@ virtually any visual encoding, such as diverging colors, stroke widths, or symbo
 size. Scales can also be used with virtually any type of data, such as named
 categorical data or discrete data that requires sensible breaks.
 
-For continuous quantitative data, you typically want a linear scale. (For time
-series data, a time scale.) If the distribution calls for it, consider
-transforming data using a power or log scale. A quantize scale may aid
-differentiation by rounding continuous data to a fixed set of discrete values;
-similarly, a quantile scale computes quantiles from a sample population, and a
-threshold scale allows you to specify arbitrary breaks in continuous data.
+For [continuous](#ContinuousScale) quantitative data, you typically want a [linear scale](#linear). (For time
+series data, a [time scale](#time).) If the distribution calls for it, consider
+transforming data using a [log scale](#log). A [quantize scale](#QuantizeScale) may aid
+differentiation by rounding continuous data to a fixed set of discrete values.
 Several built-in sequential color schemes are also provided.
 
-For discrete ordinal (ordered) or categorical (unordered) data, an ordinal scale
+For discrete ordinal (ordered) or categorical (unordered) data, an [ordinal scale](#OrdinalScale)
 specifies an explicit mapping from a set of data values to a corresponding set
-of visual attributes (such as colors). The related band and point scales are
-useful for position-encoding ordinal data, such as bars in a bar chart or dots
-in an categorical scatterplot. Several built-in categorical color scales are
+of visual attributes (such as colors). The related [band](#BandScale) scale is
+useful for position-encoding ordinal data, such as bars in a bar chart. Several built-in categorical color scales are
 also provided.
 
 Scales have no intrinsic visual representation. However, most scales can generate
-and format ticks for reference marks to aid in the construction of [axes](Visualization-Axis).
+and format ticks for reference marks to aid in the construction of [axes](Axis).
+
+
+### Scales
+
+  - [Continuous](#ContinuousScale) ([linear](#linear), [log](#log), [identity](#identity), [time](#time))
+  - [Sequential](#SequentialScale)
+  - [Quantize](#QuantizeScale)
+  - [Ordinal](#OrdinalScale) ([Band](#BandScale))
 
 Color types come from [avh4/elm-color](https://package.elm-lang.org/packages/avh4/elm-color/latest/).
-
-
-# General notes
 
 @docs Scale
 
 
 # Continuous Scales
 
-@docs ContinuousScale, linear, log, identity, ContinuousTimeScale, time
-
-Continuous scales support the following operations:
-
-@docs convert, invert, domain, range, rangeExtent, ticks, tickFormat, clamp, nice
+@docs ContinuousScale, linear, log, identity, time
 
 
 # Sequential Scales
@@ -90,10 +59,6 @@ numeric input domain to a continuous output range. However, unlike continuous
 scales, the output range of a sequential scale is fixed by its interpolator function.
 
 @docs SequentialScale, sequential
-
-Sequential scales support the following operations:
-
-@docs convert, domain, rangeExtent
 
 
 ### Interpolator functions
@@ -113,10 +78,6 @@ domain value `x`: `y = m round(x) + b`.
 
 @docs QuantizeScale, quantize
 
-Quantize scales support the following operations:
-
-@docs convert, invertExtent, domain, range, rangeExtent, ticks, tickFormat, nice
-
 
 # Ordinal Scales
 
@@ -125,15 +86,6 @@ example, an ordinal scale might map a set of named categories to a set of colors
 or determine the horizontal positions of columns in a column chart.
 
 @docs OrdinalScale, ordinal
-
-Ordinal scales support the following operations:
-
-@docs convert
-
-Note that convert returns a Maybe for Ordinal scales. It is up to you to handle
-potentially missing values in the domain.
-
-@docs domain, range
 
 Here are a few color schemes that you can use with ordinal scales to
 support categorical data:
@@ -150,9 +102,12 @@ for bar charts with an ordinal or categorical dimension.
 
 @docs BandScale, band, BandConfig, defaultBandConfig
 
-Band scales support the following operations:
 
-@docs convert, domain, range, bandwidth, toRenderable
+# Operations
+
+These functions take Scales and do something with them. Check the docs of each scale type to see which operations it supports.
+
+@docs convert, invert, invertExtent, domain, range, rangeExtent, ticks, tickFormat, clamp, nice, bandwidth, toRenderable
 
 -}
 
@@ -168,11 +123,12 @@ import Scale.Time as TimeScale
 import Time
 
 
-{-| This API is highly polymorphic as each scale has different functions exposed.
+{-| This API is highly polymorphic as each scale has different functions supported.
 This is still done in a convenient and type-safe manner, however the cost is
-a certain ugliness and complexity of the type signatures. For this reason the
-supported functions are listed again for each category. It is best to ignore the
-type signatures when learning about the library.
+a certain ugliness and complexity of the type signatures. For this reason after the type alias of each scale, the supported functions are listed along with a more specialized type signature appropriate for that scale type.
+
+If you're new to this, I recommend ignoring the types of the type aliases and of the operations and just look at these listings.
+
 -}
 type Scale scaleSpec
     = Scale scaleSpec
@@ -182,22 +138,32 @@ type Scale scaleSpec
 -- Continuous Scales
 
 
-{-| Type alias for Continuous Scales. These map a `(Float, Float)` **domain** to a
-`(Float, Float)` **range**.
--}
-type alias ContinuousScale =
-    Scale
-        { domain : ( Float, Float )
-        , range : ( Float, Float )
-        , convert : ( Float, Float ) -> ( Float, Float ) -> Float -> Float
-        , invert :
-            ( Float, Float ) -> ( Float, Float ) -> Float -> Float
+{-| Maps a `(Float, Float)` **domain** to a
+`(out, out)` **range** (this will be either `(Float, Float)` or `(Time.Posix, Time.Posix)`.)
 
-        -- , rangeRound : ( Float, Float ) -> ( Float, Float )
-        , ticks : ( Float, Float ) -> Int -> List Float
-        , tickFormat : ( Float, Float ) -> Int -> Float -> String
-        , nice : ( Float, Float ) -> Int -> ( Float, Float )
-        , rangeExtent : ( Float, Float ) -> ( Float, Float ) -> ( Float, Float )
+Continuous scales support the following operations:
+
+  - [`convert : ContinuousScale inp -> inp -> Float`](#convert)
+  - [`invert : ContinuousScale inp -> Float -> inp`](#invert)
+  - [`domain : ContinuousScale inp -> (inp, inp)`](#domain)
+  - [`range : ContinuousScale inp -> (Float, Float)`](#range)
+  - [`rangeExtent : ContinuousScale inp -> (Float, Float)`](#rangeExtent) (which is in this case just an alias for `range`)
+  - [`ticks : ContinuousScale inp -> Int -> List inp`](#ticks)
+  - [`tickFormat : ContinuousScale inp -> Int -> inp -> String`](#tickFormat)
+  - [`clamp : ContinuousScale inp -> ContinuousScale inp`](#clamp)
+  - [`nice : Int -> ContinuousScale inp -> ContinuousScale inp`](#nice)
+
+-}
+type alias ContinuousScale inp =
+    Scale
+        { domain : ( inp, inp )
+        , range : ( Float, Float )
+        , convert : ( inp, inp ) -> ( Float, Float ) -> inp -> Float
+        , invert : ( inp, inp ) -> ( Float, Float ) -> Float -> inp
+        , ticks : ( inp, inp ) -> Int -> List inp
+        , tickFormat : ( inp, inp ) -> Int -> inp -> String
+        , nice : ( inp, inp ) -> Int -> ( inp, inp )
+        , rangeExtent : ( inp, inp ) -> ( Float, Float ) -> ( Float, Float )
         }
 
 
@@ -206,12 +172,12 @@ because they preserve proportional differences. Each range value y can be
 expressed as a function of the domain value x: y = mx + b.
 
     scale : ContinuousScale
-    scale = linear ( 0, 1 ) ( 50, 100 )
-    convert scale 0.5 --> 75
+    scale = Scale.linear ( 50, 100 ) ( 0, 1 )
+    Scale.convert scale 0.5 --> 75
 
 -}
-linear : ( Float, Float ) -> ( Float, Float ) -> ContinuousScale
-linear domain_ range_ =
+linear : ( Float, Float ) -> ( Float, Float ) -> ContinuousScale Float
+linear range_ domain_ =
     Scale
         { domain = domain_
         , range = range_
@@ -256,15 +222,15 @@ input and output values are implicitly multiplied by -1.) The behavior of the
 scale is undefined if you pass a negative value to a log scale with a positive
 domain or vice versa.
 
-The arguments are `base`, `domain` and `range`.
+The arguments are `base`, `range`, and `domain`.
 
     scale : ContinuousScale
     scale = log 10 ( 10, 1000 ) ( 50, 100 )
     convert scale 100 --> 75
 
 -}
-log : Float -> ( Float, Float ) -> ( Float, Float ) -> ContinuousScale
-log base domain_ range_ =
+log : Float -> ( Float, Float ) -> ( Float, Float ) -> ContinuousScale Float
+log base range_ domain_ =
     Scale
         { domain = domain_
         , range = range_
@@ -278,35 +244,17 @@ log base domain_ range_ =
 
 
 {-| Identity scales are a special case of linear scales where the domain and
-range are identical; the scale and its invert method are thus the identity function.
+range are identical; the convert and invert operations are thus the identity function.
 These scales are occasionally useful when working with pixel coordinates, say in
 conjunction with an axis.
 -}
-identity : ContinuousScale
-identity =
-    linear ( 0, 1 ) ( 0, 1 )
-
-
-{-| This is identical to a ContinuousScale, except the domain values are Dates instead of Floats.
--}
-type alias ContinuousTimeScale =
-    Scale
-        { domain : ( Time.Posix, Time.Posix )
-        , range : ( Float, Float )
-        , convert : ( Time.Posix, Time.Posix ) -> ( Float, Float ) -> Time.Posix -> Float
-        , invert :
-            ( Time.Posix, Time.Posix ) -> ( Float, Float ) -> Float -> Time.Posix
-
-        -- , rangeRound : ( Float, Float ) -> ( Float, Float )
-        , ticks : ( Time.Posix, Time.Posix ) -> Int -> List Time.Posix
-        , tickFormat : ( Time.Posix, Time.Posix ) -> Int -> Time.Posix -> String
-        , nice : ( Time.Posix, Time.Posix ) -> Int -> ( Time.Posix, Time.Posix )
-        , rangeExtent : ( Time.Posix, Time.Posix ) -> ( Float, Float ) -> ( Float, Float )
-        }
+identity : ( Float, Float ) -> ContinuousScale Float
+identity domainOrRange =
+    linear domainOrRange domainOrRange
 
 
 {-| Time scales are a variant of linear scales that have a temporal domain: domain
-values are dates rather than floats, and invert likewise returns a date.
+values are times rather than floats, and invert likewise returns a time.
 Time scales implement ticks based on calendar intervals, taking the pain out of
 generating axes for temporal domains.
 
@@ -314,8 +262,8 @@ Since time scales use human time to calculate ticks and display ticks, we need t
 time zone that you will want to display your data in.
 
 -}
-time : Time.Zone -> ( Time.Posix, Time.Posix ) -> ( Float, Float ) -> ContinuousTimeScale
-time zone domain_ range_ =
+time : Time.Zone -> ( Float, Float ) -> ( Time.Posix, Time.Posix ) -> ContinuousScale Time.Posix
+time zone range_ domain_ =
     Scale
         { domain = domain_
         , range = range_
@@ -332,8 +280,15 @@ time zone domain_ range_ =
 -- Sequential Scales
 
 
-{-| Type alias for sequential scales. This transforms a continuous `(Float, Float)`
-domain to an arbitrary range `a` defined by the interpolator function `Float -> a`, where the `Float` foes from 0 to 1.
+{-| This transforms a continuous `(Float, Float)`
+domain to an arbitrary range `a` defined by the interpolator function `Float -> a`, where the `Float` goes from 0 to 1.
+
+Sequential scales support the following operations:
+
+  - [`convert : SequentialScale a -> Float -> a`](#convert)
+  - [`domain : SequentialScale a -> (Float, Float)`](#domain)
+  - [`range : SequentialScale a -> Float -> a`](#range)
+
 -}
 type alias SequentialScale a =
     Scale
@@ -345,8 +300,8 @@ type alias SequentialScale a =
 
 {-| Construct a sequential scale.
 -}
-sequential : ( Float, Float ) -> (Float -> a) -> SequentialScale a
-sequential domain_ interpolator =
+sequential : (Float -> a) -> ( Float, Float ) -> SequentialScale a
+sequential interpolator domain_ =
     Scale
         { domain = domain_
         , range = interpolator
@@ -410,16 +365,26 @@ plasmaInterpolator =
 -- Quantize Scales
 
 
-{-| Type alias for quantize scales. These transform a `(Float, Float)` domain
+{-| These transform a `(Float, Float)` domain
 to an arbitrary non-empty list `(a, List a)`.
+
+Quantize scales support the following operations:
+
+  - [`convert : QuantizeScale a -> Float -> a`](#convert),
+  - [`invertExtent : QuantizeScale a -> a -> Maybe (Float, Float)`](#invertExtent)
+  - [`domain : QuantizeScale a -> (Float, Float)`](#domain)
+  - [`range : QuantizeScale a -> (a, List a)`](#range),
+  - [`rangeExtent : QuantizeScale a -> (a, a)`](#rangeExtent)
+  - [`ticks : QuantizeScale a -> Int -> List Float`](#ticks)
+  - [`tickFormat : QuantizeScale a -> Int -> Float -> String`](#tickFormat)
+  - [`nice : Int -> QuantizeScale a -> QuantizeScale a`](#nice)
+  - [`clamp : QuantizeScale a -> QuantizeScale a`](#clamp)
+
 -}
 type alias QuantizeScale a =
     Scale
         { domain : ( Float, Float )
-        , range :
-            ( a, List a )
-
-        -- non-empty list
+        , range : ( a, List a )
         , convert : ( Float, Float ) -> ( a, List a ) -> Float -> a
         , invertExtent : ( Float, Float ) -> ( a, List a ) -> a -> Maybe ( Float, Float )
         , ticks : ( Float, Float ) -> ( a, List a ) -> Int -> List Float
@@ -432,8 +397,8 @@ type alias QuantizeScale a =
 {-| Constructs a new quantize scale. The range for these is a
 non-empty list represented as a `(head, tail)` tuple.
 -}
-quantize : ( Float, Float ) -> ( a, List a ) -> QuantizeScale a
-quantize domain_ range_ =
+quantize : ( a, List a ) -> ( Float, Float ) -> QuantizeScale a
+quantize range_ domain_ =
     Scale
         { domain = domain_
         , range = range_
@@ -475,6 +440,17 @@ quantize domain_ range_ =
 {-| Type alias for ordinal scales. These transform an arbitrary
 `List a` domain to an arbitrary list `List b`, where the mapping
 is based on order.
+
+Ordinal scales support the following operations:
+
+  - [`convert : OrdinalScale a b -> a -> Maybe b`](#convert)
+
+    Note that this returns a `Maybe` value in the case when you pass a value that isn't in the domain.
+
+  - [`domain : OrdinalScale a b -> List a`](#domain)
+
+  - [`range : OrdinalScale a b -> List b`](#range)
+
 -}
 type alias OrdinalScale a b =
     Scale
@@ -486,8 +462,8 @@ type alias OrdinalScale a b =
 
 {-| Constructs an ordinal scale.
 -}
-ordinal : List a -> List b -> OrdinalScale a b
-ordinal domain_ range_ =
+ordinal : List b -> List a -> OrdinalScale a b
+ordinal range_ domain_ =
     Scale
         { domain = domain_
         , range = range_
@@ -497,6 +473,15 @@ ordinal domain_ range_ =
 
 {-| Type alias for a band scale. These transform an arbitrary `List a`
 to a continous (Float, Float) by uniformely partitioning the range.
+
+Band scales support the following operations:
+
+  - [`convert : BandScale a -> a -> Float`](#convert)
+  - [`domain : BandScale a -> List a`](#domain)
+  - [`range : Bandscale a -> (Float, Float)`](#range)
+  - [`bandwidth : Bandscale a -> Float`](#bandwidth)
+  - [`toRenderable : (a -> String) -> BandScale a -> RenderableScale a`](#toRenderable)
+
 -}
 type alias BandScale a =
     Scale
@@ -553,8 +538,8 @@ defaultBandConfig =
 
 {-| Constructs a band scale.
 -}
-band : BandConfig -> List a -> ( Float, Float ) -> BandScale a
-band config domain_ range_ =
+band : BandConfig -> ( Float, Float ) -> List a -> BandScale a
+band config range_ domain_ =
     Scale
         { domain = domain_
         , range = range_
@@ -576,7 +561,7 @@ bandwidth (Scale scale) =
     scale.bandwidth
 
 
-{-| This converts a BandScale into a [RenderableScale](https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Visualization-Axis#RenderableScale)
+{-| This converts a BandScale into a [RenderableScale](Axis#RenderableScale)
 suitable for rendering Axes. This has the same domain and range, but the convert output is shifted by half a `bandwidth`
 in order for ticks and labels to align nicely.
 -}
@@ -720,15 +705,15 @@ clamp (Scale scale) =
 
 
 {-| Returns a new scale which extends the domain so that it lands on round values.
-The second argument is the same as you would pass to ticks.
+The first argument is the same as you would pass to ticks.
 
     scale : ContinuousScale
-    scale = linear ( 0.5, 99 ) ( 50, 100 )
-    domain (nice scale 10) --> (0, 100)
+    scale = Scale.linear ( 0.5, 99 ) ( 50, 100 )
+    Scale.domain (Scale.nice 10 scale) --> (0, 100)
 
 -}
-nice : Scale { a | nice : domain -> Int -> domain, domain : domain } -> Int -> Scale { a | nice : domain -> Int -> domain, domain : domain }
-nice (Scale scale) count =
+nice : Int -> Scale { a | nice : domain -> Int -> domain, domain : domain } -> Scale { a | nice : domain -> Int -> domain, domain : domain }
+nice count (Scale scale) =
     Scale { scale | domain = scale.nice scale.domain count }
 
 

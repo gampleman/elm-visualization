@@ -47,14 +47,14 @@ points =
     ]
 
 
-xScale : ContinuousScale
+xScale : ContinuousScale Float
 xScale =
-    Scale.linear ( 0, 2 ) ( padding, w - padding )
+    Scale.linear ( padding, w - padding ) ( 0, 2 )
 
 
-yScale : ContinuousScale
+yScale : ContinuousScale Float
 yScale =
-    Scale.linear ( 0, 1 ) ( h - padding, padding )
+    Scale.linear ( h - padding, padding ) ( 0, 1 )
 
 
 preparedPoints : List ( Float, Float )
@@ -142,7 +142,7 @@ parametrized : String -> (Float -> Curve) -> List ( String, Curve, Color )
 parametrized prefix curveFn =
     let
         scale =
-            Scale.sequential ( 0, 1 ) Scale.magmaInterpolator
+            Scale.sequential Scale.magmaInterpolator ( 0, 1 )
 
         stops =
             [ 0, 0.25, 0.5, 0.75, 1 ]

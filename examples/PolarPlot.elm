@@ -34,9 +34,9 @@ mainRadius =
     Basics.min w h / 2 - padding
 
 
-radiusScale : ContinuousScale
+radiusScale : ContinuousScale Float
 radiusScale =
-    Scale.linear ( 0, 0.5 ) ( 0, mainRadius )
+    Scale.linear ( 0, mainRadius ) ( 0, 0.5 )
 
 
 fn : Float -> Float
