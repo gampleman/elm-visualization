@@ -1,20 +1,10 @@
-module Statistics
-    exposing
-        ( deviation
-        , extent
-        , extentBy
-        , extentWith
-        , quantile
-        , range
-        , tickStep
-        , ticks
-        , variance
-        )
+module Statistics exposing
+    ( extent, extentBy, extentWith
+    , variance, deviation, quantile
+    , ticks, tickStep, range
+    )
 
 {-|
-
-
-# Statistics
 
 @docs extent, extentBy, extentWith
 
@@ -69,6 +59,7 @@ range start stop step =
         helper i list =
             if i >= 0 then
                 helper (i - 1) <| start + step * toFloat i :: list
+
             else
                 list
     in
@@ -110,9 +101,9 @@ were passed to `ticks`: a nicely-rounded value that is a power of ten multiplied
 by 1, 2 or 5. Note that due to the limited precision of IEEE 754 floating point,
 the returned value may not be exact decimals.
 
-    tickStep 1.9 6.4 10 --> 0.5
+    tickStep 1.9 6.4 10 -- 0.5
 
-    tickStep 1.9 6 5 --> 1
+    tickStep 1.9 6 5 -- 1
 
 -}
 tickStep : Float -> Float -> Int -> Float
@@ -130,15 +121,19 @@ tickStep start stop count =
         step2 =
             if error >= sqrt 50 then
                 step1 * 10
+
             else if error >= sqrt 10 then
                 step1 * 5
+
             else if error >= sqrt 2 then
                 step1 * 2
+
             else
                 step1
     in
     if stop < start then
         -step2
+
     else
         step2
 
@@ -171,12 +166,14 @@ extentBy fn list =
         min a b =
             if fn a < fn b then
                 a
+
             else
                 b
 
         max a b =
             if fn a > fn b then
                 a
+
             else
                 b
 
@@ -253,6 +250,7 @@ variance nums =
     in
     if length > 1 then
         Just (sum / (length - 1))
+
     else
         Nothing
 
@@ -269,21 +267,26 @@ deviation =
 example, the median can be computed using p = 0.5, the first quartile at p = 0.25, and the third quartile at p = 0.75.
 This particular implementation uses the [R-7 method](https://en.wikipedia.org/wiki/Quantile#Quantiles_of_a_population),
 which is the default for the R programming language and Excel. For example:
-a : List Float
-a = [0, 10, 30]
-quantile 0 a --> Just 0
-quantile 0.5 a --> Just 10
-quantile 1 a --> Just 30
-quantile 0.25 a --> Just 5
-quantile 0.75 a --> Just 20
-quantile 0.1 a --> Just 2
+
+    a : List Float
+    a = [0, 10, 30]
+
+    quantile 0 a --> Just 0
+    quantile 0.5 a --> Just 10
+    quantile 1 a --> Just 30
+    quantile 0.25 a --> Just 5
+    quantile 0.75 a --> Just 20
+    quantile 0.1 a --> Just 2
+
 -}
 quantile : Float -> List Float -> Maybe Float
 quantile p values =
     if p <= 0 then
         List.head values
+
     else if p >= 1 then
         List.Extra.last values
+
     else
         case values of
             [] ->

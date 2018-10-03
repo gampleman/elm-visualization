@@ -2,8 +2,7 @@
   "root": "../src",
   "tests" : [
     "Scale",
-    "List",
-    "Path",
+    "Statistics",
     "Shape"
   ]
 }

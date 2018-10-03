@@ -488,9 +488,9 @@ band config range_ domain_ =
 {-| Returns the width of a band in a band scale.
 
     scale : BandScale String
-    scale = band defaultBandConfig ["a", "b", "c"] (0, 120)
+    scale = Scale.band Scale.defaultBandConfig (0, 120) ["a", "b", "c"]
 
-    bandwidth scale --> 40
+    Scale.bandwidth scale --> 40
 
 -}
 bandwidth : Scale { scale | bandwidth : Float } -> Float
@@ -596,7 +596,7 @@ to be within the extent of the domain. Ticks are often used to display reference
 lines, or tick marks, in conjunction with the visualized data. The specified count
 is only a hint; the scale may return more or fewer values depending on the domain.
 
-    scale : ContinuousScale
+    scale : ContinuousScale Float
     scale = linear ( 10, 100 ) ( 50, 100 )
     ticks scale 10 --> [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 
@@ -624,12 +624,12 @@ tickFormat (Scale opts) =
 {-| Enables clamping on the domain, meaning the return value of the scale is
 always within the scale’s range.
 
-    scale : ContinuousScale
-    scale = linear ( 10, 100 ) ( 50, 100 )
+    scale : ContinuousScale Float
+    scale = Scale.linear  ( 50, 100 ) ( 10, 100 )
 
-    convert scale 1 --> 45
+    Scale.convert scale 1 --> 45
 
-    convert (Scale.clamp scale) 1 --> 50
+    Scale.convert (Scale.clamp scale) 1 --> 50
 
 -}
 clamp : Scale { a | convert : ( Float, Float ) -> range -> Float -> result } -> Scale { a | convert : ( Float, Float ) -> range -> Float -> result }
@@ -644,7 +644,7 @@ clamp (Scale scale) =
 {-| Returns a new scale which extends the domain so that it lands on round values.
 The first argument is the same as you would pass to ticks.
 
-    scale : ContinuousScale
+    scale : ContinuousScale Float
     scale = Scale.linear ( 0.5, 99 ) ( 50, 100 )
     Scale.domain (Scale.nice 10 scale) --> (0, 100)
 
