@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="363" height="71" viewBox="0 0 363 71">
+  <g fill="none" fill-rule="evenodd">
+    <path stroke="#A4A6C3" stroke-linecap="square" d="M38.5 38.5L128.5 54.5M38.5 33.5L155.5 15.5" opacity=".452"/>
+    <path stroke="#8BCF85" stroke-linecap="square" d="M181.5 15.5L306.5 30.5M154.5 55.5L306.5 36.5" opacity=".452"/>
+    <path stroke="#44878D" stroke-linecap="square" d="M148.5,45.5 L160.5,24.5" opacity=".45"/>
+    <polygon fill="#A4A6C3" points="26.825 21 37.651 27.25 37.651 39.75 26.825 46 16 39.75 16 27.25" opacity=".452"/>
+    <polygon fill="#8BCF85" points="168.557 0 181.115 7.25 181.115 21.75 168.557 29 156 21.75 156 7.25" opacity=".452"/>
+    <polygon fill="#FBEC68" points="319.99 18 332.981 25.5 332.981 40.5 319.99 48 307 40.5 307 25.5" opacity=".452"/>
+    <polygon fill="#44878D" points="141.557 42 154.115 49.25 154.115 63.75 141.557 71 129 63.75 129 49.25" opacity=".452"/>
+    <text fill="#293C4B" font-family="Avenir-Light, Avenir" font-size="30" font-weight="300" letter-spacing="4.806">
+      <tspan x="0" y="44">ELM-VISUALIZATIO</tspan> <tspan x="337.72" y="44" letter-spacing="1.502">N</tspan>
+    </text>
+  </g>
+</svg>

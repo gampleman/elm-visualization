@@ -72,7 +72,10 @@ circular : List Arc -> Svg msg
 circular arcs =
     let
         makeSlice index datum =
-            Path.element (Shape.arc datum) [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors, stroke Color.black ]
+            Path.element (Shape.arc datum)
+                [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors
+                , stroke Color.black
+                ]
 
         makeDot datum =
             let
@@ -91,7 +94,10 @@ annular : List Arc -> Svg msg
 annular arcs =
     let
         makeSlice index datum =
-            Path.element (Shape.arc { datum | innerRadius = radius - 60 }) [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors, stroke Color.black ]
+            Path.element (Shape.arc { datum | innerRadius = radius - 60 })
+                [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors
+                , stroke Color.black
+                ]
 
         makeDot datum =
             let

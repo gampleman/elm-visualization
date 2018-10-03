@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Elm-Visualization Examples</title>
+    <style media="screen">
+      @import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic,700italic|Source+Code+Pro);
+
+      html, head, body {
+        margin: 0;
+        height: 100%;
+      }
+
+      body {
+        font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
+        color: #293c4b;
+      }
+      .top {
+        border-bottom: 1px solid #60B5CC;
+        display: flex;
+
+        align-items: center;
+        justify-content: space-between;
+      }
+      header, nav {
+        display: flex;
+        align-items: center;
+      }
+      h1, h2, h3 {
+        font-weight: normal;
+
+      }
+      header h1, .lead {
+        margin: 0;
+        margin-left: 20px;
+        line-height: 0;
+      }
+      header h2 {
+        margin: 0;
+        margin-left: 20px;
+        font-size: 24px;
+        color: black;
+      }
+      .nav-item {
+        margin-right: 20px;
+      }
+      a {
+        color: #1184CE;
+        text-decoration: none;
+      }
+      a:hover {
+        color: rgb(234,21,122);
+        text-decoration: underline;
+      }
+      ul {
+        list-style-type: none;
+        padding: 0;
+      }
+      li {
+        border: 1px solid #eeeeee;
+        float: left;
+        width: 330px;
+        margin: 20px;
+        padding: 10px 10px 0 10px;
+      }
+      li h3 {
+        margin-left: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="top">
+      <header>
+        <h1><img src="misc/logo-inline.png" width="421" alt="ELM-VISUALIZATION"/></h1>
+        <h2>examples</h2>
+      </header>
+      <nav>
+        <a class="nav-item" href="https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/">Docs</a>
+        <a class="nav-item" href="https://github.com/gampleman/elm-visualization">GitHub</a>
+      </nav>
+    </div>
+    <main>
+      <ul>
+        <% _.each(allExamples, function(example) { %>
+          <li>
+            <a href="<%= example.name %>">
+              <img src="<%= example.name %>/preview.png" srcset="<%= example.name %>/preview.png 1x, <%= example.name %>/preview@2x.png 2x, <%= example.name %>/preview@3x.png 3x" width="<%= Math.floor(width / 3) %>" height="<%= Math.floor(height / 3) %>" />
+              <h3><%= example.displayName %></h3>
+            </a>
+          </li>
+        <% }); %>
+      </ul>
+    </main>
+  </body>
+</html>

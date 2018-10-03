@@ -120,11 +120,24 @@ view model =
             , text_ [ fontFamily [ "sans-serif" ], fontSize 10, x 5, y 5 ] [ text "Occurences" ]
             ]
         , g [ transform [ Translate padding padding ], class [ "series" ] ]
-            (List.map (\{ accessor, label } -> Path.element (line accessor) [ stroke (color label), strokeWidth 3, fill FillNone ]) series)
+            (List.map
+                (\{ accessor, label } ->
+                    Path.element (line accessor)
+                        [ stroke (color label)
+                        , strokeWidth 3
+                        , fill FillNone
+                        ]
+                )
+                series
+            )
         , g [ fontFamily [ "sans-serif" ], fontSize 10 ]
             (List.map
                 (\{ accessor, label } ->
-                    g [ transform [ Translate (w - padding + 10) (padding + Scale.convert yScale (toFloat (accessor last))) ] ]
+                    g
+                        [ transform
+                            [ Translate (w - padding + 10) (padding + Scale.convert yScale (toFloat (accessor last)))
+                            ]
+                        ]
                         [ text_ [ fill (Fill (color label)) ] [ text label ] ]
                 )
                 series

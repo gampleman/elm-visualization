@@ -2,33 +2,96 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>ForceDirectedGraph Example</title>
+    <title>Force Directed Graph Example - Elm-Visualization</title>
     <style media="screen">
+      @import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic,700italic|Source+Code+Pro);
+
+      html, head, body {
+        margin: 0;
+        min-height: 100%;
+      }
+
       body {
-        font-family: Helvetica, sans-serif;
+        font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
+        color: #293c4b;
         display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
       }
+      .top {
+        border-bottom: 1px solid #60B5CC;
+        display: flex;
+        width: 100%;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        width: 1306px;
+        font-size: 24px;
+      }
+      h1, h2, h3 {
+        font-weight: normal;
+
+      }
+      header h1 {
+        margin: 0;
+        line-height: 0;
+        font-size: 24px;
+      }
+      header h2 {
+        margin: 0;
+        margin-left: 20px;
+        font-size: 24px;
+        color: black;
+      }
+      a {
+        color: #1184CE;
+        text-decoration: none;
+      }
+      a:hover {
+        color: rgb(234,21,122);
+        text-decoration: underline;
+      }
+
+      .bottom {
+        display: flex;
+        flex-direction: row;
+        width: 1290px;
+      }
+
       main {
-        order: 1;
+        width: 1006px;
       }
+
       aside {
         width: 300px;
+        padding-left: 25px;
       }
       aside ul {
         padding: 0;
       }
       aside li {
         list-style-type: none;
-        margin: 10px;
+        margin-bottom: 10px;
       }
       aside li.active a {
-        text-decoration: none;
+        text-decoration: underline;
+        font-weight: bold;
       }
       iframe {
-        border: 1px solid black;
+        border: 1px solid #eee;
+        overflow: hidden;
       }
       hr:first-of-type {
         display: none;
+      }
+      pre {
+        font-size: 1.1em;
       }
       /*
 
@@ -130,48 +193,60 @@ hue-6-2: #c18401
     </style>
   </head>
   <body>
-    <main>
-      <h1>ForceDirectedGraph</h1>
+    <div class="top">
+      <header>
+        <h1><img src="../misc/logo-inline.png" width="421" alt="ELM-VISUALIZATION"/></h1>
+        <h2><a href="../">examples</a></h2>
+        <span style="margin: 0 10px">/</span>
+        <h1>Force Directed Graph</h1>
+      </header>
+    </div>
+    <div class="bottom">
+      <main>
 
-      <iframe src="iframe.html" width="990" height="504" frameborder="1"></iframe>
+        <iframe src="iframe.html" width="1006" height="520" frameborder="1" scrolling="no"></iframe>
 
-      
-        <hr />
-        <h3>ForceDirectedGraph</h3>
-        <div class="description"><p> This demonstrates laying out the characters in Les Miserables
+        
+          <h2>ForceDirectedGraph</h2>
+          <div class="description"><p> This demonstrates laying out the characters in Les Miserables
 based on their co-occurence in a scene. Try dragging the nodes!</p>
 </div>
-        <pre><code class="elm"><span class="hljs-keyword">module</span> ForceDirectedGraph <span class="hljs-keyword">exposing</span> (main)
+          <pre><code class="elm"><span class="hljs-keyword">module</span> ForceDirectedGraph <span class="hljs-keyword">exposing</span> (main)
 
 
-<span class="hljs-keyword">import</span> AnimationFrame
+<span class="hljs-keyword">import</span> Browser
+<span class="hljs-keyword">import</span> Browser.Events
+<span class="hljs-keyword">import</span> Color
+<span class="hljs-keyword">import</span> Force <span class="hljs-keyword">exposing</span> (<span class="hljs-type">State</span>)
 <span class="hljs-keyword">import</span> Graph <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Edge</span>, <span class="hljs-type">Graph</span>, <span class="hljs-type">Node</span>, <span class="hljs-type">NodeContext</span>, <span class="hljs-type">NodeId</span>)
 <span class="hljs-keyword">import</span> Html
 <span class="hljs-keyword">import</span> Html.Events <span class="hljs-keyword">exposing</span> (on)
+<span class="hljs-keyword">import</span> Html.Events.Extra.Mouse <span class="hljs-keyword">as</span> Mouse
 <span class="hljs-keyword">import</span> Json.Decode <span class="hljs-keyword">as</span> Decode
-<span class="hljs-keyword">import</span> Mouse <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Position</span>)
 <span class="hljs-keyword">import</span> SampleData <span class="hljs-keyword">exposing</span> (miserablesGraph)
-<span class="hljs-keyword">import</span> Svg <span class="hljs-keyword">exposing</span> (..)
-<span class="hljs-keyword">import</span> Svg.Attributes <span class="hljs-keyword">as</span> Attr <span class="hljs-keyword">exposing</span> (..)
-<span class="hljs-keyword">import</span> Time <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Time</span>)
-<span class="hljs-keyword">import</span> Visualization.Force <span class="hljs-keyword">as</span> Force <span class="hljs-keyword">exposing</span> (<span class="hljs-type">State</span>)
+<span class="hljs-keyword">import</span> Time
+<span class="hljs-keyword">import</span> TypedSvg <span class="hljs-keyword">exposing</span> (circle, g, line, svg, title)
+<span class="hljs-keyword">import</span> TypedSvg.Attributes <span class="hljs-keyword">exposing</span> (class, fill, stroke)
+<span class="hljs-keyword">import</span> TypedSvg.Attributes.InPx <span class="hljs-keyword">exposing</span> (cx, cy, height, r, strokeWidth, width, x1, x2, y1, y2)
+<span class="hljs-keyword">import</span> TypedSvg.Core <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Attribute</span>, <span class="hljs-type">Svg</span>, text)
+<span class="hljs-keyword">import</span> TypedSvg.Types <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Fill(..)</span>)
 
 
-<span class="hljs-title">screenWidth</span> : <span class="hljs-type">Float</span>
-<span class="hljs-title">screenWidth</span> =
+<span class="hljs-title">w</span> : <span class="hljs-type">Float</span>
+<span class="hljs-title">w</span> =
     <span class="hljs-number">990</span>
 
 
-<span class="hljs-title">screenHeight</span> : <span class="hljs-type">Float</span>
-<span class="hljs-title">screenHeight</span> =
+<span class="hljs-title">h</span> : <span class="hljs-type">Float</span>
+<span class="hljs-title">h</span> =
     <span class="hljs-number">504</span>
 
 
 <span class="hljs-keyword">type</span> <span class="hljs-type">Msg</span>
-    = <span class="hljs-type">DragStart</span> <span class="hljs-type">NodeId</span> <span class="hljs-type">Position</span>
-    | <span class="hljs-type">DragAt</span> <span class="hljs-type">Position</span>
-    | <span class="hljs-type">DragEnd</span> <span class="hljs-type">Position</span>
-    | <span class="hljs-type">Tick</span> <span class="hljs-type">Time</span>
+    = <span class="hljs-type">DragStart</span> <span class="hljs-type">NodeId</span> ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> )
+    | <span class="hljs-type">DragAt</span> ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> )
+    | <span class="hljs-type">DragEnd</span> ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> )
+    | <span class="hljs-type">Tick</span> <span class="hljs-type">Time</span>.<span class="hljs-type">Posix</span>
 
 
 <span class="hljs-keyword">type</span> <span class="hljs-keyword">alias</span> <span class="hljs-type">Model</span> =
@@ -182,8 +257,8 @@ based on their co-occurence in a scene. Try dragging the nodes!</p>
 
 
 <span class="hljs-keyword">type</span> <span class="hljs-keyword">alias</span> <span class="hljs-type">Drag</span> =
-    { start : <span class="hljs-type">Position</span>
-    , current : <span class="hljs-type">Position</span>
+    { start : ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> )
+    , current : ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> )
     , index : <span class="hljs-type">NodeId</span>
     }
 
@@ -192,15 +267,19 @@ based on their co-occurence in a scene. Try dragging the nodes!</p>
     <span class="hljs-type">Force</span>.<span class="hljs-type">Entity</span> <span class="hljs-type">NodeId</span> { value : <span class="hljs-type">String</span> }
 
 
-<span class="hljs-title">init</span> : ( <span class="hljs-type">Model</span>, <span class="hljs-type">Cmd</span> <span class="hljs-type">Msg</span> )
-<span class="hljs-title">init</span> =
+<span class="hljs-title">initializeNode</span> : <span class="hljs-type">NodeContext</span> <span class="hljs-type">String</span> () -&gt; <span class="hljs-type">NodeContext</span> <span class="hljs-type">Entity</span> ()
+<span class="hljs-title">initializeNode</span> ctx =
+    { node = { label = <span class="hljs-type">Force</span>.entity ctx.node.id ctx.node.label, id = ctx.node.id }
+    , incoming = ctx.incoming
+    , outgoing = ctx.outgoing
+    }
+
+
+<span class="hljs-title">init</span> : () -&gt; ( <span class="hljs-type">Model</span>, <span class="hljs-type">Cmd</span> <span class="hljs-type">Msg</span> )
+<span class="hljs-title">init</span> _ =
     <span class="hljs-keyword">let</span>
         graph =
-            <span class="hljs-type">Graph</span>.mapContexts
-                (\({ node } <span class="hljs-keyword">as</span> ctx) -&gt;
-                    { ctx | node = { label = <span class="hljs-type">Force</span>.entity node.id node.label, id = node.id } }
-                )
-                miserablesGraph
+            <span class="hljs-type">Graph</span>.mapContexts initializeNode miserablesGraph
 
         link { from, to } =
             ( from, to )
@@ -208,19 +287,19 @@ based on their co-occurence in a scene. Try dragging the nodes!</p>
         forces =
             [ <span class="hljs-type">Force</span>.links &lt;| <span class="hljs-type">List</span>.map link &lt;| <span class="hljs-type">Graph</span>.edges graph
             , <span class="hljs-type">Force</span>.manyBody &lt;| <span class="hljs-type">List</span>.map .id &lt;| <span class="hljs-type">Graph</span>.nodes graph
-            , <span class="hljs-type">Force</span>.center (screenWidth / <span class="hljs-number">2</span>) (screenHeight / <span class="hljs-number">2</span>)
+            , <span class="hljs-type">Force</span>.center (w / <span class="hljs-number">2</span>) (h / <span class="hljs-number">2</span>)
             ]
     <span class="hljs-keyword">in</span>
-        ( <span class="hljs-type">Model</span> <span class="hljs-type">Nothing</span> graph (<span class="hljs-type">Force</span>.simulation forces), <span class="hljs-type">Cmd</span>.none )
+    ( <span class="hljs-type">Model</span> <span class="hljs-type">Nothing</span> graph (<span class="hljs-type">Force</span>.simulation forces), <span class="hljs-type">Cmd</span>.none )
 
 
-<span class="hljs-title">updateNode</span> : <span class="hljs-type">Position</span> -&gt; <span class="hljs-type">NodeContext</span> <span class="hljs-type">Entity</span> () -&gt; <span class="hljs-type">NodeContext</span> <span class="hljs-type">Entity</span> ()
-<span class="hljs-title">updateNode</span> pos nodeCtx =
+<span class="hljs-title">updateNode</span> : ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> ) -&gt; <span class="hljs-type">NodeContext</span> <span class="hljs-type">Entity</span> () -&gt; <span class="hljs-type">NodeContext</span> <span class="hljs-type">Entity</span> ()
+<span class="hljs-title">updateNode</span> ( x, y ) nodeCtx =
     <span class="hljs-keyword">let</span>
         nodeValue =
             nodeCtx.node.label
     <span class="hljs-keyword">in</span>
-        updateContextWithValue nodeCtx { nodeValue | x = toFloat pos.x, y = toFloat pos.y }
+    updateContextWithValue nodeCtx { nodeValue | x = x, y = y }
 
 
 <span class="hljs-title">updateContextWithValue</span> : <span class="hljs-type">NodeContext</span> <span class="hljs-type">Entity</span> () -&gt; <span class="hljs-type">Entity</span> -&gt; <span class="hljs-type">NodeContext</span> <span class="hljs-type">Entity</span> ()
@@ -229,7 +308,7 @@ based on their co-occurence in a scene. Try dragging the nodes!</p>
         node =
             nodeCtx.node
     <span class="hljs-keyword">in</span>
-        { nodeCtx | node = { node | label = value } }
+    { nodeCtx | node = { node | label = value } }
 
 
 <span class="hljs-title">updateGraphWithList</span> : <span class="hljs-type">Graph</span> <span class="hljs-type">Entity</span> () -&gt; <span class="hljs-type">List</span> <span class="hljs-type">Entity</span> -&gt; <span class="hljs-type">Graph</span> <span class="hljs-type">Entity</span> ()
@@ -238,7 +317,7 @@ based on their co-occurence in a scene. Try dragging the nodes!</p>
         graphUpdater value =
             <span class="hljs-type">Maybe</span>.map (\ctx -&gt; updateContextWithValue ctx value)
     <span class="hljs-keyword">in</span>
-        <span class="hljs-type">List</span>.foldr (\node graph -&gt; <span class="hljs-type">Graph</span>.update node.id (graphUpdater node) graph)
+    <span class="hljs-type">List</span>.foldr (\node graph -&gt; <span class="hljs-type">Graph</span>.update node.id (graphUpdater node) graph)
 
 
 <span class="hljs-title">update</span> : <span class="hljs-type">Msg</span> -&gt; <span class="hljs-type">Model</span> -&gt; <span class="hljs-type">Model</span>
@@ -249,12 +328,17 @@ based on their co-occurence in a scene. Try dragging the nodes!</p>
                 ( newState, list ) =
                     <span class="hljs-type">Force</span>.tick simulation &lt;| <span class="hljs-type">List</span>.map .label &lt;| <span class="hljs-type">Graph</span>.nodes graph
             <span class="hljs-keyword">in</span>
-                <span class="hljs-keyword">case</span> drag <span class="hljs-keyword">of</span>
-                    <span class="hljs-type">Nothing</span> -&gt;
-                        <span class="hljs-type">Model</span> drag (updateGraphWithList graph list) newState
+            <span class="hljs-keyword">case</span> drag <span class="hljs-keyword">of</span>
+                <span class="hljs-type">Nothing</span> -&gt;
+                    <span class="hljs-type">Model</span> drag (updateGraphWithList graph list) newState
 
-                    <span class="hljs-type">Just</span> { current, index } -&gt;
-                        <span class="hljs-type">Model</span> drag (<span class="hljs-type">Graph</span>.update index (<span class="hljs-type">Maybe</span>.map (updateNode current)) (updateGraphWithList graph list)) newState
+                <span class="hljs-type">Just</span> { current, index } -&gt;
+                    <span class="hljs-type">Model</span> drag
+                        (<span class="hljs-type">Graph</span>.update index
+                            (<span class="hljs-type">Maybe</span>.map (updateNode current))
+                            (updateGraphWithList graph list)
+                        )
+                        newState
 
         <span class="hljs-type">DragStart</span> index xy -&gt;
             <span class="hljs-type">Model</span> (<span class="hljs-type">Just</span> (<span class="hljs-type">Drag</span> xy xy index)) graph simulation
@@ -272,7 +356,9 @@ based on their co-occurence in a scene. Try dragging the nodes!</p>
         <span class="hljs-type">DragEnd</span> xy -&gt;
             <span class="hljs-keyword">case</span> drag <span class="hljs-keyword">of</span>
                 <span class="hljs-type">Just</span> { start, index } -&gt;
-                    <span class="hljs-type">Model</span> <span class="hljs-type">Nothing</span> (<span class="hljs-type">Graph</span>.update index (<span class="hljs-type">Maybe</span>.map (updateNode xy)) graph) simulation
+                    <span class="hljs-type">Model</span> <span class="hljs-type">Nothing</span>
+                        (<span class="hljs-type">Graph</span>.update index (<span class="hljs-type">Maybe</span>.map (updateNode xy)) graph)
+                        simulation
 
                 <span class="hljs-type">Nothing</span> -&gt;
                     <span class="hljs-type">Model</span> <span class="hljs-type">Nothing</span> graph simulation
@@ -286,16 +372,21 @@ based on their co-occurence in a scene. Try dragging the nodes!</p>
             <span class="hljs-comment">-- to the rAF.</span>
             <span class="hljs-keyword">if</span> <span class="hljs-type">Force</span>.isCompleted model.simulation <span class="hljs-keyword">then</span>
                 <span class="hljs-type">Sub</span>.none
+
             <span class="hljs-keyword">else</span>
-                <span class="hljs-type">AnimationFrame</span>.times <span class="hljs-type">Tick</span>
+                <span class="hljs-type">Browser</span>.<span class="hljs-type">Events</span>.onAnimationFrame <span class="hljs-type">Tick</span>
 
         <span class="hljs-type">Just</span> _ -&gt;
-            <span class="hljs-type">Sub</span>.batch [ <span class="hljs-type">Mouse</span>.moves <span class="hljs-type">DragAt</span>, <span class="hljs-type">Mouse</span>.ups <span class="hljs-type">DragEnd</span>, <span class="hljs-type">AnimationFrame</span>.times <span class="hljs-type">Tick</span> ]
+            <span class="hljs-type">Sub</span>.batch
+                [ <span class="hljs-type">Browser</span>.<span class="hljs-type">Events</span>.onMouseMove (<span class="hljs-type">Decode</span>.map (.clientPos &gt;&gt; <span class="hljs-type">DragAt</span>) <span class="hljs-type">Mouse</span>.eventDecoder)
+                , <span class="hljs-type">Browser</span>.<span class="hljs-type">Events</span>.onMouseUp (<span class="hljs-type">Decode</span>.map (.clientPos &gt;&gt; <span class="hljs-type">DragEnd</span>) <span class="hljs-type">Mouse</span>.eventDecoder)
+                , <span class="hljs-type">Browser</span>.<span class="hljs-type">Events</span>.onAnimationFrame <span class="hljs-type">Tick</span>
+                ]
 
 
 <span class="hljs-title">onMouseDown</span> : <span class="hljs-type">NodeId</span> -&gt; <span class="hljs-type">Attribute</span> <span class="hljs-type">Msg</span>
 <span class="hljs-title">onMouseDown</span> index =
-    on <span class="hljs-string">"mousedown"</span> (<span class="hljs-type">Decode</span>.map (<span class="hljs-type">DragStart</span> index) <span class="hljs-type">Mouse</span>.position)
+    <span class="hljs-type">Mouse</span>.onDown (.clientPos &gt;&gt; <span class="hljs-type">DragStart</span> index)
 
 
 <span class="hljs-title">linkElement</span> graph edge =
@@ -306,41 +397,45 @@ based on their co-occurence in a scene. Try dragging the nodes!</p>
         target =
             <span class="hljs-type">Maybe</span>.withDefault (<span class="hljs-type">Force</span>.entity <span class="hljs-number">0</span> <span class="hljs-string">""</span>) &lt;| <span class="hljs-type">Maybe</span>.map (.node &gt;&gt; .label) &lt;| <span class="hljs-type">Graph</span>.get edge.to graph
     <span class="hljs-keyword">in</span>
-        line
-            [ strokeWidth <span class="hljs-string">"1"</span>
-            , stroke <span class="hljs-string">"#aaa"</span>
-            , x1 (toString source.x)
-            , y1 (toString source.y)
-            , x2 (toString target.x)
-            , y2 (toString target.y)
-            ]
-            []
+    line
+        [ strokeWidth <span class="hljs-number">1</span>
+        , stroke (<span class="hljs-type">Color</span>.rgb255 <span class="hljs-number">170</span> <span class="hljs-number">170</span> <span class="hljs-number">170</span>)
+        , x1 source.x
+        , y1 source.y
+        , x2 target.x
+        , y2 target.y
+        ]
+        []
 
 
 <span class="hljs-title">nodeElement</span> node =
     circle
-        [ r <span class="hljs-string">"2.5"</span>
-        , fill <span class="hljs-string">"#000"</span>
-        , stroke <span class="hljs-string">"transparent"</span>
-        , strokeWidth <span class="hljs-string">"7px"</span>
+        [ r <span class="hljs-number">2.5</span>
+        , fill (<span class="hljs-type">Fill</span> <span class="hljs-type">Color</span>.black)
+        , stroke (<span class="hljs-type">Color</span>.rgba <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span>)
+        , strokeWidth <span class="hljs-number">7</span>
         , onMouseDown node.id
-        , cx (toString node.label.x)
-        , cy (toString node.label.y)
+        , cx node.label.x
+        , cy node.label.y
         ]
-        [ <span class="hljs-type">Svg</span>.title [] [ text node.label.value ] ]
+        [ title [] [ text node.label.value ] ]
 
 
 <span class="hljs-title">view</span> : <span class="hljs-type">Model</span> -&gt; <span class="hljs-type">Svg</span> <span class="hljs-type">Msg</span>
 <span class="hljs-title">view</span> model =
-    svg [ width (toString screenWidth ++ <span class="hljs-string">"px"</span>), height (toString screenHeight ++ <span class="hljs-string">"px"</span>) ]
-        [ g [ class <span class="hljs-string">"links"</span> ] &lt;| <span class="hljs-type">List</span>.map (linkElement model.graph) &lt;| <span class="hljs-type">Graph</span>.edges model.graph
-        , g [ class <span class="hljs-string">"nodes"</span> ] &lt;| <span class="hljs-type">List</span>.map nodeElement &lt;| <span class="hljs-type">Graph</span>.nodes model.graph
+    svg [ width w, height h ]
+        [ <span class="hljs-type">Graph</span>.edges model.graph
+            |&gt; <span class="hljs-type">List</span>.map (linkElement model.graph)
+            |&gt; g [ class [ <span class="hljs-string">"links"</span> ] ]
+        , <span class="hljs-type">Graph</span>.nodes model.graph
+            |&gt; <span class="hljs-type">List</span>.map nodeElement
+            |&gt; g [ class [ <span class="hljs-string">"nodes"</span> ] ]
         ]
 
 
-<span class="hljs-title">main</span> : <span class="hljs-type">Program</span> <span class="hljs-type">Never</span> <span class="hljs-type">Model</span> <span class="hljs-type">Msg</span>
+<span class="hljs-title">main</span> : <span class="hljs-type">Program</span> () <span class="hljs-type">Model</span> <span class="hljs-type">Msg</span>
 <span class="hljs-title">main</span> =
-    <span class="hljs-type">Html</span>.program
+    <span class="hljs-type">Browser</span>.element
         { init = init
         , view = view
         , update = \msg model -&gt; ( update msg model, <span class="hljs-type">Cmd</span>.none )
@@ -349,92 +444,94 @@ based on their co-occurence in a scene. Try dragging the nodes!</p>
 
 
 
-<span class="hljs-comment">{- {"delay": 5001} -}</span>
+
 </code></pre>
-      
-        <hr />
-        <h3></h3>
-        <div class="description"></div>
-        <pre><code class="elm"></code></pre>
-      
-    </main>
-    <aside>
-      <h2>Examples</h2>
-      <ul>
         
-          <li >
-            <a href="../Background">Background</a>
-          </li>
+          <h2></h2>
+          <div class="description"></div>
+          <pre><code class="elm"></code></pre>
         
-          <li >
-            <a href="../BarChart">BarChart</a>
-          </li>
-        
-          <li >
-            <a href="../Centroid">Centroid</a>
-          </li>
-        
-          <li >
-            <a href="../CornerRadius">CornerRadius</a>
-          </li>
-        
-          <li >
-            <a href="../CrimeViz">CrimeViz</a>
-          </li>
-        
-          <li >
-            <a href="../Cross">Cross</a>
-          </li>
-        
-          <li >
-            <a href="../Curves">Curves</a>
-          </li>
-        
-          <li >
-            <a href="../CustomPieChart">CustomPieChart</a>
-          </li>
-        
-          <li class="active">
-            <a href="../ForceDirectedGraph">ForceDirectedGraph</a>
-          </li>
-        
-          <li >
-            <a href="../Histogram">Histogram</a>
-          </li>
-        
-          <li >
-            <a href="../LineChart">LineChart</a>
-          </li>
-        
-          <li >
-            <a href="../NorwegianCarSales">NorwegianCarSales</a>
-          </li>
-        
-          <li >
-            <a href="../PadAngle">PadAngle</a>
-          </li>
-        
-          <li >
-            <a href="../Petals">Petals</a>
-          </li>
-        
-          <li >
-            <a href="../PieChart">PieChart</a>
-          </li>
-        
-          <li >
-            <a href="../PolarPlot">PolarPlot</a>
-          </li>
-        
-          <li >
-            <a href="../PopulationMinnesota">PopulationMinnesota</a>
-          </li>
-        
-          <li >
-            <a href="../StackedBarChart">StackedBarChart</a>
-          </li>
-        
-      </ul>
-    </aside>
+      </main>
+      <aside>
+        <ul>
+          <li><a href="https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/">Docs</a></li>
+          <li><a href="https://github.com/gampleman/elm-visualization">GitHub</a></li>
+          <li><a href="https://github.com/gampleman/elm-visualization/releases">Changelog</a></li>
+          <li>#visualization on <a href="https://elmlang.herokuapp.com/">Elm slack</a></li>
+        </ul>
+        <h2>Examples</h2>
+        <ul>
+          
+            <li >
+              <a href="../Background">Background</a>
+            </li>
+          
+            <li >
+              <a href="../BarChart">Bar Chart</a>
+            </li>
+          
+            <li >
+              <a href="../Centroid">Centroid</a>
+            </li>
+          
+            <li >
+              <a href="../CornerRadius">Corner Radius</a>
+            </li>
+          
+            <li >
+              <a href="../CrimeViz">Crime Viz</a>
+            </li>
+          
+            <li >
+              <a href="../Curves">Curves</a>
+            </li>
+          
+            <li >
+              <a href="../CustomPieChart">Custom Pie Chart</a>
+            </li>
+          
+            <li class="active">
+              <a href="../ForceDirectedGraph">Force Directed Graph</a>
+            </li>
+          
+            <li >
+              <a href="../HistogramChart">Histogram Chart</a>
+            </li>
+          
+            <li >
+              <a href="../LineChart">Line Chart</a>
+            </li>
+          
+            <li >
+              <a href="../NorwegianCarSales">Norwegian Car Sales</a>
+            </li>
+          
+            <li >
+              <a href="../PadAngle">Pad Angle</a>
+            </li>
+          
+            <li >
+              <a href="../Petals">Petals</a>
+            </li>
+          
+            <li >
+              <a href="../PieChart">Pie Chart</a>
+            </li>
+          
+            <li >
+              <a href="../PolarPlot">Polar Plot</a>
+            </li>
+          
+            <li >
+              <a href="../PopulationMinnesota">Population Minnesota</a>
+            </li>
+          
+            <li >
+              <a href="../StackedBarChart">Stacked Bar Chart</a>
+            </li>
+          
+        </ul>
+      </aside>
+    </div>
   </body>
 </html>

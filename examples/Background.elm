@@ -47,14 +47,32 @@ init =
         graph =
             Graph.mapContexts
                 (\({ node, incoming, outgoing } as ctx) ->
-                    { incoming = incoming, outgoing = outgoing, node = { label = Force.entity node.id (CustomNode (IntDict.size incoming + IntDict.size outgoing) node.label), id = node.id } }
+                    { incoming = incoming
+                    , outgoing = outgoing
+                    , node =
+                        { label =
+                            Force.entity node.id
+                                (CustomNode
+                                    (IntDict.size incoming + IntDict.size outgoing)
+                                    node.label
+                                )
+                        , id = node.id
+                        }
+                    }
                 )
                 miserablesGraph
 
         links =
             graph
                 |> Graph.edges
-                |> List.map (\{ from, to } -> { source = from, target = to, distance = 30, strength = Nothing })
+                |> List.map
+                    (\{ from, to } ->
+                        { source = from
+                        , target = to
+                        , distance = 30
+                        , strength = Nothing
+                        }
+                    )
 
         forces =
             [ Force.customLinks 1 links
@@ -62,7 +80,10 @@ init =
             , Force.center (w / 2) (h / 2)
             ]
     in
-    updateGraphWithList graph (Force.computeSimulation (Force.simulation forces) <| List.map .label <| Graph.nodes graph)
+    Graph.nodes graph
+        |> List.map .label
+        |> Force.computeSimulation (Force.simulation forces)
+        |> updateGraphWithList graph
 
 
 updateGraphWithList : Graph Entity () -> List Entity -> Graph Entity ()

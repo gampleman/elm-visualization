@@ -2,32 +2,84 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Examples</title>
+    <title>Elm-Visualization Examples</title>
     <style media="screen">
-      body {
-        font-family: Helvetica, sans-serif;
-        display: flex;
+      @import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic,700italic|Source+Code+Pro);
+
+      html, head, body {
+        margin: 0;
+        height: 100%;
       }
-      h1, .lead {
+
+      body {
+        font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
+        color: #293c4b;
+      }
+      .top {
+        border-bottom: 1px solid #60B5CC;
+        display: flex;
+
+        align-items: center;
+        justify-content: space-between;
+      }
+      header, nav {
+        display: flex;
+        align-items: center;
+      }
+      h1, h2, h3 {
+        font-weight: normal;
+
+      }
+      header h1, .lead {
+        margin: 0;
         margin-left: 20px;
+        line-height: 0;
+      }
+      header h2 {
+        margin: 0;
+        margin-left: 20px;
+        font-size: 24px;
+        color: black;
+      }
+      .nav-item {
+        margin-right: 20px;
+      }
+      a {
+        color: #1184CE;
+        text-decoration: none;
+      }
+      a:hover {
+        color: rgb(234,21,122);
+        text-decoration: underline;
       }
       ul {
         list-style-type: none;
         padding: 0;
       }
       li {
-        border: 1px solid black;
+        border: 1px solid #eeeeee;
         float: left;
         width: 330px;
         margin: 20px;
         padding: 10px 10px 0 10px;
       }
+      li h3 {
+        margin-left: 10px;
+      }
     </style>
   </head>
   <body>
+    <div class="top">
+      <header>
+        <h1><img src="misc/logo-inline.png" width="421" alt="ELM-VISUALIZATION"/></h1>
+        <h2>examples</h2>
+      </header>
+      <nav>
+        <a class="nav-item" href="https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/">Docs</a>
+        <a class="nav-item" href="https://github.com/gampleman/elm-visualization">GitHub</a>
+      </nav>
+    </div>
     <main>
-      <h1>Examples</h1>
-      <p class="lead">elm-visualization - <a href="http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/">Docs</a> | <a href="http://code.gampleman.eu/elm-visualization/">Examples</a> | <a href="https://github.com/gampleman/elm-visualization">GitHub</a> | <a href="https://github.com/gampleman/elm-visualization/releases">Changelog</a> | #visualization on <a href="https://elmlang.herokuapp.com">Elm slack</a></p>
       <ul>
         
           <li>
@@ -40,7 +92,7 @@
           <li>
             <a href="BarChart">
               <img src="BarChart/preview.png" srcset="BarChart/preview.png 1x, BarChart/preview@2x.png 2x, BarChart/preview@3x.png 3x" width="330" height="168" />
-              <h3>BarChart</h3>
+              <h3>Bar Chart</h3>
             </a>
           </li>
         
@@ -54,21 +106,14 @@
           <li>
             <a href="CornerRadius">
               <img src="CornerRadius/preview.png" srcset="CornerRadius/preview.png 1x, CornerRadius/preview@2x.png 2x, CornerRadius/preview@3x.png 3x" width="330" height="168" />
-              <h3>CornerRadius</h3>
+              <h3>Corner Radius</h3>
             </a>
           </li>
         
           <li>
             <a href="CrimeViz">
               <img src="CrimeViz/preview.png" srcset="CrimeViz/preview.png 1x, CrimeViz/preview@2x.png 2x, CrimeViz/preview@3x.png 3x" width="330" height="168" />
-              <h3>CrimeViz</h3>
-            </a>
-          </li>
-        
-          <li>
-            <a href="Cross">
-              <img src="Cross/preview.png" srcset="Cross/preview.png 1x, Cross/preview@2x.png 2x, Cross/preview@3x.png 3x" width="330" height="168" />
-              <h3>Cross</h3>
+              <h3>Crime Viz</h3>
             </a>
           </li>
         
@@ -82,42 +127,42 @@
           <li>
             <a href="CustomPieChart">
               <img src="CustomPieChart/preview.png" srcset="CustomPieChart/preview.png 1x, CustomPieChart/preview@2x.png 2x, CustomPieChart/preview@3x.png 3x" width="330" height="168" />
-              <h3>CustomPieChart</h3>
+              <h3>Custom Pie Chart</h3>
             </a>
           </li>
         
           <li>
             <a href="ForceDirectedGraph">
               <img src="ForceDirectedGraph/preview.png" srcset="ForceDirectedGraph/preview.png 1x, ForceDirectedGraph/preview@2x.png 2x, ForceDirectedGraph/preview@3x.png 3x" width="330" height="168" />
-              <h3>ForceDirectedGraph</h3>
+              <h3>Force Directed Graph</h3>
             </a>
           </li>
         
           <li>
-            <a href="Histogram">
-              <img src="Histogram/preview.png" srcset="Histogram/preview.png 1x, Histogram/preview@2x.png 2x, Histogram/preview@3x.png 3x" width="330" height="168" />
-              <h3>Histogram</h3>
+            <a href="HistogramChart">
+              <img src="HistogramChart/preview.png" srcset="HistogramChart/preview.png 1x, HistogramChart/preview@2x.png 2x, HistogramChart/preview@3x.png 3x" width="330" height="168" />
+              <h3>Histogram Chart</h3>
             </a>
           </li>
         
           <li>
             <a href="LineChart">
               <img src="LineChart/preview.png" srcset="LineChart/preview.png 1x, LineChart/preview@2x.png 2x, LineChart/preview@3x.png 3x" width="330" height="168" />
-              <h3>LineChart</h3>
+              <h3>Line Chart</h3>
             </a>
           </li>
         
           <li>
             <a href="NorwegianCarSales">
               <img src="NorwegianCarSales/preview.png" srcset="NorwegianCarSales/preview.png 1x, NorwegianCarSales/preview@2x.png 2x, NorwegianCarSales/preview@3x.png 3x" width="330" height="168" />
-              <h3>NorwegianCarSales</h3>
+              <h3>Norwegian Car Sales</h3>
             </a>
           </li>
         
           <li>
             <a href="PadAngle">
               <img src="PadAngle/preview.png" srcset="PadAngle/preview.png 1x, PadAngle/preview@2x.png 2x, PadAngle/preview@3x.png 3x" width="330" height="168" />
-              <h3>PadAngle</h3>
+              <h3>Pad Angle</h3>
             </a>
           </li>
         
@@ -131,28 +176,28 @@
           <li>
             <a href="PieChart">
               <img src="PieChart/preview.png" srcset="PieChart/preview.png 1x, PieChart/preview@2x.png 2x, PieChart/preview@3x.png 3x" width="330" height="168" />
-              <h3>PieChart</h3>
+              <h3>Pie Chart</h3>
             </a>
           </li>
         
           <li>
             <a href="PolarPlot">
               <img src="PolarPlot/preview.png" srcset="PolarPlot/preview.png 1x, PolarPlot/preview@2x.png 2x, PolarPlot/preview@3x.png 3x" width="330" height="168" />
-              <h3>PolarPlot</h3>
+              <h3>Polar Plot</h3>
             </a>
           </li>
         
           <li>
             <a href="PopulationMinnesota">
               <img src="PopulationMinnesota/preview.png" srcset="PopulationMinnesota/preview.png 1x, PopulationMinnesota/preview@2x.png 2x, PopulationMinnesota/preview@3x.png 3x" width="330" height="168" />
-              <h3>PopulationMinnesota</h3>
+              <h3>Population Minnesota</h3>
             </a>
           </li>
         
           <li>
             <a href="StackedBarChart">
               <img src="StackedBarChart/preview.png" srcset="StackedBarChart/preview.png 1x, StackedBarChart/preview@2x.png 2x, StackedBarChart/preview@3x.png 3x" width="330" height="168" />
-              <h3>StackedBarChart</h3>
+              <h3>Stacked Bar Chart</h3>
             </a>
           </li>
         

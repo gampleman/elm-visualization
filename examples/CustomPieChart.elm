@@ -1,13 +1,13 @@
 module CustomPieChart exposing (main)
 
-{-| An example showing how to render a basic pie chart.
+{-| An interactive example showing the effect of various options on pie generators.
 -}
 
 import Array exposing (Array)
 import Browser
 import Color exposing (Color)
 import Html exposing (Html, br, div, h2, input, label)
-import Html.Attributes exposing (step, style, type_, value)
+import Html.Attributes as Attr exposing (step, style, type_, value)
 import Html.Events exposing (onInput)
 import Path
 import Shape exposing (defaultPieConfig)
@@ -137,23 +137,60 @@ view model =
         , div []
             [ h2 [] [ text "Pie Configuration" ]
             , label [] [ text "Outer Radius" ]
-            , input [ type_ "range", onInput UpdateOuterRadius, value (String.fromFloat model.config.outerRadius), Html.Attributes.min "0", Html.Attributes.max (String.fromFloat radius) ] []
+            , input
+                [ type_ "range"
+                , onInput UpdateOuterRadius
+                , value (String.fromFloat model.config.outerRadius)
+                , Attr.min "0"
+                , Attr.max (String.fromFloat radius)
+                ]
+                []
             , text (String.fromFloat model.config.outerRadius)
             , br [] []
             , label [] [ text "Inner Radius" ]
-            , input [ type_ "range", onInput UpdateInnerRadius, value (String.fromFloat model.config.innerRadius), Html.Attributes.min "0", Html.Attributes.max (String.fromFloat radius) ] []
+            , input
+                [ type_ "range"
+                , onInput UpdateInnerRadius
+                , value (String.fromFloat model.config.innerRadius)
+                , Attr.min "0"
+                , Attr.max (String.fromFloat radius)
+                ]
+                []
             , text (String.fromFloat model.config.innerRadius)
             , br [] []
             , label [] [ text "Pad Angle" ]
-            , input [ type_ "range", onInput UpdatePadAngle, value (String.fromFloat model.config.padAngle), Html.Attributes.min "0", Html.Attributes.max "0.8", step "0.01" ] []
+            , input
+                [ type_ "range"
+                , onInput UpdatePadAngle
+                , value (String.fromFloat model.config.padAngle)
+                , Attr.min "0"
+                , Attr.max "0.8"
+                , step "0.01"
+                ]
+                []
             , text (String.fromFloat model.config.padAngle)
             , br [] []
             , label [] [ text "Corner Radius" ]
-            , input [ type_ "range", onInput UpdateCornerRadius, value (String.fromFloat model.config.cornerRadius), Html.Attributes.min "0", Html.Attributes.max "20", step "0.25" ] []
+            , input
+                [ type_ "range"
+                , onInput UpdateCornerRadius
+                , value (String.fromFloat model.config.cornerRadius)
+                , Attr.min "0"
+                , Attr.max "20"
+                , step "0.25"
+                ]
+                []
             , text (String.fromFloat model.config.cornerRadius)
             , br [] []
             , label [] [ text "Label Position" ]
-            , input [ type_ "range", onInput UpdateLabelPosition, value (String.fromFloat model.config.labelPosition), Html.Attributes.min "0", Html.Attributes.max (String.fromFloat radius) ] []
+            , input
+                [ type_ "range"
+                , onInput UpdateLabelPosition
+                , value (String.fromFloat model.config.labelPosition)
+                , Attr.min "0"
+                , Attr.max (String.fromFloat radius)
+                ]
+                []
             , text (String.fromFloat model.config.labelPosition)
             , br [] []
             ]
