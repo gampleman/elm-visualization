@@ -6,6 +6,7 @@ module Petals exposing (main)
 import Color exposing (Color)
 import Force
 import Scale
+import Scale.Color
 import TypedSvg exposing (circle, svg)
 import TypedSvg.Attributes exposing (fill, viewBox)
 import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, width)
@@ -25,7 +26,7 @@ h =
 
 color : Int -> Color
 color =
-    Scale.convert (Scale.sequential Scale.viridisInterpolator ( 0, 360 )) << toFloat
+    Scale.convert (Scale.sequential Scale.Color.viridisInterpolator ( 0, 360 )) << toFloat
 
 
 makePetal : Int -> Svg msg

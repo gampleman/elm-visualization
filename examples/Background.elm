@@ -10,6 +10,7 @@ import IntDict
 import List exposing (range)
 import SampleData exposing (miserablesGraph)
 import Scale exposing (SequentialScale)
+import Scale.Color
 import TypedSvg exposing (circle, g, line, polygon, svg, title)
 import TypedSvg.Attributes exposing (class, fill, points, stroke)
 import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, strokeWidth, width, x1, x2, y1, y2)
@@ -29,7 +30,7 @@ h =
 
 colorScale : SequentialScale Color
 colorScale =
-    Scale.sequential Scale.viridisInterpolator ( 200, 700 )
+    Scale.sequential Scale.Color.viridisInterpolator ( 200, 700 )
 
 
 type alias CustomNode =
@@ -130,8 +131,10 @@ nodeSize size node =
 nodeElement node =
     if node.label.value.rank < 5 then
         nodeSize 4 node.label
+
     else if node.label.value.rank < 9 then
         nodeSize 7 node.label
+
     else if modBy 2 node.label.value.rank == 0 then
         g []
             [ nodeSize 9 node.label
@@ -144,6 +147,7 @@ nodeElement node =
                 ]
                 []
             ]
+
     else
         nodeSize 10 node.label
 

@@ -8,6 +8,7 @@ import Example
 import Html exposing (a, div, p)
 import Path exposing (Path)
 import Scale exposing (ContinuousScale)
+import Scale.Color
 import Shape
 import SubPath exposing (SubPath)
 import TypedSvg exposing (g, line, rect, svg, text_)
@@ -142,7 +143,7 @@ parametrized : String -> (Float -> Curve) -> List ( String, Curve, Color )
 parametrized prefix curveFn =
     let
         scale =
-            Scale.sequential Scale.magmaInterpolator ( 0, 1 )
+            Scale.sequential Scale.Color.magmaInterpolator ( 0, 1 )
 
         stops =
             [ 0, 0.25, 0.5, 0.75, 1 ]

@@ -12,6 +12,7 @@ import List.Extra as List
 import Path exposing (Path)
 import SampleData
 import Scale exposing (ContinuousScale, OrdinalScale, Scale)
+import Scale.Color
 import Shape exposing (StackConfig, StackResult)
 import Time exposing (Month(..))
 import Time.Extra exposing (Parts)
@@ -54,7 +55,7 @@ colorScale : OrdinalScale String Color
 colorScale =
     List.map Tuple.first samples
         |> List.reverse
-        |> Scale.ordinal Scale.category20c
+        |> Scale.ordinal Scale.Color.category10
 
 
 sampleColor : String -> Color
@@ -183,6 +184,7 @@ toArea ( scaleX, scaleY ) ys =
                 ( low, high ) =
                     if y1 < y2 then
                         ( y1, y2 )
+
                     else
                         ( y2, y1 )
             in

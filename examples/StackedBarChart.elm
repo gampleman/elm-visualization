@@ -5,6 +5,7 @@ import Color exposing (Color)
 import List.Extra as List
 import SampleData exposing (CrimeRate)
 import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
+import Scale.Color
 import Shape exposing (StackConfig, StackResult)
 import TypedSvg exposing (g, rect, svg)
 import TypedSvg.Attributes exposing (class, fill, transform)
@@ -76,7 +77,7 @@ config =
 reverseViridis : Float -> Color
 reverseViridis progression =
     -- stylistic choice: the larger boxes look better in brighter colors, so invert the interpolator
-    Scale.viridisInterpolator (1 - progression)
+    Scale.Color.viridisInterpolator (1 - progression)
 
 
 colors : Int -> List Color

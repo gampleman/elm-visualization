@@ -6,6 +6,7 @@
     "version": "1.6.1",
     "exposed-modules": [
         "Scale",
+        "Scale.Color",
         "Axis",
         "Shape",
         "Force",

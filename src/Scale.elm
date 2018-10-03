@@ -2,10 +2,8 @@ module Scale exposing
     ( Scale
     , ContinuousScale, linear, log, identity, time
     , SequentialScale, sequential
-    , viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator
     , QuantizeScale, quantize
     , OrdinalScale, ordinal
-    , category10, category20a, category20b, category20c
     , BandScale, band, BandConfig, defaultBandConfig
     , convert, invert, invertExtent, domain, range, rangeExtent, ticks, tickFormat, clamp, nice, bandwidth, toRenderable
     -- , power
@@ -60,12 +58,7 @@ scales, the output range of a sequential scale is fixed by its interpolator func
 
 @docs SequentialScale, sequential
 
-
-### Interpolator functions
-
-Here are a few pre-built interpolator functions you can use with sequential scales:
-
-@docs viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator
+You can find some premade color interpolators in the [Scale.Color](Scale-Color) module.
 
 
 # Quantize Scales
@@ -87,10 +80,7 @@ or determine the horizontal positions of columns in a column chart.
 
 @docs OrdinalScale, ordinal
 
-Here are a few color schemes that you can use with ordinal scales to
-support categorical data:
-
-@docs category10, category20a, category20b, category20c
+You can find some premade color schemes in the [Scale.Color](Scale-Color) module.
 
 
 # Band Scales
@@ -113,7 +103,6 @@ These functions take Scales and do something with them. Check the docs of each s
 
 import Color exposing (Color)
 import Scale.Band as Band
-import Scale.Colors as Colors
 import Scale.Linear as Linear
 import Scale.Log as Log
 import Scale.Ordinal as Ordinal
@@ -307,58 +296,6 @@ sequential interpolator domain_ =
         , range = interpolator
         , convert = Sequential.convert
         }
-
-
-{-| ![Viridis](https://code.gampleman.eu/elm-visualization/misc/viridis.png)
-
-Given a number t in the range [0,1], returns the corresponding
-color from the “viridis” perceptually-uniform color scheme designed
-by [van der Walt, Smith and Firing](https://bids.github.io/colormap/)
-for matplotlib, represented as a core Color value.
-
--}
-viridisInterpolator : Float -> Color
-viridisInterpolator =
-    Colors.viridis
-
-
-{-| ![Inferno](https://code.gampleman.eu/elm-visualization/misc/inferno.png)
-
-Given a number t in the range [0,1], returns the corresponding
-color from the “inferno” perceptually-uniform color scheme designed
-by [van der Walt, Smith and Firing](https://bids.github.io/colormap/)
-for matplotlib, represented as a core Color value.
-
--}
-infernoInterpolator : Float -> Color
-infernoInterpolator =
-    Colors.inferno
-
-
-{-| ![magma](https://code.gampleman.eu/elm-visualization/misc/magma.png)
-
-Given a number t in the range [0,1], returns the corresponding
-color from the “magma” perceptually-uniform color scheme designed
-by [van der Walt, Smith and Firing](https://bids.github.io/colormap/)
-for matplotlib, represented as a core Color value.
-
--}
-magmaInterpolator : Float -> Color
-magmaInterpolator =
-    Colors.magma
-
-
-{-| ![Plasma](https://code.gampleman.eu/elm-visualization/misc/plasma.png)
-
-Given a number t in the range [0,1], returns the corresponding
-color from the “plasma” perceptually-uniform color scheme designed
-by [van der Walt, Smith and Firing](https://bids.github.io/colormap/)
-for matplotlib, represented as a core Color value.
-
--}
-plasmaInterpolator : Float -> Color
-plasmaInterpolator =
-    Colors.plasma
 
 
 
@@ -715,44 +652,3 @@ The first argument is the same as you would pass to ticks.
 nice : Int -> Scale { a | nice : domain -> Int -> domain, domain : domain } -> Scale { a | nice : domain -> Int -> domain, domain : domain }
 nice count (Scale scale) =
     Scale { scale | domain = scale.nice scale.domain count }
-
-
-{-| ![category10](https://code.gampleman.eu/elm-visualization/misc/category10.png)
-
-A list of ten categorical colors
-
--}
-category10 : List Color
-category10 =
-    Colors.cat10
-
-
-{-| ![category20a](https://code.gampleman.eu/elm-visualization/misc/category20a.png)
-
-A list of twenty categorical colors
-
--}
-category20a : List Color
-category20a =
-    Colors.cat20a
-
-
-{-| ![category20b](https://code.gampleman.eu/elm-visualization/misc/category20b.png)
-
-A list of twenty categorical colors
-
--}
-category20b : List Color
-category20b =
-    Colors.cat20b
-
-
-{-| ![category20c](https://code.gampleman.eu/elm-visualization/misc/category20c.png)
-
-A list of twenty categorical colors. This color scale includes color
-specifications and designs developed by Cynthia Brewer (colorbrewer2.org).
-
--}
-category20c : List Color
-category20c =
-    Colors.cat20c

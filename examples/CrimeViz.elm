@@ -9,6 +9,7 @@ import Color exposing (Color)
 import Path exposing (Path)
 import SampleData exposing (CrimeRate, crimeRates)
 import Scale exposing (ContinuousScale, OrdinalScale)
+import Scale.Color
 import Shape
 import Statistics
 import Time
@@ -63,7 +64,7 @@ values i =
 colorScale : OrdinalScale String Color
 colorScale =
     List.map .label series
-        |> Scale.ordinal Scale.category10
+        |> Scale.ordinal Scale.Color.category10
 
 
 color : String -> Color

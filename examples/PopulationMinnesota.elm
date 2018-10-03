@@ -5,6 +5,7 @@ import Color exposing (Color)
 import List.Extra as List
 import SampleData exposing (Gender(..))
 import Scale exposing (BandScale, ContinuousScale, OrdinalScale, QuantizeScale, Scale, defaultBandConfig)
+import Scale.Color
 import Shape exposing (StackConfig, StackResult)
 import Statistics
 import TypedSvg exposing (g, rect, svg, text_)
@@ -74,8 +75,8 @@ config =
 
 colors : List Color
 colors =
-    [ Scale.viridisInterpolator 0.3
-    , Scale.viridisInterpolator 0.7
+    [ Scale.Color.viridisInterpolator 0.3
+    , Scale.Color.viridisInterpolator 0.7
     ]
 
 
