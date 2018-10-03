@@ -23,7 +23,7 @@ all =
                         |> Expect.equal 2
                     ]
         , fuzz (tuple3 ( tuple ( float, float ), tuple ( float, float ), float )) "invert is the inverse of convert" <|
-            \( ( d0, d1 ), ( r0, r1 ), val ) ->
+            \( ( r0, r1 ), ( d0, d1 ), val ) ->
                 let
                     scale =
                         Scale.linear ( r0, r1 ) ( d0, d1 )
@@ -34,9 +34,10 @@ all =
                 if r0 == r1 || d0 == d1 then
                     -- this is a special case, since the inversion cannot know to which end of the domain to go
                     double |> isAbout d0
+
                 else
                     double
-                        |> isAbout val
+                        |> Expect.within (Absolute 0.0001) val
         , fuzz (tuple3 ( tuple ( float, float ), tuple ( float, float ), float )) "clamp limits output value to the range" <|
             \( domain, range, val ) ->
                 let

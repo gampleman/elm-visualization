@@ -1,21 +1,7 @@
-module Force
-    exposing
-        ( Entity
-        , Force
-        , State
-        , center
-        , computeSimulation
-        , customLinks
-        , entity
-        , isCompleted
-        , iterations
-        , links
-        , manyBody
-        , manyBodyStrength
-        , reheat
-        , simulation
-        , tick
-        )
+module Force exposing
+    ( Entity, entity, simulation, State, isCompleted, reheat, iterations, computeSimulation, tick
+    , Force, center, links, customLinks, manyBody, manyBodyStrength, customManyBody
+    )
 
 {-| This module implements a velocity Verlet numerical integrator for simulating physical forces on particles.
 The simulation is simplified: it assumes a constant unit time step _Δt = 1_ for each step, and a constant unit
@@ -35,7 +21,7 @@ In the domain of information visualization, physical simulations are useful for 
 
 ## Forces
 
-@docs Force, center, links, customLinks, manyBody, manyBodyStrength
+@docs Force, center, links, customLinks, manyBody, manyBodyStrength, customManyBody
 
 -}
 
@@ -82,6 +68,7 @@ computeSimulation : State comparable -> List (Entity comparable a) -> List (Enti
 computeSimulation state entities =
     if isCompleted state then
         entities
+
     else
         let
             ( newState, newEntities ) =
@@ -267,11 +254,6 @@ type alias LinkParam comparable =
     }
 
 
-type alias ManyBodyParam =
-    { strength : Float
-    }
-
-
 type alias DirectionalParam =
     { force : Float
     , position : Float
@@ -286,7 +268,7 @@ type Force comparable
     = Center Float Float
     | Collision Float (Dict comparable CollisionParam)
     | Links Int (List (LinkParam comparable))
-    | ManyBody Float (Dict comparable ManyBodyParam)
+    | ManyBody Float (Dict comparable Float)
     | X (Dict comparable DirectionalParam)
     | Y (Dict comparable DirectionalParam)
 
@@ -319,7 +301,21 @@ manyBody =
 -}
 manyBodyStrength : Float -> List comparable -> Force comparable
 manyBodyStrength strength =
-    ManyBody 0.9 << Dict.fromList << List.map (\key -> ( key, { strength = strength } ))
+    customManyBody 0.9 << List.map (\key -> ( key, strength ))
+
+
+{-| This is the most flexible, but complex way to specify many body forces.
+
+The first argument, let's call it _theta_, controls how much approximation to apply. The default value is 0.9.
+
+To accelerate computation, this force implements the [Barnes–Hut approximation](http://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation) which takes O(n log n) per application where n is the number of nodes. For each application, a quadtree stores the current node positions; then for each node, the combined force of all other nodes on the given node is computed. For a cluster of nodes that is far away, the charge force can be approximated by treating the cluster as a single, larger node. The theta parameter determines the accuracy of the approximation: if the ratio w / l of the width w of the quadtree cell to the distance l from the node to the cell’s center of mass is less than theta, all nodes in the given cell are treated as a single node rather than individually. Setting this to 0 will disable the optimization.
+
+This function also allows you to set the force strength individually on each node.
+
+-}
+customManyBody : Float -> List ( comparable, Float ) -> Force comparable
+customManyBody theta =
+    Dict.fromList >> ManyBody theta
 
 
 {-| The link force pushes linked nodes together or apart according to the desired link distance. The strength of the

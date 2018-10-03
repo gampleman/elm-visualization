@@ -2,9 +2,9 @@ module Force.ManyBody exposing (AggregateVertex, Vertex, applyForce, config, con
 
 import BoundingBox2d exposing (BoundingBox2d)
 import Dict exposing (Dict)
+import Force.QuadTree as QuadTree exposing (QuadTree)
 import Point2d exposing (Point2d)
 import Vector2d exposing (Vector2d)
-import Force.QuadTree as QuadTree exposing (QuadTree)
 
 
 type alias Vertex comparable =
@@ -56,7 +56,7 @@ config =
 wrapper :
     Float
     -> Float
-    -> Dict comparable { strength : Float }
+    -> Dict comparable Float
     -> Dict comparable { point | x : Float, y : Float, vx : Float, vy : Float }
     -> Dict comparable { point | x : Float, y : Float, vx : Float, vy : Float }
 wrapper alpha theta strengths points =
@@ -68,7 +68,6 @@ wrapper alpha theta strengths points =
                         let
                             strength =
                                 Dict.get key strengths
-                                    |> Maybe.map .strength
                                     |> Maybe.withDefault 0
                         in
                         { position = Point2d.fromCoordinates ( x, y ), strength = strength, key = key, velocity = Vector2d.zero }
@@ -141,6 +140,7 @@ applyForce alpha theta qtree vertex =
             -- in rare cases, the delta can be the zero vector, and weight becomes NaN
             if isNaN weight then
                 Vector2d.zero
+
             else
                 Vector2d.scaleBy weight delta
     in
@@ -151,6 +151,7 @@ applyForce alpha theta qtree vertex =
         QuadTree.Leaf leaf ->
             if isFarAway leaf then
                 useAggregate leaf
+
             else
                 let
                     ( first, rest ) =
@@ -160,6 +161,7 @@ applyForce alpha theta qtree vertex =
                         -- don't distribute force to yourself
                         if point.key == vertex.key then
                             accum
+
                         else
                             Vector2d.sum (calculateVelocity vertex point) accum
                 in
@@ -168,6 +170,7 @@ applyForce alpha theta qtree vertex =
         QuadTree.Node node ->
             if isFarAway node then
                 useAggregate node
+
             else
                 let
                     helper tree =

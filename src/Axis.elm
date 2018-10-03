@@ -6,7 +6,7 @@ module Axis exposing
 {-| The axis component renders human-readable reference marks for scales. This
 alleviates one of the more tedious tasks in visualizing data.
 
-Renders an Axis based on a <Scale>.
+Renders an Axis based on a [Scale](./Scale).
 
     view =
       svg []

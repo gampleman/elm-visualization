@@ -4215,10 +4215,10 @@ function _Browser_getViewport()
 	return {
 		c2: _Browser_getScene(),
 		dc: {
-			aa: _Browser_window.pageXOffset,
-			ab: _Browser_window.pageYOffset,
+			_: _Browser_window.pageXOffset,
+			aa: _Browser_window.pageYOffset,
 			aA: _Browser_doc.documentElement.clientWidth,
-			ak: _Browser_doc.documentElement.clientHeight
+			aj: _Browser_doc.documentElement.clientHeight
 		}
 	};
 }
@@ -4229,7 +4229,7 @@ function _Browser_getScene()
 	var elem = _Browser_doc.documentElement;
 	return {
 		aA: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		ak: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		aj: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4254,13 +4254,13 @@ function _Browser_getViewportOf(id)
 		return {
 			c2: {
 				aA: node.scrollWidth,
-				ak: node.scrollHeight
+				aj: node.scrollHeight
 			},
 			dc: {
-				aa: node.scrollLeft,
-				ab: node.scrollTop,
+				_: node.scrollLeft,
+				aa: node.scrollTop,
 				aA: node.clientWidth,
-				ak: node.clientHeight
+				aj: node.clientHeight
 			}
 		};
 	});
@@ -4292,16 +4292,16 @@ function _Browser_getElement(id)
 		return {
 			c2: _Browser_getScene(),
 			dc: {
-				aa: x,
-				ab: y,
+				_: x,
+				aa: y,
 				aA: _Browser_doc.documentElement.clientWidth,
-				ak: _Browser_doc.documentElement.clientHeight
+				aj: _Browser_doc.documentElement.clientHeight
 			},
 			dF: {
-				aa: x + rect.left,
-				ab: y + rect.top,
+				_: x + rect.left,
+				aa: y + rect.top,
 				aA: rect.width,
-				ak: rect.height
+				aj: rect.height
 			}
 		};
 	});
@@ -5078,7 +5078,7 @@ var author$project$Force$customLinks = F2(
 			elm$core$List$foldr,
 			F2(
 				function (_n1, d) {
-					var source = _n1.aw;
+					var source = _n1.av;
 					var target = _n1.ax;
 					return A3(
 						elm$core$Dict$update,
@@ -5118,15 +5118,15 @@ var author$project$Force$customLinks = F2(
 			A2(
 				elm$core$List$map,
 				function (_n0) {
-					var source = _n0.aw;
+					var source = _n0.av;
 					var target = _n0.ax;
 					var distance = _n0.aE;
-					var strength = _n0.Z;
+					var strength = _n0.aw;
 					return {
 						bb: count(source) / (count(source) + count(target)),
 						aE: distance,
-						aw: source,
-						Z: A2(
+						av: source,
+						aw: A2(
 							elm$core$Maybe$withDefault,
 							1 / A2(
 								elm$core$Basics$min,
@@ -5149,7 +5149,7 @@ var author$project$Force$links = A2(
 		function (_n0) {
 			var source = _n0.a;
 			var target = _n0.b;
-			return {aE: 30, aw: source, Z: elm$core$Maybe$Nothing, ax: target};
+			return {aE: 30, av: source, aw: elm$core$Maybe$Nothing, ax: target};
 		}),
 	author$project$Force$customLinks(1));
 var author$project$Force$ManyBody = F2(
@@ -5168,18 +5168,19 @@ var elm$core$Dict$fromList = function (assocs) {
 		elm$core$Dict$empty,
 		assocs);
 };
+var author$project$Force$customManyBody = function (theta) {
+	return A2(
+		elm$core$Basics$composeR,
+		elm$core$Dict$fromList,
+		author$project$Force$ManyBody(theta));
+};
 var author$project$Force$manyBodyStrength = function (strength) {
 	return A2(
 		elm$core$Basics$composeL,
-		A2(
-			elm$core$Basics$composeL,
-			author$project$Force$ManyBody(0.9),
-			elm$core$Dict$fromList),
+		author$project$Force$customManyBody(0.9),
 		elm$core$List$map(
 			function (key) {
-				return _Utils_Tuple2(
-					key,
-					{Z: strength});
+				return _Utils_Tuple2(key, strength);
 			}));
 };
 var elm$core$Basics$negate = function (n) {
@@ -5194,7 +5195,7 @@ var elm$core$Basics$pow = _Basics_pow;
 var elm$core$Basics$sub = _Basics_sub;
 var author$project$Force$simulation = function (forces) {
 	return {
-		ah: 1.0,
+		ag: 1.0,
 		a8: 1 - A2(elm$core$Basics$pow, 1.0e-3, 1 / 300),
 		b6: 0.0,
 		cm: forces,
@@ -5224,8 +5225,8 @@ var author$project$Force$entity = F2(
 			eK: a,
 			K: 0.0,
 			L: 0.0,
-			aa: radius * elm$core$Basics$cos(angle),
-			ab: radius * elm$core$Basics$sin(angle)
+			_: radius * elm$core$Basics$cos(angle),
+			aa: radius * elm$core$Basics$sin(angle)
 		};
 	});
 var author$project$ForceDirectedGraph$initializeNode = function (ctx) {
@@ -5323,7 +5324,7 @@ var elm_community$intdict$IntDict$isBranchingBitSet = function (p) {
 		elm$core$Bitwise$xor(elm_community$intdict$IntDict$signBit),
 		A2(
 			elm$core$Basics$composeR,
-			elm$core$Bitwise$and(p.ai),
+			elm$core$Bitwise$and(p.ah),
 			elm$core$Basics$neq(0)));
 };
 var elm_community$intdict$IntDict$higherBitMask = function (branchingBit) {
@@ -5334,7 +5335,7 @@ var elm_community$intdict$IntDict$lcp = F2(
 		var branchingBit = elm_community$intdict$IntDict$highestBitSet(x ^ y);
 		var mask = elm_community$intdict$IntDict$higherBitMask(branchingBit);
 		var prefixBits = x & mask;
-		return {ai: branchingBit, I: prefixBits};
+		return {ah: branchingBit, I: prefixBits};
 	});
 var elm_community$intdict$IntDict$Leaf = function (a) {
 	return {$: 1, a: a};
@@ -5347,7 +5348,7 @@ var elm_community$intdict$IntDict$leaf = F2(
 var elm_community$intdict$IntDict$prefixMatches = F2(
 	function (p, n) {
 		return _Utils_eq(
-			n & elm_community$intdict$IntDict$higherBitMask(p.ai),
+			n & elm_community$intdict$IntDict$higherBitMask(p.ah),
 			p.I);
 	});
 var elm_community$intdict$IntDict$update = F3(
@@ -6573,7 +6574,7 @@ var author$project$ForceDirectedGraph$init = function (_n0) {
 		elm$core$Platform$Cmd$none);
 };
 var author$project$Force$isCompleted = function (_n0) {
-	var alpha = _n0.ah;
+	var alpha = _n0.ag;
 	var minAlpha = _n0.bz;
 	return _Utils_cmp(alpha, minAlpha) < 1;
 };
@@ -7342,24 +7343,24 @@ var author$project$Force$reheat = function (_n0) {
 	var config = _n0;
 	return _Utils_update(
 		config,
-		{ah: 1.0});
+		{ag: 1.0});
 };
 var elm$core$Basics$isNaN = _Basics_isNaN;
 var ianmackenzie$elm_geometry$BoundingBox2d$maxX = function (_n0) {
 	var boundingBox = _n0;
-	return boundingBox.an;
+	return boundingBox.am;
 };
 var ianmackenzie$elm_geometry$BoundingBox2d$maxY = function (_n0) {
 	var boundingBox = _n0;
-	return boundingBox.ao;
+	return boundingBox.an;
 };
 var ianmackenzie$elm_geometry$BoundingBox2d$minX = function (_n0) {
 	var boundingBox = _n0;
-	return boundingBox.ap;
+	return boundingBox.ao;
 };
 var ianmackenzie$elm_geometry$BoundingBox2d$minY = function (_n0) {
 	var boundingBox = _n0;
-	return boundingBox.aq;
+	return boundingBox.ap;
 };
 var ianmackenzie$elm_geometry$BoundingBox2d$dimensions = function (boundingBox) {
 	return _Utils_Tuple2(
@@ -7435,7 +7436,7 @@ var author$project$Force$ManyBody$applyForce = F4(
 		var calculateVelocity = F2(
 			function (target, source) {
 				var delta = A2(ianmackenzie$elm_geometry$Vector2d$from, target.ei, source.ei);
-				var weight = (source.Z * alpha) / ianmackenzie$elm_geometry$Vector2d$squaredLength(delta);
+				var weight = (source.aw * alpha) / ianmackenzie$elm_geometry$Vector2d$squaredLength(delta);
 				return elm$core$Basics$isNaN(weight) ? ianmackenzie$elm_geometry$Vector2d$zero : A2(ianmackenzie$elm_geometry$Vector2d$scaleBy, weight, delta);
 			});
 		var useAggregate = function (treePart) {
@@ -7494,7 +7495,7 @@ var ianmackenzie$elm_geometry$Geometry$Types$Point2d = elm$core$Basics$identity;
 var ianmackenzie$elm_geometry$Point2d$fromCoordinates = elm$core$Basics$identity;
 var author$project$Force$ManyBody$constructSuperPoint = F2(
 	function (first, rest) {
-		var initialStrength = first.Z;
+		var initialStrength = first.aw;
 		var initialPoint = ianmackenzie$elm_geometry$Point2d$coordinates(first.ei);
 		var folder = F2(
 			function (point, _n3) {
@@ -7508,7 +7509,7 @@ var author$project$Force$ManyBody$constructSuperPoint = F2(
 				var y = _n2.b;
 				return _Utils_Tuple3(
 					_Utils_Tuple2(accumX + x, accumY + y),
-					strength + point.Z,
+					strength + point.aw,
 					size + 1);
 			});
 		var _n0 = A3(
@@ -7524,7 +7525,7 @@ var author$project$Force$ManyBody$constructSuperPoint = F2(
 		return {
 			ei: ianmackenzie$elm_geometry$Point2d$fromCoordinates(
 				_Utils_Tuple2(totalX / totalSize, totalY / totalSize)),
-			Z: totalStrength
+			aw: totalStrength
 		};
 	});
 var author$project$Force$ManyBody$config = {
@@ -7549,11 +7550,11 @@ var author$project$Force$QuadTree$SW = 3;
 var elm$core$Basics$ge = _Utils_ge;
 var ianmackenzie$elm_geometry$BoundingBox2d$midX = function (_n0) {
 	var boundingBox = _n0;
-	return boundingBox.ap + (0.5 * (boundingBox.an - boundingBox.ap));
+	return boundingBox.ao + (0.5 * (boundingBox.am - boundingBox.ao));
 };
 var ianmackenzie$elm_geometry$BoundingBox2d$midY = function (_n0) {
 	var boundingBox = _n0;
-	return boundingBox.aq + (0.5 * (boundingBox.ao - boundingBox.aq));
+	return boundingBox.ap + (0.5 * (boundingBox.an - boundingBox.ap));
 };
 var ianmackenzie$elm_geometry$BoundingBox2d$centroid = function (boundingBox) {
 	return ianmackenzie$elm_geometry$Point2d$fromCoordinates(
@@ -7575,19 +7576,19 @@ var author$project$Force$QuadTree$quadrant = F2(
 		var midX = _n1.a;
 		var midY = _n1.b;
 		var _n2 = ianmackenzie$elm_geometry$BoundingBox2d$extrema(boundingBox);
-		var minX = _n2.ap;
-		var minY = _n2.aq;
-		var maxX = _n2.an;
-		var maxY = _n2.ao;
+		var minX = _n2.ao;
+		var minY = _n2.ap;
+		var maxX = _n2.am;
+		var maxY = _n2.an;
 		return (_Utils_cmp(y, midY) > -1) ? ((_Utils_cmp(x, midX) > -1) ? 0 : 1) : ((_Utils_cmp(x, midX) > -1) ? 2 : 3);
 	});
 var ianmackenzie$elm_geometry$Geometry$Types$BoundingBox2d = elm$core$Basics$identity;
 var ianmackenzie$elm_geometry$BoundingBox2d$fromExtrema = function (extrema_) {
-	return ((_Utils_cmp(extrema_.ap, extrema_.an) < 1) && (_Utils_cmp(extrema_.aq, extrema_.ao) < 1)) ? extrema_ : {
+	return ((_Utils_cmp(extrema_.ao, extrema_.am) < 1) && (_Utils_cmp(extrema_.ap, extrema_.an) < 1)) ? extrema_ : {
+		am: A2(elm$core$Basics$max, extrema_.ao, extrema_.am),
 		an: A2(elm$core$Basics$max, extrema_.ap, extrema_.an),
-		ao: A2(elm$core$Basics$max, extrema_.aq, extrema_.ao),
-		ap: A2(elm$core$Basics$min, extrema_.ap, extrema_.an),
-		aq: A2(elm$core$Basics$min, extrema_.aq, extrema_.ao)
+		ao: A2(elm$core$Basics$min, extrema_.ao, extrema_.am),
+		ap: A2(elm$core$Basics$min, extrema_.ap, extrema_.an)
 	};
 };
 var ianmackenzie$elm_geometry$BoundingBox2d$singleton = function (point) {
@@ -7595,7 +7596,7 @@ var ianmackenzie$elm_geometry$BoundingBox2d$singleton = function (point) {
 	var x = _n0.a;
 	var y = _n0.b;
 	return ianmackenzie$elm_geometry$BoundingBox2d$fromExtrema(
-		{an: x, ao: y, ap: x, aq: y});
+		{am: x, an: y, ao: x, ap: y});
 };
 var author$project$Force$QuadTree$singleton = F2(
 	function (toPoint, vertex) {
@@ -7626,19 +7627,19 @@ var ianmackenzie$elm_geometry$BoundingBox2d$hull = F2(
 	function (firstBox, secondBox) {
 		return ianmackenzie$elm_geometry$BoundingBox2d$fromExtrema(
 			{
-				an: A2(
+				am: A2(
 					elm$core$Basics$max,
 					ianmackenzie$elm_geometry$BoundingBox2d$maxX(firstBox),
 					ianmackenzie$elm_geometry$BoundingBox2d$maxX(secondBox)),
-				ao: A2(
+				an: A2(
 					elm$core$Basics$max,
 					ianmackenzie$elm_geometry$BoundingBox2d$maxY(firstBox),
 					ianmackenzie$elm_geometry$BoundingBox2d$maxY(secondBox)),
-				ap: A2(
+				ao: A2(
 					elm$core$Basics$min,
 					ianmackenzie$elm_geometry$BoundingBox2d$minX(firstBox),
 					ianmackenzie$elm_geometry$BoundingBox2d$minX(secondBox)),
-				aq: A2(
+				ap: A2(
 					elm$core$Basics$min,
 					ianmackenzie$elm_geometry$BoundingBox2d$minY(firstBox),
 					ianmackenzie$elm_geometry$BoundingBox2d$minY(secondBox))
@@ -7732,10 +7733,10 @@ var author$project$Force$QuadTree$insertBy = F3(
 					}
 				} else {
 					var _n3 = ianmackenzie$elm_geometry$BoundingBox2d$extrema(node.dn);
-					var minX = _n3.ap;
-					var minY = _n3.aq;
-					var maxX = _n3.an;
-					var maxY = _n3.ao;
+					var minX = _n3.ao;
+					var minY = _n3.ap;
+					var maxX = _n3.am;
+					var maxY = _n3.an;
 					var _n4 = ianmackenzie$elm_geometry$BoundingBox2d$dimensions(node.dn);
 					var width = _n4.a;
 					var height = _n4.b;
@@ -7746,7 +7747,7 @@ var author$project$Force$QuadTree$insertBy = F3(
 								{
 									b5: 0,
 									dn: ianmackenzie$elm_geometry$BoundingBox2d$fromExtrema(
-										{an: maxX + width, ao: maxY + height, ap: minX, aq: minY}),
+										{am: maxX + width, an: maxY + height, ao: minX, ap: minY}),
 									d3: A2(author$project$Force$QuadTree$singleton, toPoint, vertex),
 									d6: author$project$Force$QuadTree$Empty,
 									er: author$project$Force$QuadTree$Empty,
@@ -7757,7 +7758,7 @@ var author$project$Force$QuadTree$insertBy = F3(
 								{
 									b5: 0,
 									dn: ianmackenzie$elm_geometry$BoundingBox2d$fromExtrema(
-										{an: maxX + width, ao: maxY, ap: minX, aq: minY - height}),
+										{am: maxX + width, an: maxY, ao: minX, ap: minY - height}),
 									d3: author$project$Force$QuadTree$Empty,
 									d6: qtree,
 									er: A2(author$project$Force$QuadTree$singleton, toPoint, vertex),
@@ -7768,7 +7769,7 @@ var author$project$Force$QuadTree$insertBy = F3(
 								{
 									b5: 0,
 									dn: ianmackenzie$elm_geometry$BoundingBox2d$fromExtrema(
-										{an: maxX, ao: maxY + height, ap: minX - width, aq: minY}),
+										{am: maxX, an: maxY + height, ao: minX - width, ap: minY}),
 									d3: author$project$Force$QuadTree$Empty,
 									d6: A2(author$project$Force$QuadTree$singleton, toPoint, vertex),
 									er: qtree,
@@ -7779,7 +7780,7 @@ var author$project$Force$QuadTree$insertBy = F3(
 								{
 									b5: 0,
 									dn: ianmackenzie$elm_geometry$BoundingBox2d$fromExtrema(
-										{an: maxX, ao: maxY, ap: minX - width, aq: minY - height}),
+										{am: maxX, an: maxY, ao: minX - width, ap: minY - height}),
 									d3: qtree,
 									d6: author$project$Force$QuadTree$Empty,
 									er: author$project$Force$QuadTree$Empty,
@@ -7883,22 +7884,17 @@ var author$project$Force$ManyBody$wrapper = F4(
 			function (_n2) {
 				var key = _n2.a;
 				var point = _n2.b;
-				var x = point.aa;
-				var y = point.ab;
+				var x = point._;
+				var y = point.aa;
 				var strength = A2(
 					elm$core$Maybe$withDefault,
 					0,
-					A2(
-						elm$core$Maybe$map,
-						function ($) {
-							return $.Z;
-						},
-						A2(elm$core$Dict$get, key, strengths)));
+					A2(elm$core$Dict$get, key, strengths));
 				return {
 					aJ: key,
 					ei: ianmackenzie$elm_geometry$Point2d$fromCoordinates(
 						_Utils_Tuple2(x, y)),
-					Z: strength,
+					aw: strength,
 					aS: ianmackenzie$elm_geometry$Vector2d$zero
 				};
 			},
@@ -7981,7 +7977,7 @@ var author$project$Force$applyForce = F3(
 						function (_n2, ent, _n3) {
 							var sx0 = _n3.a;
 							var sy0 = _n3.b;
-							return _Utils_Tuple2(sx0 + ent.aa, sy0 + ent.ab);
+							return _Utils_Tuple2(sx0 + ent._, sy0 + ent.aa);
 						}),
 					_Utils_Tuple2(0, 0),
 					entities);
@@ -7995,7 +7991,7 @@ var author$project$Force$applyForce = F3(
 						function (_n4, ent) {
 							return _Utils_update(
 								ent,
-								{aa: ent.aa - sx, ab: ent.ab - sy});
+								{_: ent._ - sx, aa: ent.aa - sy});
 						}),
 					entities);
 			case 1:
@@ -8009,10 +8005,10 @@ var author$project$Force$applyForce = F3(
 					elm$core$List$foldl,
 					F2(
 						function (_n5, ents) {
-							var source = _n5.aw;
+							var source = _n5.av;
 							var target = _n5.ax;
 							var distance = _n5.aE;
-							var strength = _n5.Z;
+							var strength = _n5.aw;
 							var bias = _n5.bb;
 							var _n6 = _Utils_Tuple2(
 								A2(elm$core$Dict$get, source, ents),
@@ -8020,8 +8016,8 @@ var author$project$Force$applyForce = F3(
 							if ((!_n6.a.$) && (!_n6.b.$)) {
 								var sourceNode = _n6.a.a;
 								var targetNode = _n6.b.a;
-								var y = ((targetNode.ab + targetNode.L) - sourceNode.ab) - sourceNode.L;
-								var x = ((targetNode.aa + targetNode.K) - sourceNode.aa) - sourceNode.K;
+								var y = ((targetNode.aa + targetNode.L) - sourceNode.aa) - sourceNode.L;
+								var x = ((targetNode._ + targetNode.K) - sourceNode._) - sourceNode.K;
 								var d = elm$core$Basics$sqrt(
 									A2(elm$core$Basics$pow, x, 2) + A2(elm$core$Basics$pow, y, 2));
 								var l = (((d - distance) / d) * alpha) * strength;
@@ -8079,7 +8075,7 @@ var author$project$Force$tick = F2(
 		var updateEntity = function (ent) {
 			return _Utils_update(
 				ent,
-				{K: ent.K * state.aT, L: ent.L * state.aT, aa: ent.aa + (ent.K * state.aT), ab: ent.ab + (ent.L * state.aT)});
+				{K: ent.K * state.aT, L: ent.L * state.aT, _: ent._ + (ent.K * state.aT), aa: ent.aa + (ent.L * state.aT)});
 		};
 		var dictNodes = A3(
 			elm$core$List$foldl,
@@ -8088,7 +8084,7 @@ var author$project$Force$tick = F2(
 			},
 			elm$core$Dict$empty,
 			nodes);
-		var alpha = state.ah + ((state.b6 - state.ah) * state.a8);
+		var alpha = state.ag + ((state.b6 - state.ag) * state.a8);
 		var newNodes = A3(
 			elm$core$List$foldl,
 			author$project$Force$applyForce(alpha),
@@ -8097,7 +8093,7 @@ var author$project$Force$tick = F2(
 		return _Utils_Tuple2(
 			_Utils_update(
 				state,
-				{ah: alpha}),
+				{ag: alpha}),
 			A2(
 				elm$core$List$map,
 				updateEntity,
@@ -8145,7 +8141,7 @@ var author$project$ForceDirectedGraph$updateNode = F2(
 			nodeCtx,
 			_Utils_update(
 				nodeValue,
-				{aa: x, ab: y}));
+				{_: x, aa: y}));
 	});
 var author$project$ForceDirectedGraph$update = F2(
 	function (msg, model) {
@@ -8429,10 +8425,10 @@ var author$project$ForceDirectedGraph$linkElement = F2(
 					elm_community$typed_svg$TypedSvg$Attributes$InPx$strokeWidth(1),
 					elm_community$typed_svg$TypedSvg$Attributes$stroke(
 					A3(avh4$elm_color$Color$rgb255, 170, 170, 170)),
-					elm_community$typed_svg$TypedSvg$Attributes$InPx$x1(source.aa),
-					elm_community$typed_svg$TypedSvg$Attributes$InPx$y1(source.ab),
-					elm_community$typed_svg$TypedSvg$Attributes$InPx$x2(target.aa),
-					elm_community$typed_svg$TypedSvg$Attributes$InPx$y2(target.ab)
+					elm_community$typed_svg$TypedSvg$Attributes$InPx$x1(source._),
+					elm_community$typed_svg$TypedSvg$Attributes$InPx$y1(source.aa),
+					elm_community$typed_svg$TypedSvg$Attributes$InPx$x2(target._),
+					elm_community$typed_svg$TypedSvg$Attributes$InPx$y2(target.aa)
 				]),
 			_List_Nil);
 	});
@@ -8544,8 +8540,8 @@ var author$project$ForceDirectedGraph$nodeElement = function (node) {
 				A4(avh4$elm_color$Color$rgba, 0, 0, 0, 0)),
 				elm_community$typed_svg$TypedSvg$Attributes$InPx$strokeWidth(7),
 				author$project$ForceDirectedGraph$onMouseDown(node.ct),
-				elm_community$typed_svg$TypedSvg$Attributes$InPx$cx(node.G.aa),
-				elm_community$typed_svg$TypedSvg$Attributes$InPx$cy(node.G.ab)
+				elm_community$typed_svg$TypedSvg$Attributes$InPx$cx(node.G._),
+				elm_community$typed_svg$TypedSvg$Attributes$InPx$cy(node.G.aa)
 			]),
 		_List_fromArray(
 			[

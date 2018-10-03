@@ -5667,12 +5667,7 @@ var author$project$Force$ManyBody$wrapper = F4(
 				var strength = A2(
 					elm$core$Maybe$withDefault,
 					0,
-					A2(
-						elm$core$Maybe$map,
-						function ($) {
-							return $.eG;
-						},
-						A2(elm$core$Dict$get, key, strengths)));
+					A2(elm$core$Dict$get, key, strengths));
 				return {
 					aK: key,
 					et: ianmackenzie$elm_geometry$Point2d$fromCoordinates(
@@ -6016,18 +6011,19 @@ var elm$core$Dict$fromList = function (assocs) {
 		elm$core$Dict$empty,
 		assocs);
 };
+var author$project$Force$customManyBody = function (theta) {
+	return A2(
+		elm$core$Basics$composeR,
+		elm$core$Dict$fromList,
+		author$project$Force$ManyBody(theta));
+};
 var author$project$Force$manyBodyStrength = function (strength) {
 	return A2(
 		elm$core$Basics$composeL,
-		A2(
-			elm$core$Basics$composeL,
-			author$project$Force$ManyBody(0.9),
-			elm$core$Dict$fromList),
+		author$project$Force$customManyBody(0.9),
 		elm$core$List$map(
 			function (key) {
-				return _Utils_Tuple2(
-					key,
-					{eG: strength});
+				return _Utils_Tuple2(key, strength);
 			}));
 };
 var author$project$Force$simulation = function (forces) {
