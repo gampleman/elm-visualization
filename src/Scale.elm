@@ -226,7 +226,7 @@ log base range_ domain_ =
         , convert = Log.convert
         , invert = Log.invert
         , ticks = Log.ticks base
-        , tickFormat = Log.tickFormat
+        , tickFormat = Log.tickFormat base
         , nice = Log.nice base
         , rangeExtent = Log.rangeExtent
         }
