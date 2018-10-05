@@ -4,17 +4,18 @@ module Background exposing (main)
 -}
 
 import Color exposing (Color)
+import Force exposing (State)
 import Graph exposing (Edge, Graph, Node, NodeId)
 import IntDict
 import List exposing (range)
 import SampleData exposing (miserablesGraph)
+import Scale exposing (SequentialScale)
+import Scale.Color
 import TypedSvg exposing (circle, g, line, polygon, svg, title)
 import TypedSvg.Attributes exposing (class, fill, points, stroke)
 import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, strokeWidth, width, x1, x2, y1, y2)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (Fill(..))
-import Visualization.Force as Force exposing (State)
-import Visualization.Scale as Scale exposing (SequentialScale)
 
 
 w : Float
@@ -29,7 +30,7 @@ h =
 
 colorScale : SequentialScale Color
 colorScale =
-    Scale.sequential ( 200, 700 ) Scale.viridisInterpolator
+    Scale.sequential Scale.Color.viridisInterpolator ( 200, 700 )
 
 
 type alias CustomNode =
@@ -46,14 +47,32 @@ init =
         graph =
             Graph.mapContexts
                 (\({ node, incoming, outgoing } as ctx) ->
-                    { incoming = incoming, outgoing = outgoing, node = { label = Force.entity node.id (CustomNode (IntDict.size incoming + IntDict.size outgoing) node.label), id = node.id } }
+                    { incoming = incoming
+                    , outgoing = outgoing
+                    , node =
+                        { label =
+                            Force.entity node.id
+                                (CustomNode
+                                    (IntDict.size incoming + IntDict.size outgoing)
+                                    node.label
+                                )
+                        , id = node.id
+                        }
+                    }
                 )
                 miserablesGraph
 
         links =
             graph
                 |> Graph.edges
-                |> List.map (\{ from, to } -> { source = from, target = to, distance = 30, strength = Nothing })
+                |> List.map
+                    (\{ from, to } ->
+                        { source = from
+                        , target = to
+                        , distance = 30
+                        , strength = Nothing
+                        }
+                    )
 
         forces =
             [ Force.customLinks 1 links
@@ -61,7 +80,10 @@ init =
             , Force.center (w / 2) (h / 2)
             ]
     in
-    updateGraphWithList graph (Force.computeSimulation (Force.simulation forces) <| List.map .label <| Graph.nodes graph)
+    Graph.nodes graph
+        |> List.map .label
+        |> Force.computeSimulation (Force.simulation forces)
+        |> updateGraphWithList graph
 
 
 updateGraphWithList : Graph Entity () -> List Entity -> Graph Entity ()
@@ -130,8 +152,10 @@ nodeSize size node =
 nodeElement node =
     if node.label.value.rank < 5 then
         nodeSize 4 node.label
+
     else if node.label.value.rank < 9 then
         nodeSize 7 node.label
+
     else if modBy 2 node.label.value.rank == 0 then
         g []
             [ nodeSize 9 node.label
@@ -144,6 +168,7 @@ nodeElement node =
                 ]
                 []
             ]
+
     else
         nodeSize 10 node.label
 

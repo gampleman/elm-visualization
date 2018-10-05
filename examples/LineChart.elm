@@ -4,19 +4,18 @@ module LineChart exposing (main)
 the primitives provided in this library.
 -}
 
+import Axis
 import Color
 import Path exposing (Path)
 import SampleData exposing (timeSeries)
+import Scale exposing (ContinuousScale)
+import Shape
 import Time
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes exposing (class, fill, stroke, transform)
 import TypedSvg.Attributes.InPx exposing (height, strokeWidth, width)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
-import Visualization.Axis as Axis exposing (defaultOptions)
-import Visualization.List as List
-import Visualization.Scale as Scale exposing (ContinuousScale, ContinuousTimeScale)
-import Visualization.Shape as Shape
 
 
 w : Float
@@ -34,24 +33,24 @@ padding =
     30
 
 
-xScale : ContinuousTimeScale
+xScale : ContinuousScale Time.Posix
 xScale =
-    Scale.time Time.utc ( Time.millisToPosix 1448928000000, Time.millisToPosix 1456790400000 ) ( 0, w - 2 * padding )
+    Scale.time Time.utc ( 0, w - 2 * padding ) ( Time.millisToPosix 1448928000000, Time.millisToPosix 1456790400000 )
 
 
-yScale : ContinuousScale
+yScale : ContinuousScale Float
 yScale =
-    Scale.linear ( 0, 5 ) ( h - 2 * padding, 0 )
+    Scale.linear ( h - 2 * padding, 0 ) ( 0, 5 )
 
 
 xAxis : List ( Time.Posix, Float ) -> Svg msg
 xAxis model =
-    Axis.axis { defaultOptions | orientation = Axis.Bottom, tickCount = List.length model } xScale
+    Axis.bottom [ Axis.tickCount (List.length model) ] xScale
 
 
 yAxis : Svg msg
 yAxis =
-    Axis.axis { defaultOptions | orientation = Axis.Left, tickCount = 5 } yScale
+    Axis.left [ Axis.tickCount 5 ] yScale
 
 
 transformToLineData : ( Time.Posix, Float ) -> Maybe ( Float, Float )

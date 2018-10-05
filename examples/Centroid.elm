@@ -9,13 +9,13 @@ import Array exposing (Array)
 import Color exposing (Color, fromRgba)
 import LowLevel.Command exposing (arcTo, clockwise, largestArc, moveTo)
 import Path
+import Shape exposing (Arc, defaultPieConfig)
 import SubPath exposing (SubPath)
 import TypedSvg exposing (circle, g, svg)
 import TypedSvg.Attributes exposing (fill, stroke, transform)
 import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, width)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
-import Visualization.Shape as Shape exposing (Arc, defaultPieConfig)
 
 
 w : Float
@@ -72,7 +72,10 @@ circular : List Arc -> Svg msg
 circular arcs =
     let
         makeSlice index datum =
-            Path.element (Shape.arc datum) [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors, stroke Color.black ]
+            Path.element (Shape.arc datum)
+                [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors
+                , stroke Color.black
+                ]
 
         makeDot datum =
             let
@@ -91,7 +94,10 @@ annular : List Arc -> Svg msg
 annular arcs =
     let
         makeSlice index datum =
-            Path.element (Shape.arc { datum | innerRadius = radius - 60 }) [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors, stroke Color.black ]
+            Path.element (Shape.arc { datum | innerRadius = radius - 60 })
+                [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors
+                , stroke Color.black
+                ]
 
         makeDot datum =
             let

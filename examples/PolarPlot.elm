@@ -4,14 +4,14 @@ module PolarPlot exposing (main)
 -}
 
 import Path
+import Scale exposing (ContinuousScale)
+import Shape
+import Statistics
 import TypedSvg exposing (circle, g, line, style, svg, text_)
 import TypedSvg.Attributes exposing (class, dy, textAnchor, transform)
 import TypedSvg.Attributes.InPx exposing (fontSize, height, r, width, x, x2, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), Transform(..), em)
-import Visualization.List exposing (range)
-import Visualization.Scale as Scale exposing (ContinuousScale)
-import Visualization.Shape as Shape
 
 
 w : Float
@@ -34,9 +34,9 @@ mainRadius =
     Basics.min w h / 2 - padding
 
 
-radiusScale : ContinuousScale
+radiusScale : ContinuousScale Float
 radiusScale =
-    Scale.linear ( 0, 0.5 ) ( 0, mainRadius )
+    Scale.linear ( 0, mainRadius ) ( 0, 0.5 )
 
 
 fn : Float -> Float
@@ -46,7 +46,7 @@ fn t =
 
 data : List (Maybe ( Float, Float ))
 data =
-    range 0 (2 * pi) 0.01
+    Statistics.range 0 (2 * pi) 0.01
         |> List.map (\t -> Just ( -t + pi / 2, Scale.convert radiusScale (fn t) ))
 
 
@@ -132,7 +132,7 @@ main =
                 |> List.drop 1
                 |> List.map radialAxis
                 |> g [ class [ "r", "axis" ] ]
-            , range 0 360 30
+            , Statistics.range 0 360 30
                 |> List.map spoke
                 |> g [ class [ "a", "axis" ] ]
             , Path.element (Shape.lineRadial Shape.linearCurve data) [ class [ "line" ] ]

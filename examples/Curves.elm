@@ -7,14 +7,15 @@ import Color exposing (Color)
 import Example
 import Html exposing (a, div, p)
 import Path exposing (Path)
+import Scale exposing (ContinuousScale)
+import Scale.Color
+import Shape
 import SubPath exposing (SubPath)
 import TypedSvg exposing (g, line, rect, svg, text_)
 import TypedSvg.Attributes as Explicit exposing (fill, fontFamily, stroke, transform)
 import TypedSvg.Attributes.InPx exposing (height, strokeWidth, width, x, x1, x2, y, y1, y2)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (Fill(..), Transform(..), percent)
-import Visualization.Scale as Scale exposing (ContinuousScale)
-import Visualization.Shape as Shape
 
 
 w : Float
@@ -47,14 +48,14 @@ points =
     ]
 
 
-xScale : ContinuousScale
+xScale : ContinuousScale Float
 xScale =
-    Scale.linear ( 0, 2 ) ( padding, w - padding )
+    Scale.linear ( padding, w - padding ) ( 0, 2 )
 
 
-yScale : ContinuousScale
+yScale : ContinuousScale Float
 yScale =
-    Scale.linear ( 0, 1 ) ( h - padding, padding )
+    Scale.linear ( h - padding, padding ) ( 0, 1 )
 
 
 preparedPoints : List ( Float, Float )
@@ -142,7 +143,7 @@ parametrized : String -> (Float -> Curve) -> List ( String, Curve, Color )
 parametrized prefix curveFn =
     let
         scale =
-            Scale.sequential ( 0, 1 ) Scale.magmaInterpolator
+            Scale.sequential Scale.Color.magmaInterpolator ( 0, 1 )
 
         stops =
             [ 0, 0.25, 0.5, 0.75, 1 ]

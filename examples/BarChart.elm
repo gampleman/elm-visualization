@@ -3,16 +3,16 @@ module BarChart exposing (main)
 {-| This module shows how to build a simple bar chart.
 -}
 
+import Axis
 import DateFormat
 import SampleData exposing (timeSeries)
+import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
 import Time
 import TypedSvg exposing (g, rect, style, svg, text_)
 import TypedSvg.Attributes exposing (class, textAnchor, transform)
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), Transform(..))
-import Visualization.Axis as Axis exposing (defaultOptions)
-import Visualization.Scale as Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
 
 
 w : Float
@@ -32,12 +32,13 @@ padding =
 
 xScale : List ( Time.Posix, Float ) -> BandScale Time.Posix
 xScale model =
-    Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } (List.map Tuple.first model) ( 0, w - 2 * padding )
+    List.map Tuple.first model
+        |> Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( 0, w - 2 * padding )
 
 
-yScale : ContinuousScale
+yScale : ContinuousScale Float
 yScale =
-    Scale.linear ( 0, 5 ) ( h - 2 * padding, 0 )
+    Scale.linear ( h - 2 * padding, 0 ) ( 0, 5 )
 
 
 dateFormat : Time.Posix -> String
@@ -47,12 +48,12 @@ dateFormat =
 
 xAxis : List ( Time.Posix, Float ) -> Svg msg
 xAxis model =
-    Axis.axis { defaultOptions | orientation = Axis.Bottom } (Scale.toRenderable dateFormat (xScale model))
+    Axis.bottom [] (Scale.toRenderable dateFormat (xScale model))
 
 
 yAxis : Svg msg
 yAxis =
-    Axis.axis { defaultOptions | orientation = Axis.Left, tickCount = 5 } yScale
+    Axis.left [ Axis.tickCount 5 ] yScale
 
 
 column : BandScale Time.Posix -> ( Time.Posix, Float ) -> Svg msg

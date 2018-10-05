@@ -3,6 +3,7 @@ module NorwegianCarSales exposing (main)
 {-| This example demonstates using different kinds of layouts for stacked graphs.
 -}
 
+import Axis
 import Color exposing (Color)
 import Example
 import Html exposing (div, text)
@@ -10,6 +11,9 @@ import Html.Attributes
 import List.Extra as List
 import Path exposing (Path)
 import SampleData
+import Scale exposing (ContinuousScale, OrdinalScale, Scale)
+import Scale.Color
+import Shape exposing (StackConfig, StackResult)
 import Time exposing (Month(..))
 import Time.Extra exposing (Parts)
 import TypedSvg exposing (g, svg, text_)
@@ -17,9 +21,6 @@ import TypedSvg.Attributes exposing (class, fill, fontFamily, transform)
 import TypedSvg.Attributes.InPx exposing (fontSize, height, width)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
-import Visualization.Axis as Axis exposing (Orientation(..))
-import Visualization.Scale as Scale exposing (ContinuousScale, OrdinalScale, Scale)
-import Visualization.Shape as Shape exposing (StackConfig, StackResult)
 
 
 exampleConfig : List ( String, StackConfig String )
@@ -30,7 +31,7 @@ exampleConfig =
         , order = Shape.sortByInsideOut (Tuple.second >> List.sum)
         }
       )
-    , ( "Sillhoutte"
+    , ( "Silhouette"
       , { data = samples
         , offset = Shape.stackOffsetSilhouette
         , order = Shape.sortByInsideOut (Tuple.second >> List.sum)
@@ -52,7 +53,9 @@ samples =
 
 colorScale : OrdinalScale String Color
 colorScale =
-    Scale.ordinal (List.reverse <| List.map Tuple.first samples) Scale.category20c
+    List.map Tuple.first samples
+        |> List.reverse
+        |> Scale.ordinal Scale.Color.category10
 
 
 sampleColor : String -> Color
@@ -97,30 +100,27 @@ view { values, labels, extent } =
                 |> Maybe.map List.length
                 |> Maybe.withDefault 0
 
-        xScale : ContinuousScale
+        xScale : ContinuousScale Float
         xScale =
             -- map an index to screen space
-            Scale.linear ( 0, toFloat size - 1 ) ( padding, w - padding - labelsWidth )
+            Scale.linear ( padding, w - padding - labelsWidth ) ( 0, toFloat size - 1 )
 
-        yScale : ContinuousScale
+        yScale : ContinuousScale Float
         yScale =
-            Scale.linear extent ( h - padding, padding )
-                |> (\a -> Scale.nice a 4)
-
-        axisOptions =
-            Axis.defaultOptions
+            Scale.linear ( h - padding, padding ) extent
+                |> Scale.nice 4
 
         xAxis : Svg msg
         xAxis =
             -- construct the time domain for display
             -- the data is per-month, so we have to pick a day
             -- to get the ticks to show up correctly, the upper bound needs to be Jan 2 (Jan 1 does not work).
-            Scale.time Time.utc ( fromCalendarDate 2007 Jan 1, fromCalendarDate 2017 Jan 2 ) ( 0, w - padding * 2 - labelsWidth )
-                |> Axis.axis { axisOptions | orientation = Axis.Bottom, tickCount = 1 }
+            Scale.time Time.utc ( 0, w - padding * 2 - labelsWidth ) ( fromCalendarDate 2007 Jan 1, fromCalendarDate 2017 Jan 2 )
+                |> Axis.bottom [ Axis.tickCount 1 ]
 
         yAxis : Svg msg
         yAxis =
-            Axis.axis { axisOptions | orientation = Axis.Left } yScale
+            Axis.left [] yScale
 
         paths =
             List.map2 (renderStream ( xScale, yScale )) (colors labels) values
@@ -163,14 +163,14 @@ titleNavigation =
 
 {-| Renders one colored stream with given scaling
 -}
-renderStream : ( ContinuousScale, ContinuousScale ) -> Color -> List ( Float, Float ) -> Svg msg
+renderStream : ( ContinuousScale Float, ContinuousScale Float ) -> Color -> List ( Float, Float ) -> Svg msg
 renderStream scales color coords =
     Path.element (toArea scales coords) [ fill (Fill color) ]
 
 
 {-| Create a svg path string that draws the area between two lines
 -}
-toArea : ( ContinuousScale, ContinuousScale ) -> List ( Float, Float ) -> Path
+toArea : ( ContinuousScale Float, ContinuousScale Float ) -> List ( Float, Float ) -> Path
 toArea ( scaleX, scaleY ) ys =
     let
         mapper : Int -> ( Float, Float ) -> Maybe ( ( Float, Float ), ( Float, Float ) )
@@ -184,6 +184,7 @@ toArea ( scaleX, scaleY ) ys =
                 ( low, high ) =
                     if y1 < y2 then
                         ( y1, y2 )
+
                     else
                         ( y2, y1 )
             in

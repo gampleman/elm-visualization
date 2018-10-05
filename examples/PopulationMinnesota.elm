@@ -1,17 +1,18 @@
 module PopulationMinnesota exposing (main)
 
+import Axis
 import Color exposing (Color)
 import List.Extra as List
 import SampleData exposing (Gender(..))
+import Scale exposing (BandScale, ContinuousScale, OrdinalScale, QuantizeScale, Scale, defaultBandConfig)
+import Scale.Color
+import Shape exposing (StackConfig, StackResult)
+import Statistics
 import TypedSvg exposing (g, rect, svg, text_)
 import TypedSvg.Attributes exposing (class, dy, fill, fontFamily, textAnchor, transform)
 import TypedSvg.Attributes.InPx exposing (fontSize, height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..), em)
-import Visualization.Axis as Axis exposing (Orientation(..))
-import Visualization.List
-import Visualization.Scale as Scale exposing (BandScale, ContinuousScale, OrdinalScale, QuantizeScale, Scale, defaultBandConfig)
-import Visualization.Shape as Shape exposing (StackConfig, StackResult)
 
 
 main : Svg msg
@@ -43,7 +44,7 @@ populationMinnesota1850 =
     { categories = categories
     , data = [ ( 1850, List.map (.people >> toFloat) m ), ( 1850, List.map (.people >> toFloat >> negate) f ) ]
     , extent =
-        Visualization.List.extent categories
+        Statistics.extent categories
             |> Maybe.map (\( a, b ) -> ( toFloat a, toFloat b ))
             |> Maybe.withDefault ( 0, 0 )
     }
@@ -74,8 +75,8 @@ config =
 
 colors : List Color
 colors =
-    [ Scale.viridisInterpolator 0.3
-    , Scale.viridisInterpolator 0.7
+    [ Scale.Color.viridisInterpolator 0.3
+    , Scale.Color.viridisInterpolator 0.7
     ]
 
 
@@ -108,40 +109,22 @@ view { values, labels, extent } =
                 |> List.transpose
                 |> List.map (List.map (\( y1, y2 ) -> ( Scale.convert xScale y1, Scale.convert xScale y2 )))
 
-        axisOptions =
-            Axis.defaultOptions
-
-        xScale : ContinuousScale
+        xScale : ContinuousScale Float
         xScale =
-            Scale.linear extent ( w - padding, padding )
-                |> (\a -> Scale.nice a 4)
+            Scale.linear ( w - padding, padding ) extent
+                |> Scale.nice 4
 
         yScale : BandScale Int
         yScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } populationMinnesota1850.categories ( padding, h - padding )
-
-        xAxis : Svg msg
-        xAxis =
-            Axis.axis { axisOptions | orientation = Axis.Bottom, tickFormat = Just (absoluteTickFormat xScale 10) } xScale
-
-        yAxis : Svg msg
-        yAxis =
-            let
-                tickCount =
-                    populationMinnesota1850
-                        |> .extent
-                        |> Tuple.second
-                        |> (\v -> round v // 10 * 2)
-            in
-            Axis.axis { axisOptions | orientation = Axis.Left } (Scale.toRenderable String.fromInt yScale)
+            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( padding, h - padding ) populationMinnesota1850.categories
     in
     svg [ width w, height h ]
         [ g [ transform [ Translate 0 (h - padding) ] ]
-            [ xAxis ]
+            [ Axis.bottom [ Axis.tickFormat (absoluteTickFormat xScale 10) ] xScale ]
         , g [ class [ "series" ] ] <|
             List.map (column yScale) (List.map2 (\a b -> ( a, b )) populationMinnesota1850.categories scaledValues)
         , g [ transform [ Translate padding 0 ] ]
-            [ yAxis
+            [ Axis.left [] (Scale.toRenderable String.fromInt yScale)
             , text_ [ fontFamily [ "sans-serif" ], fontSize 14, x 5, y 65 ] [ text "Age" ]
             ]
         , g [ transform [ Translate (w - padding) (padding + 20) ] ]

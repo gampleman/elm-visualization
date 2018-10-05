@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title><%= displayName %> Example - Elm-Visualization</title>
+    <style media="screen">
+      @import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic,700italic|Source+Code+Pro);
+
+      html, head, body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
+        color: #293c4b;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+      }
+      .top {
+        border-bottom: 1px solid #60B5CC;
+        display: flex;
+        width: 100%;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        width: <%= width + 300 + 16 %>px;
+        font-size: 24px;
+      }
+      h1, h2, h3 {
+        font-weight: normal;
+
+      }
+      header h1 {
+        margin: 0;
+        line-height: 0;
+        font-size: 24px;
+      }
+      header h2 {
+        margin: 0;
+        margin-left: 20px;
+        font-size: 24px;
+        color: black;
+      }
+      a {
+        color: #1184CE;
+        text-decoration: none;
+      }
+      a:hover {
+        color: rgb(234,21,122);
+        text-decoration: underline;
+      }
+
+      .bottom {
+        display: flex;
+        flex-direction: row;
+        width: <%= width + 300 %>px;
+      }
+
+      main {
+        width: <%= width + 16 %>px;
+      }
+
+      aside {
+        width: 300px;
+        padding-left: 25px;
+      }
+      aside ul {
+        padding: 0;
+      }
+      aside li {
+        list-style-type: none;
+        margin-bottom: 10px;
+      }
+      aside li.active a {
+        text-decoration: underline;
+        font-weight: bold;
+      }
+      iframe {
+        border: 1px solid #eee;
+        overflow: hidden;
+      }
+      hr:first-of-type {
+        display: none;
+      }
+      pre {
+        font-size: 1.1em;
+      }
+      <%= style.source('atom-one-light') %>
+    </style>
+  </head>
+  <body>
+    <div class="top">
+      <header>
+        <h1><img src="../misc/logo-inline.png" width="421" alt="ELM-VISUALIZATION"/></h1>
+        <h2><a href="../">examples</a></h2>
+        <span style="margin: 0 10px">/</span>
+        <h1><%= displayName %></h1>
+      </header>
+    </div>
+    <div class="bottom">
+      <main>
+
+        <iframe src="<%= iframe %>" width="<%= width + 16 %>" height="<%= height + 16 %>" frameborder="1" scrolling="no"></iframe>
+
+        <% _.each(sources, function(source) { %>
+          <h2><%= source.basename %></h2>
+          <div class="description"><%= source.firstComment %></div>
+          <pre><code class="elm"><%= source.highlighted %></code></pre>
+        <% }); %>
+      </main>
+      <aside>
+        <ul>
+          <li><a href="https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/">Docs</a></li>
+          <li><a href="https://github.com/gampleman/elm-visualization">GitHub</a></li>
+          <li><a href="https://github.com/gampleman/elm-visualization/releases">Changelog</a></li>
+          <li>#visualization on <a href="https://elmlang.herokuapp.com/">Elm slack</a></li>
+        </ul>
+        <h2>Examples</h2>
+        <ul>
+          <% _.each(allExamples, function(example) { %>
+            <li <% if (example.name === name) { %>class="active"<% } %>>
+              <a href="../<%= example.name %>"><%= example.displayName %></a>
+            </li>
+          <% }); %>
+        </ul>
+      </aside>
+    </div>
+  </body>
+</html>

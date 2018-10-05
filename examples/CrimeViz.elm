@@ -4,19 +4,20 @@ module CrimeViz exposing (main)
 the primitives provided in this library.
 -}
 
+import Axis
 import Color exposing (Color)
 import Path exposing (Path)
 import SampleData exposing (CrimeRate, crimeRates)
+import Scale exposing (ContinuousScale, OrdinalScale)
+import Scale.Color
+import Shape
+import Statistics
 import Time
 import TypedSvg exposing (g, svg, text_)
 import TypedSvg.Attributes exposing (class, dy, fill, fontFamily, stroke, textAnchor, transform)
 import TypedSvg.Attributes.InPx exposing (fontSize, height, strokeWidth, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..), em)
-import Visualization.Axis as Axis exposing (defaultOptions)
-import Visualization.List as List
-import Visualization.Scale as Scale exposing (ContinuousScale, OrdinalScale)
-import Visualization.Shape as Shape
 
 
 w : Float
@@ -62,7 +63,8 @@ values i =
 
 colorScale : OrdinalScale String Color
 colorScale =
-    Scale.ordinal (List.map .label series) Scale.category10
+    List.map .label series
+        |> Scale.ordinal Scale.Color.category10
 
 
 color : String -> Color
@@ -82,31 +84,23 @@ view model =
             List.head model
                 |> Maybe.withDefault (CrimeRate 0 0 0 0 0 0 0 0 0)
 
-        xScale : ContinuousScale
+        xScale : ContinuousScale Float
         xScale =
             model
                 |> List.map (.year >> toFloat)
-                |> List.extent
+                |> Statistics.extent
                 |> Maybe.withDefault ( 1900, 1901 )
-                |> (\a -> Scale.linear a ( 0, w - 2 * padding ))
+                |> Scale.linear ( 0, w - 2 * padding )
 
-        yScale : ContinuousScale
+        yScale : ContinuousScale Float
         yScale =
             model
                 |> List.map (values >> List.maximum >> Maybe.withDefault 0)
                 |> List.maximum
                 |> Maybe.withDefault 0
                 |> (\b -> ( 0, b ))
-                |> (\a -> Scale.linear a ( h - 2 * padding, 0 ))
-                |> (\a -> Scale.nice a 4)
-
-        xAxis : Svg msg
-        xAxis =
-            Axis.axis { defaultOptions | orientation = Axis.Bottom, tickCount = 10 } xScale
-
-        yAxis : Svg msg
-        yAxis =
-            Axis.axis { defaultOptions | orientation = Axis.Left, ticks = Just (values first) } yScale
+                |> Scale.linear ( h - 2 * padding, 0 )
+                |> Scale.nice 4
 
         lineGenerator : ( Int, Int ) -> Maybe ( Float, Float )
         lineGenerator ( x, y ) =
@@ -120,16 +114,31 @@ view model =
     in
     svg [ width w, height h ]
         [ g [ transform [ Translate (padding - 1) (h - padding) ] ]
-            [ xAxis ]
+            [ Axis.bottom [ Axis.tickCount 10 ] xScale ]
         , g [ transform [ Translate (padding - 1) padding ] ]
-            [ yAxis, text_ [ fontFamily [ "sans-serif" ], fontSize 10, x 5, y 5 ] [ text "Occurences" ] ]
+            [ Axis.left [ Axis.ticks (values first) ] yScale
+            , text_ [ fontFamily [ "sans-serif" ], fontSize 10, x 5, y 5 ] [ text "Occurences" ]
+            ]
         , g [ transform [ Translate padding padding ], class [ "series" ] ]
-            (List.map (\{ accessor, label } -> Path.element (line accessor) [ stroke (color label), strokeWidth 3, fill FillNone ]) series)
+            (List.map
+                (\{ accessor, label } ->
+                    Path.element (line accessor)
+                        [ stroke (color label)
+                        , strokeWidth 3
+                        , fill FillNone
+                        ]
+                )
+                series
+            )
         , g [ fontFamily [ "sans-serif" ], fontSize 10 ]
             (List.map
                 (\{ accessor, label } ->
-                    g [ transform [ Translate (w - padding + 10) (padding + Scale.convert yScale (toFloat (accessor last))) ] ]
-                        [ text_ [ fill (colorString label) ] [ text label ] ]
+                    g
+                        [ transform
+                            [ Translate (w - padding + 10) (padding + Scale.convert yScale (toFloat (accessor last)))
+                            ]
+                        ]
+                        [ text_ [ fill (Fill (color label)) ] [ text label ] ]
                 )
                 series
             )

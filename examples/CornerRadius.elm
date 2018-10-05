@@ -6,12 +6,12 @@ module CornerRadius exposing (main)
 import Array exposing (Array)
 import Color exposing (Color)
 import Path exposing (Path)
+import Shape exposing (Arc, defaultPieConfig)
 import TypedSvg exposing (circle, g, svg)
 import TypedSvg.Attributes exposing (fill, stroke, transform)
 import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, width)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
-import Visualization.Shape as Shape exposing (Arc, defaultPieConfig)
 
 
 w : Float
@@ -86,7 +86,10 @@ circular : List Arc -> Svg msg
 circular arcs =
     let
         makeSlice index datum =
-            Path.element (Shape.arc datum) [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors, stroke Color.white ]
+            Path.element (Shape.arc datum)
+                [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors
+                , stroke Color.white
+                ]
 
         makeCorners : { a | startAngle : Float, endAngle : Float, outerRadius : Float } -> List (Svg msg)
         makeCorners { startAngle, endAngle, outerRadius } =
@@ -104,7 +107,10 @@ annular : List Arc -> Svg msg
 annular arcs =
     let
         makeSlice index datum =
-            Path.element (Shape.arc { datum | innerRadius = mainRadius - 60 }) [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors, stroke Color.white ]
+            Path.element (Shape.arc { datum | innerRadius = mainRadius - 60 })
+                [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors
+                , stroke Color.white
+                ]
 
         makeCorners { startAngle, endAngle, outerRadius, innerRadius } =
             [ corner startAngle (outerRadius - cornerRadius) 1

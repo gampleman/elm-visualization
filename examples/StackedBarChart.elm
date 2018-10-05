@@ -1,16 +1,17 @@
 module StackedBarChart exposing (main)
 
+import Axis
 import Color exposing (Color)
 import List.Extra as List
 import SampleData exposing (CrimeRate)
+import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
+import Scale.Color
+import Shape exposing (StackConfig, StackResult)
 import TypedSvg exposing (g, rect, svg)
 import TypedSvg.Attributes exposing (class, fill, transform)
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
-import Visualization.Axis as Axis exposing (defaultOptions)
-import Visualization.Scale as Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
-import Visualization.Shape as Shape exposing (StackConfig, StackResult)
 
 
 main : Svg msg
@@ -73,22 +74,21 @@ config =
     }
 
 
-sampleColor : Float -> Color
-sampleColor progression =
+reverseViridis : Float -> Color
+reverseViridis progression =
     -- stylistic choice: the larger boxes look better in brighter colors, so invert the interpolator
-    Scale.viridisInterpolator (1 - progression)
+    Scale.Color.viridisInterpolator (1 - progression)
 
 
 colors : Int -> List Color
 colors size =
     let
-        -- given an index, give a value in [0,1] (0 for first, 1 for final)
-        lengthScale =
-            Scale.linear ( 0, toFloat size - 1 ) ( 0, 1 )
+        colorScale =
+            Scale.sequential reverseViridis ( 0, toFloat size - 1 )
                 |> Scale.convert
     in
     List.range 0 (size - 1)
-        |> List.map (sampleColor << lengthScale << toFloat)
+        |> List.map (colorScale << toFloat)
 
 
 column : BandScale Year -> ( Year, List ( Float, Float ) ) -> Svg msg
@@ -119,32 +119,21 @@ view { values, labels, extent } =
 
         xScale : BandScale Year
         xScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } years ( 0, w - (padding.top + padding.bottom) )
+            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( 0, w - (padding.top + padding.bottom) ) years
 
-        yScale : ContinuousScale
+        yScale : ContinuousScale Float
         yScale =
-            Scale.linear extent ( h - (padding.left + padding.right), 0 )
-                |> (\a -> Scale.nice a 4)
-
-        axisOptions =
-            Axis.defaultOptions
-
-        xAxis : Svg msg
-        xAxis =
-            Axis.axis { axisOptions | orientation = Axis.Bottom, tickCount = 10 } (Scale.toRenderable String.fromInt xScale)
-
-        yAxis : Svg msg
-        yAxis =
-            Axis.axis { axisOptions | orientation = Axis.Left } yScale
+            Scale.linear ( h - (padding.left + padding.right), 0 ) extent
+                |> Scale.nice 4
 
         scaledValues =
             List.map (List.map (\( y1, y2 ) -> ( Scale.convert yScale y1, Scale.convert yScale y2 ))) yearValues
     in
     svg [ width w, height h ]
         [ g [ transform [ Translate (padding.left - 1) (h - padding.bottom) ] ]
-            [ xAxis ]
+            [ Axis.bottom [ Axis.tickCount 10 ] (Scale.toRenderable String.fromInt xScale) ]
         , g [ transform [ Translate (padding.left - 1) padding.top ] ]
-            [ yAxis ]
+            [ Axis.left [] yScale ]
         , g [ transform [ Translate padding.left padding.top ], class [ "series" ] ] <|
             List.map (column xScale) (List.map2 (\a b -> ( a, b )) years scaledValues)
         ]

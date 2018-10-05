@@ -7,6 +7,7 @@ based on their co-occurence in a scene. Try dragging the nodes!
 import Browser
 import Browser.Events
 import Color
+import Force exposing (State)
 import Graph exposing (Edge, Graph, Node, NodeContext, NodeId)
 import Html
 import Html.Events exposing (on)
@@ -19,7 +20,6 @@ import TypedSvg.Attributes exposing (class, fill, stroke)
 import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, strokeWidth, width, x1, x2, y1, y2)
 import TypedSvg.Core exposing (Attribute, Svg, text)
 import TypedSvg.Types exposing (Fill(..))
-import Visualization.Force as Force exposing (State)
 
 
 w : Float
@@ -123,7 +123,12 @@ update msg ({ drag, graph, simulation } as model) =
                     Model drag (updateGraphWithList graph list) newState
 
                 Just { current, index } ->
-                    Model drag (Graph.update index (Maybe.map (updateNode current)) (updateGraphWithList graph list)) newState
+                    Model drag
+                        (Graph.update index
+                            (Maybe.map (updateNode current))
+                            (updateGraphWithList graph list)
+                        )
+                        newState
 
         DragStart index xy ->
             Model (Just (Drag xy xy index)) graph simulation
@@ -141,7 +146,9 @@ update msg ({ drag, graph, simulation } as model) =
         DragEnd xy ->
             case drag of
                 Just { start, index } ->
-                    Model Nothing (Graph.update index (Maybe.map (updateNode xy)) graph) simulation
+                    Model Nothing
+                        (Graph.update index (Maybe.map (updateNode xy)) graph)
+                        simulation
 
                 Nothing ->
                     Model Nothing graph simulation
@@ -155,6 +162,7 @@ subscriptions model =
             -- to the rAF.
             if Force.isCompleted model.simulation then
                 Sub.none
+
             else
                 Browser.Events.onAnimationFrame Tick
 
@@ -206,8 +214,12 @@ nodeElement node =
 view : Model -> Svg Msg
 view model =
     svg [ width w, height h ]
-        [ g [ class [ "links" ] ] <| List.map (linkElement model.graph) <| Graph.edges model.graph
-        , g [ class [ "nodes" ] ] <| List.map nodeElement <| Graph.nodes model.graph
+        [ Graph.edges model.graph
+            |> List.map (linkElement model.graph)
+            |> g [ class [ "links" ] ]
+        , Graph.nodes model.graph
+            |> List.map nodeElement
+            |> g [ class [ "nodes" ] ]
         ]
 
 
