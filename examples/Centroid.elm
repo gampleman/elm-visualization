@@ -118,7 +118,7 @@ view model =
         pieData =
             model |> Shape.pie { defaultPieConfig | outerRadius = radius }
     in
-    svg [ width w, height h ]
+    svg [ viewBox 0 0 w h ]
         [ circular pieData
         , annular pieData
         ]

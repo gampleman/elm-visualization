@@ -77,7 +77,7 @@ column scale ( date, value ) =
 
 view : List ( Time.Posix, Float ) -> Svg msg
 view model =
-    svg [ width w, height h ]
+    svg [ viewBox 0 0 w h ]
         [ style [] [ text """
             .column rect { fill: rgba(118, 214, 78, 0.8); }
             .column text { display: none; }

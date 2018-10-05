@@ -213,7 +213,7 @@ nodeElement node =
 
 view : Model -> Svg Msg
 view model =
-    svg [ width w, height h ]
+    svg [ viewBox 0 0 w h ]
         [ Graph.edges model.graph
             |> List.map (linkElement model.graph)
             |> g [ class [ "links" ] ]

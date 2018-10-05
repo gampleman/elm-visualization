@@ -112,7 +112,7 @@ view model =
                 |> List.map lineGenerator
                 |> Shape.line Shape.monotoneInXCurve
     in
-    svg [ width w, height h ]
+    svg [ viewBox 0 0 w h ]
         [ g [ transform [ Translate (padding - 1) (h - padding) ] ]
             [ Axis.bottom [ Axis.tickCount 10 ] xScale ]
         , g [ transform [ Translate (padding - 1) padding ] ]

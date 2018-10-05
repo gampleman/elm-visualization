@@ -63,7 +63,7 @@ view model =
                 ]
                 [ text label ]
     in
-    svg [ width w, height h ]
+    svg [ viewBox 0 0 w h ]
         [ g [ transform [ Translate (w / 2) (h / 2) ] ]
             [ g [] <| List.indexedMap makeSlice pieData
             , g [] <| List.map2 makeLabel pieData model

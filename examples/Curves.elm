@@ -109,7 +109,7 @@ view : List ( String, Curve, Color ) -> Svg String
 view model =
     div []
         [ Example.navigation "Curve type" exampleData
-        , svg [ width w, height h ]
+        , svg [ viewBox 0 0 w h ]
             [ rect [ width w, height h, fill <| Fill <| Color.rgb255 223 223 223 ] []
             , g [] <| List.indexedMap yGridLine <| Scale.ticks yScale 10
             , g [] <| List.indexedMap xGridLine <| Scale.ticks xScale 20

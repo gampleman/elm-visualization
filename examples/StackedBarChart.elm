@@ -129,7 +129,7 @@ view { values, labels, extent } =
         scaledValues =
             List.map (List.map (\( y1, y2 ) -> ( Scale.convert yScale y1, Scale.convert yScale y2 ))) yearValues
     in
-    svg [ width w, height h ]
+    svg [ viewBox 0 0 w h ]
         [ g [ transform [ Translate (padding.left - 1) (h - padding.bottom) ] ]
             [ Axis.bottom [ Axis.tickCount 10 ] (Scale.toRenderable String.fromInt xScale) ]
         , g [ transform [ Translate (padding.left - 1) padding.top ] ]

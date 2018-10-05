@@ -121,7 +121,7 @@ css =
 
 main : Svg msg
 main =
-    svg [ width w, height h ]
+    svg [ viewBox 0 0 w h ]
         [ style [] [ text css ]
         , g [ class [ "label" ], transform [ Translate (padding * 2) (h / 2) ] ]
             [ text_ [ fontSize 20 ] [ text "sin(2x)cos(2x)" ]

@@ -43,7 +43,7 @@ makePetal i =
 
 view : List Int -> Svg msg
 view model =
-    svg [ width w, height h, viewBox -500 -500 1000 1000 ] <|
+    svg [ viewBox -1000 -500 2000 2000 ] <|
         List.map makePetal model
 
 

@@ -99,7 +99,7 @@ drawChart config model =
                 ]
                 [ text label ]
     in
-    svg [ width (radius * 2), height (radius * 2) ]
+    svg [ viewBox 0 0 (radius * 2) (radius * 2) ]
         [ g [ transform [ Translate radius radius ] ]
             [ g [] <| List.indexedMap makeSlice pieData
             , g [] <| List.map2 makeLabel pieData model
