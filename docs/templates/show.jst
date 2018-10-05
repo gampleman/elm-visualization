@@ -61,16 +61,18 @@
       .bottom {
         display: flex;
         flex-direction: row;
-        width: <%= width + 300 %>px;
+        width: 100%;
       }
 
       main {
-        width: <%= width + 16 %>px;
+        width: 80%;
+	padding-left: 15px;
       }
 
       aside {
-        width: 300px;
-        padding-left: 25px;
+        width: 20%;
+        padding-left: 15px;
+	padding-right: 15px
       }
       aside ul {
         padding: 0;
@@ -86,12 +88,25 @@
       iframe {
         border: 1px solid #eee;
         overflow: hidden;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	border: 0;
+      }
+      .resp-container {
+	  position: relative;
+	  overflow: hidden;
+	  padding-top: <%= height / width * 100 %>%;
       }
       hr:first-of-type {
         display: none;
       }
       pre {
         font-size: 1.1em;
+	overflow: auto;
+	text-overflow: ellipsis;
       }
       <%= style.source('atom-one-light') %>
     </style>
@@ -107,9 +122,9 @@
     </div>
     <div class="bottom">
       <main>
-
-        <iframe src="<%= iframe %>" width="<%= width + 16 %>" height="<%= height + 16 %>" frameborder="1" scrolling="no"></iframe>
-
+	<div class=".resp-container">
+          <iframe src="<%= iframe %>" frameborder="1" scrolling="no"></iframe>
+	</div>
         <% _.each(sources, function(source) { %>
           <h2><%= source.basename %></h2>
           <div class="description"><%= source.firstComment %></div>
