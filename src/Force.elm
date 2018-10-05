@@ -61,7 +61,7 @@ initialAngle =
 {-| This will run the entire simulation until it is completed and then returns the entities. Essentially keeps calling
 `tick` until the simulation is done.
 
-Note that computing these is fairly computationally expensive and may freeze the UI for a while if the dataset is large.
+Note that this is fairly computationally expensive and may freeze the UI for a while if the dataset is large.
 
 -}
 computeSimulation : State comparable -> List (Entity comparable a) -> List (Entity comparable a)
@@ -78,7 +78,7 @@ computeSimulation state entities =
 
 
 {-| This is a convenience function for wrapping data up as Entities. The initial position of entities is arranged
-in a [phylotaxic pattern](https://code.gampleman.eu/elm-visualization/Petals/).
+in a [phylotaxic pattern](https://code.gampleman.eu/elm-visualization/Petals/). Goes well with `List.indexedMap`.
 -}
 entity : Int -> a -> Entity Int { value : a }
 entity index a =

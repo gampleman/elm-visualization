@@ -10,7 +10,7 @@ Renders an Axis based on a [Scale](./Scale).
 
     view =
       svg []
-        [ g [class "axis", transform "translate(0, 300)"]
+        [ g [ class [ "axis" ], transform [ Translate 0 300 ] ]
           [ Axis.left [ tickCount 10] myScale
           ]
         [

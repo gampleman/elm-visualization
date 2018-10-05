@@ -1,40 +1,18 @@
-module Shape
-    exposing
-        ( Arc
-        , PieConfig
-        , StackConfig
-        , StackResult
-        , arc
-        , area
-        , areaRadial
-        , basisCurve
-        , basisCurveClosed
-        , basisCurveOpen
-        , bundleCurve
-        , cardinalCurve
-        , cardinalCurveClosed
-        , cardinalCurveOpen
-        , catmullRomCurve
-        , catmullRomCurveClosed
-        , catmullRomCurveOpen
-        , centroid
-        , defaultPieConfig
-        , line
-        , lineRadial
-        , linearCurve
-        , monotoneInXCurve
-        , monotoneInYCurve
-        , naturalCurve
-        , pie
-        , sortByInsideOut
-        , stack
-        , stackOffsetDiverging
-        , stackOffsetExpand
-        , stackOffsetNone
-        , stackOffsetSilhouette
-        , stackOffsetWiggle
-        , stepCurve
-        )
+module Shape exposing
+    ( arc, Arc, centroid
+    , PieConfig, pie, defaultPieConfig
+    , line, lineRadial, area, areaRadial
+    , linearCurve
+    , basisCurve, basisCurveClosed, basisCurveOpen
+    , bundleCurve
+    , cardinalCurve, cardinalCurveClosed, cardinalCurveOpen
+    , catmullRomCurve, catmullRomCurveClosed, catmullRomCurveOpen
+    , monotoneInXCurve, monotoneInYCurve
+    , stepCurve, naturalCurve
+    , StackConfig, StackResult, stack
+    , stackOffsetNone, stackOffsetDiverging, stackOffsetExpand, stackOffsetSilhouette, stackOffsetWiggle
+    , sortByInsideOut
+    )
 
 {-| Visualizations typically consist of discrete graphical marks, such as symbols,
 arcs, lines and areas. While the rectangles of a bar chart may be easy enough to
@@ -125,19 +103,19 @@ import SubPath exposing (SubPath)
 easily modify these later.
 
 
-## innerRadius : Float
+### innerRadius : Float
 
 Usefull for creating a donut chart. A negative value is treated as zero. If larger
 than `outerRadius` they are swapped.
 
 
-## outerRadius : Float
+### outerRadius : Float
 
 The radius of the arc. A negative value is treated as zero. If smaller
 than `innerRadius` they are swapped.
 
 
-## cornerRadius : Float
+### cornerRadius : Float
 
 If the corner radius is greater than zero, the corners of the arc are rounded
 using circles of the given radius. For a circular sector, the two outer corners
@@ -152,24 +130,24 @@ be reduced as two adjacent rounded corners intersect. This is occurs more often
 with the inner corners.
 
 
-## startAngle : Float
+### startAngle : Float
 
 The angle is specified in radians, with 0 at -y (12 o’clock) and positive angles
 proceeding clockwise. If |endAngle - startAngle| ≥ τ, a complete circle or
 annulus is generated rather than a sector.
 
 
-## endAngle : Float
+### endAngle : Float
 
 The angle is specified in radians, with 0 at -y (12 o’clock) and positive angles
 proceeding clockwise. If |endAngle - startAngle| ≥ τ, a complete circle or annulus
 is generated rather than a sector.
 
 
-## padAngle : Float
+### padAngle : Float
 
 The pad angle is converted to a fixed linear distance separating adjacent arcs,
-defined as padRadius * padAngle. This distance is subtracted equally from the
+defined as padRadius \* padAngle. This distance is subtracted equally from the
 start and end of the arc. If the arc forms a complete circle or annulus,
 as when |endAngle - startAngle| ≥ τ, the pad angle is ignored.
 
@@ -181,7 +159,7 @@ For this reason, padding is typically only applied to annular sectors
 
 [![Pad Angle](https://code.gampleman.eu/elm-visualization/PadAngle/preview.png)](https://code.gampleman.eu/elm-visualization/PadAngle/)
 
-The recommended minimum inner radius when using padding is outerRadius * padAngle / sin(θ),
+The recommended minimum inner radius when using padding is outerRadius \* padAngle / sin(θ),
 where θ is the angular span of the smallest arc before padding. For example,
 if the outer radius is 200 pixels and the pad angle is 0.02 radians,
 a reasonable θ is 0.04 radians, and a reasonable inner radius is 100 pixels.
@@ -193,10 +171,10 @@ If you apply a constant pad angle to the arc generator directly, it tends to
 subtract disproportionately from smaller arcs, introducing distortion.
 
 
-## padRadius : Float
+### padRadius : Float
 
 The pad radius determines the fixed linear distance separating adjacent arcs,
-defined as padRadius * padAngle.
+defined as padRadius \* padAngle.
 
 -}
 type alias Arc =
@@ -211,11 +189,11 @@ type alias Arc =
 
 
 {-| The arc generator produces a [circular](https://en.wikipedia.org/wiki/Circular_sector)
-or [annular](https://en.wikipedia.org/wiki/Annulus_(mathematics)) sector, as in
+or [annular](https://en.wikipedia.org/wiki/Annulus_%28mathematics%29) sector, as in
 a pie or donut chart. If the difference between the start and end angles (the
-angular span) is greater than [τ](https://en.wikipedia.org/wiki/Turn_(geometry)#Tau_proposal),
+angular span) is greater than [τ](https://en.wikipedia.org/wiki/Turn_%28geometry%29#Tau_proposals),
 the arc generator will produce a complete circle or annulus. If it is less than
-[τ](https://en.wikipedia.org/wiki/Turn_(geometry)#Tau_proposal), arcs may have
+[τ](https://en.wikipedia.org/wiki/Turn_%28geometry%29#Tau_proposal), arcs may have
 rounded corners and angular padding. Arcs are always centered at ⟨0,0⟩; use a
 transform to move the arc to a different position.
 
@@ -250,14 +228,14 @@ centroid =
 to the `Arc` result. They are provided here simply for convenience.
 
 
-## valueFn : a -> Float
+### valueFn : a -> Float
 
 This is used to compute the actual numerical value used for computing the angles.
 You may use a `List.map` to preprocess data into numbers instead, but this is
 useful if trying to use `sortingFn`.
 
 
-## sortingFn : a -> a -> Order
+### sortingFn : a -> a -> Order
 
 Sorts the data. Sorting does not affect the order of the generated arc list,
 which is always in the same order as the input data list; it merely affects
@@ -265,7 +243,7 @@ the computed angles of each arc. The first arc starts at the start angle and the
 last arc ends at the end angle.
 
 
-## startAngle : Float
+### startAngle : Float
 
 The start angle here means the overall start angle of the pie, i.e., the start
 angle of the first arc. The units of angle are arbitrary, but if you plan to use
@@ -273,7 +251,7 @@ the pie generator in conjunction with an arc generator, you should specify an
 angle in radians, with 0 at -y (12 o’clock) and positive angles proceeding clockwise.
 
 
-## endAngle : Float
+### endAngle : Float
 
 The end angle here means the overall end angle of the pie, i.e., the end angle
 of the last arc. The units of angle are arbitrary, but if you plan to use the
@@ -283,7 +261,7 @@ in radians, with 0 at -y (12 o’clock) and positive angles proceeding clockwise
 The value of the end angle is constrained to startAngle ± τ, such that |endAngle - startAngle| ≤ τ.
 
 
-## padAngle : Float
+### padAngle : Float
 
 The pad angle here means the angular separation between each adjacent arc. The
 total amount of padding reserved is the specified angle times the number of
@@ -383,8 +361,8 @@ basisCurveOpen =
 
 {-| Produces a straightened cubic [basis spline](https://en.wikipedia.org/wiki/B-spline) using the specified control points,
 with the spline straightened according to the curve’s beta (a reasonable default is `0.85`). This curve is typically
-used in hierarchical edge bundling to disambiguate connections, as proposed by [Danny Holten](https://www.win.tue.nl/vis1/home/dholten/)
-in [Hierarchical Edge Bundles: Visualization of Adjacency Relations in Hierarchical Data](https://www.win.tue.nl/vis1/home/dholten/papers/bundles_infovis.pdf).
+used in hierarchical edge bundling to disambiguate connections, as proposed by Danny Holten
+in [Hierarchical Edge Bundles: Visualization of Adjacency Relations in Hierarchical Data](https://www.researchgate.net/profile/Danny_Holten/publication/6715561_Hierarchical_Edge_Bundles_Visualization_of_Adjacency_Relations_in_Hierarchical_Data/links/0deec535a57c5dc79d000000/Hierarchical-Edge-Bundles-Visualization-of-Adjacency-Relations-in-Hierarchical-Data.pdf?origin=publication_detail).
 
 This curve is not suitable to be used with areas.
 
@@ -484,7 +462,7 @@ catmullRomCurveOpen alpha =
     Curve.catmullRomOpen (clamp 0 1 alpha)
 
 
-{-| Produces a cubic spline that [preserves monotonicity](http://adsabs.harvard.edu/full/1990A%26A...239..443S)
+{-| Produces a cubic spline that [preserves monotonicity](https://en.wikipedia.org/wiki/Monotonic_function)
 in y, assuming monotonicity in x, as proposed by Steffen in
 [A simple method for monotonic interpolation in one dimension](http://adsabs.harvard.edu/full/1990A%26A...239..443S):
 “a smooth curve with continuous first-order derivatives that passes through any
@@ -499,7 +477,7 @@ monotoneInXCurve =
     Curve.monotoneX
 
 
-{-| Produces a cubic spline that [preserves monotonicity](http://adsabs.harvard.edu/full/1990A%26A...239..443S)
+{-| Produces a cubic spline that [preserves monotonicity](https://en.wikipedia.org/wiki/Monotonic_function)
 in y, assuming monotonicity in y, as proposed by Steffen in
 [A simple method for monotonic interpolation in one dimension](http://adsabs.harvard.edu/full/1990A%26A...239..443S):
 “a smooth curve with continuous first-order derivatives that passes through any

@@ -21,13 +21,11 @@ For [continuous](#ContinuousScale) quantitative data, you typically want a [line
 series data, a [time scale](#time).) If the distribution calls for it, consider
 transforming data using a [log scale](#log). A [quantize scale](#QuantizeScale) may aid
 differentiation by rounding continuous data to a fixed set of discrete values.
-Several built-in sequential color schemes are also provided.
 
 For discrete ordinal (ordered) or categorical (unordered) data, an [ordinal scale](#OrdinalScale)
 specifies an explicit mapping from a set of data values to a corresponding set
 of visual attributes (such as colors). The related [band](#BandScale) scale is
-useful for position-encoding ordinal data, such as bars in a bar chart. Several built-in categorical color scales are
-also provided.
+useful for position-encoding ordinal data, such as bars in a bar chart.
 
 Scales have no intrinsic visual representation. However, most scales can generate
 and format ticks for reference marks to aid in the construction of [axes](Axis).
@@ -39,8 +37,6 @@ and format ticks for reference marks to aid in the construction of [axes](Axis).
   - [Sequential](#SequentialScale)
   - [Quantize](#QuantizeScale)
   - [Ordinal](#OrdinalScale) ([Band](#BandScale))
-
-Color types come from [avh4/elm-color](https://package.elm-lang.org/packages/avh4/elm-color/latest/).
 
 @docs Scale
 

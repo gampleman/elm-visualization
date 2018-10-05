@@ -1,17 +1,8 @@
-module Histogram
-    exposing
-        ( Bin
-        , HistogramGenerator
-        , Threshold
-        , binCount
-        , compute
-        , custom
-        , float
-        , generator
-        , steps
-        , sturges
-        , withDomain
-        )
+module Histogram exposing
+    ( HistogramGenerator, float, generator, custom, withDomain
+    , Bin, compute
+    , Threshold, sturges, steps, binCount
+    )
 
 {-| A histogram is an accurate graphical representation of the distribution of
 numerical data. It is an estimate of the probability distribution of a continuous
@@ -20,7 +11,7 @@ variable (quantitative variable)
 [![Histogram](https://code.gampleman.eu/elm-visualization/Histogram/preview.png)](https://code.gampleman.eu/elm-visualization/Histogram/)
 
 To compute a histogram, one first configures a Histogram Generator and then uses
-it to compute a histogram. Histograms can then be visualized in a variaty of ways,
+it to compute a histogram. Histograms can then be visualized in a variety of ways,
 for example using Svg rects and linear scales.
 
 
@@ -192,11 +183,13 @@ compute list (H { value, threshold, domain }) =
                     { x0 =
                         if i > 0 then
                             Array.get (i - 1) thresholds |> Maybe.withDefault defaultValue
+
                         else
                             x0
                     , x1 =
                         if i < thresholdsCount then
                             thresh
+
                         else
                             x1
                     , values = []

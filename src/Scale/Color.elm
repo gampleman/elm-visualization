@@ -3,7 +3,7 @@ module Scale.Color exposing
     , viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator
     )
 
-{-| We provide sequential and categorical color schemes designed to work with [ordinal](Scale#OrdinalScale) and [sequential](Scale#SequentialScale) scales.
+{-| We provide sequential and categorical color schemes designed to work with [ordinal](Scale#OrdinalScale) and [sequential](Scale#SequentialScale) scales. Color types come from [avh4/elm-color](https://package.elm-lang.org/packages/avh4/elm-color/latest/).
 
 
 # Categorical
@@ -36,7 +36,7 @@ mkInterpolator range =
 Given a number t in the range [0,1], returns the corresponding
 color from the “viridis” perceptually-uniform color scheme designed
 by [van der Walt, Smith and Firing](https://bids.github.io/colormap/)
-for matplotlib, represented as a core Color value.
+for matplotlib.
 
 -}
 viridisInterpolator : Float -> Color
@@ -51,7 +51,7 @@ viridisInterpolator =
 Given a number t in the range [0,1], returns the corresponding
 color from the “magma” perceptually-uniform color scheme designed
 by [van der Walt, Smith and Firing](https://bids.github.io/colormap/)
-for matplotlib, represented as a core Color value.
+for matplotlib,.
 
 -}
 magmaInterpolator : Float -> Color
@@ -65,7 +65,7 @@ magmaInterpolator =
 Given a number t in the range [0,1], returns the corresponding
 color from the “inferno” perceptually-uniform color scheme designed
 by [van der Walt, Smith and Firing](https://bids.github.io/colormap/)
-for matplotlib, represented as a core Color value.
+for matplotlib.
 
 -}
 infernoInterpolator : Float -> Color
@@ -79,7 +79,7 @@ infernoInterpolator =
 Given a number t in the range [0,1], returns the corresponding
 color from the “plasma” perceptually-uniform color scheme designed
 by [van der Walt, Smith and Firing](https://bids.github.io/colormap/)
-for matplotlib, represented as a core Color value.
+for matplotlib.
 
 -}
 plasmaInterpolator : Float -> Color

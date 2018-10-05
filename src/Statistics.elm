@@ -40,8 +40,8 @@ predictable if they are.
 Differences from [List.range from the standard library](https://package.elm-lang.org/packages/elm/core/latest/List#range):
 
   - `List.range` is inclusive, meaning that the stop value will be included in the result
-  - `List.range` supports `Int`, whereas this uses `Float`s
-  - `List.range` supports only increasing intervals (i.e. `List.range 3 1 == []` vs. `range 3 1 -1 == [3, 2]`).
+  - `List.range` supports `Int`, whereas this uses `Float`
+  - `List.range` supports only increasing intervals (i.e. `List.range 3 1 == []` vs. `range 3 1 -1 == [3, 2]`)
   - `List.range` doesn't allow for specifying the step value
 
 -}
