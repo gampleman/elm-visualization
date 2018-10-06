@@ -220,7 +220,7 @@ verticalAttrs =
     }
 
 
-{-| A left orienteted axis. In this orientation, ticks are drawn to the left of the vertical domain path.
+{-| A left oriented axis. In this orientation, ticks are drawn to the left of the vertical domain path.
 -}
 left : List (Attribute value) -> RenderableScale a domain range value -> Svg msg
 left =
