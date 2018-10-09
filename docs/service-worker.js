@@ -77,11 +77,11 @@ self.__precacheManifest = [
   },
   {
     "url": "CustomPieChart/iframe.html",
-    "revision": "7cf5d125d0be04898170fa47f59cc76b"
+    "revision": "fe1db3eb003de7046405d791d042abb5"
   },
   {
     "url": "CustomPieChart/index.html",
-    "revision": "3a063f84042a9d7689ccd52121518792"
+    "revision": "3b561a9779edb305375e1c26af7577d7"
   },
   {
     "url": "ForceDirectedGraph/iframe.html",
@@ -205,11 +205,11 @@ self.__precacheManifest = [
   },
   {
     "url": "CustomPieChart/preview.png",
-    "revision": "93ba163cca30d4c718888330dcfb8323"
+    "revision": "da46d7dc2d9282e56493b755b252fa94"
   },
   {
     "url": "ForceDirectedGraph/preview.png",
-    "revision": "bb19e8fdee7e991b3b5a2251b220f858"
+    "revision": "4243f98206fd6f1fffef751044452b8f"
   },
   {
     "url": "Histogram/preview.png",

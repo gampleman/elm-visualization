@@ -12,6 +12,7 @@
 <span class="hljs-keyword">import</span> Shape <span class="hljs-keyword">exposing</span> (defaultPieConfig)
 <span class="hljs-keyword">import</span> TypedSvg <span class="hljs-keyword">exposing</span> (g, svg, text_)
 <span class="hljs-keyword">import</span> TypedSvg.Attributes <span class="hljs-keyword">exposing</span> (dy, fill, stroke, textAnchor, transform, viewBox)
+<span class="hljs-keyword">import</span> TypedSvg.Attributes.InPx <span class="hljs-keyword">exposing</span> (width, height)
 <span class="hljs-keyword">import</span> TypedSvg.Core <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Svg</span>, text)
 <span class="hljs-keyword">import</span> TypedSvg.Types <span class="hljs-keyword">exposing</span> (<span class="hljs-type">AnchorAlignment(..)</span>, <span class="hljs-type">Fill(..)</span>, <span class="hljs-type">Transform(..)</span>, em)
 
@@ -97,7 +98,8 @@
                 ]
                 [ text label ]
     <span class="hljs-keyword">in</span>
-    svg [ viewBox <span class="hljs-number">0</span> <span class="hljs-number">0</span> (radius * <span class="hljs-number">2</span>) (radius * <span class="hljs-number">2</span>) ]
+    svg [width
+     (radius * <span class="hljs-number">2</span>), height (radius * <span class="hljs-number">2</span>) ]
         [ g [ transform [ <span class="hljs-type">Translate</span> radius radius ] ]
             [ g [] &lt;| <span class="hljs-type">List</span>.indexedMap makeSlice pieData
             , g [] &lt;| <span class="hljs-type">List</span>.map2 makeLabel pieData model
