@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <title><%= displayName %> Example - Elm-Visualization</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="<%= displayName %>. <%= sources[0].firstComment %>" />
     <style media="screen">
       @import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic,700italic|Source+Code+Pro);
 
@@ -155,7 +156,7 @@
     <div class="bottom">
       <main>
         <div class="resp-container">
-          <iframe src="<%= iframe %>" frameborder="1" scrolling="no"></iframe>
+          <iframe src="<%= iframe %>" frameborder="1" scrolling="no" title="<%= displayName %> example"></iframe>
         </div>
         <% _.each(sources, function(source) { %>
           <h2><%= source.basename %></h2>
@@ -174,7 +175,7 @@
         <ul>
           <% _.each(allExamples, function(example) { %>
             <li <% if (example.name === name) { %>class="active"<% } %>>
-              <a href="../<%= example.name %>"><%= example.displayName %></a>
+              <a href="../<%= example.name %>/"><%= example.displayName %></a>
             </li>
           <% }); %>
         </ul>

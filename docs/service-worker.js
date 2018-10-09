@@ -25,7 +25,7 @@ self.__precacheManifest = [
   },
   {
     "url": "Background/index.html",
-    "revision": "aa07bb88332b9fd12b22706fd5c5d155"
+    "revision": "1fc4ab1a0d9004298038c71e487a713c"
   },
   {
     "url": "BarChart/iframe.html",
@@ -33,7 +33,7 @@ self.__precacheManifest = [
   },
   {
     "url": "BarChart/index.html",
-    "revision": "3f5b47eeb5ebd25a179669858944f354"
+    "revision": "fe31bbbbea21960210022363d64235c7"
   },
   {
     "url": "Centroid/iframe.html",
@@ -41,7 +41,7 @@ self.__precacheManifest = [
   },
   {
     "url": "Centroid/index.html",
-    "revision": "3b8928ff8186e2216f7741d873dc3ed3"
+    "revision": "6b13d154d95c0f03dadf51d0d58475c8"
   },
   {
     "url": "CornerRadius/iframe.html",
@@ -49,7 +49,7 @@ self.__precacheManifest = [
   },
   {
     "url": "CornerRadius/index.html",
-    "revision": "5031b64d5bbe12d3b464c832a236c5cc"
+    "revision": "f4581b8a261a6e38e37f934aaa0344f4"
   },
   {
     "url": "CrimeViz/iframe.html",
@@ -57,7 +57,7 @@ self.__precacheManifest = [
   },
   {
     "url": "CrimeViz/index.html",
-    "revision": "67682d91da4b2fe8f59c7dd9da9652ea"
+    "revision": "646fae0d95d59b310f7058c7692bcced"
   },
   {
     "url": "Cross/iframe.html",
@@ -73,7 +73,7 @@ self.__precacheManifest = [
   },
   {
     "url": "Curves/index.html",
-    "revision": "3c4d45b0fca7d438d18c4095cc69780f"
+    "revision": "cee5a115852f93577226bdbdda438229"
   },
   {
     "url": "CustomPieChart/iframe.html",
@@ -81,7 +81,7 @@ self.__precacheManifest = [
   },
   {
     "url": "CustomPieChart/index.html",
-    "revision": "8fc446191b1539f5d214d52fa1463b66"
+    "revision": "3a063f84042a9d7689ccd52121518792"
   },
   {
     "url": "ForceDirectedGraph/iframe.html",
@@ -89,7 +89,7 @@ self.__precacheManifest = [
   },
   {
     "url": "ForceDirectedGraph/index.html",
-    "revision": "c3dfb2ef5eb3156dbcd9722272874f09"
+    "revision": "327cee9479f5ce2f7688f6ab480f2873"
   },
   {
     "url": "Histogram/iframe.html",
@@ -105,11 +105,11 @@ self.__precacheManifest = [
   },
   {
     "url": "HistogramChart/index.html",
-    "revision": "725b944fd5270a1a0181870c9c818a5e"
+    "revision": "5dcb4534ed5782e443ddb54d309dcdca"
   },
   {
     "url": "index.html",
-    "revision": "b5dad7ddb6916ca2aa1d642e692882d5"
+    "revision": "f56fdd59d0569fb0626dc3a646f4dec2"
   },
   {
     "url": "LineChart/iframe.html",
@@ -117,7 +117,7 @@ self.__precacheManifest = [
   },
   {
     "url": "LineChart/index.html",
-    "revision": "f9dfa4a8554ed098abaceadddf55ce88"
+    "revision": "8e640985cf45e138b7196dff0c076a30"
   },
   {
     "url": "NorwegianCarSales/iframe.html",
@@ -125,7 +125,7 @@ self.__precacheManifest = [
   },
   {
     "url": "NorwegianCarSales/index.html",
-    "revision": "2c05f8829cbef9a695ae8e4a08f98563"
+    "revision": "c55dcf6a5cc9a55b77d0d5f71de3bd21"
   },
   {
     "url": "PadAngle/iframe.html",
@@ -133,7 +133,7 @@ self.__precacheManifest = [
   },
   {
     "url": "PadAngle/index.html",
-    "revision": "0db29adf167390ae6a6be2f802516fa7"
+    "revision": "c863b68b7c7edd14db39b0826a7b6fb8"
   },
   {
     "url": "Petals/iframe.html",
@@ -141,7 +141,7 @@ self.__precacheManifest = [
   },
   {
     "url": "Petals/index.html",
-    "revision": "8ca4f190781ed6e14b8abe3381f742dd"
+    "revision": "1fa164ed23f5ddbc62d3d2172f84c5b6"
   },
   {
     "url": "PieChart/iframe.html",
@@ -149,7 +149,7 @@ self.__precacheManifest = [
   },
   {
     "url": "PieChart/index.html",
-    "revision": "8c37bae09d9ff62c9c3153a0bbca0971"
+    "revision": "e7e16ba33b21c1ad20876015627fa56b"
   },
   {
     "url": "PolarPlot/iframe.html",
@@ -157,7 +157,7 @@ self.__precacheManifest = [
   },
   {
     "url": "PolarPlot/index.html",
-    "revision": "54f46df0b963c3b6b0455823ad05d3a2"
+    "revision": "e92616d56ae946bbd2dbbb25d292b7d5"
   },
   {
     "url": "PopulationMinnesota/iframe.html",
@@ -165,7 +165,7 @@ self.__precacheManifest = [
   },
   {
     "url": "PopulationMinnesota/index.html",
-    "revision": "1192551f53e8ce18da5cf38b46bddb74"
+    "revision": "eb1d409a8c4de0002bb91c920bdc96b9"
   },
   {
     "url": "StackedBarChart/iframe.html",
@@ -173,7 +173,7 @@ self.__precacheManifest = [
   },
   {
     "url": "StackedBarChart/index.html",
-    "revision": "226fd6df52dff4ab93f0331e44bfe497"
+    "revision": "bc7598e3277944b76e9b66e6852d89eb"
   },
   {
     "url": "Background/preview.png",
@@ -209,7 +209,7 @@ self.__precacheManifest = [
   },
   {
     "url": "ForceDirectedGraph/preview.png",
-    "revision": "667ff83f94d5cb2a1f0f921c425daeaf"
+    "revision": "bb19e8fdee7e991b3b5a2251b220f858"
   },
   {
     "url": "Histogram/preview.png",
