@@ -1,10 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <title><%= displayName %> Example - Elm-Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style media="screen">
       @import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic,700italic|Source+Code+Pro);
+
+      * {
+        box-sizing: border-box;
+      }
 
       html, head, body {
         margin: 0;
@@ -31,7 +36,8 @@
       header {
         display: flex;
         align-items: center;
-        width: <%= width + 300 + 16 %>px;
+        width: 100%;
+        max-width: <%= width + 300 + 16 %>px;
         font-size: 24px;
       }
       h1, h2, h3 {
@@ -43,6 +49,11 @@
         line-height: 0;
         font-size: 24px;
       }
+      header h1 img {
+        max-width: 421px;
+        width: 100%;
+      }
+
       header h2 {
         margin: 0;
         margin-left: 20px;
@@ -62,17 +73,23 @@
         display: flex;
         flex-direction: row;
         width: 100%;
+        max-width: <%= width + 300 %>px;
       }
 
       main {
-        width: 80%;
-	padding-left: 15px;
+        width: calc(100vw - 315px);
+        max-width: <%= width + 16 %>px;
+        padding-left: 15px;
+        flex-shrink: 1;
+        flex-grow: 1;
       }
 
       aside {
-        width: 20%;
+        width: 300px;
         padding-left: 15px;
-	padding-right: 15px
+        overflow: hidden;
+        transition: height 1s;
+        flex-shrink: 0;
       }
       aside ul {
         padding: 0;
@@ -85,28 +102,43 @@
         text-decoration: underline;
         font-weight: bold;
       }
+      .resp-container {
+        position: relative;
+        overflow: hidden;
+        padding-top: <%= height / width * 100 %>%;
+        max-width: <%= width + 16 %>px;
+      }
       iframe {
         border: 1px solid #eee;
         overflow: hidden;
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	border: 0;
-      }
-      .resp-container {
-	  position: relative;
-	  overflow: hidden;
-	  padding-top: <%= height / width * 100 %>%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
       }
       hr:first-of-type {
         display: none;
       }
       pre {
-        font-size: 1.1em;
-	overflow: auto;
-	text-overflow: ellipsis;
+        font-size: 14px;
+        overflow: auto;
+        word-wrap: normal;
+      }
+      @media only screen and (max-width: 900px) {
+          header h2, header span, header .title {
+            display: none;
+          }
+          main {
+            width: 100%;
+          }
+          .bottom {
+            flex-direction: column-reverse;
+          }
+          .bottom>a {
+            margin: 15px;
+          }
       }
       <%= style.source('atom-one-light') %>
     </style>
@@ -114,17 +146,17 @@
   <body>
     <div class="top">
       <header>
-        <h1><img src="../misc/logo-inline.png" width="421" alt="ELM-VISUALIZATION"/></h1>
+        <h1><img src="../misc/logo-inline.png" alt="ELM-VISUALIZATION"/></h1>
         <h2><a href="../">examples</a></h2>
         <span style="margin: 0 10px">/</span>
-        <h1><%= displayName %></h1>
+        <h1 class="title"><%= displayName %></h1>
       </header>
     </div>
     <div class="bottom">
       <main>
-	<div class=".resp-container">
+        <div class="resp-container">
           <iframe src="<%= iframe %>" frameborder="1" scrolling="no"></iframe>
-	</div>
+        </div>
         <% _.each(sources, function(source) { %>
           <h2><%= source.basename %></h2>
           <div class="description"><%= source.firstComment %></div>
@@ -148,5 +180,23 @@
         </ul>
       </aside>
     </div>
+    <script>
+      if (window.matchMedia('(max-width: 900px)').matches) {
+        var sidebar = document.querySelector('.bottom aside');
+        sidebar.style.height = '0';
+        var link = document.createElement('a');
+        link.href = "#";
+        link.innerText = "Menu";
+        open = false;
+        link.addEventListener('click', function() {
+          open = !open;
+          sidebar.style.height = open ? 'auto' : '0';
+        })
+        document.querySelector('.bottom').appendChild(link);
+      }
+      if ('serviceWorker' in navigator && location.hostname !== "localhost" || location.hostname !== "127.0.0.1") {
+        navigator.serviceWorker.register('../service-worker.js');
+      }
+    </script>
   </body>
 </html>

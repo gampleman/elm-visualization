@@ -1,7 +1,9 @@
 module CrimeViz exposing (main)
 
-{-| This module shows how to build a simple line and area chart using some of
-the primitives provided in this library.
+{-| This example shows a more opinionated style of a line chart.
+
+- The y axis tick marks show the starting values of each series.
+- We position and color a label next to each series.
 -}
 
 import Axis
@@ -15,7 +17,7 @@ import Statistics
 import Time
 import TypedSvg exposing (g, svg, text_)
 import TypedSvg.Attributes exposing (class, dy, fill, fontFamily, stroke, textAnchor, transform, viewBox)
-import TypedSvg.Attributes.InPx exposing (fontSize, height, strokeWidth, width, x, y)
+import TypedSvg.Attributes.InPx exposing (fontSize, height, strokeWidth, x, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..), em)
 

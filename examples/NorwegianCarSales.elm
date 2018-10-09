@@ -18,7 +18,7 @@ import Time exposing (Month(..))
 import Time.Extra exposing (Parts)
 import TypedSvg exposing (g, svg, text_)
 import TypedSvg.Attributes exposing (class, fill, fontFamily, transform, viewBox)
-import TypedSvg.Attributes.InPx exposing (fontSize, height, width)
+import TypedSvg.Attributes.InPx exposing (fontSize)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
 
