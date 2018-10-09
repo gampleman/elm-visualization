@@ -12,7 +12,7 @@ import Scale.Color
 import Shape
 import SubPath exposing (SubPath)
 import TypedSvg exposing (g, line, rect, svg, text_)
-import TypedSvg.Attributes as Explicit exposing (fill, fontFamily, stroke, transform)
+import TypedSvg.Attributes as Explicit exposing (fill, fontFamily, stroke, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, strokeWidth, width, x, x1, x2, y, y1, y2)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (Fill(..), Transform(..), percent)

@@ -12,7 +12,7 @@ import Path
 import Shape exposing (Arc, defaultPieConfig)
 import SubPath exposing (SubPath)
 import TypedSvg exposing (circle, g, svg)
-import TypedSvg.Attributes exposing (fill, stroke, transform)
+import TypedSvg.Attributes exposing (fill, stroke, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, width)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))

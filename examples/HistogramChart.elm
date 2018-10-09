@@ -9,7 +9,7 @@ import Histogram exposing (Bin, HistogramGenerator)
 import Random exposing (Generator, Seed)
 import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
 import TypedSvg exposing (g, rect, svg)
-import TypedSvg.Attributes exposing (class, fill, transform)
+import TypedSvg.Attributes exposing (class, fill, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
@@ -98,7 +98,7 @@ view model =
         bins =
             histogram model
     in
-    svg [ viewBox 0 0 w h ]
+    svg [ width w, height h ]
         [ g [ transform [ Translate (padding - 1) (h - padding) ] ]
             [ xAxis model ]
         , g [ transform [ Translate (padding - 1) padding ] ]

@@ -8,7 +8,7 @@ import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig
 import Scale.Color
 import Shape exposing (StackConfig, StackResult)
 import TypedSvg exposing (g, rect, svg)
-import TypedSvg.Attributes exposing (class, fill, transform)
+import TypedSvg.Attributes exposing (class, fill, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))

@@ -8,8 +8,8 @@ import Scale exposing (ContinuousScale)
 import Shape
 import Statistics
 import TypedSvg exposing (circle, g, line, style, svg, text_)
-import TypedSvg.Attributes exposing (class, dy, textAnchor, transform)
-import TypedSvg.Attributes.InPx exposing (fontSize, height, r, width, x, x2, y)
+import TypedSvg.Attributes exposing (class, dy, textAnchor, transform, viewBox)
+import TypedSvg.Attributes.InPx exposing (fontSize, r, x, x2, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), Transform(..), em)
 

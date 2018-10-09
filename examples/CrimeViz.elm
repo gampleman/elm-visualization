@@ -14,7 +14,7 @@ import Shape
 import Statistics
 import Time
 import TypedSvg exposing (g, svg, text_)
-import TypedSvg.Attributes exposing (class, dy, fill, fontFamily, stroke, textAnchor, transform)
+import TypedSvg.Attributes exposing (class, dy, fill, fontFamily, stroke, textAnchor, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (fontSize, height, strokeWidth, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..), em)

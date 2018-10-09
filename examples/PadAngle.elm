@@ -8,7 +8,7 @@ import Color exposing (Color)
 import Path
 import Shape exposing (Arc, defaultPieConfig)
 import TypedSvg exposing (g, svg)
-import TypedSvg.Attributes exposing (fill, stroke, transform)
+import TypedSvg.Attributes exposing (fill, stroke, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, width)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))

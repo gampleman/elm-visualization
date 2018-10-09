@@ -9,7 +9,7 @@ import Scale.Color
 import Shape exposing (StackConfig, StackResult)
 import Statistics
 import TypedSvg exposing (g, rect, svg, text_)
-import TypedSvg.Attributes exposing (class, dy, fill, fontFamily, textAnchor, transform)
+import TypedSvg.Attributes exposing (class, dy, fill, fontFamily, textAnchor, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (fontSize, height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..), em)
