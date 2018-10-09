@@ -17,8 +17,8 @@ import Shape exposing (StackConfig, StackResult)
 import Time exposing (Month(..))
 import Time.Extra exposing (Parts)
 import TypedSvg exposing (g, svg, text_)
-import TypedSvg.Attributes exposing (class, fill, fontFamily, transform)
-import TypedSvg.Attributes.InPx exposing (fontSize, height, width)
+import TypedSvg.Attributes exposing (class, fill, fontFamily, transform, viewBox)
+import TypedSvg.Attributes.InPx exposing (fontSize)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
 
@@ -143,7 +143,7 @@ view { values, labels, extent } =
     in
     div []
         [ titleNavigation
-        , svg [ width w, height h ]
+        , svg [ viewBox 0 0 w h ]
             [ g [ transform [ Translate (padding - 1) (h - padding) ] ]
                 [ xAxis ]
             , g [ class [ "series" ] ] paths

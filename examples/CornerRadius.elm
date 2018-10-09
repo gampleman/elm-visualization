@@ -8,8 +8,8 @@ import Color exposing (Color)
 import Path exposing (Path)
 import Shape exposing (Arc, defaultPieConfig)
 import TypedSvg exposing (circle, g, svg)
-import TypedSvg.Attributes exposing (fill, stroke, transform)
-import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, width)
+import TypedSvg.Attributes exposing (fill, stroke, transform, viewBox)
+import TypedSvg.Attributes.InPx exposing (cx, cy, r)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
 
@@ -131,7 +131,7 @@ view model =
         pieData =
             model |> Shape.pie { defaultPieConfig | outerRadius = mainRadius, cornerRadius = cornerRadius }
     in
-    svg [ width w, height h ]
+    svg [ viewBox 0 0 w h ]
         [ circular pieData
         , annular pieData
         ]

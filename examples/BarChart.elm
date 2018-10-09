@@ -9,7 +9,7 @@ import SampleData exposing (timeSeries)
 import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
 import Time
 import TypedSvg exposing (g, rect, style, svg, text_)
-import TypedSvg.Attributes exposing (class, textAnchor, transform)
+import TypedSvg.Attributes exposing (class, textAnchor, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), Transform(..))
@@ -77,7 +77,7 @@ column scale ( date, value ) =
 
 view : List ( Time.Posix, Float ) -> Svg msg
 view model =
-    svg [ width w, height h ]
+    svg [ viewBox 0 0 w h ]
         [ style [] [ text """
             .column rect { fill: rgba(118, 214, 78, 0.8); }
             .column text { display: none; }

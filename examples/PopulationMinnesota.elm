@@ -9,7 +9,7 @@ import Scale.Color
 import Shape exposing (StackConfig, StackResult)
 import Statistics
 import TypedSvg exposing (g, rect, svg, text_)
-import TypedSvg.Attributes exposing (class, dy, fill, fontFamily, textAnchor, transform)
+import TypedSvg.Attributes exposing (class, dy, fill, fontFamily, textAnchor, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (fontSize, height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..), em)
@@ -118,7 +118,7 @@ view { values, labels, extent } =
         yScale =
             Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( padding, h - padding ) populationMinnesota1850.categories
     in
-    svg [ width w, height h ]
+    svg [ viewBox 0 0 w h ]
         [ g [ transform [ Translate 0 (h - padding) ] ]
             [ Axis.bottom [ Axis.tickFormat (absoluteTickFormat xScale 10) ] xScale ]
         , g [ class [ "series" ] ] <|

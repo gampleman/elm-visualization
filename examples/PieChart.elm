@@ -8,7 +8,7 @@ import Color exposing (Color)
 import Path
 import Shape exposing (defaultPieConfig)
 import TypedSvg exposing (g, svg, text_)
-import TypedSvg.Attributes exposing (dy, fill, stroke, textAnchor, transform)
+import TypedSvg.Attributes exposing (dy, fill, stroke, textAnchor, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, width)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..), em)
@@ -63,7 +63,7 @@ view model =
                 ]
                 [ text label ]
     in
-    svg [ width w, height h ]
+    svg [ viewBox 0 0 w h ]
         [ g [ transform [ Translate (w / 2) (h / 2) ] ]
             [ g [] <| List.indexedMap makeSlice pieData
             , g [] <| List.map2 makeLabel pieData model

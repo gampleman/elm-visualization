@@ -8,7 +8,7 @@ import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig
 import Scale.Color
 import Shape exposing (StackConfig, StackResult)
 import TypedSvg exposing (g, rect, svg)
-import TypedSvg.Attributes exposing (class, fill, transform)
+import TypedSvg.Attributes exposing (class, fill, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
@@ -129,7 +129,7 @@ view { values, labels, extent } =
         scaledValues =
             List.map (List.map (\( y1, y2 ) -> ( Scale.convert yScale y1, Scale.convert yScale y2 ))) yearValues
     in
-    svg [ width w, height h ]
+    svg [ viewBox 0 0 w h ]
         [ g [ transform [ Translate (padding.left - 1) (h - padding.bottom) ] ]
             [ Axis.bottom [ Axis.tickCount 10 ] (Scale.toRenderable String.fromInt xScale) ]
         , g [ transform [ Translate (padding.left - 1) padding.top ] ]

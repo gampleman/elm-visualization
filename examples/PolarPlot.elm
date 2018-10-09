@@ -8,8 +8,8 @@ import Scale exposing (ContinuousScale)
 import Shape
 import Statistics
 import TypedSvg exposing (circle, g, line, style, svg, text_)
-import TypedSvg.Attributes exposing (class, dy, textAnchor, transform)
-import TypedSvg.Attributes.InPx exposing (fontSize, height, r, width, x, x2, y)
+import TypedSvg.Attributes exposing (class, dy, textAnchor, transform, viewBox)
+import TypedSvg.Attributes.InPx exposing (fontSize, r, x, x2, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), Transform(..), em)
 
@@ -121,7 +121,7 @@ css =
 
 main : Svg msg
 main =
-    svg [ width w, height h ]
+    svg [ viewBox 0 0 w h ]
         [ style [] [ text css ]
         , g [ class [ "label" ], transform [ Translate (padding * 2) (h / 2) ] ]
             [ text_ [ fontSize 20 ] [ text "sin(2x)cos(2x)" ]

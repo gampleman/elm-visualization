@@ -12,8 +12,7 @@ import Html.Events exposing (onInput)
 import Path
 import Shape exposing (defaultPieConfig)
 import TypedSvg exposing (g, svg, text_)
-import TypedSvg.Attributes exposing (dy, fill, stroke, textAnchor, transform)
-import TypedSvg.Attributes.InPx exposing (height, width)
+import TypedSvg.Attributes exposing (dy, fill, stroke, textAnchor, transform, viewBox)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..), em)
 
@@ -99,7 +98,7 @@ drawChart config model =
                 ]
                 [ text label ]
     in
-    svg [ width (radius * 2), height (radius * 2) ]
+    svg [ viewBox 0 0 (radius * 2) (radius * 2) ]
         [ g [ transform [ Translate radius radius ] ]
             [ g [] <| List.indexedMap makeSlice pieData
             , g [] <| List.map2 makeLabel pieData model

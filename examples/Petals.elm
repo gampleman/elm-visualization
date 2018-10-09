@@ -9,7 +9,7 @@ import Scale
 import Scale.Color
 import TypedSvg exposing (circle, svg)
 import TypedSvg.Attributes exposing (fill, viewBox)
-import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, width)
+import TypedSvg.Attributes.InPx exposing (cx, cy, r)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..))
 
@@ -43,7 +43,7 @@ makePetal i =
 
 view : List Int -> Svg msg
 view model =
-    svg [ width w, height h, viewBox -500 -500 1000 1000 ] <|
+    svg [ viewBox -1000 -500 2000 2000 ] <|
         List.map makePetal model
 
 

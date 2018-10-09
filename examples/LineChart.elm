@@ -12,8 +12,8 @@ import Scale exposing (ContinuousScale)
 import Shape
 import Time
 import TypedSvg exposing (g, svg)
-import TypedSvg.Attributes exposing (class, fill, stroke, transform)
-import TypedSvg.Attributes.InPx exposing (height, strokeWidth, width)
+import TypedSvg.Attributes exposing (class, fill, stroke, transform, viewBox)
+import TypedSvg.Attributes.InPx exposing (strokeWidth)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
 
@@ -80,7 +80,7 @@ area model =
 
 view : List ( Time.Posix, Float ) -> Svg msg
 view model =
-    svg [ width w, height h ]
+    svg [ viewBox 0 0 w h ]
         [ g [ transform [ Translate (padding - 1) (h - padding) ] ]
             [ xAxis model ]
         , g [ transform [ Translate (padding - 1) padding ] ]

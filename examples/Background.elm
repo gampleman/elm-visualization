@@ -12,8 +12,8 @@ import SampleData exposing (miserablesGraph)
 import Scale exposing (SequentialScale)
 import Scale.Color
 import TypedSvg exposing (circle, g, line, polygon, svg, title)
-import TypedSvg.Attributes exposing (class, fill, points, stroke)
-import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, strokeWidth, width, x1, x2, y1, y2)
+import TypedSvg.Attributes exposing (class, fill, points, stroke, viewBox)
+import TypedSvg.Attributes.InPx exposing (cx, cy, r, strokeWidth, x1, x2, y1, y2)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (Fill(..))
 
@@ -174,7 +174,7 @@ nodeElement node =
 
 
 view model =
-    svg [ width w, height h ]
+    svg [ viewBox 0 0 w h]
         [ g [ class [ "links" ] ] <| List.map (linkElement model) <| Graph.edges model
         , g [ class [ "nodes" ] ] <| List.map nodeElement <| Graph.nodes model
         ]
