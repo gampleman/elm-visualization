@@ -84,7 +84,11 @@
         <% _.each(allExamples, function(example) { %>
           <li>
             <a href="<%= example.name %>">
-              <img src="<%= example.name %>/preview.png" srcset="<%= example.name %>/preview.png 1x, <%= example.name %>/preview@2x.png 2x, <%= example.name %>/preview@3x.png 3x" width="<%= Math.floor(width / 3) %>" height="<%= Math.floor(height / 3) %>" />
+              <picture>
+                <source srcset="<%= example.name %>/preview.webp 1x, <%= example.name %>/preview@2x.webp 2x, <%= example.name %>/preview@3x.webp 3x" type="image/webp" />
+                <source srcset="<%= example.name %>/preview.png 1x, <%= example.name %>/preview@2x.png 2x, <%= example.name %>/preview@3x.png 3x" type="image/png" />
+                <img src="<%= example.name %>/preview.png" width="<%= Math.floor(width / 3) %>" height="<%= Math.floor(height / 3) %>" />
+              </picture>
               <h3><%= example.displayName %></h3>
             </a>
           </li>
