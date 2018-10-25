@@ -3,7 +3,7 @@ module Force.QuadTree exposing (Config, QuadTree(..), Quadrant(..), empty, fromL
 {-| A quadtree that can store an aggregate in the nodes.
 Intended for use in n-body simulation, specifically Barnes-Hut
 
-[[[[<https://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation#Calculating_the_force_acting_on_a_body>](https://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation#Calculating_the_force_acting_on_a_body)](https://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation#Calculating_the_force_acting_on_a_body)](https://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation#Calculating_the_force_acting_on_a_body)](https://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation#Calculating_the_force_acting_on_a_body)
+<https://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation#Calculating_the_force_acting_on_a_body>
 
 -}
 
@@ -105,6 +105,7 @@ insertBy toPoint vertex qtree =
                             }
                 in
                 List.foldl (insertBy toPoint) initial (first :: rest)
+
             else
                 Leaf
                     { boundingBox = BoundingBox2d.hull leaf.boundingBox (BoundingBox2d.singleton (toPoint vertex))
@@ -118,18 +119,48 @@ insertBy toPoint vertex qtree =
                     toPoint vertex
             in
             if BoundingBox2d.contains point node.boundingBox then
+                -- NOTE: writing out the full records here gives ~50% speed increase
                 case quadrant node.boundingBox point of
                     NE ->
-                        Node { node | ne = insertBy toPoint vertex node.ne }
+                        Node
+                            { boundingBox = node.boundingBox
+                            , aggregate = node.aggregate
+                            , ne = insertBy toPoint vertex node.ne
+                            , se = node.se
+                            , nw = node.nw
+                            , sw = node.sw
+                            }
 
                     SE ->
-                        Node { node | se = insertBy toPoint vertex node.se }
+                        Node
+                            { boundingBox = node.boundingBox
+                            , aggregate = node.aggregate
+                            , ne = node.ne
+                            , se = insertBy toPoint vertex node.se
+                            , nw = node.nw
+                            , sw = node.sw
+                            }
 
                     NW ->
-                        Node { node | nw = insertBy toPoint vertex node.nw }
+                        Node
+                            { boundingBox = node.boundingBox
+                            , aggregate = node.aggregate
+                            , ne = node.ne
+                            , se = node.se
+                            , nw = insertBy toPoint vertex node.nw
+                            , sw = node.sw
+                            }
 
                     SW ->
-                        Node { node | sw = insertBy toPoint vertex node.sw }
+                        Node
+                            { boundingBox = node.boundingBox
+                            , aggregate = node.aggregate
+                            , ne = node.ne
+                            , se = node.se
+                            , nw = node.nw
+                            , sw = insertBy toPoint vertex node.sw
+                            }
+
             else
                 let
                     { minX, minY, maxX, maxY } =
@@ -202,10 +233,13 @@ quadrant boundingBox point =
     if y >= midY then
         if x >= midX then
             NE
+
         else
             NW
+
     else if x >= midX then
         SE
+
     else
         SW
 
