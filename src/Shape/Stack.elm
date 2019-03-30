@@ -1,13 +1,12 @@
-module Shape.Stack
-    exposing
-        ( computeStack
-        , offsetDiverging
-        , offsetExpand
-        , offsetNone
-        , offsetSilhouette
-        , offsetWiggle
-        , sortByInsideOut
-        )
+module Shape.Stack exposing
+    ( computeStack
+    , offsetDiverging
+    , offsetExpand
+    , offsetNone
+    , offsetSilhouette
+    , offsetWiggle
+    , sortByInsideOut
+    )
 
 import List.Extra as List
 
@@ -65,6 +64,7 @@ offsetNone series =
                     -- fall back to s00 when s01 is NaN
                     if isNaN s01 then
                         ( s00, s11 + s00 )
+
                     else
                         ( s01, s11 + s01 )
 
@@ -95,8 +95,10 @@ offsetDiverging series =
                     in
                     if dy >= 0 then
                         ( yp + dy, yn, ( yp, yp + dy ) :: accum )
+
                     else if dy < 0 then
                         ( yp, yn + dy, ( yn + dy, yn ) :: accum )
+
                     else
                         ( yp, yn, ( yp, y ) :: accum )
 
@@ -192,6 +194,7 @@ offsetWiggle series =
                 safeDivision a b =
                     if b == 0 then
                         0
+
                     else
                         a / b
 
@@ -230,6 +233,7 @@ sortByInsideOut toNumber items =
         folder ( element, sum ) { bottom, bottoms, top, tops } =
             if top < bottom then
                 { bottom = bottom, bottoms = bottoms, top = top + sum, tops = element :: tops }
+
             else
                 { bottom = bottom + sum, bottoms = element :: bottoms, top = top, tops = tops }
 

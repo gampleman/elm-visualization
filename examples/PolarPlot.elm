@@ -60,12 +60,14 @@ spoke angle =
             , textAnchor
                 (if angle < 270 && angle > 90 then
                     AnchorEnd
+
                  else
                     AnchorInherit
                 )
             , transform
                 (if angle < 270 && angle > 90 then
                     [ Rotate 180 (mainRadius + 6) 0 ]
+
                  else
                     []
                 )

@@ -50,6 +50,7 @@ convert domain ( head, tail ) val =
                         r :: rs ->
                             if val > d then
                                 helper ds rs
+
                             else
                                 r
     in
@@ -75,6 +76,7 @@ invertExtent ( mi, ma ) ( head, tail ) val =
 
                             _ ->
                                 Nothing
+
                     else
                         case dmn of
                             [] ->

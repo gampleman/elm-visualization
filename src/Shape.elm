@@ -79,10 +79,8 @@ The order of the layers. Normal list functions can be used, for instance
     -- keep order of the input data
     identity
 
-
     -- reverse
     List.reverse
-
 
     -- decreasing by sum of the values (largest is lowest)
     List.sortBy (Tuple.second >> List.sum >> negate)

@@ -24,8 +24,10 @@ bisectRight item array extent =
                         in
                         if get mid >= item then
                             helper lo mid
+
                         else
                             helper (mid + 1) hi
+
                     else
                         lo
             in
