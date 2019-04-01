@@ -1,4 +1,4 @@
-module Shape.Pie exposing (arc, arc_, boolToArc, boolToDirection, centroid, cornerTangents, epsilon, intersect, makeArc, mod, myAsin, pie)
+module Shape.Pie exposing (arc, centroid, pie)
 
 import Array
 import Dict
