@@ -14,6 +14,7 @@ bimap ( d0, d1 ) ( r0, r1 ) deinterpolate reinterpolate =
         ( de, re ) =
             if d1 < d0 then
                 ( deinterpolate d1 d0, reinterpolate r1 r0 )
+
             else
                 ( deinterpolate d0 d1, reinterpolate r0 r1 )
     in
@@ -39,6 +40,7 @@ toFixed precision value =
                 [ val ] ->
                     if precision > 0 then
                         [ val, String.padRight precision '0' "" ]
+
                     else
                         [ val ]
 

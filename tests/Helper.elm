@@ -19,6 +19,7 @@ pathEqual str path =
         format s =
             if abs (s - toFloat (round s)) < 1.0e-6 then
                 String.fromInt (round s)
+
             else
                 String.fromFloat (toFloat (round (s * 1.0e6)) / 1.0e6)
 
@@ -53,6 +54,7 @@ precision =
 isAbout a b =
     if truncate ((a - b) * precision) == 0 then
         Expect.pass
+
     else
         Expect.equal a b
 
@@ -67,6 +69,7 @@ isBetween ( b, c ) a =
     in
     if round (a * precision) >= round (mi * precision) && round (a * precision) <= round (ma * precision) then
         Expect.pass
+
     else
         Expect.fail (Debug.toString a ++ "\n╷\n| isBetween\n╵\n" ++ Debug.toString ( mi, ma ))
 
@@ -84,6 +87,7 @@ expectAny expectations =
     in
     if List.length failuires == List.length expectations then
         Expect.fail <| (++) "Expected at least one of the following to pass:\n" <| String.join "\n" <| List.map (.reason >> Test.Runner.Failure.format "") failuires
+
     else
         Expect.pass
 

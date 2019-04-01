@@ -174,7 +174,7 @@ nodeElement node =
 
 
 view model =
-    svg [ viewBox 0 0 w h]
+    svg [ viewBox 0 0 w h ]
         [ g [ class [ "links" ] ] <| List.map (linkElement model) <| Graph.edges model
         , g [ class [ "nodes" ] ] <| List.map nodeElement <| Graph.nodes model
         ]
