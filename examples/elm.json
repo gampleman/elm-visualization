@@ -22,7 +22,7 @@
             "elm-community/typed-svg": "4.0.0",
             "folkertdev/one-true-path-experiment": "4.0.1",
             "ianmackenzie/elm-geometry": "1.2.1",
-            "justinmimbs/time-extra": "1.0.1",
+            "justinmimbs/time-extra": "1.1.0",
             "mpizenberg/elm-pointer-events": "3.0.0",
             "ryannhg/date-format": "2.3.0"
         },
