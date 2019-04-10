@@ -23,7 +23,7 @@
             "folkertdev/one-true-path-experiment": "4.0.2",
             "ianmackenzie/elm-geometry": "1.2.1",
             "justinmimbs/time-extra": "1.1.0",
-            "mpizenberg/elm-pointer-events": "4.0.0",
+            "mpizenberg/elm-pointer-events": "4.0.1",
             "ryannhg/date-format": "2.3.0"
         },
         "indirect": {
