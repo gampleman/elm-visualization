@@ -51,9 +51,6 @@ tanh x =
 interpolate : View -> View -> ( Float, Float -> View )
 interpolate a b =
     let
-        _ =
-            Debug.log "a, b" ( a, b )
-
         dx =
             b.cx - a.cx
 
@@ -99,7 +96,6 @@ interpolate a b =
             s_ =
                 (r1 - r0)
                     / ρ
-                    |> Debug.log "s_"
         in
         ( s_ * 1000
         , \t ->

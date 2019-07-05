@@ -447,7 +447,6 @@ update msg (Zoom model) =
                     | touchStarted = False
                 }
                 |> schedule newTransform position0
-                |> Debug.log "after dblclick"
 
         MouseDown position matrix ->
             Zoom
