@@ -1,7 +1,8 @@
 module Statistics exposing
     ( extent, extentBy, extentWith
     , variance, deviation, quantile
-    , ticks, tickStep, range, peaks
+    , ticks, tickStep, range
+    , peaks
     )
 
 {-|
@@ -314,56 +315,72 @@ quantile p values =
                 in
                 Just <| value0 + (value1 - value0) * (i - toFloat i0)
 
+
 mean : List Float -> Float
 mean xs =
     List.sum xs / toFloat (List.length xs)
 
-peaks : (a -> Float) -> {lookaround: Int, sensitivity: Float, coallesce: Int} -> List a -> List a
-peaks accessor {lookaround, sensitivity, coallesce} =
-    let
-        preprocess index datum = { datum = datum, index = index, value = accessor datum}
 
-        peakiness results before after  =
+peaks : (a -> Float) -> { lookaround : Int, sensitivity : Float, coallesce : Int } -> List a -> List a
+peaks accessor { lookaround, sensitivity, coallesce } =
+    let
+        preprocess index datum =
+            { datum = datum, index = index, value = accessor datum }
+
+        peakiness results before after =
             case after of
-                [] -> List.reverse results
+                [] ->
+                    List.reverse results
+
                 x :: xs ->
                     let
-                        result = {x | value = x.value - max (List.take lookaround before |> List.map .value |> List.minimum |> Maybe.withDefault 0) (List.take lookaround xs |> List.map .value |> List.minimum |> Maybe.withDefault 0)}
+                        result =
+                            { x | value = x.value - max (List.take lookaround before |> List.map .value |> List.minimum |> Maybe.withDefault 0) (List.take lookaround xs |> List.map .value |> List.minimum |> Maybe.withDefault 0) }
                     in
-
                     peakiness (result :: results) (x :: before) xs
 
         normalize xs =
             let
-                vals = List.map .value xs
-                avg = mean vals
-                stdev = deviation vals |> Maybe.withDefault 0
-            in
-                List.map (\x -> {x | value = (x.value - avg) / stdev}) xs
+                vals =
+                    List.map .value xs
 
-        candidates = List.filter (\x -> x.value > sensitivity)
+                avg =
+                    mean vals
+
+                stdev =
+                    deviation vals |> Maybe.withDefault 0
+            in
+            List.map (\x -> { x | value = (x.value - avg) / stdev }) xs
+
+        candidates =
+            List.filter (\x -> x.value > sensitivity)
 
         group xs =
             case xs of
-                [] -> []
+                [] ->
+                    []
+
                 head :: tail ->
-                    groupHelp head [[head]] tail
+                    groupHelp head [ [ head ] ] tail
 
         groupHelp x results xs =
             case xs of
-                [] -> List.map List.reverse results |> List.reverse
+                [] ->
+                    List.map List.reverse results |> List.reverse
+
                 y :: rest ->
                     if y.index - x.index < coallesce then
                         case results of
-                            [] -> groupHelp y [[y]] (rest)
-                            h :: t -> groupHelp y ((y :: h) :: t) ( rest)
+                            [] ->
+                                groupHelp y [ [ y ] ] rest
+
+                            h :: t ->
+                                groupHelp y ((y :: h) :: t) rest
+
                     else
-                        groupHelp y ([y] :: results) ( rest)
-
-
+                        groupHelp y ([ y ] :: results) rest
     in
-
-        List.indexedMap preprocess
+    List.indexedMap preprocess
         >> peakiness [] []
         >> normalize
         >> candidates
