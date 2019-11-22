@@ -3,7 +3,7 @@ module Interpolation exposing
     , float, int, step, rgb, rgbWithGamma, hsl, hslLong
     , map, map2, map3, map4, map5, piecewise
     , inParallel, list, ListCombiner(..), combineParallel
-    , quantize
+    , samples
     )
 
 {-| This module provides a variety of interpolation methods for blending between two values.
@@ -30,7 +30,7 @@ so that you can build interpolators for your own custom datatypes.
 
 ## Helpers
 
-@docs quantize
+@docs samples
 
 -}
 
@@ -63,9 +63,15 @@ map =
 
 {-| Combine two interpolators, combining them with the given function.
 
-    interpolatePosition : ( Float, Float ) -> ( Float, Float ) -> Interpolator ( Float, Float )
-    interpolatePosition ( x1, y1 ) ( x2, y2 ) =
-        Interpolation.map2 Tuple.pair (Interpolation.float x1 x2) (Interpolation.float y1 y2)
+    type alias Coords =
+        ( Float, Float )
+
+    interpolateCoords : Coords -> Coords -> Interpolator Coords
+    interpolateCoords ( x1, y1 ) ( x2, y2 ) =
+        Interpolation.map2
+            Tuple.pair
+            (Interpolation.float x1 x2)
+            (Interpolation.float y1 y2)
 
 -}
 map2 : (a -> b -> c) -> Interpolator a -> Interpolator b -> Interpolator c
@@ -174,15 +180,25 @@ int from to =
 
 The list is provided is passed as head and tail seperately, to avoid needing to handle the empty list case.
 
-     type StageOfGrief = Denial | Anger | Bargaining | Depression | Acceptance
+     type StageOfGrief
+         = Denial
+         | Anger
+         | Bargaining
+         | Depression
+         | Acceptance
 
      griefInterpolator : Interpolator StageOfGrief
      griefInterpolator =
-         Interpolation.step Denial [ Anger, Bargaining, Depression, Acceptance ]
+         Interpolation.step Denial
+             [ Anger
+             , Bargaining
+             , Depression
+             , Acceptance
+             ]
 
      griefInterpolator 0 --> Denial
      griefInterpolator 0.5 --> Bargaining
-     griefInterpolator 1.1 -> Acceptance
+     griefInterpolator 1.1 --> Acceptance
 
 -}
 step : a -> List a -> Interpolator a
@@ -293,11 +309,11 @@ gammaCorrected gamma from to =
 
 {-| Returns a list of uniformly spaced samples from the specified interpolator. The first sample is always at t = 0, and the last sample is always at t = 1. This can be useful in generating a fixed number of samples from a given interpolator.
 
-Can be quite handy when debugging interpolators.
+Can be quite handy when debugging interpolators or as a way to create a quantize scale.
 
 -}
-quantize : Int -> Interpolator a -> List a
-quantize n interpolator =
+samples : Int -> Interpolator a -> List a
+samples n interpolator =
     List.map (\i -> interpolator (toFloat i / (toFloat n - 1))) (List.range 0 (n - 1))
 
 
@@ -426,10 +442,22 @@ list config from to =
                                 Debug.todo "Oh shit"
                    ]
                 ++ result
+
+        resultingInterpolator =
+            Dict.foldl folder [] fromIds
+                ++ onTop
+                |> inParallel
     in
-    Dict.foldl folder [] fromIds
-        ++ onTop
-        |> inParallel
+    \t ->
+        let
+            result =
+                resultingInterpolator t
+        in
+        if t >= 1 then
+            List.filter (\item -> not (Dict.member (config.id item) removals)) result
+
+        else
+            result
 
 
 {-| -}

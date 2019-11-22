@@ -1,5 +1,5 @@
 module Transition exposing
-    ( Transition, for, easeFor, play, value, isComplete
+    ( Transition, for, easeFor, constant, step, value, isComplete
     , Easing, easeLinear, easeCubic
     )
 
@@ -7,7 +7,85 @@ module Transition exposing
 it is specifically designed for the needs of data visualization apps. The main idea is that one animates data in some
 intermediate form and then leaves the `view` function to display the data as normal.
 
-@docs Transition, for, easeFor, play, value, isComplete
+
+### Setting up animation in an app
+
+While there are many ways to use this module, a typical setup will look like this:
+
+    import Browser.Events
+    import Interpolation exposing (Interpolator)
+    import Transition exposing (Transition)
+
+    type alias Model =
+        { transition : Transition MyThing
+        }
+
+    type Msg
+        = Tick Int
+        | StartAnimation MyThing
+
+First setup a default transition that doesn't actually do anything:
+
+    init : () -> ( Model, Cmd Msg )
+    init () =
+        ( { transition = Transition.constant initialThing }
+        , Cmd.none
+        )
+
+Next setup a subscription:
+
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        if Transition.isComplete model.transition then
+            Sub.none
+
+        else
+            Browser.Events.onAnimationFrameDelta (round >> Tick)
+
+Define an interpolator for your value:
+
+    interpolateThing : MyThing -> MyThing -> Interpolator MyThing
+    interpolateThing from to =
+         -- ...
+
+Then handle stuff in your update function:
+
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            Tick t ->
+                ( { model
+                    | transition = Transition.step t model.transition
+                  }
+                , Cmd.none
+                )
+
+            StartAnimation newThing ->
+                let
+                    oldThing =
+                        Transition.value model.transition
+                in
+                ( { model
+                    | transition =
+                        Transition.for 600 (interpolateThing oldThing newThing)
+                  }
+                , Cmd.none
+                )
+
+Then make your view like normal:
+
+    view : Model -> Html Msg
+    view model =
+        viewMyThing (Transition.value model.transition)
+
+    viewMyThing : MyThing -> Html Msg
+    viewMyThing thing =
+        --- ...
+
+
+## Transitions
+
+@docs Transition, for, easeFor, constant, step, value, isComplete
 
 
 ## Easing
@@ -19,10 +97,17 @@ intermediate form and then leaves the `view` function to display the data as nor
 import Interpolation exposing (Interpolator)
 
 
-{-| A transition is a smooth interpolations between a beginning state and an end state, with a duration and easing.
+{-| A transition is a smooth interpolation between a beginning state and an end state, with a duration and easing.
 -}
 type Transition a
     = Transition Int Int Easing (Interpolator a)
+
+
+{-| A transition that is already complete that will always return the value passed in.
+-}
+constant : a -> Transition a
+constant val =
+    Transition 0 0 easeLinear (always val)
 
 
 {-| Create a transition that will run _for_ a certain number of miliseconds. You need to provide an interpolation between the start and end states.
@@ -50,8 +135,8 @@ easeFor t easing =
 
 {-| Updates the internal state forward by the passed number of miliseconds. You would typically do this in your `update` function.
 -}
-play : Int -> Transition a -> Transition a
-play ms (Transition soFar total easeing interp) =
+step : Int -> Transition a -> Transition a
+step ms (Transition soFar total easeing interp) =
     Transition (min (soFar + ms) total) total easeing interp
 
 
@@ -64,8 +149,8 @@ play ms (Transition soFar total easeing interp) =
         Transition.easeFor 500 Transition.easeLinear (Interpolation.int 0 10)
 
     transition |> Transition.value --> 0
-    transition |> Transition.play 250 |> Transition.value --> 5
-    transition |> Transition.play 600 |> Transition.value --> 10
+    transition |> Transition.step 250 |> Transition.value --> 5
+    transition |> Transition.step 600 |> Transition.value --> 10
 
 -}
 value : Transition a -> a
