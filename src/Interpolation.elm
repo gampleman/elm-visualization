@@ -209,9 +209,12 @@ step head tail =
 
         items =
             Array.fromList (head :: tail)
+
+        nt =
+            toFloat n + 1
     in
     \t ->
-        Array.get (clamp 0 n (round (t * toFloat n))) items
+        Array.get (clamp 0 n (floor (t * nt))) items
             |> Maybe.withDefault head
 
 
@@ -273,14 +276,14 @@ hue : Float -> Float -> Interpolator Float
 hue from to =
     let
         d =
-            (to - from) * 360
+            to - from
     in
     float from
-        (if d > 180 || d < -180 then
-            d - 360 * toFloat (round (d / 360))
+        (if d > 0.5 || d < -0.5 then
+            from + (d - 1 * toFloat (round d))
 
          else
-            d
+            to
         )
 
 
@@ -425,7 +428,7 @@ list config from to =
                         |> Maybe.map List.singleton
                         |> Maybe.withDefault []
             in
-            add
+            result
                 ++ [ if Dict.member id removals then
                         config.remove a
 
@@ -441,7 +444,7 @@ list config from to =
                             Nothing ->
                                 Debug.todo "Oh shit"
                    ]
-                ++ result
+                ++ add
 
         resultingInterpolator =
             Dict.foldl folder [] fromIds
