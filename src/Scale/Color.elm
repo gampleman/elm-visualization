@@ -1,5 +1,5 @@
 module Scale.Color exposing
-    ( category10
+    ( category10, tableau10
     , viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator
     )
 
@@ -8,7 +8,7 @@ module Scale.Color exposing
 
 # Categorical
 
-@docs category10
+@docs category10, tableau10
 
 
 # Sequential (Multi-hue)
@@ -96,3 +96,13 @@ A list of ten categorical colors
 category10 : List Color
 category10 =
     [ rgb255 31 119 180, rgb255 255 127 14, rgb255 44 160 44, rgb255 214 39 40, rgb255 148 103 189, rgb255 140 86 75, rgb255 227 119 194, rgb255 127 127 127, rgb255 188 189 34, rgb255 23 190 207 ]
+
+
+{-| ![category10](https://code.gampleman.eu/elm-visualization/misc/tableau10.png)
+
+A list of ten categorical colors
+
+-}
+tableau10 : List Color
+tableau10 =
+    [ rgb255 78 121 167, rgb255 242 142 44, rgb255 225 87 89, rgb255 118 183 178, rgb255 89 161 79, rgb255 237 201 73, rgb255 175 122 161, rgb255 255 157 167, rgb255 156 117 95, rgb255 186 176 171 ]

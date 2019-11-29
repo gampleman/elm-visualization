@@ -1,7 +1,7 @@
 module Interpolation exposing
     ( Interpolator
     , float, int, step, rgb, rgbWithGamma, hsl, hslLong
-    , map, map2, map3, map4, map5, piecewise
+    , map, map2, map3, map4, map5, piecewise, tuple
     , inParallel, list, ListCombiner(..), combineParallel
     , samples
     )
@@ -20,7 +20,7 @@ so that you can build interpolators for your own custom datatypes.
 
 ### Composition
 
-@docs map, map2, map3, map4, map5, piecewise
+@docs map, map2, map3, map4, map5, piecewise, tuple
 
 
 ### Lists
@@ -135,6 +135,20 @@ piecewise makeInterpolator head tail =
         Array.get i interpolators
             |> Maybe.map (\fn -> fn (tn - toFloat i))
             |> Maybe.withDefault head
+
+
+{-| Composes interpolators around a tuple. This is a convenience function for the common case of 2 element tuples.
+
+You can for example define an interpolator for a position:
+
+    interpolatePosition : ( Float, Float ) -> ( Float, Float ) -> Interpolator ( Float, Float )
+    interpolatePosition =
+        Interpolation.tuple Interpolation.float Interpolation.float
+
+-}
+tuple : (a -> a -> Interpolator a) -> (b -> b -> Interpolator b) -> ( a, b ) -> ( a, b ) -> Interpolator ( a, b )
+tuple ia ib ( fromA, fromB ) ( toA, toB ) =
+    map2 Tuple.pair (ia fromA toA) (ib fromB toB)
 
 
 
