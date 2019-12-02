@@ -243,8 +243,8 @@ view model =
             , lazy2 viewControls model.visibility model.entries
             ]
         , infoFooter
-        , node "link" [ attribute "href" "http://todomvc.com/examples/elm/node_modules/todomvc-common/base.css", attribute "rel" "stylesheet" ] []
-        , node "link" [ attribute "href" "http://todomvc.com/examples/elm/node_modules/todomvc-app-css/index.css", attribute "rel" "stylesheet" ] []
+        , node "link" [ attribute "href" "https://todomvc.com/examples/elm/node_modules/todomvc-common/base.css", attribute "rel" "stylesheet" ] []
+        , node "link" [ attribute "href" "https://todomvc.com/examples/elm/node_modules/todomvc-app-css/index.css", attribute "rel" "stylesheet" ] []
         ]
 
 
