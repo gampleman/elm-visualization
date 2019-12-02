@@ -456,9 +456,12 @@ list config from to =
                                     config.change a b
 
                             Nothing ->
-                                Debug.todo "Oh shit"
+                                cantHappen ()
                    ]
                 ++ add
+
+        cantHappen a =
+            cantHappen a
 
         resultingInterpolator =
             Dict.foldl folder [] fromIds

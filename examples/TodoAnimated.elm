@@ -196,9 +196,6 @@ update msg model =
 
         CheckAll isCompleted ->
             let
-                _ =
-                    Debug.log "checkall" isCompleted
-
                 updateEntry t =
                     { t | completed = isCompleted }
             in

@@ -167,17 +167,15 @@ isComplete (Transition soFar total _ _) =
 
 
 --
-
-
-stagger :
-    { duration : Int
-    , delay : Int
-    , easing : Easing
-    }
-    -> List (Interpolator a)
-    -> Transition (List a)
-stagger { duration, delay, easing } interpolations =
-    Debug.todo "not implemeneted yet"
+-- stagger :
+--     { duration : Int
+--     , delay : Int
+--     , easing : Easing
+--     }
+--     -> List (Interpolator a)
+--     -> Transition (List a)
+-- stagger { duration, delay, easing } interpolations =
+--     Debug.todo "not implemeneted yet"
 
 
 {-| Easing is a method of distorting time to control apparent motion in animation. It is most commonly used for [slow-in, slow-out](https://en.wikipedia.org/wiki/Twelve_basic_principles_of_animation#Slow_In_and_Slow_Out). By easing time, animated transitions are smoother and exhibit more plausible motion.

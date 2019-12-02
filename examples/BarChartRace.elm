@@ -1,4 +1,4 @@
-module BarChartRace exposing (view)
+module BarChartRace exposing (main)
 
 import Axis
 import Browser
@@ -107,7 +107,7 @@ expectCsv tagger decode =
             tagger
                 (case result of
                     Ok data ->
-                        case Csv.parse data |> Debug.log "parsed" |> Csv.decodeCsv decode of
+                        case Csv.parse data |> Csv.decodeCsv decode of
                             Ok decoded ->
                                 Ok decoded
 
