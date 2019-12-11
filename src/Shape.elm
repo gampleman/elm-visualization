@@ -79,10 +79,8 @@ The order of the layers. Normal list functions can be used, for instance
     -- keep order of the input data
     identity
 
-
     -- reverse
     List.reverse
-
 
     -- decreasing by sum of the values (largest is lowest)
     List.sortBy (Tuple.second >> List.sum >> negate)
@@ -635,8 +633,8 @@ type alias StackConfig a =
 
 {-| The basis for constructing a stacked chart
 
-  - `labels`: Sorted list of labels
   - `values`: Sorted list of values, where every item is a `(yLow, yHigh)` pair.
+  - `labels`: Sorted list of labels
   - `extent`: The minimum and maximum y-value. Convenient for creating scales.
 
 -}

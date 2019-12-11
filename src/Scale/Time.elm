@@ -1,10 +1,10 @@
 module Scale.Time exposing (convert, invert, nice, rangeExtent, tickFormat, ticks)
 
 import DateFormat
-import Time
-import Time.Extra exposing (Interval(..))
 import Scale.Internal exposing (bimap, interpolateFloat)
 import Scale.Linear as Linear
+import Time
+import Time.Extra exposing (Interval(..))
 
 
 toTime ( a, b ) =
@@ -119,6 +119,7 @@ findInterval target intervals =
             in
             if ratio < ratio_ then
                 ( interval, step )
+
             else
                 findInterval target (( interval_, step_ ) :: xs)
 
@@ -138,16 +139,22 @@ tickFormat zone _ _ date =
         format =
             if significant Second then
                 [ DateFormat.text ".", DateFormat.millisecondFixed ]
+
             else if significant Minute then
                 [ DateFormat.text ":", DateFormat.secondFixed ]
+
             else if significant Hour then
                 [ DateFormat.hourFixed, DateFormat.text ":", DateFormat.minuteFixed ]
+
             else if significant Day then
                 [ DateFormat.hourFixed, DateFormat.text " ", DateFormat.amPmLowercase ]
+
             else if significant Month then
                 [ DateFormat.dayOfMonthFixed, DateFormat.text " ", DateFormat.monthNameAbbreviated ]
+
             else if significant Year then
                 [ DateFormat.monthNameFull ]
+
             else
                 [ DateFormat.yearNumber ]
     in

@@ -23,8 +23,10 @@ nice ( start, stop ) count =
 exponent x =
     if x == 0 then
         0
+
     else if x < 1 then
         1 + exponent (x * 10)
+
     else
         0
 
@@ -54,6 +56,7 @@ deinterpolate a b x =
     in
     if normalizedB == 0 then
         0
+
     else
         (x - a) / normalizedB
 

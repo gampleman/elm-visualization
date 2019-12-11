@@ -38,6 +38,7 @@ view config viewFn model =
                 List.head config
                     |> Maybe.map (\( r, m ) -> ( r, viewFn m ))
                     |> Maybe.withDefault ( "Not found", Html.text "404 not found" )
+
             else
                 List.filter (\( l, _ ) -> stringify l == model.view) config
                     |> List.head
@@ -110,6 +111,7 @@ update msg model =
             ( { model | view = viewPath }
             , if model.view == viewPath then
                 Cmd.none
+
               else
                 Navigation.pushUrl model.key ("#" ++ viewPath)
             )

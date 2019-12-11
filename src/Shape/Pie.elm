@@ -1,4 +1,4 @@
-module Shape.Pie exposing (..)
+module Shape.Pie exposing (arc, centroid, pie)
 
 import Array
 import Dict
@@ -10,6 +10,7 @@ import SubPath exposing (SubPath)
 boolToDirection b =
     if b then
         counterClockwise
+
     else
         clockwise
 
@@ -17,6 +18,7 @@ boolToDirection b =
 boolToArc b =
     if b then
         largestArc
+
     else
         smallestArc
 
@@ -61,6 +63,7 @@ arc_ x y radius a0 a1 ccw =
         da =
             if ccw then
                 a0 - a1
+
             else
                 a1 - a0
 
@@ -69,6 +72,7 @@ arc_ x y radius a0 a1 ccw =
     in
     if r == 0 then
         SubPath.empty
+
     else if da > (tau - epsilon) then
         -- Is this a complete circle? Draw two arcs to complete the circle.
         SubPath.with origin
@@ -89,11 +93,13 @@ arc_ x y radius a0 a1 ccw =
                   }
                 ]
             ]
+
     else
         let
             da_ =
                 if da < 0 then
                     mod da tau + tau
+
                 else
                     da
         in
@@ -148,6 +154,7 @@ cornerTangents x0 y0 x1 y1 r1 rc cw =
         lo =
             (if cw then
                 rc
+
              else
                 -rc
             )
@@ -195,6 +202,7 @@ cornerTangents x0 y0 x1 y1 r1 rc cw =
         d =
             (if dy < 0 then
                 -1
+
              else
                 1
             )
@@ -227,6 +235,7 @@ cornerTangents x0 y0 x1 y1 r1 rc cw =
         ( fcx, fxy ) =
             if dx0 ^ 2 + dy0 ^ 2 > dx1 ^ 2 + dy1 ^ 2 then
                 ( cx1, cy1 )
+
             else
                 ( cx0, cy0 )
     in
@@ -243,8 +252,10 @@ myAsin : Float -> Float
 myAsin x =
     if x >= 1 then
         pi / 2
+
     else if x <= -1 then
         -pi / 2
+
     else
         asin x
 
@@ -265,6 +276,7 @@ arc arcData =
         ( r0, r1 ) =
             if arcData.innerRadius > arcData.outerRadius then
                 ( arcData.outerRadius, arcData.innerRadius )
+
             else
                 ( arcData.innerRadius, arcData.outerRadius )
 
@@ -285,6 +297,7 @@ arc arcData =
             if r1 <= epsilon then
                 [ SubPath.with (moveTo ( 0, 0 )) [] |> SubPath.close ]
                 -- Or is it a circle or annulus?
+
             else if da > 2 * pi - epsilon then
                 let
                     p =
@@ -297,9 +310,11 @@ arc arcData =
                         |> makeArc 0 0 r0 a1 a0 cw
                         |> SubPath.close
                     ]
+
                 else
                     [ p |> SubPath.close ]
                 -- Or is it a circular or annular sector?
+
             else
                 let
                     ap =
@@ -309,8 +324,10 @@ arc arcData =
                         if ap > epsilon then
                             if arcData.padRadius > 0 then
                                 arcData.padRadius
+
                             else
                                 sqrt (r0 ^ 2 + r1 ^ 2)
+
                         else
                             0
 
@@ -326,10 +343,13 @@ arc arcData =
                             if da - p0 * 2 > epsilon then
                                 if cw then
                                     ( a0 + p0, a1 - p0, da - p0 * 2 )
+
                                 else
                                     ( a0 - p0, a1 + p0, da - p0 * 2 )
+
                             else
                                 ( (a0 + a1) / 2, (a0 + a1) / 2, 0 )
+
                         else
                             ( a0, a1, da )
 
@@ -338,10 +358,13 @@ arc arcData =
                             if da - p1 * 2 > epsilon then
                                 if cw then
                                     ( a0 + p1, a1 - p1, da - p1 * 2 )
+
                                 else
                                     ( a0 - p1, a1 + p1, da - p1 * 2 )
+
                             else
                                 ( (a0 + a1) / 2, (a0 + a1) / 2, 0 )
+
                         else
                             ( a0, a1, da )
 
@@ -375,6 +398,7 @@ arc arcData =
                     ( ocx, ocy ) =
                         if da0 > epsilon then
                             intersect x01 y01 x00 y00 x11 y11 x10 y10
+
                         else
                             ( x10, y10 )
 
@@ -393,6 +417,7 @@ arc arcData =
                     ( rc0, rc1 ) =
                         if rc > epsilon && da < pi then
                             ( min rc ((r0 - lc) / (kc - 1)), min rc ((r1 - lc) / (kc + 1)) )
+
                         else
                             ( rc, rc )
 
@@ -401,6 +426,7 @@ arc arcData =
                         if da1 <= epsilon then
                             SubPath.with (moveTo ( x01, y01 )) []
                             -- Does the sector’s outer ring have rounded corners?
+
                         else if rc1 > epsilon then
                             let
                                 t0 =
@@ -416,12 +442,14 @@ arc arcData =
                             if rc1 < rc then
                                 p |> makeArc t0.cx t0.cy rc1 (atan2 t0.y01 t0.x01) (atan2 t1.y01 t1.x01) (not cw)
                                 -- Otherwise, draw the two corners and the ring.
+
                             else
                                 p
                                     |> makeArc t0.cx t0.cy rc1 (atan2 t0.y01 t0.x01) (atan2 t0.y11 t0.x11) (not cw)
                                     |> makeArc 0 0 r1 (atan2 (t0.cy + t0.y11) (t0.cx + t0.x11)) (atan2 (t1.cy + t1.y11) (t1.cx + t1.x11)) (not cw)
                                     |> makeArc t1.cx t1.cy rc1 (atan2 t1.y11 t1.x11) (atan2 t1.y01 t1.x01) (not cw)
                             -- Or is the outer ring just a circular arc?
+
                         else
                             SubPath.with (moveTo ( x01, y01 )) []
                                 |> makeArc 0 0 r1 a01 a11 (not cw)
@@ -434,6 +462,7 @@ arc arcData =
                         |> SubPath.close
                     ]
                     -- Does the sector’s inner ring (or point) have rounded corners?
+
                 else if rc0 > epsilon then
                     let
                         t0 =
@@ -449,6 +478,7 @@ arc arcData =
                     --Have the corners merged?
                     if rc0 < rc then
                         [ p |> makeArc t0.cx t0.cy rc0 (atan2 t0.y01 t0.x01) (atan2 t1.y01 t1.x01) (not cw) |> SubPath.close ]
+
                     else
                         [ p
                             |> makeArc t0.cx t0.cy rc0 (atan2 t0.y01 t0.x01) (atan2 t0.y11 t0.x11) (not cw)
@@ -457,6 +487,7 @@ arc arcData =
                             |> SubPath.close
                         ]
                     -- Or is the inner ring just a circular arc?
+
                 else
                     [ outerRing
                         |> SubPath.connect (arc_ 0 0 r0 a10 a00 cw)
@@ -517,6 +548,7 @@ pie settings data =
             in
             if v > 0 then
                 v + b
+
             else
                 b
 
@@ -533,6 +565,7 @@ pie settings data =
             p
                 * (if da < 0 then
                     -1
+
                    else
                     1
                   )
@@ -546,6 +579,7 @@ pie settings data =
         k =
             if sum == 0 then
                 0
+
             else
                 (da - toFloat (List.length data) * pa) / sum
 
@@ -562,6 +596,7 @@ pie settings data =
                 angle
                     + (if value > 0 then
                         value * k
+
                        else
                         0
                       )

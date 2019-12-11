@@ -98,7 +98,7 @@ view model =
         bins =
             histogram model
     in
-    svg [ viewBox 0 0 w h  ]
+    svg [ viewBox 0 0 w h ]
         [ g [ transform [ Translate (padding - 1) (h - padding) ] ]
             [ xAxis model ]
         , g [ transform [ Translate (padding - 1) padding ] ]
