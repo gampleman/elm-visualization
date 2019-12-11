@@ -1,4 +1,95 @@
-module Zoom exposing (OnZoom, Zoom, asRecord, events, init, scaleExtent, subscriptions, transform, translateExtent, update)
+module Zoom exposing
+    ( Zoom, init, scaleExtent, translateExtent
+    , OnZoom, update, subscriptions
+    , transform, asRecord
+    , events, onDoubleClick, onWheel, onDrag, onGesture, onTouch
+    )
+
+{-| This module implements a convenient abstraction for panning and zooming:
+it lets the user focus on a regions of interest in a visualization.
+It is quite intuitive in that dragging the mouse coresponds to panning,
+mouse wheel zooming, and touch interactions are also supported.
+
+The implementation is agnostic about the DOM, so it can be used with HTML, SVG, or WebGL.
+
+
+## Setting up zooming in your app
+
+While there are many ways to use this module, a typical setup will look like this:
+
+    import Zoom exposing (OnZoom, Zoom)
+
+    type alias Model =
+        { zoom : Zoom
+        }
+
+    type Msg
+        = ZoomMsg OnZoom
+
+
+    -- ...
+
+Next, initialize and configure the zoom model:
+
+    init : () -> ( Model, Cmd Msg )
+    init () =
+        ( { zoom = Zoom.init { width = width, height = height } }
+        , Cmd.none
+        )
+
+Note that you will need to provide the width and height of the element that you want to setup the zooming behavior for. If you don't know this information, then you might want to use [`Browser.Dom.getElement`](https://package.elm-lang.org/packages/elm/browser/latest/Browser-Dom#getElement) to get it.
+
+Next setup a subscription:
+
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        Zoom.subscriptions model.zoom ZoomMsg
+
+Then handle update:
+
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            ZoomMsg zoomMsg ->
+                ( { model
+                    | zoom = Zoom.update zoomMsg zoom.model
+                  }
+                , Cmd.none
+                )
+
+Finally, set up your view:
+
+    view : Model -> Html Msg
+    view model =
+        svg
+            (A.width width
+                :: A.height height
+                :: Zoom.tranfrom model.zoom
+                :: Zoom.events model.zoom ZoomMsg
+            )
+            [ myChildrenElements ]
+
+
+## Configuring the zoom behavior
+
+@docs Zoom, init, scaleExtent, translateExtent
+
+
+## Updating the zoom
+
+@docs OnZoom, update, subscriptions
+
+
+## View
+
+@docs transform, asRecord
+
+
+## Events
+
+@docs events, onDoubleClick, onWheel, onDrag, onGesture, onTouch
+
+-}
 
 import Browser.Events
 import Html.Attributes exposing (style)
@@ -12,6 +103,8 @@ import Zoom.Matrix as Matrix exposing (Matrix2x3)
 import Zoom.Transform as Transform exposing (Transform)
 
 
+{-| This type will go into your model as it stores the internal state and configuration necessary to support the various user interactions.
+-}
 type Zoom
     = Zoom
         { transform : Transform
@@ -32,6 +125,8 @@ type TouchState
     | TwoFingers TrackedTouch TrackedTouch
 
 
+{-| Returns the actual transform for the view relative to the top left corner. You can then use these numbers to transform the view as necessary.
+-}
 asRecord : Zoom -> { scale : Float, translate : { x : Float, y : Float } }
 asRecord (Zoom zoom) =
     { scale = zoom.transform.k, translate = { x = zoom.transform.x, y = zoom.transform.y } }
@@ -41,6 +136,36 @@ type alias Rect =
     { x : Float, y : Float, width : Float, height : Float }
 
 
+{-| This is the Msg type used. You will want to pass these to `Zoom.update`.
+
+Note that when handling these messages, it is also extremely likely that the zoom transform has somehow changed,
+so you can also use that place in your update function to react to that. For example in a map application, you may
+want to fetch a different tile based on the zoom level:
+
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            Zoomed onZoom ->
+                let
+                    oldTransform =
+                        Zoom.asRecord model.zoom
+
+                    newZoom =
+                        Zoom.update onZoom model.zoom
+
+                    newTransform =
+                        Zoom.asRecord newZoom
+
+                    cmd =
+                        if toTileCoords oldTransform /= toTileCoords newTransform then
+                            fetchTile (toTileCoords newTransform)
+
+                        else
+                            Cmd.none
+                in
+                ( { model | zoom = newZoom }, cmd )
+
+-}
 type OnZoom
     = DoubleClicked Bool ( Float, Float )
     | MouseDown ( Float, Float ) (Maybe Matrix2x3)
@@ -73,6 +198,8 @@ infinity =
     1 / 0
 
 
+{-| Creates a brand new `Zoom`. You have to pass in the dimensions (in pixels) of the element that you want to make zoom-eable.
+-}
 init : { width : Float, height : Float } -> Zoom
 init { width, height } =
     Zoom
@@ -88,16 +215,42 @@ init { width, height } =
         }
 
 
+{-| Allows you to set a boundary where a user will be able to pan to. The format is `((top, left), (bottom, right))`.
+
+Typically you will want to set this to `((0, 0), (width, height))`, however you can restrict it however you like. For example maps typically only restrict vertical movement, but not horizontal movement.
+
+-}
 translateExtent : ( ( Float, Float ), ( Float, Float ) ) -> Zoom -> Zoom
 translateExtent extent (Zoom zoom) =
     Zoom { zoom | translateExtent = extent }
 
 
+{-| Allows you to set a minimum and maximum scale that the user will be able to zoom to.
+
+Typically there is only limited resolution to the data, so setting the maximum such that the maximum resolution is comfortably visible (remember accessibility - some people will want to zoom a fair bit more than you might find necessary) would be a good idea.
+
+The miminum zoom will always be asymptotically approaching zero, but setting a higher number is good, because the view can be "lost" if it gets too small. Typically you would set it such that the whole dataset fits into the view.
+
+-}
 scaleExtent : Float -> Float -> Zoom -> Zoom
 scaleExtent mn mx (Zoom zoom) =
     Zoom { zoom | scaleExtent = ( mn, mx ) }
 
 
+{-| Sets up the event handlers necessary to support this behavior on various devices.
+
+It is merely a convenience, implemented such:
+
+    events zoom tagger =
+        Zoom.onDoubleClick zoom tagger
+            :: Zoom.onWheel zoom tagger
+            :: Zoom.onDrag zoom tagger
+            ++ Zoom.onGesture zoom tagger
+            ++ Zoom.onTouch zoom tagger
+
+So if you want to customize the user experience, you can for example omit the onWheel handler in your own defintion.
+
+-}
 events : Zoom -> (OnZoom -> msg) -> List (Attribute msg)
 events zoom tagger =
     onDoubleClick zoom tagger
@@ -107,6 +260,8 @@ events zoom tagger =
         ++ onTouch zoom tagger
 
 
+{-| Zooms in on double click, zooms out on double click while holding shift.
+-}
 onDoubleClick : Zoom -> (OnZoom -> msg) -> Attribute msg
 onDoubleClick _ tagger =
     custom "dblclick"
@@ -122,6 +277,8 @@ onDoubleClick _ tagger =
         )
 
 
+{-| Zooms on mousewheel.
+-}
 onWheel : Zoom -> (OnZoom -> msg) -> Attribute msg
 onWheel _ tagger =
     custom "wheel"
@@ -132,12 +289,14 @@ onWheel _ tagger =
                         (Wheeled
                             (-deltaY
                                 * (if deltaMode == 0 then
-                                    1
+                                    0.002
+
+                                   else if deltaMode == 1 then
+                                    0.05
 
                                    else
-                                    120
+                                    1
                                   )
-                                / 500
                             )
                             position
                         )
@@ -151,6 +310,8 @@ onWheel _ tagger =
         )
 
 
+{-| Allows panning on mouse drag.
+-}
 onDrag : Zoom -> (OnZoom -> msg) -> List (Attribute msg)
 onDrag (Zoom { drag }) tagger =
     case drag of
@@ -173,6 +334,8 @@ onDrag (Zoom { drag }) tagger =
             []
 
 
+{-| Supports pinch to zoom on desktop Safari.
+-}
 onGesture : Zoom -> (OnZoom -> msg) -> List (Attribute msg)
 onGesture _ tagger =
     [ custom "gesturestart"
@@ -197,6 +360,8 @@ onGesture _ tagger =
     ]
 
 
+{-| Supports pinch to zoom on mobile devices.
+-}
 onTouch : Zoom -> (OnZoom -> msg) -> List (Attribute msg)
 onTouch (Zoom zoom) tagger =
     [ custom "touchstart"
@@ -334,11 +499,15 @@ decodeRect =
         (D.field "height" D.float)
 
 
+{-| A convenience for setting up the `tranform` attribute for **SVG** elements.
+-}
 transform : Zoom -> Attribute msg
 transform (Zoom zoom) =
     A.transform (Transform.toString zoom.transform)
 
 
+{-| Subrscriptions are used for allowing drags to continue outside the element as well for animated zooms on double-click.
+-}
 subscriptions : Zoom -> (OnZoom -> msg) -> Sub msg
 subscriptions (Zoom zoom) tagger =
     Sub.batch
@@ -419,6 +588,8 @@ schedule btransform center (Zoom model) =
         }
 
 
+{-| This is what you need to set up in your update function.
+-}
 update : OnZoom -> Zoom -> Zoom
 update msg (Zoom model) =
     case msg of
