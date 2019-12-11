@@ -5,11 +5,11 @@ import Html exposing (Html)
 import Html.Attributes exposing (height, style, width)
 import Json.Decode exposing (Value)
 import Math.Matrix4 as Mat4 exposing (Mat4)
-import Math.Vector3 as Vec3 exposing (Vec3, vec3)
 import Math.Vector2 as Vec2 exposing (Vec2, vec2)
+import Math.Vector3 as Vec3 exposing (Vec3, vec3)
+import Random
 import WebGL exposing (Mesh, Shader)
 import Zoom exposing (Zoom)
-import Random
 
 
 w : Float
@@ -24,8 +24,13 @@ h =
 
 main =
     Browser.element
-        { init = \() -> ( Zoom.init { width = w, height = h } |> Zoom.translateExtent ((0,0), (w, h))
-        |> Zoom.scaleExtent 1 10000, Cmd.none )
+        { init =
+            \() ->
+                ( Zoom.init { width = w, height = h }
+                    |> Zoom.translateExtent ( ( 0, 0 ), ( w, h ) )
+                    |> Zoom.scaleExtent 1 10000
+                , Cmd.none
+                )
         , view = view
         , update = \msg model -> ( Zoom.update msg model, Cmd.none )
         , subscriptions = \model -> Zoom.subscriptions model identity
@@ -34,11 +39,11 @@ main =
 
 view zoom =
     WebGL.toHtml
-        ([ width (round (w *2 ))
+        ([ width (round (w * 2))
          , height (round (h * 2))
          , style "display" "block"
-         , style "width" (String.fromFloat ( w ) ++ "px")
-         , style "height" (String.fromFloat (h ) ++ "px")
+         , style "width" (String.fromFloat w ++ "px")
+         , style "height" (String.fromFloat h ++ "px")
          ]
             ++ Zoom.events zoom identity
         )
@@ -64,8 +69,10 @@ type alias Vertex =
     { position : Vec2
     }
 
+
 n : Int
-n = 2^19
+n =
+    2 ^ 19
 
 
 mesh : Mesh Vertex
@@ -82,13 +89,11 @@ mesh =
         ]
 
 
-
-
 type alias Uniforms =
     { zoom : Mat4 }
 
 
-vertexShader : Shader Vertex Uniforms {  v_pos : Vec2 }
+vertexShader : Shader Vertex Uniforms { v_pos : Vec2 }
 vertexShader =
     [glsl|
         precision highp float;
@@ -103,7 +108,7 @@ vertexShader =
     |]
 
 
-fragmentShader : Shader {} Uniforms {  v_pos : Vec2 }
+fragmentShader : Shader {} Uniforms { v_pos : Vec2 }
 fragmentShader =
     [glsl|
         precision highp float;

@@ -26,7 +26,6 @@ While there are many ways to use this module, a typical setup will look like thi
     type Msg
         = ZoomMsg OnZoom
 
-
     -- ...
 
 Next, initialize and configure the zoom model:
