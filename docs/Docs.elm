@@ -5,6 +5,7 @@ import Css.Global
 import Css.Media
 import ExamplePublisher exposing (Document, Example)
 import Html
+import Html.Attributes
 import Html.Styled exposing (a, div, h1, h2, h3, header, img, li, main_, nav, source, text, ul)
 import Html.Styled.Attributes exposing (alt, css, href, rel, src, type_)
 import Json.Decode
@@ -83,7 +84,7 @@ headerView =
                     , lineHeight zero
                     ]
                 ]
-                [ img [ css [ maxWidth (px 421), width (pct 100) ], src "misc/logo-inline.png", alt "ELM-VISUALIZATION" ] [] ]
+                [ img [ css [ maxWidth (px 421), width (pct 100) ], src "assets/logo-inline.png", alt "ELM-VISUALIZATION" ] [] ]
             , h2
                 [ css
                     [ margin zero
@@ -91,6 +92,7 @@ headerView =
                     , fontSize (px 24)
                     , color (hex "#000")
                     , notVisibleOnMobile
+                    , fontWeight normal
                     ]
                 ]
                 [ text "examples" ]
@@ -110,8 +112,33 @@ headerView =
 
 mainView examples =
     main_ []
-        [ ul [] <|
-            List.map (\example -> li [] [ a [ href example.basename ] [ examplePreview example, h3 [] [ text (displayName example) ] ] ]) examples
+        [ ul
+            [ css
+                [ listStyleType none
+                , padding zero
+                ]
+            ]
+          <|
+            List.map
+                (\example ->
+                    li
+                        [ css
+                            [ border3 (px 1) solid (hex "#eeeeee")
+                            , float left
+                            , width (px (toFloat (example.width // 3 + 20)))
+                            , maxWidth (calc (vh 100) minus (px 40))
+                            , margin (px 40)
+                            , padding4 (px 10) (px 10) zero (px 10)
+                            , boxSizing borderBox
+                            , onMobile
+                                [ maxWidth (pct 100)
+                                , height auto
+                                ]
+                            ]
+                        ]
+                        [ a [ href example.basename, css [ linkStyle ] ] [ examplePreview example, h3 [ css [ marginLeft (px 10), fontWeight normal ] ] [ text (displayName example) ] ] ]
+                )
+                examples
         ]
 
 
@@ -140,10 +167,10 @@ examplePreview example =
 
 
 globalStyles =
-    [ Html.node "link" [ href "https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic,700italic|Source+Code+Pro", rel "stylesheet" ] []
+    [ Html.Styled.node "link" [ href "https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic,700italic|Source+Code+Pro", rel "stylesheet" ] []
     , Css.Global.global
         [ Css.Global.each [ Css.Global.body, Css.Global.html ]
-            [ fontFamily [ qt "Source Sans Pro", qt "Trebuchet MS", qt "Lucida Grande", qt "Helvetica Neue", sansSerif.value ]
+            [ fontFamilies [ qt "Source Sans Pro", qt "Trebuchet MS", qt "Lucida Grande", qt "Helvetica Neue", sansSerif.value ]
             , color (hex "#293c4b")
             , margin zero
             , height (pct 100)
@@ -159,10 +186,9 @@ indexView examples =
         , ( "viewport", "width=device-width, initial-scale=1.0" )
         ]
     , body =
-        (Html.Styled.toUnstyled <|
-            div [] [ headerView, mainView examples ]
-        )
-            :: globalStyles
+        [ Html.Styled.toUnstyled <|
+            div [] (headerView :: mainView examples :: globalStyles)
+        ]
     }
 
 
