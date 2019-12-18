@@ -9,7 +9,7 @@
     "test": "tests"
   },
   "scripts": {
-    "build-docs": "mkdir -p build; cd examples; elm make ./Background.elm --output /dev/null && elm-example-publisher . ../build --template-dir ../docs/templates"
+    "build-docs": "mkdir -p build; cd examples; elm-example-publisher . ../build --template-dir ../docs/templates"
   },
   "repository": {
     "type": "git",

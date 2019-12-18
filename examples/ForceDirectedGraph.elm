@@ -2,6 +2,9 @@ module ForceDirectedGraph exposing (main)
 
 {-| This demonstrates laying out the characters in Les Miserables
 based on their co-occurence in a scene. Try dragging the nodes!
+
+@delay 5
+
 -}
 
 import Browser

@@ -1,5 +1,11 @@
 module BarChartRace exposing (main)
 
+{-| Demonstrates a complex animation.
+
+@requires data/category-brands.csv
+
+-}
+
 import Axis
 import Browser
 import Browser.Events
