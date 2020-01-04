@@ -1,5 +1,7 @@
-/elm-stuff/
-/examples/elm-stuff/
+elm-stuff
 tests/Doc
 tests/VerifyExamples
 .DS_Store
+node_modules/
+build/
+package-lock.json

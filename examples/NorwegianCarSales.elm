@@ -1,6 +1,11 @@
 module NorwegianCarSales exposing (main)
 
 {-| This example demonstates using different kinds of layouts for stacked graphs.
+
+@screenshot stream-graph
+@screenshot silhouette
+@screenshot stacked-area
+
 -}
 
 import Axis
@@ -199,7 +204,3 @@ toArea ( scaleX, scaleY ) ys =
 
 main =
     Example.switchableViews exampleConfig (Shape.stack >> view)
-
-
-
-{- {"additionalShots": ["stream-graph", "silhouette", "stacked-area"]} -}
