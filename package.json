@@ -9,7 +9,7 @@
     "test": "tests"
   },
   "scripts": {
-    "build-docs": "mkdir -p build; cd examples; elm-example-publisher . ../build --template-dir ../docs/templates"
+    "build-docs": "cd examples; elm-example-publisher"
   },
   "repository": {
     "type": "git",
@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/gampleman/elm-visualization#readme",
   "devDependencies": {
-    "elm-example-publisher": "0.0.2"
+    "elm-example-publisher": "0.1.0"
   },
   "dependencies": {
     "elm": "^0.19.1-3"
