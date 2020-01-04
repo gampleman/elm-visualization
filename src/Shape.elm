@@ -316,7 +316,7 @@ pie =
 
 {-| Produces a polyline through the specified points.
 
-[![linear curve illustration](https://elm-visualization.netlify.com/Curves/linear@2x.png)](https://elm-visualization.netlify.com/Curves/#linear)
+[![linear curve illustration](https://code.gampleman.eu/elm-visualization/Curves/linear@2x.png)](https://elm-visualization.netlify.com/Curves/#linear)
 
 -}
 linearCurve : List ( Float, Float ) -> SubPath
@@ -329,7 +329,7 @@ The first and last points are triplicated such that the spline starts at the fir
 point, and is tangent to the line between the first and second points, and to the line between the penultimate
 and last points.
 
-[![basis curve illustration](https://elm-visualization.netlify.com/Curves/basis@2x.png)](https://elm-visualization.netlify.com/Curves/#basis)
+[![basis curve illustration](https://code.gampleman.eu/elm-visualization/Curves/basis@2x.png)](https://elm-visualization.netlify.com/Curves/#basis)
 
 -}
 basisCurve : List ( Float, Float ) -> SubPath
@@ -339,7 +339,7 @@ basisCurve =
 
 {-| Produces a closed cubic basis spline using the specified control points. When a line segment ends, the first three control points are repeated, producing a closed loop with C2 continuity.
 
-[![closed basis curve illustration](https://elm-visualization.netlify.com/Curves/basisclosed@2x.png)](https://elm-visualization.netlify.com/Curves/#basisclosed)
+[![closed basis curve illustration](https://code.gampleman.eu/elm-visualization/Curves/basisclosed@2x.png)](https://elm-visualization.netlify.com/Curves/#basisclosed)
 
 -}
 basisCurveClosed : List ( Float, Float ) -> SubPath
@@ -349,7 +349,7 @@ basisCurveClosed =
 
 {-| Produces a cubic basis spline using the specified control points. Unlike basis, the first and last points are not repeated, and thus the curve typically does not intersect these points.
 
-[![open basis curve illustration]https://elm-visualization.netlify.com/Curves/basisopen@2x.png)](https://elm-visualization.netlify.com/Curves/#basisopen)
+[![open basis curve illustration](https://code.gampleman.eu/elm-visualization/Curves/basisopen@2x.png)](https://elm-visualization.netlify.com/Curves/#basisopen)
 
 -}
 basisCurveOpen : List ( Float, Float ) -> SubPath
@@ -364,7 +364,7 @@ in [Hierarchical Edge Bundles: Visualization of Adjacency Relations in Hierarchi
 
 This curve is not suitable to be used with areas.
 
-[![bundle curve illustration](https://elm-visualization.netlify.com/Curves/bundle@2x.png)](https://elm-visualization.netlify.com/Curves/#bundle)
+[![bundle curve illustration](https://code.gampleman.eu/elm-visualization/Curves/bundle@2x.png)](https://elm-visualization.netlify.com/Curves/#bundle)
 
 -}
 bundleCurve : Float -> List ( Float, Float ) -> SubPath
@@ -378,7 +378,7 @@ the specified control points, with one-sided differences used for the first and 
 The tension parameter determines the length of the tangents: a tension of one yields all zero tangents, equivalent to
 `linearCurve`; a tension of zero produces a uniform Catmull–Rom spline.
 
-[![cardinal curve illustration](https://elm-visualization.netlify.com/Curves/cardinal@2x.png)](https://elm-visualization.netlify.com/Curves/#cardinal)
+[![cardinal curve illustration](https://code.gampleman.eu/elm-visualization/Curves/cardinal@2x.png)](https://elm-visualization.netlify.com/Curves/#cardinal)
 
 -}
 cardinalCurve : Float -> List ( Float, Float ) -> SubPath
@@ -392,7 +392,7 @@ the specified control points. At the end, the first three control points are rep
 The tension parameter determines the length of the tangents: a tension of one yields all zero tangents, equivalent to
 `linearCurve`; a tension of zero produces a uniform Catmull–Rom spline.
 
-[![cardinal closed curve illustration](https://elm-visualization.netlify.com/Curves/cardinalclosed@2x.png)](https://elm-visualization.netlify.com/Curves/#cardinalclosed)
+[![cardinal closed curve illustration](https://code.gampleman.eu/elm-visualization/Curves/cardinalclosed@2x.png)](https://elm-visualization.netlify.com/Curves/#cardinalclosed)
 
 -}
 cardinalCurveClosed : Float -> List ( Float, Float ) -> SubPath
@@ -406,7 +406,7 @@ the specified control points. Unlike curveCardinal, one-sided differences are no
 The tension parameter determines the length of the tangents: a tension of one yields all zero tangents, equivalent to
 `linearCurve`; a tension of zero produces a uniform Catmull–Rom spline.
 
-[![cardinal open curve illustration](https://elm-visualization.netlify.com/Curves/cardinalopen@2x.png)](https://elm-visualization.netlify.com/Curves/#cardinalopen)
+[![cardinal open curve illustration](https://code.gampleman.eu/elm-visualization/Curves/cardinalopen@2x.png)](https://elm-visualization.netlify.com/Curves/#cardinalopen)
 
 -}
 cardinalCurveOpen : Float -> List ( Float, Float ) -> SubPath
@@ -422,7 +422,7 @@ If alpha is zero, produces a uniform spline, equivalent to `curveCardinal` with 
 produces a chordal spline; if alpha is 0.5, produces a [centripetal spline](https://en.wikipedia.org/wiki/Centripetal_Catmull–Rom_spline).
 Centripetal splines are recommended to avoid self-intersections and overshoot.
 
-[![Catmul-Rom curve illustration](https://elm-visualization.netlify.com/Curves/catmullrom@2x.png)](https://elm-visualization.netlify.com/Curves/#catmullrom)
+[![Catmul-Rom curve illustration](https://code.gampleman.eu/elm-visualization/Curves/catmullrom@2x.png)](https://elm-visualization.netlify.com/Curves/#catmullrom)
 
 -}
 catmullRomCurve : Float -> List ( Float, Float ) -> SubPath
@@ -437,7 +437,7 @@ If alpha is zero, produces a uniform spline, equivalent to `curveCardinal` with 
 produces a chordal spline; if alpha is 0.5, produces a [centripetal spline](https://en.wikipedia.org/wiki/Centripetal_Catmull–Rom_spline).
 Centripetal splines are recommended to avoid self-intersections and overshoot.
 
-[![Catmul-Rom closed curve illustration](https://elm-visualization.netlify.com/Curves/catmullromclosed@2x.png)](https://elm-visualization.netlify.com/Curves/#catmullromclosed)
+[![Catmul-Rom closed curve illustration](https://code.gampleman.eu/elm-visualization/Curves/catmullromclosed@2x.png)](https://elm-visualization.netlify.com/Curves/#catmullromclosed)
 
 -}
 catmullRomCurveClosed : Float -> List ( Float, Float ) -> SubPath
@@ -452,7 +452,7 @@ If alpha is zero, produces a uniform spline, equivalent to `curveCardinal` with 
 produces a chordal spline; if alpha is 0.5, produces a [centripetal spline](https://en.wikipedia.org/wiki/Centripetal_Catmull–Rom_spline).
 Centripetal splines are recommended to avoid self-intersections and overshoot.
 
-[![Catmul-Rom open curve illustration](https://elm-visualization.netlify.com/Curves/catmullromopen@2x.png)](https://elm-visualization.netlify.com/Curves/#catmullromopen)
+[![Catmul-Rom open curve illustration](https://code.gampleman.eu/elm-visualization/Curves/catmullromopen@2x.png)](https://elm-visualization.netlify.com/Curves/#catmullromopen)
 
 -}
 catmullRomCurveOpen : Float -> List ( Float, Float ) -> SubPath
@@ -467,7 +467,7 @@ in y, assuming monotonicity in x, as proposed by Steffen in
 given set of data points without spurious oscillations. Local extrema can occur
 only at grid points where they are given by the data, but not in between two adjacent grid points.”
 
-[![monotone in x curve illustration](https://elm-visualization.netlify.com/Curves/monotoneinx@2x.png)](https://elm-visualization.netlify.com/Curves/#monotoneinx)
+[![monotone in x curve illustration](https://code.gampleman.eu/elm-visualization/Curves/monotoneinx@2x.png)](https://elm-visualization.netlify.com/Curves/#monotoneinx)
 
 -}
 monotoneInXCurve : List ( Float, Float ) -> SubPath
@@ -490,7 +490,7 @@ monotoneInYCurve =
 {-| Produces a [natural](https://en.wikipedia.org/wiki/Spline_interpolation) [cubic spline](http://mathworld.wolfram.com/CubicSpline.html)
 with the second derivative of the spline set to zero at the endpoints.
 
-[![natural curve illustration](https://elm-visualization.netlify.com/Curves/natural@2x.png)](https://elm-visualization.netlify.com/Curves/#natural)
+[![natural curve illustration](https://code.gampleman.eu/elm-visualization/Curves/natural@2x.png)](https://elm-visualization.netlify.com/Curves/#natural)
 
 -}
 naturalCurve : List ( Float, Float ) -> SubPath
