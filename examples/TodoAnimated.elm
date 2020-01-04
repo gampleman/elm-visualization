@@ -1,6 +1,9 @@
 module TodoAnimated exposing (main)
 
 {-| This is a modified version of [TodoMVC](http://todomvc.com) with the [original implementation here](https://github.com/tastejs/todomvc/blob/gh-pages/examples/elm/Todo.elm). This version adds animated transitions using elm-visualizations animation system.
+
+@requires assets/todo.css
+
 -}
 
 import Browser
@@ -243,8 +246,7 @@ view model =
             , lazy2 viewControls model.visibility model.entries
             ]
         , infoFooter
-        , node "link" [ attribute "href" "https://todomvc.com/examples/elm/node_modules/todomvc-common/base.css", attribute "rel" "stylesheet" ] []
-        , node "link" [ attribute "href" "https://todomvc.com/examples/elm/node_modules/todomvc-app-css/index.css", attribute "rel" "stylesheet" ] []
+        , node "link" [ attribute "href" "assets/todo.css", attribute "rel" "stylesheet" ] []
         ]
 
 

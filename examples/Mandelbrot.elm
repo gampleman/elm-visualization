@@ -1,5 +1,11 @@
 module Mandelbrot exposing (main)
 
+{-| Try scrolling, double clicking, or pinch-and-zooming!
+
+This example demonstrates how one can use the Zoom module for other rendering technologies, in this case for a WebGL scene.
+
+-}
+
 import Browser
 import Html exposing (Html)
 import Html.Attributes exposing (height, style, width)

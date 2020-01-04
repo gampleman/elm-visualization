@@ -1,7 +1,7 @@
 {
   "name": "elm-visualization",
   "version": "1.0.0",
-  "description": "[Docs](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/) | [Examples](http://code.gampleman.eu/elm-visualization/) | [GitHub](https://github.com/gampleman/elm-visualization) | [Changelog](https://github.com/gampleman/elm-visualization/releases) | `#visualization` on [Elm slack](https://elmlang.herokuapp.com)",
+  "description": "[Docs](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/) | [Examples](http://elm-visualization.netlify.com/) | [GitHub](https://github.com/gampleman/elm-visualization) | [Changelog](https://github.com/gampleman/elm-visualization/releases) | `#visualization` on [Elm slack](https://elmlang.herokuapp.com)",
   "main": "index.js",
   "directories": {
     "doc": "docs",

@@ -1,6 +1,6 @@
 # ![Elm-visualization](https://code.gampleman.eu/elm-visualization/misc/Logo-600.png)
 
-[Docs](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/) | [Examples](http://code.gampleman.eu/elm-visualization/) | [GitHub](https://github.com/gampleman/elm-visualization) | [Changelog](https://github.com/gampleman/elm-visualization/releases) | `#visualization` on [Elm slack](https://elmlang.herokuapp.com)
+[Docs](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/) | [Examples](https://elm-visualization.netlify.com/) | [GitHub](https://github.com/gampleman/elm-visualization) | [Changelog](https://github.com/gampleman/elm-visualization/releases) | `#visualization` on [Elm slack](https://elmlang.herokuapp.com)
 
 This project is designed to give you all the tools needed to build data visualizations.
 It is not a charting library in the sense that you have pre-bundled Excel-style
@@ -8,9 +8,9 @@ charts, but it should contain all the tools to make building such charts relativ
 easy. The advantage is that you are free to design and build data visualizations
 that uniquely suite your needs.
 
-## Learn by [example](https://code.gampleman.eu/elm-visualization/)
+## Learn by [example](https://elm-visualization.netlify.com//elm-visualization/)
 
-[![Examples](https://code.gampleman.eu/elm-visualization/misc/examples-600.png)](https://code.gampleman.eu/elm-visualization/)
+[![Examples](https://code.gampleman.eu/elm-visualization/misc/examples-600.png)](https://elm-visualization.netlify.com/elm-visualization/)
 
 ## What's included?
 
