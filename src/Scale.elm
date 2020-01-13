@@ -112,6 +112,8 @@ import Time
 This is still done in a convenient and type-safe manner, however the cost is
 a certain ugliness and complexity of the type signatures. For this reason after the type alias of each scale, the supported functions are listed along with a more specialized type signature appropriate for that scale type.
 
+**Note:** As a convention, the scales typically take arguments in a `range -> domain` order. This may seem somewhat counterinutive, as scales map a domain onto a range, but it is quite common to need to compute the domain, but know the range statically, so this argument order works much better for composition.
+
 If you're new to this, I recommend ignoring the types of the type aliases and of the operations and just look at these listings.
 
 -}
@@ -123,8 +125,8 @@ type Scale scaleSpec
 -- Continuous Scales
 
 
-{-| Maps a `(Float, Float)` **domain** to a
-`(out, out)` **range** (this will be either `(Float, Float)` or `(Time.Posix, Time.Posix)`.)
+{-| Maps a `(inp, inp)` **domain** to a
+`(Float, Float)` **range** (this will be either `(Float, Float)` or `(Time.Posix, Time.Posix)`.)
 
 Continuous scales support the following operations:
 

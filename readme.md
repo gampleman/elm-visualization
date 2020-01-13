@@ -36,9 +36,22 @@ as well as arcs (as in pie charts).
 
 Use a simulation of physical forces to do layout. Suitable for i.e. network graphs.
 
+### [Interpolation](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Interpolation)
+
+Smoothly transition between pairs of values. Useful for animation, or generating gradients of values.
+
+### [Transition](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Transition)
+
+Build complex animations using Interpolation.
+
+
 ### [Histogram](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Histogram)
 
 Compute histograms of data.
+
+### [Zoom](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Zoom)
+
+Build pan and zoom user interactions.
 
 ### [Statistics](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Statistics)
 
