@@ -8,9 +8,9 @@ charts, but it should contain all the tools to make building such charts relativ
 easy. The advantage is that you are free to design and build data visualizations
 that uniquely suite your needs.
 
-## Learn by [example](https://elm-visualization.netlify.com//elm-visualization/)
+## Learn by [example](https://elm-visualization.netlify.com/)
 
-[![Examples](https://code.gampleman.eu/elm-visualization/misc/examples-600.png)](https://elm-visualization.netlify.com/elm-visualization/)
+[![Examples](https://code.gampleman.eu/elm-visualization/misc/examples-600.png)](https://elm-visualization.netlify.com/)
 
 ## What's included?
 
