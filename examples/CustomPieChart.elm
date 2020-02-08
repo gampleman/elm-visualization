@@ -15,7 +15,7 @@ import TypedSvg exposing (g, svg, text_)
 import TypedSvg.Attributes exposing (dy, fill, stroke, textAnchor, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, width)
 import TypedSvg.Core exposing (Svg, text)
-import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..), em)
+import TypedSvg.Types exposing (AnchorAlignment(..), Paint(..), Transform(..), em)
 
 
 w : Float
@@ -85,7 +85,7 @@ drawChart config model =
                     }
 
         makeSlice index datum =
-            Path.element (Shape.arc datum) [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors, stroke Color.white ]
+            Path.element (Shape.arc datum) [ fill <| Paint <| Maybe.withDefault Color.black <| Array.get index colors, stroke <| Paint Color.white ]
 
         makeLabel slice ( label, value ) =
             let

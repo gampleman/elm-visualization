@@ -28,7 +28,7 @@ import TypedSvg exposing (g, rect, svg, text_, tspan)
 import TypedSvg.Attributes exposing (class, fill, fontWeight, stroke, style, textAnchor, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
-import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), FontWeight(..), Transform(..))
+import TypedSvg.Types exposing (AnchorAlignment(..), Paint(..), FontWeight(..), Transform(..))
 
 
 w : Float
@@ -355,7 +355,7 @@ viewBars colorScale xScale yScale data =
     List.map
         (\datum ->
             rect
-                [ fill (Fill (Scale.convert colorScale datum.category |> Maybe.withDefault Color.black))
+                [ fill <| Paint <| (Scale.convert colorScale datum.category |> Maybe.withDefault Color.black)
                 , height barSize
                 , x (Scale.convert xScale 0)
                 , y (Scale.convert yScale datum.rank)
