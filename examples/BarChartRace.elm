@@ -28,7 +28,7 @@ import TypedSvg exposing (g, rect, svg, text_, tspan)
 import TypedSvg.Attributes exposing (class, fill, fontWeight, stroke, style, textAnchor, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
-import TypedSvg.Types exposing (AnchorAlignment(..), Paint(..), FontWeight(..), Transform(..))
+import TypedSvg.Types exposing (AnchorAlignment(..), FontWeight(..), Paint(..), Transform(..))
 
 
 w : Float
