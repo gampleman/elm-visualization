@@ -20,7 +20,7 @@
             "elm-community/graph": "6.0.0",
             "elm-community/intdict": "3.0.0",
             "elm-community/list-extra": "8.2.2",
-            "elm-community/typed-svg": "5.1.0",
+            "elm-community/typed-svg": "6.0.0",
             "elm-explorations/linear-algebra": "1.0.3",
             "elm-explorations/webgl": "1.1.1",
             "ericgj/elm-csv-decode": "2.0.1",

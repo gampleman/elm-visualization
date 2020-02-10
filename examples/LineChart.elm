@@ -15,7 +15,7 @@ import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes exposing (class, fill, stroke, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (strokeWidth)
 import TypedSvg.Core exposing (Svg)
-import TypedSvg.Types exposing (Fill(..), Transform(..))
+import TypedSvg.Types exposing (Paint(..), Transform(..))
 
 
 w : Float
@@ -86,8 +86,8 @@ view model =
         , g [ transform [ Translate (padding - 1) padding ] ]
             [ yAxis ]
         , g [ transform [ Translate padding padding ], class [ "series" ] ]
-            [ Path.element (area model) [ strokeWidth 3, fill <| Fill <| Color.rgba 1 0 0 0.54 ]
-            , Path.element (line model) [ stroke (Color.rgb 1 0 0), strokeWidth 3, fill FillNone ]
+            [ Path.element (area model) [ strokeWidth 3, fill <| Paint <| Color.rgba 1 0 0 0.54 ]
+            , Path.element (line model) [ stroke <| Paint <| Color.rgb 1 0 0, strokeWidth 3, fill PaintNone ]
             ]
         ]
 

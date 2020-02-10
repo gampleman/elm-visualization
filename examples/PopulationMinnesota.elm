@@ -12,7 +12,7 @@ import TypedSvg exposing (g, rect, svg, text_)
 import TypedSvg.Attributes exposing (class, dy, fill, fontFamily, textAnchor, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (fontSize, height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
-import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..), em)
+import TypedSvg.Types exposing (AnchorAlignment(..), Paint(..), Transform(..), em)
 
 
 main : Svg msg
@@ -92,7 +92,7 @@ column yScale ( year, values ) =
                 , x lowerY
                 , height bandwidth
                 , width (abs <| upperY - lowerY)
-                , fill (Fill color)
+                , fill <| Paint color
                 ]
                 []
     in
