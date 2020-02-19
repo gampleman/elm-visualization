@@ -9,7 +9,7 @@ mass _m = 1_ for all particles. As a result, a force _F_ acting on a particle is
 acceleration _a_ over the time interval _Δt_, and can be simulated simply by adding to the particle’s velocity,
 which is then added to the particle’s position.
 
-[![force directed graph illustration](https://code.gampleman.eu/elm-visualization/ForceDirectedGraph/preview@2x.png)](https://code.gampleman.eu/elm-visualization/ForceDirectedGraph/)
+[![force directed graph illustration](https://elm-visualization.netlify.com/ForceDirectedGraph/preview@2x.png)](https://elm-visualization.netlify.com/ForceDirectedGraph/)
 
 In the domain of information visualization, physical simulations are useful for studying networks and hierarchies!
 
@@ -78,7 +78,7 @@ computeSimulation state entities =
 
 
 {-| This is a convenience function for wrapping data up as Entities. The initial position of entities is arranged
-in a [phylotaxic pattern](https://code.gampleman.eu/elm-visualization/Petals/). Goes well with `List.indexedMap`.
+in a [phylotaxic pattern](https://elm-visualization.netlify.com/Petals/). Goes well with `List.indexedMap`.
 -}
 entity : Int -> a -> Entity Int { value : a }
 entity index a =
@@ -122,32 +122,37 @@ applyForce alpha force entities =
             entities
 
         Links iters lnks ->
-            List.foldl
-                (\{ source, target, distance, strength, bias } ents ->
-                    case ( Dict.get source ents, Dict.get target ents ) of
-                        ( Just sourceNode, Just targetNode ) ->
-                            let
-                                x =
-                                    targetNode.x + targetNode.vx - sourceNode.x - sourceNode.vx
+            nTimes
+                (\entitiesList ->
+                    List.foldl
+                        (\{ source, target, distance, strength, bias } ents ->
+                            case ( Dict.get source ents, Dict.get target ents ) of
+                                ( Just sourceNode, Just targetNode ) ->
+                                    let
+                                        x =
+                                            targetNode.x + targetNode.vx - sourceNode.x - sourceNode.vx
 
-                                y =
-                                    targetNode.y + targetNode.vy - sourceNode.y - sourceNode.vy
+                                        y =
+                                            targetNode.y + targetNode.vy - sourceNode.y - sourceNode.vy
 
-                                d =
-                                    sqrt (x ^ 2 + y ^ 2)
+                                        d =
+                                            sqrt (x ^ 2 + y ^ 2)
 
-                                l =
-                                    (d - distance) / d * alpha * strength
-                            in
-                            ents
-                                |> Dict.update target (Maybe.map (\sn -> { sn | vx = sn.vx - x * l * bias, vy = sn.vy - y * l * bias }))
-                                |> Dict.update source (Maybe.map (\tn -> { tn | vx = tn.vx + x * l * (1 - bias), vy = tn.vy + y * l * (1 - bias) }))
+                                        l =
+                                            (d - distance) / d * alpha * strength
+                                    in
+                                    ents
+                                        |> Dict.update target (Maybe.map (\sn -> { sn | vx = sn.vx - x * l * bias, vy = sn.vy - y * l * bias }))
+                                        |> Dict.update source (Maybe.map (\tn -> { tn | vx = tn.vx + x * l * (1 - bias), vy = tn.vy + y * l * (1 - bias) }))
 
-                        otherwise ->
-                            ents
+                                otherwise ->
+                                    ents
+                        )
+                        entitiesList
+                        lnks
                 )
+                iters
                 entities
-                lnks
 
         ManyBody theta entityStrengths ->
             ManyBody.wrapper alpha theta entityStrengths entities
@@ -159,6 +164,15 @@ applyForce alpha force entities =
         Y directionalParamidDict ->
             --Debug.crash "not implemented"
             entities
+
+
+nTimes : (a -> a) -> Int -> a -> a
+nTimes fn times input =
+    if times <= 0 then
+        input
+
+    else
+        nTimes fn (times - 1) (fn input)
 
 
 {-| Advances the simulation a single tick, returning both updated entities and a new State of the simulation.
@@ -332,8 +346,7 @@ links =
     List.map (\( source, target ) -> { source = source, target = target, distance = 30, strength = Nothing }) >> customLinks 1
 
 
-{-| Allows you to specify the link distance and optionally the strength. You must also specify the iterations count,
-however this parameter is currently ignored (so set it to 1). This will change in a future release.
+{-| Allows you to specify the link distance and optionally the strength. You must also specify the iterations count (the default in `links` is 1). Increasing the number of iterations greatly increases the rigidity of the constraint and is useful for complex structures such as lattices, but also increases the runtime cost to evaluate the force.
 -}
 customLinks : Int -> List { source : comparable, target : comparable, distance : Float, strength : Maybe Float } -> Force comparable
 customLinks iters list =

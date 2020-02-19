@@ -1,4 +1,4 @@
-module Background exposing (main)
+module BackgroundGraph exposing (main)
 
 {-| Part of a composition used for the background of my Elm Europe talk.
 -}
@@ -15,7 +15,7 @@ import TypedSvg exposing (circle, g, line, polygon, svg, title)
 import TypedSvg.Attributes exposing (class, fill, points, stroke, viewBox)
 import TypedSvg.Attributes.InPx exposing (cx, cy, r, strokeWidth, x1, x2, y1, y2)
 import TypedSvg.Core exposing (Svg, text)
-import TypedSvg.Types exposing (Fill(..))
+import TypedSvg.Types exposing (Paint(..))
 
 
 w : Float
@@ -117,7 +117,7 @@ linkElement graph edge =
     in
     line
         [ strokeWidth 1
-        , stroke <| Scale.convert colorScale source.x
+        , stroke <| Paint <| Scale.convert colorScale source.x
         , x1 source.x
         , y1 source.y
         , x2 target.x
@@ -144,7 +144,7 @@ hexagon ( x, y ) size attrs =
 nodeSize size node =
     hexagon ( node.x, node.y )
         size
-        [ fill <| Fill <| Scale.convert colorScale node.x
+        [ fill <| Paint <| Scale.convert colorScale node.x
         ]
         [ title [] [ text node.value.name ] ]
 
@@ -163,8 +163,8 @@ nodeElement node =
                 [ r 12
                 , cx node.label.x
                 , cy node.label.y
-                , fill FillNone
-                , stroke <| Scale.convert colorScale node.label.x
+                , fill PaintNone
+                , stroke <| Paint <| Scale.convert colorScale node.label.x
                 ]
                 []
             ]

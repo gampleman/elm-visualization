@@ -3,7 +3,7 @@
     "name": "gampleman/elm-visualization",
     "summary": "A data visualization package for Elm",
     "license": "MIT",
-    "version": "2.0.0",
+    "version": "2.1.1",
     "exposed-modules": [
         "Scale",
         "Scale.Color",
@@ -11,11 +11,15 @@
         "Shape",
         "Force",
         "Statistics",
-        "Histogram"
+        "Histogram",
+        "Interpolation",
+        "Transition",
+        "Zoom"
     ],
     "elm-version": "0.19.0 <= v < 0.20.0",
     "dependencies": {
         "avh4/elm-color": "1.0.0 <= v < 2.0.0",
+        "elm/browser": "1.0.2 <= v < 2.0.0",
         "elm/core": "1.0.0 <= v < 2.0.0",
         "elm/html": "1.0.0 <= v < 2.0.0",
         "elm/json": "1.0.0 <= v < 2.0.0",

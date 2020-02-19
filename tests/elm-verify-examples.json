@@ -3,6 +3,8 @@
   "tests" : [
     "Scale",
     "Statistics",
-    "Shape"
+    "Shape",
+    "Transition",
+    "Interpolation"
   ]
 }

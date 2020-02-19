@@ -1,6 +1,22 @@
 module Curves exposing (main)
 
-{-| Here we demonstrate the various curve functions provided.
+{-| This example demonstrates the effect of curve type on the shape connecting the same set of points.
+
+@screenshot linear
+@screenshot basis
+@screenshot basisclosed
+@screenshot basisopen
+@screenshot bundle
+@screenshot cardinal
+@screenshot cardinalclosed
+@screenshot cardinalopen
+@screenshot catmullrom
+@screenshot catmullromclosed
+@screenshot catmullromopen
+@screenshot monotoneinx
+@screenshot step
+@screenshot natural
+
 -}
 
 import Color exposing (Color)
@@ -15,7 +31,7 @@ import TypedSvg exposing (g, line, rect, svg, text_)
 import TypedSvg.Attributes as Explicit exposing (fill, fontFamily, stroke, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, strokeWidth, width, x, x1, x2, y, y1, y2)
 import TypedSvg.Core exposing (Svg, text)
-import TypedSvg.Types exposing (Fill(..), Transform(..), percent)
+import TypedSvg.Types exposing (Paint(..), Transform(..), percent)
 
 
 w : Float
@@ -70,7 +86,7 @@ xGridLine index tick =
         , Explicit.y2 (percent 100)
         , x1 (Scale.convert xScale tick)
         , x2 (Scale.convert xScale tick)
-        , stroke Color.white
+        , stroke <| Paint Color.white
         , strokeWidth (Basics.max (toFloat (modBy 2 index)) 0.5)
         ]
         []
@@ -83,7 +99,7 @@ yGridLine index tick =
         , Explicit.x2 (percent 100)
         , y1 (Scale.convert yScale tick)
         , y2 (Scale.convert yScale tick)
-        , stroke Color.white
+        , stroke <| Paint Color.white
         , strokeWidth (Basics.max (toFloat (modBy 2 index)) 0.5)
         ]
         []
@@ -97,12 +113,12 @@ drawCurve : ( String, Curve, Color ) -> Svg msg
 drawCurve ( name, curve, color ) =
     List.map Just preparedPoints
         |> Shape.line curve
-        |> (\path -> Path.element path [ stroke color, fill FillNone, strokeWidth 2 ])
+        |> (\path -> Path.element path [ stroke (Paint color), fill PaintNone, strokeWidth 2 ])
 
 
 drawLegend : Int -> ( String, Curve, Color ) -> Svg msg
 drawLegend index ( name, curve, color ) =
-    text_ [ fill (Fill color), fontFamily [ "monospace" ], x padding, y (toFloat index * 20 + padding) ] [ text name ]
+    text_ [ fill (Paint color), fontFamily [ "monospace" ], x padding, y (toFloat index * 20 + padding) ] [ text name ]
 
 
 view : List ( String, Curve, Color ) -> Svg String
@@ -110,12 +126,12 @@ view model =
     div []
         [ Example.navigation "Curve type" exampleData
         , svg [ viewBox 0 0 w h ]
-            [ rect [ width w, height h, fill <| Fill <| Color.rgb255 223 223 223 ] []
+            [ rect [ width w, height h, fill <| Paint <| Color.rgb255 223 223 223 ] []
             , g [] <| List.indexedMap yGridLine <| Scale.ticks yScale 10
             , g [] <| List.indexedMap xGridLine <| Scale.ticks xScale 20
             , g [] <|
                 List.map drawCurve model
-            , g [] <| List.map (\( dx, dy ) -> Path.element circle [ fill (Fill Color.white), stroke Color.black, transform [ Translate dx dy ] ]) preparedPoints
+            , g [] <| List.map (\( dx, dy ) -> Path.element circle [ fill (Paint Color.white), stroke (Paint Color.black), transform [ Translate dx dy ] ]) preparedPoints
             , g [] <| List.indexedMap drawLegend <| model
             ]
         ]
@@ -172,7 +188,3 @@ exampleData =
 
 main =
     Example.switchableViews exampleData view
-
-
-
-{- {"additionalShots": ["linear", "basis", "basisclosed", "basisopen", "bundle", "cardinal", "cardinalclosed", "cardinalopen", "catmullrom", "catmullromclosed", "catmullromopen", "monotoneinx", "step", "natural"], "options": {"linear": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "basis": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "basisclosed": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "basisopen": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "bundle": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "cardinal": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "cardinalclosed": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "cardinalopen": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "catmullrom": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "catmullromclosed": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "catmullromopen": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "monotoneinx": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "step": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}, "natural": {"webshot":{"shotOffset":{"left":0,"top": 60, "bottom": 0, "right":0}}}}} -}
