@@ -1,6 +1,7 @@
 module Scale.Color exposing
     ( category10, tableau10
     , viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator
+    , cielabInterpolator, hsluvInterpolator, rgbaToRgb255
     )
 
 {-| We provide sequential and categorical color schemes designed to work with [ordinal](Scale#OrdinalScale) and [sequential](Scale#SequentialScale) scales. Color types come from [avh4/elm-color](https://package.elm-lang.org/packages/avh4/elm-color/latest/).
@@ -18,7 +19,9 @@ module Scale.Color exposing
 -}
 
 import Array exposing (Array)
-import Color exposing (Color, black, rgb255)
+import Color exposing (Color, black, rgb255, toRgba)
+import HSLuv
+import Scale
 
 
 mkInterpolator : Array Color -> Float -> Color
@@ -106,3 +109,225 @@ A list of ten categorical colors
 tableau10 : List Color
 tableau10 =
     [ rgb255 78 121 167, rgb255 242 142 44, rgb255 225 87 89, rgb255 118 183 178, rgb255 89 161 79, rgb255 237 201 73, rgb255 175 122 161, rgb255 255 157 167, rgb255 156 117 95, rgb255 186 176 171 ]
+
+
+
+-- CIELAB
+
+
+linear : Float -> Float -> Float -> Float
+linear t i1 i2 =
+    i1 + (i2 - i1) * t
+
+
+hsluvInterpolator : ( Color, Color ) -> Float -> Color
+hsluvInterpolator ( start, end ) t =
+    let
+        start_ =
+            HSLuv.color start
+                |> HSLuv.toHsluv
+                |> Debug.log "s"
+
+        end_ =
+            HSLuv.color end
+                |> HSLuv.toHsluv
+                |> Debug.log "e"
+
+        i =
+            linear t
+
+        color h s l =
+            HSLuv.hsluv { hue = h, saturation = s, lightness = l, alpha = 1 } |> HSLuv.toColor
+    in
+    color
+        (i start_.hue end_.hue)
+        (i start_.saturation end_.saturation)
+        (i start_.lightness end_.lightness)
+
+
+cielabInterpolator : ( Color, Color ) -> Float -> Color
+cielabInterpolator ( start, end ) t =
+    let
+        s =
+            colorToLab start
+                |> Debug.log "s"
+
+        e =
+            colorToLab end
+                |> Debug.log "e"
+
+        i =
+            linear t
+    in
+    labToColor
+        { l = i s.l e.l
+        , a = i s.a e.a
+        , b = i s.b e.b
+        }
+
+
+
+-- COLORS EXTRA
+-- adapted from: https://github.com/eskimoblood/elm-color-extra
+
+
+type alias XYZ =
+    { x : Float, y : Float, z : Float }
+
+
+type alias Lab =
+    { l : Float, a : Float, b : Float }
+
+
+rgbaToRgb255 :
+    { red : Float
+    , green : Float
+    , blue : Float
+    , alpha : Float
+    }
+    ->
+        { red : Int
+        , green : Int
+        , blue : Int
+        }
+rgbaToRgb255 { red, green, blue } =
+    let
+        s =
+            Scale.linear ( 0, 255 ) ( 0, 1 )
+    in
+    { red = Scale.convert s red |> round
+    , green = Scale.convert s green |> round
+    , blue = Scale.convert s blue |> round
+    }
+
+
+{-| Convert color to CIELAB- color space
+-}
+colorToLab : Color -> { l : Float, a : Float, b : Float }
+colorToLab =
+    colorToXyz >> xyzToLab
+
+
+colorToXyz : Color -> XYZ
+colorToXyz cl =
+    let
+        c ch =
+            let
+                ch_ =
+                    toFloat ch / 255
+
+                ch__ =
+                    if ch_ > 4.045e-2 then
+                        ((ch_ + 5.5e-2) / 1.055) ^ 2.4
+
+                    else
+                        ch_ / 12.92
+            in
+            ch__ * 100
+
+        { red, green, blue } =
+            toRgba cl |> rgbaToRgb255
+
+        r =
+            c red
+
+        g =
+            c green
+
+        b =
+            c blue
+    in
+    { x = r * 0.4124 + g * 0.3576 + b * 0.1805
+    , y = r * 0.2126 + g * 0.7152 + b * 7.22e-2
+    , z = r * 1.93e-2 + g * 0.1192 + b * 0.9505
+    }
+
+
+xyzToLab : XYZ -> Lab
+xyzToLab { x, y, z } =
+    let
+        c ch =
+            if ch > 8.856e-3 then
+                ch ^ (1 / 3)
+
+            else
+                (7.787 * ch) + (16 / 116)
+
+        x_ =
+            c (x / 95.047)
+
+        y_ =
+            c (y / 100)
+
+        z_ =
+            c (z / 108.883)
+    in
+    { l = (116 * y_) - 16
+    , a = 500 * (x_ - y_)
+    , b = 200 * (y_ - z_)
+    }
+
+
+{-| Convert a color in CIELAB- color space to Elm `Color`
+-}
+labToColor : { l : Float, a : Float, b : Float } -> Color
+labToColor =
+    labToXyz >> xyzToColor
+
+
+labToXyz : Lab -> XYZ
+labToXyz { l, a, b } =
+    let
+        c ch =
+            let
+                ch_ =
+                    ch * ch * ch
+            in
+            if ch_ > 8.856e-3 then
+                ch_
+
+            else
+                (ch - 16 / 116) / 7.787
+
+        y =
+            (l + 16) / 116
+    in
+    { y = c y * 100
+    , x = c (y + a / 500) * 95.047
+    , z = c (y - b / 200) * 108.883
+    }
+
+
+xyzToColor : XYZ -> Color
+xyzToColor { x, y, z } =
+    let
+        x_ =
+            x / 100
+
+        y_ =
+            y / 100
+
+        z_ =
+            z / 100
+
+        r =
+            x_ * 3.2404542 + y_ * -1.5371385 + z_ * -0.4986
+
+        g =
+            x_ * -0.969266 + y_ * 1.8760108 + z_ * 4.1556e-2
+
+        b =
+            x_ * 5.56434e-2 + y_ * -0.2040259 + z_ * 1.0572252
+
+        c ch =
+            let
+                ch_ =
+                    if ch > 3.1308e-3 then
+                        1.055 * (ch ^ (1 / 2.4)) - 5.5e-2
+
+                    else
+                        12.92 * ch
+            in
+            round <| clamp 0 255 (ch_ * 255)
+    in
+    rgb255 (c r) (c g) (c b)

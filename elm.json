@@ -29,6 +29,7 @@
         "folkertdev/one-true-path-experiment": "4.0.1 <= v < 5.0.0",
         "ianmackenzie/elm-geometry": "1.1.0 <= v < 2.0.0",
         "justinmimbs/time-extra": "1.0.1 <= v < 2.0.0",
+        "kuon/elm-hsluv": "3.0.2 <= v < 4.0.0",
         "ryannhg/date-format": "2.0.0 <= v < 3.0.0"
     },
     "test-dependencies": {
