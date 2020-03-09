@@ -3,6 +3,7 @@ module BarChartRace exposing (main)
 {-| Demonstrates a complex animation.
 
 @requires data/category-brands.csv
+@delay 3
 
 -}
 
@@ -14,6 +15,7 @@ import Csv
 import Csv.Decode as Csv
 import DateFormat
 import Dict exposing (Dict)
+import Example
 import Http
 import Interpolation exposing (Interpolator)
 import Iso8601
@@ -67,7 +69,7 @@ type alias Frame =
 
 type Model
     = Loading
-    | Error
+    | Error Http.Error
     | Loaded { transition : Transition Frame, categories : List String }
 
 
@@ -157,7 +159,7 @@ update msg model =
             )
 
         ( RecievedData (Err e), _ ) ->
-            ( Error, Cmd.none )
+            ( Error e, Cmd.none )
 
         ( Tick ms, Loaded m ) ->
             ( Loaded { m | transition = Transition.step ms m.transition }, Cmd.none )
@@ -290,10 +292,10 @@ interpolateBrand from to =
 view model =
     case model of
         Loading ->
-            text "Wait for it..."
+            Example.loading []
 
-        Error ->
-            text "Ooops. Something went wrong."
+        Error err ->
+            Example.error Nothing err
 
         Loaded { transition, categories } ->
             viewChart categories (Transition.value transition)
@@ -407,7 +409,7 @@ subscriptions model =
         Loading ->
             Sub.none
 
-        Error ->
+        Error _ ->
             Sub.none
 
         Loaded record ->
