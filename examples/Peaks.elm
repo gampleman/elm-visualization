@@ -11,7 +11,7 @@ This example demonstrates:
   - Some shenigans to get labels to position themselves reasonably.
 
 Based on a [notebook](https://observablehq.com/@yurivish/peak-detection) by Yuri Vishnevsky.
-@delay 3
+@delay 6
 @todo Interactive hover based tooltip with snapping to peaks.
 @todo Interactive controls for tuning the peaks mechanism.
 
@@ -317,6 +317,7 @@ css =
     }
     h1 {
         margin-left: 20px;
+        font-size: 16px;
     }
     h1 input[type=text], h1 button {
         font-size: 32px;

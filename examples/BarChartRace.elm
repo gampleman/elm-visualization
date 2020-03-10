@@ -3,7 +3,7 @@ module BarChartRace exposing (main)
 {-| Demonstrates a complex animation.
 
 @requires data/category-brands.csv
-@delay 3
+@delay 6
 
 -}
 
