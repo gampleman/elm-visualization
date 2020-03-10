@@ -1,6 +1,6 @@
 module Interpolation exposing
     ( Interpolator
-    , float, int, step, rgb, rgbWithGamma, hsl, hslLong
+    , float, int, step, rgb, rgbWithGamma, hsl, hslLong, lab, hcl, hclLong
     , map, map2, map3, map4, map5, piecewise, tuple
     , inParallel, list, ListCombiner(..), combineParallel
     , samples
@@ -15,7 +15,7 @@ so that you can build interpolators for your own custom datatypes.
 
 ### Primitive interpolators
 
-@docs float, int, step, rgb, rgbWithGamma, hsl, hslLong
+@docs float, int, step, rgb, rgbWithGamma, hsl, hslLong, lab, hcl, hclLong
 
 
 ### Composition
@@ -35,7 +35,8 @@ so that you can build interpolators for your own custom datatypes.
 -}
 
 import Array
-import Color exposing (Color)
+import Color exposing (Color, toRgba)
+import Color.Lab as Lab
 import Dict exposing (Dict)
 
 
@@ -286,6 +287,69 @@ hslImpl hueInt from to =
     map4 Color.hsla (hueInt start.hue end.hue) (float start.saturation end.saturation) (float start.lightness end.lightness) (float start.alpha end.alpha)
 
 
+{-| Interpolates between two Color values using the [CIELAB](https://en.wikipedia.org/wiki/CIELAB_color_space) color space, that is more perceptually linear than other color spaces.
+Perceptually linear means that a change of the same amount in a color value should produce a change of about the same visual importance.
+This property makes it ideal for accurate visual encoding of data.
+-}
+lab : Color -> Color -> Interpolator Color
+lab from to =
+    let
+        start =
+            Lab.toLab from
+
+        end =
+            Lab.toLab to
+    in
+    map4 (\l a b alpha -> Lab.fromLab { l = l, a = a, b = b, alpha = alpha })
+        (float start.l end.l)
+        (float start.a end.a)
+        (float start.b end.b)
+        (float start.alpha end.alpha)
+
+
+{-| Interpolates between two Color values using the [CIE Lch(ab)](https://en.wikipedia.org/wiki/HCL_color_space) color space.
+-}
+hcl : Color -> Color -> Interpolator Color
+hcl =
+    hclImpl hue360
+
+
+{-| Like hcl, but does not use the shortest path between hues.
+-}
+hclLong : Color -> Color -> Interpolator Color
+hclLong =
+    hclImpl float
+
+
+{-| We do not want negative values in an rgb color
+TODO: is ths a non issue or does it hide a problem in the Color.Lab module?
+-}
+forcePositive : Color -> Color
+forcePositive c =
+    let
+        { red, green, blue, alpha } =
+            c |> Color.toRgba
+    in
+    Color.rgb (clamp 0 1 red) (clamp 0 1 green) (clamp 0 1 blue)
+
+
+hclImpl : (Float -> Float -> Interpolator Float) -> Color -> Color -> Interpolator Color
+hclImpl hueInt from to =
+    let
+        start =
+            Lab.toHcl from
+
+        end =
+            Lab.toHcl to
+    in
+    map4 (\h c l alpha -> Lab.fromHcl { hue = h, chroma = c, luminance = l, alpha = alpha })
+        (hueInt start.hue end.hue)
+        (float start.chroma end.chroma)
+        (float start.luminance end.luminance)
+        (float start.alpha end.alpha)
+        >> forcePositive
+
+
 hue : Float -> Float -> Interpolator Float
 hue from to =
     let
@@ -299,6 +363,11 @@ hue from to =
          else
             to
         )
+
+
+hue360 : Float -> Float -> Interpolator Float
+hue360 from to =
+    hue (from / 360) (to / 360) >> (*) 360
 
 
 gammaCorrected : Float -> Float -> Float -> Interpolator Float

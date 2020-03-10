@@ -5,3 +5,4 @@ tests/VerifyExamples
 node_modules/
 build/
 package-lock.json
+*.swp
