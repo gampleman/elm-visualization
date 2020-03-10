@@ -3,7 +3,7 @@ module TodoAnimated exposing (main)
 {-| This is a modified version of [TodoMVC](http://todomvc.com) with the [original implementation here](https://github.com/tastejs/todomvc/blob/gh-pages/examples/elm/Todo.elm). This version adds animated transitions using elm-visualizations animation system.
 
 @requires assets/todo.css
-
+@delay 6
 -}
 
 import Browser

@@ -2,6 +2,7 @@ module Statistics exposing
     ( extent, extentBy, extentWith
     , variance, deviation, quantile
     , ticks, tickStep, range
+    , peaks
     )
 
 {-|
@@ -9,6 +10,8 @@ module Statistics exposing
 @docs extent, extentBy, extentWith
 
 @docs variance, deviation, quantile
+
+@docs peaks
 
 
 # Transformations
@@ -235,13 +238,13 @@ given list of numbers. If the list has fewer than two values, returns Nothing.
 variance : List Float -> Maybe Float
 variance nums =
     let
-        compute value ( mean, i, sm ) =
+        compute value ( avg, i, sm ) =
             let
                 delta =
-                    value - mean
+                    value - avg
 
                 newMean =
-                    mean + delta / (i + 1)
+                    avg + delta / (i + 1)
             in
             ( newMean, i + 1, sm + delta * (value - newMean) )
 
@@ -313,3 +316,89 @@ quantile p values =
                         List.Extra.getAt (i0 + 1) values |> Maybe.withDefault y
                 in
                 Just <| value0 + (value1 - value0) * (i - toFloat i0)
+
+
+mean : List Float -> Float
+mean xs =
+    List.sum xs / toFloat (List.length xs)
+
+{-| This functions detects (positive) peaks in a timeseries. 
+
+The first argument is there to extract the actual value to perform the computation on.
+
+It also accepts some parameters to tune the behavior of the function:
+
+- `lookaround`: Each value will be compared to this many neigbours on both sides and will get a score on how much taller it is then the shortest of them.
+- `sensitivity`: This is used as a threshold to filter the candidate peaks to select the gloably biggest.
+- `coalesce`: To prevent peaks that span multiple samples, this parameter will coalesce these into a single sample.
+
+    peaks identity { lookaround = 2, sensitivity = 1.4, coalesce = 0 } [ 2, 0, 10, 2, 1 ] --> [ 10 ]
+
+Based on work by [Yuri Vishnevsky](https://observablehq.com/@yurivish/peak-detection).
+    
+ -}
+peaks : (a -> Float) -> { lookaround : Int, sensitivity : Float, coallesce : Int } -> List a -> List a
+peaks accessor { lookaround, sensitivity, coallesce } =
+    let
+        preprocess index datum =
+            { datum = datum, index = index, value = accessor datum }
+
+        peakiness results before after =
+            case after of
+                [] ->
+                    List.reverse results
+
+                x :: xs ->
+                    let
+                        result =
+                            { x | value = x.value - max (List.take lookaround before |> List.map .value |> List.minimum |> Maybe.withDefault 0) (List.take lookaround xs |> List.map .value |> List.minimum |> Maybe.withDefault 0) }
+                    in
+                    peakiness (result :: results) (x :: before) xs
+
+        normalize xs =
+            let
+                vals =
+                    List.map .value xs
+
+                avg =
+                    mean vals
+
+                stdev =
+                    deviation vals |> Maybe.withDefault 0
+            in
+            List.map (\x -> { x | value = (x.value - avg) / stdev }) xs
+
+        candidates =
+            List.filter (\x -> x.value > sensitivity)
+
+        group xs =
+            case xs of
+                [] ->
+                    []
+
+                head :: tail ->
+                    groupHelp head [ [ head ] ] tail
+
+        groupHelp x results xs =
+            case xs of
+                [] ->
+                    List.map List.reverse results |> List.reverse
+
+                y :: rest ->
+                    if y.index - x.index < coallesce then
+                        case results of
+                            [] ->
+                                groupHelp y [ [ y ] ] rest
+
+                            h :: t ->
+                                groupHelp y ((y :: h) :: t) rest
+
+                    else
+                        groupHelp y ([ y ] :: results) rest
+    in
+    List.indexedMap preprocess
+        >> peakiness [] []
+        >> normalize
+        >> candidates
+        >> group
+        >> List.filterMap (List.Extra.maximumBy .value >> Maybe.map .datum)
