@@ -3,7 +3,7 @@ module InterpolationTests exposing (suite)
 import Array
 import Color exposing (Color)
 import Expect exposing (Expectation, FloatingPointTolerance(..))
-import Fuzz exposing (..)
+import Fuzz exposing (Fuzzer, float, floatRange, intRange, list)
 import Interpolation exposing (Interpolator)
 import Test exposing (..)
 
@@ -103,6 +103,24 @@ suite =
                             , Color.rgb255 153 64 191
                             , Color.rgb255 191 64 85
                             ]
+            ]
+        , describe "lab" <|
+            [ test "interpolates in lab" <|
+                \() ->
+                    interpolateColorTest Interpolation.lab
+                        { red = 134, green = 120, blue = 146 }
+            ]
+        , describe "hcl" <|
+            [ test "interpolates in hcl" <|
+                \() ->
+                    interpolateColorTest Interpolation.hcl
+                        { red = 106, green = 121, blue = 206 }
+            ]
+        , describe "hclLong" <|
+            [ test "interpolates in hcl" <|
+                \() ->
+                    interpolateColorTest Interpolation.hclLong
+                        { red = 0, green = 144, blue = 169 }
             ]
         , describe "piecewise"
             [ fuzz3 float (list float) (floatRange 0 1) "never exceeds the range" <|
