@@ -1,8 +1,8 @@
 module Statistics exposing
     ( extent, extentBy, extentWith
     , variance, deviation, quantile
-    , ticks, tickStep, range
     , peaks
+    , ticks, tickStep, range
     )
 
 {-|
@@ -322,21 +322,24 @@ mean : List Float -> Float
 mean xs =
     List.sum xs / toFloat (List.length xs)
 
-{-| This functions detects (positive) peaks in a timeseries. 
+
+{-| This functions detects (positive) peaks in a timeseries.
 
 The first argument is there to extract the actual value to perform the computation on.
 
 It also accepts some parameters to tune the behavior of the function:
 
-- `lookaround`: Each value will be compared to this many neigbours on both sides and will get a score on how much taller it is then the shortest of them.
-- `sensitivity`: This is used as a threshold to filter the candidate peaks to select the gloably biggest.
-- `coalesce`: To prevent peaks that span multiple samples, this parameter will coalesce these into a single sample.
+  - `lookaround`: Each value will be compared to this many neigbours on both sides and will get a score on how much taller it is then the shortest of them.
+
+  - `sensitivity`: This is used as a threshold to filter the candidate peaks to select the gloably biggest.
+
+  - `coalesce`: To prevent peaks that span multiple samples, this parameter will coalesce these into a single sample.
 
     peaks identity { lookaround = 2, sensitivity = 1.4, coalesce = 0 } [ 2, 0, 10, 2, 1 ] --> [ 10 ]
 
 Based on work by [Yuri Vishnevsky](https://observablehq.com/@yurivish/peak-detection).
-    
- -}
+
+-}
 peaks : (a -> Float) -> { lookaround : Int, sensitivity : Float, coallesce : Int } -> List a -> List a
 peaks accessor { lookaround, sensitivity, coallesce } =
     let

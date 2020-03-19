@@ -4,6 +4,7 @@ module TodoAnimated exposing (main)
 
 @requires assets/todo.css
 @delay 6
+
 -}
 
 import Browser
