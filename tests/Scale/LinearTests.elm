@@ -37,7 +37,8 @@ all =
 
                 else
                     double
-                        |> Expect.within (Absolute 0.0001) val
+                        |> Expect.within (Absolute 0.0001)
+                            val
         , fuzz (tuple3 ( tuple ( float, float ), tuple ( float, float ), float )) "clamp limits output value to the range" <|
             \( domain, range, val ) ->
                 let

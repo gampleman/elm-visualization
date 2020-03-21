@@ -4,6 +4,7 @@ import Array
 import Color exposing (Color)
 import Expect exposing (Expectation, FloatingPointTolerance(..))
 import Fuzz exposing (Fuzzer, float, floatRange, intRange, list)
+import Helper exposing (atLeastFloat, atMostFloat)
 import Interpolation exposing (Interpolator)
 import Test exposing (..)
 
@@ -127,8 +128,8 @@ suite =
                 \head tail t ->
                     Interpolation.piecewise Interpolation.float head tail t
                         |> Expect.all
-                            [ Expect.atMost (List.foldl max head tail)
-                            , Expect.atLeast (List.foldl min head tail)
+                            [ atMostFloat <| List.foldl max head tail
+                            , atLeastFloat <| List.foldl min head tail
                             ]
             ]
         , describe "inParallel"
