@@ -4,7 +4,7 @@ import Array
 import Color exposing (Color)
 import Color.Lab as Lab
 import Expect exposing (Expectation, FloatingPointTolerance(..))
-import Fuzz exposing (Fuzzer, float, floatRange, intRange, list)
+import Fuzz exposing (Fuzzer, float, floatRange, intRange, list, tuple3)
 import Test exposing (..)
 
 
@@ -17,24 +17,27 @@ guaranteedTolerance =
     Absolute 0.0000000001
 
 
-tuple2 : Fuzzer a -> Fuzzer b -> Fuzzer ( a, b )
-tuple2 a b =
-    Fuzz.tuple ( a, b )
+uint8 : Fuzzer Int
+uint8 =
+    Fuzz.intRange 0 255
 
 
-tuple3 : Fuzzer a -> Fuzzer b -> Fuzzer c -> Fuzzer ( a, b, c )
-tuple3 a b c =
-    Fuzz.tuple3 ( a, b, c )
+toColorFloat : Int -> Float
+toColorFloat n =
+    toFloat n / 255
+
+
+color : Fuzzer Color
+color =
+    Fuzz.map4 (\r g b a -> Color.rgba (toColorFloat r) (toColorFloat g) (toColorFloat g) a) uint8 uint8 uint8 unit
 
 
 suite : Test
 suite =
     describe "Color"
         [ describe "Color lab"
-            [ fuzz (tuple2 (tuple3 (floatRange 0 100) (floatRange -160 160) (floatRange -160 160)) unit)
-                "can represent Lab colors (fromLab)"
-              <|
-                \( ( l, a, b ), alpha ) ->
+            [ fuzz2 (tuple3 ( floatRange 0 100, floatRange -160 160, floatRange -160 160 )) unit "can represent Lab colors (fromLab)" <|
+                \( l, a, b ) alpha ->
                     Lab.fromLab { l = l, a = a, b = b, alpha = alpha }
                         |> Lab.toLab
                         |> Expect.all
@@ -53,15 +56,13 @@ suite =
                     Lab.fromHcl { hue = 120, chroma = 30, luminance = 50, alpha = 0.4 }
                         |> Color.toRgba
                         |> expectRgbEqual { red = 105 / 255, green = 126 / 255, blue = 73 / 255, alpha = 0.4 }
-            , fuzz (tuple2 (tuple3 unit unit unit) unit)
-                "can represent Hcl colors (fromHcl)"
-              <|
-                \( ( r, g, b ), alpha ) ->
-                    Color.rgba r g b alpha
+            , fuzz color "can represent Hcl colors (fromHcl)" <|
+                \col ->
+                    col
                         |> Lab.toHcl
                         |> Lab.fromHcl
                         |> Color.toRgba
-                        |> expectRgbEqual { red = r, green = g, blue = b, alpha = alpha }
+                        |> expectRgbEqual (Color.toRgba col)
             ]
         ]
 

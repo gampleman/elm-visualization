@@ -33,11 +33,11 @@ all =
                 in
                 if r0 == r1 || d0 == d1 then
                     -- this is a special case, since the inversion cannot know to which end of the domain to go
-                    double |> isAbout d0
+                    double |> Expect.within (Absolute 0.0001) d0
 
                 else
                     double
-                        |> Expect.within (Absolute 0.0001) val
+                        |> Expect.within (Absolute 0.01) val
         , fuzz (tuple3 ( tuple ( float, float ), tuple ( float, float ), float )) "clamp limits output value to the range" <|
             \( domain, range, val ) ->
                 let
