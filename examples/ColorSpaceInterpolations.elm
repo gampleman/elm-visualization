@@ -191,15 +191,8 @@ selectNumberOfColors model =
 
                                 else
                                     False
-
-                            modelValue =
-                                v
-                                    |> String.toInt
-                                    |> Maybe.withDefault 0
-                                    |> (+) -1
-                                    |> String.fromInt
                         in
-                        Html.option [ value modelValue, selected isSelected ] [ Html.text v ]
+                        Html.option [ value v, selected isSelected ] [ Html.text v ]
                     )
             )
         , Html.label [ for "number-of-colors" ] [ Html.text "Number of colors" ]
