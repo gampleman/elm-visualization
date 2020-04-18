@@ -1,6 +1,9 @@
 module Scale.Color exposing
     ( category10, tableau10
-    , viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator, turboInterpolator
+    , bluesInterpolator, greensInterpolator, greysInterpolator, orangesInterpolator, purplesInterpolator, redsInterpolator
+    , viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator, blueGreenInterpolator, bluePurpleInterpolator, greenBlueInterpolator, orangeRedInterpolator, purpleBlueInterpolator, purpleBlueGreenInterpolator, purpleRedInterpolator, redPurpleInterpolator, yellowGreenInterpolator, yellowOrangeBrownInterpolator, yellowOrangeRedInterpolator
+    , turboInterpolator
+    , hexToColor
     )
 
 {-| We provide sequential and categorical color schemes designed to work with [ordinal](Scale#OrdinalScale) and [sequential](Scale#SequentialScale) scales. Color types come from [avh4/elm-color](https://package.elm-lang.org/packages/avh4/elm-color/latest/).
@@ -8,17 +11,42 @@ module Scale.Color exposing
 
 # Categorical
 
+Categorical color schemes can be used to encode discrete data values, each representing a distinct category.
+
 @docs category10, tableau10
 
 
-# Sequential (Multi-hue)
+# Sequential Single-Hue
 
-@docs viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator, turboInterpolator
+Sequential color schemes can be used to encode quantitative values. These color ramps are designed to encode increasing numeric values.
+
+@docs bluesInterpolator, greensInterpolator, greysInterpolator, orangesInterpolator, purplesInterpolator, redsInterpolator
+
+
+# Sequential Multi-Hue
+
+Sequential color schemes can be used to encode quantitative values. These color ramps are designed to encode increasing numeric values, but use additional hues for more color discrimination, which may be useful for visualizations such as heatmaps. However, beware that using multiple hues may cause viewers to inaccurately see the data range as grouped into color-coded clusters.
+
+@docs viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator, blueGreenInterpolator, bluePurpleInterpolator, greenBlueInterpolator, orangeRedInterpolator, purpleBlueInterpolator, purpleBlueGreenInterpolator, purpleRedInterpolator, redPurpleInterpolator, yellowGreenInterpolator, yellowOrangeBrownInterpolator, yellowOrangeRedInterpolator
+
+
+# Cyclic
+
+Cyclical color schemes may be used to highlight periodic patterns in continuous data. However, these schemes are not well suited to accurately convey value differences.
+
+@docs turboInterpolator
+
+
+# Helpers
+
+@docs hexToColor
 
 -}
 
 import Array exposing (Array)
 import Color exposing (Color, black, rgb, rgb255)
+import Hex
+import Interpolation exposing (Interpolator)
 
 
 mkInterpolator : Array Color -> Float -> Color
@@ -88,7 +116,7 @@ plasmaInterpolator =
         Array.fromList [ rgb255 13 8 135, rgb255 16 7 136, rgb255 19 7 137, rgb255 22 7 138, rgb255 25 6 140, rgb255 27 6 141, rgb255 29 6 142, rgb255 32 6 143, rgb255 34 6 144, rgb255 36 6 145, rgb255 38 5 145, rgb255 40 5 146, rgb255 42 5 147, rgb255 44 5 148, rgb255 46 5 149, rgb255 47 5 150, rgb255 49 5 151, rgb255 51 5 151, rgb255 53 4 152, rgb255 55 4 153, rgb255 56 4 154, rgb255 58 4 154, rgb255 60 4 155, rgb255 62 4 156, rgb255 63 4 156, rgb255 65 4 157, rgb255 67 3 158, rgb255 68 3 158, rgb255 70 3 159, rgb255 72 3 159, rgb255 73 3 160, rgb255 75 3 161, rgb255 76 2 161, rgb255 78 2 162, rgb255 80 2 162, rgb255 81 2 163, rgb255 83 2 163, rgb255 85 2 164, rgb255 86 1 164, rgb255 88 1 164, rgb255 89 1 165, rgb255 91 1 165, rgb255 92 1 166, rgb255 94 1 166, rgb255 96 1 166, rgb255 97 0 167, rgb255 99 0 167, rgb255 100 0 167, rgb255 102 0 167, rgb255 103 0 168, rgb255 105 0 168, rgb255 106 0 168, rgb255 108 0 168, rgb255 110 0 168, rgb255 111 0 168, rgb255 113 0 168, rgb255 114 1 168, rgb255 116 1 168, rgb255 117 1 168, rgb255 119 1 168, rgb255 120 1 168, rgb255 122 2 168, rgb255 123 2 168, rgb255 125 3 168, rgb255 126 3 168, rgb255 128 4 168, rgb255 129 4 167, rgb255 131 5 167, rgb255 132 5 167, rgb255 134 6 166, rgb255 135 7 166, rgb255 136 8 166, rgb255 138 9 165, rgb255 139 10 165, rgb255 141 11 165, rgb255 142 12 164, rgb255 143 13 164, rgb255 145 14 163, rgb255 146 15 163, rgb255 148 16 162, rgb255 149 17 161, rgb255 150 19 161, rgb255 152 20 160, rgb255 153 21 159, rgb255 154 22 159, rgb255 156 23 158, rgb255 157 24 157, rgb255 158 25 157, rgb255 160 26 156, rgb255 161 27 155, rgb255 162 29 154, rgb255 163 30 154, rgb255 165 31 153, rgb255 166 32 152, rgb255 167 33 151, rgb255 168 34 150, rgb255 170 35 149, rgb255 171 36 148, rgb255 172 38 148, rgb255 173 39 147, rgb255 174 40 146, rgb255 176 41 145, rgb255 177 42 144, rgb255 178 43 143, rgb255 179 44 142, rgb255 180 46 141, rgb255 181 47 140, rgb255 182 48 139, rgb255 183 49 138, rgb255 184 50 137, rgb255 186 51 136, rgb255 187 52 136, rgb255 188 53 135, rgb255 189 55 134, rgb255 190 56 133, rgb255 191 57 132, rgb255 192 58 131, rgb255 193 59 130, rgb255 194 60 129, rgb255 195 61 128, rgb255 196 62 127, rgb255 197 64 126, rgb255 198 65 125, rgb255 199 66 124, rgb255 200 67 123, rgb255 201 68 122, rgb255 202 69 122, rgb255 203 70 121, rgb255 204 71 120, rgb255 204 73 119, rgb255 205 74 118, rgb255 206 75 117, rgb255 207 76 116, rgb255 208 77 115, rgb255 209 78 114, rgb255 210 79 113, rgb255 211 81 113, rgb255 212 82 112, rgb255 213 83 111, rgb255 213 84 110, rgb255 214 85 109, rgb255 215 86 108, rgb255 216 87 107, rgb255 217 88 106, rgb255 218 90 106, rgb255 218 91 105, rgb255 219 92 104, rgb255 220 93 103, rgb255 221 94 102, rgb255 222 95 101, rgb255 222 97 100, rgb255 223 98 99, rgb255 224 99 99, rgb255 225 100 98, rgb255 226 101 97, rgb255 226 102 96, rgb255 227 104 95, rgb255 228 105 94, rgb255 229 106 93, rgb255 229 107 93, rgb255 230 108 92, rgb255 231 110 91, rgb255 231 111 90, rgb255 232 112 89, rgb255 233 113 88, rgb255 233 114 87, rgb255 234 116 87, rgb255 235 117 86, rgb255 235 118 85, rgb255 236 119 84, rgb255 237 121 83, rgb255 237 122 82, rgb255 238 123 81, rgb255 239 124 81, rgb255 239 126 80, rgb255 240 127 79, rgb255 240 128 78, rgb255 241 129 77, rgb255 241 131 76, rgb255 242 132 75, rgb255 243 133 75, rgb255 243 135 74, rgb255 244 136 73, rgb255 244 137 72, rgb255 245 139 71, rgb255 245 140 70, rgb255 246 141 69, rgb255 246 143 68, rgb255 247 144 68, rgb255 247 145 67, rgb255 247 147 66, rgb255 248 148 65, rgb255 248 149 64, rgb255 249 151 63, rgb255 249 152 62, rgb255 249 154 62, rgb255 250 155 61, rgb255 250 156 60, rgb255 250 158 59, rgb255 251 159 58, rgb255 251 161 57, rgb255 251 162 56, rgb255 252 163 56, rgb255 252 165 55, rgb255 252 166 54, rgb255 252 168 53, rgb255 252 169 52, rgb255 253 171 51, rgb255 253 172 51, rgb255 253 174 50, rgb255 253 175 49, rgb255 253 177 48, rgb255 253 178 47, rgb255 253 180 47, rgb255 253 181 46, rgb255 254 183 45, rgb255 254 184 44, rgb255 254 186 44, rgb255 254 187 43, rgb255 254 189 42, rgb255 254 190 42, rgb255 254 192 41, rgb255 253 194 41, rgb255 253 195 40, rgb255 253 197 39, rgb255 253 198 39, rgb255 253 200 39, rgb255 253 202 38, rgb255 253 203 38, rgb255 252 205 37, rgb255 252 206 37, rgb255 252 208 37, rgb255 252 210 37, rgb255 251 211 36, rgb255 251 213 36, rgb255 251 215 36, rgb255 250 216 36, rgb255 250 218 36, rgb255 249 220 36, rgb255 249 221 37, rgb255 248 223 37, rgb255 248 225 37, rgb255 247 226 37, rgb255 247 228 37, rgb255 246 230 38, rgb255 246 232 38, rgb255 245 233 38, rgb255 245 235 39, rgb255 244 237 39, rgb255 243 238 39, rgb255 243 240 39, rgb255 242 242 39, rgb255 241 244 38, rgb255 241 245 37, rgb255 240 247 36, rgb255 240 249 33 ]
 
 
-{-| ![category10](https://code.gampleman.eu/elm-visualization/misc/turbo.png)
+{-| ![turbo](https://code.gampleman.eu/elm-visualization/misc/turbo.png)
 
 Given a number t in the range [0,1], returns the corresponding
 color from the “turbo” color scheme by [Anton Mikhailov](https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html).
@@ -375,3 +403,196 @@ A list of ten categorical colors
 tableau10 : List Color
 tableau10 =
     [ rgb255 78 121 167, rgb255 242 142 44, rgb255 225 87 89, rgb255 118 183 178, rgb255 89 161 79, rgb255 237 201 73, rgb255 175 122 161, rgb255 255 157 167, rgb255 156 117 95, rgb255 186 176 171 ]
+
+
+
+-- CONTINOUS
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Blues” sequential color scheme
+-}
+bluesInterpolator : Interpolator Color
+bluesInterpolator =
+    mkPiecewiseInterpolator "cfe1f2bed8eca8cee58fc1de74b2d75ba3cf4592c63181bd206fb2125ca40a4a90"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Greens” sequential color scheme
+-}
+greensInterpolator : Interpolator Color
+greensInterpolator =
+    mkPiecewiseInterpolator "d3eecdc0e6baabdda594d3917bc77d60ba6c46ab5e329a512089430e7735036429"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Greys” sequential color scheme
+-}
+greysInterpolator : Interpolator Color
+greysInterpolator =
+    mkPiecewiseInterpolator "e2e2e2d4d4d4c4c4c4b1b1b19d9d9d8888887575756262624d4d4d3535351e1e1e"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Oranges” sequential color scheme
+-}
+orangesInterpolator : Interpolator Color
+orangesInterpolator =
+    mkPiecewiseInterpolator "fdd8b3fdc998fdb87bfda55efc9244f87f2cf06b18e4580bd14904b93d029f3303"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Purples” sequential color scheme
+-}
+purplesInterpolator : Interpolator Color
+purplesInterpolator =
+    mkPiecewiseInterpolator "e2e1efd4d4e8c4c5e0b4b3d6a3a0cc928ec3827cb97566ae684ea25c3696501f8c"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Reds” sequential color scheme
+-}
+redsInterpolator : Interpolator Color
+redsInterpolator =
+    mkPiecewiseInterpolator "fdc9b4fcb49afc9e80fc8767fa7051f6573fec3f2fdc2a25c81b1db21218970b13"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Blue-Green” sequential color scheme
+-}
+blueGreenInterpolator : Interpolator Color
+blueGreenInterpolator =
+    mkPiecewiseInterpolator "d5efedc1e8e0a7ddd18bd2be70c6a958ba9144ad77319c5d2089460e7736036429"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Blue-Purple” sequential color scheme
+-}
+bluePurpleInterpolator : Interpolator Color
+bluePurpleInterpolator =
+    mkPiecewiseInterpolator "ccddecbad0e4a8c2dd9ab0d4919cc98d85be8b6db28a55a6873c99822287730f71"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Green-Blue” sequential color scheme
+-}
+greenBlueInterpolator : Interpolator Color
+greenBlueInterpolator =
+    mkPiecewiseInterpolator "d3eecec5e8c3b1e1bb9bd8bb82cec269c2ca51b2cd3c9fc7288abd1675b10b60a1"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Orange-Red” sequential color scheme
+-}
+orangeRedInterpolator : Interpolator Color
+orangeRedInterpolator =
+    mkPiecewiseInterpolator "fddcaffdcf9bfdc18afdad77fb9562f67d53ee6545e24932d32d1ebf130da70403"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Purple-Blue” sequential color scheme
+-}
+purpleBlueInterpolator : Interpolator Color
+purpleBlueInterpolator =
+    mkPiecewiseInterpolator "dbdaebc8cee4b1c3de97b7d87bacd15b9fc93a90c01e7fb70b70ab056199045281"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Purple-Blue-Green” sequential color scheme
+-}
+purpleBlueGreenInterpolator : Interpolator Color
+purpleBlueGreenInterpolator =
+    mkPiecewiseInterpolator "dbd8eac8cee4b0c3de93b7d872acd1549fc83892bb1c88a3097f8702736b016353"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Purple-Red” sequential color scheme
+-}
+purpleRedInterpolator : Interpolator Color
+purpleRedInterpolator =
+    mkPiecewiseInterpolator "dcc9e2d3b3d7ce9eccd186c0da6bb2e14da0e23189d91e6fc61159ab07498f023a"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Red-Purple” sequential color scheme
+-}
+redPurpleInterpolator : Interpolator Color
+redPurpleInterpolator =
+    mkPiecewiseInterpolator "fccfccfcbec0faa9b8f98faff571a5ec539ddb3695c41b8aa908808d0179700174"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Yellow-Green” sequential color scheme
+-}
+yellowGreenInterpolator : Interpolator Color
+yellowGreenInterpolator =
+    mkPiecewiseInterpolator "e4f4acd1eca0b9e2949ed68880c97c62bb6e47aa5e3297502083440e723b036034"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Yellow-Orange-Brown” sequential color scheme
+-}
+yellowOrangeBrownInterpolator : Interpolator Color
+yellowOrangeBrownInterpolator =
+    mkPiecewiseInterpolator "feeaa1fedd84fecc63feb746fca031f68921eb7215db5e0bc54c05ab3d038f3204"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Yellow-Orange-Red” sequential color scheme
+-}
+yellowOrangeRedInterpolator : Interpolator Color
+yellowOrangeRedInterpolator =
+    mkPiecewiseInterpolator "fee087fed16ffebd59fea849fd903efc7335f9522bee3423de1b20ca0b22af0225"
+
+
+
+-- HELPERS
+
+
+toHexColors : String -> List String
+toHexColors palette =
+    let
+        n =
+            (String.length palette |> toFloat) / 6 |> round
+
+        f =
+            \i ->
+                "#" ++ String.slice (i * 6) ((i + 1) * 6) palette
+    in
+    Array.initialize n f
+        |> Array.toList
+
+
+mkPiecewiseInterpolator : String -> Interpolator Color
+mkPiecewiseInterpolator values =
+    let
+        hexColors =
+            toHexColors values
+
+        head =
+            hexColors
+                |> List.head
+                |> Maybe.withDefault "#fff"
+                |> hexToColor
+
+        tail =
+            hexColors
+                |> List.tail
+                |> Maybe.withDefault []
+                |> List.map hexToColor
+    in
+    Interpolation.piecewise Interpolation.rgb head tail
+
+
+{-| Hexadecimal color string to Color
+-}
+hexToColor : String -> Color
+hexToColor hex =
+    hex
+        |> String.dropLeft 1
+        |> (\s ->
+                let
+                    r =
+                        String.slice 0 2 s
+                            |> Hex.fromString
+                            |> Result.withDefault 0
+
+                    g =
+                        String.slice 2 4 s
+                            |> Hex.fromString
+                            |> Result.withDefault 0
+
+                    b =
+                        String.slice 4 6 s
+                            |> Hex.fromString
+                            |> Result.withDefault 0
+                in
+                rgb255 r g b
+           )
+
+
+
+--https://github.com/vega/vega/blob/9dd99a8cc9b4407b5b733b0adfbd2bcc69a19849/packages/vega-scale/src/palettes.js
