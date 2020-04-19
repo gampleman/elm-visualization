@@ -14,21 +14,32 @@ import Interpolation exposing (Interpolator)
 import Scale.Color
     exposing
         ( blueGreenInterpolator
+        , blueOrangeInterpolator
         , bluePurpleInterpolator
         , bluesInterpolator
+        , brownBlueGreenInterpolator
         , greenBlueInterpolator
         , greensInterpolator
         , greysInterpolator
         , hexToColor
         , orangeRedInterpolator
         , orangesInterpolator
+        , pinkYellowGreenInterpolator
         , purpleBlueGreenInterpolator
         , purpleBlueInterpolator
+        , purpleGreenInterpolator
+        , purpleOrangeInterpolator
         , purpleRedInterpolator
         , purplesInterpolator
+        , redBlueInterpolator
+        , redGreyInterpolator
         , redPurpleInterpolator
+        , redYellowBlueInterpolator
+        , redYellowGreenInterpolator
         , redsInterpolator
+        , spectralInterpolator
         , turboInterpolator
+        , yellowGreenBlueInterpolator
         , yellowGreenInterpolator
         , yellowOrangeBrownInterpolator
         , yellowOrangeRedInterpolator
@@ -146,6 +157,30 @@ sequentialMultiHue =
             )
 
 
+diverging : List (Html msg)
+diverging =
+    [ ( "blue-orange", blueOrangeInterpolator )
+    , ( "brown-blue-green", brownBlueGreenInterpolator )
+    , ( "purple-green", purpleGreenInterpolator )
+    , ( "purple-orange", purpleOrangeInterpolator )
+    , ( "red-blue", redBlueInterpolator )
+    , ( "red-grey", redGreyInterpolator )
+    , ( "yellow-green-blue", yellowGreenBlueInterpolator )
+    , ( "red-yellow-blue", redYellowBlueInterpolator )
+    , ( "red-yellow-green", redYellowGreenInterpolator )
+    , ( "pink-yellow-green", pinkYellowGreenInterpolator )
+    , ( "spectral", spectralInterpolator )
+    ]
+        |> List.map
+            (\( title, interpolator ) ->
+                div []
+                    [ div []
+                        [ Html.text title ]
+                    , div [ class "palette" ] (interpolation interpolator)
+                    ]
+            )
+
+
 interpolation : Interpolator Color -> List (Html msg)
 interpolation interpolator =
     List.range 1 41
@@ -174,6 +209,12 @@ view =
                 [ div []
                     (Html.h2 [] [ Html.text "Sequential Multi-Hue" ]
                         :: sequentialMultiHue
+                    )
+                ]
+            , div []
+                [ div []
+                    (Html.h2 [] [ Html.text "Diverging" ]
+                        :: diverging
                     )
                 ]
             , div []

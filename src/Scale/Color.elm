@@ -2,6 +2,7 @@ module Scale.Color exposing
     ( category10, tableau10
     , bluesInterpolator, greensInterpolator, greysInterpolator, orangesInterpolator, purplesInterpolator, redsInterpolator
     , viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator, blueGreenInterpolator, bluePurpleInterpolator, greenBlueInterpolator, orangeRedInterpolator, purpleBlueInterpolator, purpleBlueGreenInterpolator, purpleRedInterpolator, redPurpleInterpolator, yellowGreenInterpolator, yellowOrangeBrownInterpolator, yellowOrangeRedInterpolator
+    , blueOrangeInterpolator, brownBlueGreenInterpolator, purpleGreenInterpolator, purpleOrangeInterpolator, redBlueInterpolator, redGreyInterpolator, yellowGreenBlueInterpolator, redYellowBlueInterpolator, redYellowGreenInterpolator, pinkYellowGreenInterpolator, spectralInterpolator
     , turboInterpolator
     , hexToColor
     )
@@ -28,6 +29,13 @@ Sequential color schemes can be used to encode quantitative values. These color 
 Sequential color schemes can be used to encode quantitative values. These color ramps are designed to encode increasing numeric values, but use additional hues for more color discrimination, which may be useful for visualizations such as heatmaps. However, beware that using multiple hues may cause viewers to inaccurately see the data range as grouped into color-coded clusters.
 
 @docs viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator, blueGreenInterpolator, bluePurpleInterpolator, greenBlueInterpolator, orangeRedInterpolator, purpleBlueInterpolator, purpleBlueGreenInterpolator, purpleRedInterpolator, redPurpleInterpolator, yellowGreenInterpolator, yellowOrangeBrownInterpolator, yellowOrangeRedInterpolator
+
+
+# Diverging
+
+Diverging color schemes can be used to encode quantitative values with a meaningful mid-point, such as zero or the average value. Color ramps with different hues diverge with increasing saturation to highlight the values below and above the mid-point.
+
+@docs blueOrangeInterpolator, brownBlueGreenInterpolator, purpleGreenInterpolator, purpleOrangeInterpolator, redBlueInterpolator, redGreyInterpolator, yellowGreenBlueInterpolator, redYellowBlueInterpolator, redYellowGreenInterpolator, pinkYellowGreenInterpolator, spectralInterpolator
 
 
 # Cyclic
@@ -526,6 +534,87 @@ yellowOrangeBrownInterpolator =
 yellowOrangeRedInterpolator : Interpolator Color
 yellowOrangeRedInterpolator =
     mkPiecewiseInterpolator "fee087fed16ffebd59fea849fd903efc7335f9522bee3423de1b20ca0b22af0225"
+
+
+
+-- DIVERGING
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Blue-Orange” diverging color scheme
+-}
+blueOrangeInterpolator : Interpolator Color
+blueOrangeInterpolator =
+    mkPiecewiseInterpolator "134b852f78b35da2cb9dcae1d2e5eff2f0ebfce0bafbbf74e8932fc5690d994a07"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Brown-Blue-Green” diverging color scheme
+-}
+brownBlueGreenInterpolator : Interpolator Color
+brownBlueGreenInterpolator =
+    mkPiecewiseInterpolator "704108a0651ac79548e3c78af3e6c6eef1eac9e9e48ed1c74da79e187a72025147"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Purple-Green” diverging color scheme
+-}
+purpleGreenInterpolator : Interpolator Color
+purpleGreenInterpolator =
+    mkPiecewiseInterpolator "5b1667834792a67fb6c9aed3e6d6e8eff0efd9efd5aedda971bb75368e490e5e29"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Purple-Orange” diverging color scheme
+-}
+purpleOrangeInterpolator : Interpolator Color
+purpleOrangeInterpolator =
+    mkPiecewiseInterpolator "4114696647968f83b7b9b4d6dadbebf3eeeafce0bafbbf74e8932fc5690d994a07"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Red-Blue” diverging color scheme
+-}
+redBlueInterpolator : Interpolator Color
+redBlueInterpolator =
+    mkPiecewiseInterpolator "8c0d25bf363adf745ef4ae91fbdbc9f2efeed2e5ef9dcae15da2cb2f78b3134b85"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Red-Grey” diverging color scheme
+-}
+redGreyInterpolator : Interpolator Color
+redGreyInterpolator =
+    mkPiecewiseInterpolator "8c0d25bf363adf745ef4ae91fcdccbfaf4f1e2e2e2c0c0c0969696646464343434"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Yellow-Green-Blue” diverging color scheme
+-}
+yellowGreenBlueInterpolator : Interpolator Color
+yellowGreenBlueInterpolator =
+    mkPiecewiseInterpolator "eff9bddbf1b4bde5b594d5b969c5be45b4c22c9ec02182b82163aa23479c1c3185"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Red-Yellow-Blue” diverging color scheme
+-}
+redYellowBlueInterpolator : Interpolator Color
+redYellowBlueInterpolator =
+    mkPiecewiseInterpolator "a50026d4322cf16e43fcac64fedd90faf8c1dcf1ecabd6e875abd04a74b4313695"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Red-Yellow-Green” diverging color scheme
+-}
+redYellowGreenInterpolator : Interpolator Color
+redYellowGreenInterpolator =
+    mkPiecewiseInterpolator "a50026d4322cf16e43fcac63fedd8df9f7aed7ee8ea4d86e64bc6122964f006837"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Pink-Yellow-Green” diverging color scheme
+-}
+pinkYellowGreenInterpolator : Interpolator Color
+pinkYellowGreenInterpolator =
+    mkPiecewiseInterpolator "8e0152c0267edd72adf0b3d6faddedf5f3efe1f2cab6de8780bb474f9125276419"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Spectral” diverging color scheme
+-}
+spectralInterpolator : Interpolator Color
+spectralInterpolator =
+    mkPiecewiseInterpolator "9e0142d13c4bf0704afcac63fedd8dfbf8b0e0f3a1a9dda269bda94288b55e4fa2"
 
 
 
