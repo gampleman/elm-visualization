@@ -31,12 +31,14 @@ import Scale.Color
         , purpleOrangeInterpolator
         , purpleRedInterpolator
         , purplesInterpolator
+        , rainbowInterpolator
         , redBlueInterpolator
         , redGreyInterpolator
         , redPurpleInterpolator
         , redYellowBlueInterpolator
         , redYellowGreenInterpolator
         , redsInterpolator
+        , sinebowInterpolator
         , spectralInterpolator
         , turboInterpolator
         , yellowGreenBlueInterpolator
@@ -111,7 +113,18 @@ turboColorMap =
 
 cyclic : List (Html msg)
 cyclic =
-    [ turboColorMap ]
+    [ ( "rainbow", rainbowInterpolator )
+    , ( "sinebow", sinebowInterpolator )
+    ]
+        |> List.map
+            (\( title, interpolator ) ->
+                div []
+                    [ div []
+                        [ Html.text title ]
+                    , div [ class "palette" ] (interpolation interpolator)
+                    ]
+            )
+        |> (::) turboColorMap
 
 
 sequentialSingleHue : List (Html msg)

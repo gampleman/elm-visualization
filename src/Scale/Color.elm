@@ -3,7 +3,7 @@ module Scale.Color exposing
     , bluesInterpolator, greensInterpolator, greysInterpolator, orangesInterpolator, purplesInterpolator, redsInterpolator
     , viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator, blueGreenInterpolator, bluePurpleInterpolator, greenBlueInterpolator, orangeRedInterpolator, purpleBlueInterpolator, purpleBlueGreenInterpolator, purpleRedInterpolator, redPurpleInterpolator, yellowGreenInterpolator, yellowOrangeBrownInterpolator, yellowOrangeRedInterpolator
     , blueOrangeInterpolator, brownBlueGreenInterpolator, purpleGreenInterpolator, purpleOrangeInterpolator, redBlueInterpolator, redGreyInterpolator, yellowGreenBlueInterpolator, redYellowBlueInterpolator, redYellowGreenInterpolator, pinkYellowGreenInterpolator, spectralInterpolator
-    , turboInterpolator
+    , turboInterpolator, rainbowInterpolator, sinebowInterpolator
     , hexToColor
     )
 
@@ -42,7 +42,7 @@ Diverging color schemes can be used to encode quantitative values with a meaning
 
 Cyclical color schemes may be used to highlight periodic patterns in continuous data. However, these schemes are not well suited to accurately convey value differences.
 
-@docs turboInterpolator
+@docs turboInterpolator, rainbowInterpolator, sinebowInterpolator
 
 
 # Helpers
@@ -411,6 +411,24 @@ A list of ten categorical colors
 tableau10 : List Color
 tableau10 =
     [ rgb255 78 121 167, rgb255 242 142 44, rgb255 225 87 89, rgb255 118 183 178, rgb255 89 161 79, rgb255 237 201 73, rgb255 175 122 161, rgb255 255 157 167, rgb255 156 117 95, rgb255 186 176 171 ]
+
+
+
+-- CYCLIC
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Rainbow” sequential color scheme
+-}
+rainbowInterpolator : Interpolator Color
+rainbowInterpolator =
+    mkPiecewiseInterpolator "6e40aa883eb1a43db3bf3cafd83fa4ee4395fe4b83ff576eff6659ff7847ff8c38f3a130e2b72fcfcc36bee044aff05b8ff4576ff65b52f6673af27828ea8d1ddfa319d0b81cbecb23abd82f96e03d82e14c6edb5a5dd0664dbf6e40aa"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Sinebow” sequential color scheme
+-}
+sinebowInterpolator : Interpolator Color
+sinebowInterpolator =
+    mkPiecewiseInterpolator "ff4040fc582af47218e78d0bd5a703bfbf00a7d5038de70b72f41858fc2a40ff402afc5818f4720be78d03d5a700bfbf03a7d50b8de71872f42a58fc4040ff582afc7218f48d0be7a703d5bf00bfd503a7e70b8df41872fc2a58ff4040"
 
 
 
