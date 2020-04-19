@@ -18,12 +18,29 @@ import Scale.Color
         , bluePurpleInterpolator
         , bluesInterpolator
         , brownBlueGreenInterpolator
+        , brownsInterpolator
+        , carbonDiverging1Interpolator
+        , carbonDiverging2Interpolator
+        , category10
+        , category20
+        , category20b
+        , category20c
+        , goldGreensInterpolator
+        , goldOrangeInterpolator
+        , goldRedInterpolator
         , greenBlueInterpolator
         , greensInterpolator
         , greysInterpolator
         , hexToColor
+        , lightGreyRedInterpolator
+        , lightGreyTealInterpolator
+        , lightMultiInterpolator
+        , lightOrangeInterpolator
         , orangeRedInterpolator
         , orangesInterpolator
+        , paired
+        , pastel1
+        , pastel2
         , pinkYellowGreenInterpolator
         , purpleBlueGreenInterpolator
         , purpleBlueInterpolator
@@ -40,7 +57,12 @@ import Scale.Color
         , redsInterpolator
         , sinebowInterpolator
         , spectralInterpolator
+        , tableau10
+        , tableau20
+        , tealBluesInterpolator
+        , tealInterpolator
         , turboInterpolator
+        , warmGreysInterpolator
         , yellowGreenBlueInterpolator
         , yellowGreenInterpolator
         , yellowOrangeBrownInterpolator
@@ -133,8 +155,12 @@ sequentialSingleHue =
     , ( "green", greensInterpolator )
     , ( "grey", greysInterpolator )
     , ( "orange", orangesInterpolator )
+    , ( "light-orange", lightOrangeInterpolator )
     , ( "purple", purplesInterpolator )
     , ( "red", redsInterpolator )
+    , ( "browns", brownsInterpolator )
+    , ( "teal", tealInterpolator )
+    , ( "warm grey", warmGreysInterpolator )
     ]
         |> List.map
             (\( title, interpolator ) ->
@@ -159,6 +185,13 @@ sequentialMultiHue =
     , ( "yellow-green", yellowGreenInterpolator )
     , ( "yellow-orange-brown", yellowOrangeBrownInterpolator )
     , ( "yellow-orange-red", yellowOrangeRedInterpolator )
+    , ( "teal-blues", tealBluesInterpolator )
+    , ( "gold-green", goldGreensInterpolator )
+    , ( "gold-orange", goldOrangeInterpolator )
+    , ( "gold-red", goldRedInterpolator )
+    , ( "light-grey-red", lightGreyRedInterpolator )
+    , ( "light-grey-teal", lightGreyTealInterpolator )
+    , ( "light-multi", lightMultiInterpolator )
     ]
         |> List.map
             (\( title, interpolator ) ->
@@ -172,7 +205,9 @@ sequentialMultiHue =
 
 diverging : List (Html msg)
 diverging =
-    [ ( "blue-orange", blueOrangeInterpolator )
+    [ ( "carbon palette1", carbonDiverging1Interpolator )
+    , ( "carbon palette2", carbonDiverging2Interpolator )
+    , ( "blue-orange", blueOrangeInterpolator )
     , ( "brown-blue-green", brownBlueGreenInterpolator )
     , ( "purple-green", purpleGreenInterpolator )
     , ( "purple-orange", purpleOrangeInterpolator )
@@ -190,6 +225,34 @@ diverging =
                     [ div []
                         [ Html.text title ]
                     , div [ class "palette" ] (interpolation interpolator)
+                    ]
+            )
+
+
+categorical : List (Html msg)
+categorical =
+    [ ( "category10", category10 )
+    , ( "category20", category20 )
+    , ( "category20b", category20b )
+    , ( "category20c", category20c )
+    , ( "tableau10", tableau10 )
+    , ( "tableau20", tableau20 )
+    , ( "paired", paired )
+    , ( "pastel1", pastel1 )
+    , ( "pastel2", pastel2 )
+    ]
+        |> List.map
+            (\( title, colors ) ->
+                div []
+                    [ div []
+                        [ Html.text title ]
+                    , div [ class "palette" ]
+                        (colors
+                            |> List.map
+                                (\color ->
+                                    Html.div [ style "background-color" (Color.toCssString color) ] []
+                                )
+                        )
                     ]
             )
 
@@ -212,6 +275,12 @@ view =
         , Html.div
             [ class "wrapper" ]
             [ div [] [ Html.h1 [] [ Html.text "Color Maps" ] ]
+            , div []
+                [ div []
+                    (Html.h2 [] [ Html.text "Categorical" ]
+                        :: categorical
+                    )
+                ]
             , div []
                 [ div []
                     (Html.h2 [] [ Html.text "Sequential Single-Hue" ]

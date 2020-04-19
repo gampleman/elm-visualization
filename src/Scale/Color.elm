@@ -1,8 +1,8 @@
 module Scale.Color exposing
-    ( category10, tableau10
-    , bluesInterpolator, greensInterpolator, greysInterpolator, orangesInterpolator, purplesInterpolator, redsInterpolator
-    , viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator, blueGreenInterpolator, bluePurpleInterpolator, greenBlueInterpolator, orangeRedInterpolator, purpleBlueInterpolator, purpleBlueGreenInterpolator, purpleRedInterpolator, redPurpleInterpolator, yellowGreenInterpolator, yellowOrangeBrownInterpolator, yellowOrangeRedInterpolator
-    , blueOrangeInterpolator, brownBlueGreenInterpolator, purpleGreenInterpolator, purpleOrangeInterpolator, redBlueInterpolator, redGreyInterpolator, yellowGreenBlueInterpolator, redYellowBlueInterpolator, redYellowGreenInterpolator, pinkYellowGreenInterpolator, spectralInterpolator
+    ( category10, category20, category20b, category20c, paired, pastel1, pastel2, tableau10, tableau20
+    , bluesInterpolator, greensInterpolator, greysInterpolator, orangesInterpolator, purplesInterpolator, redsInterpolator, brownsInterpolator, tealInterpolator, warmGreysInterpolator, lightOrangeInterpolator
+    , viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator, blueGreenInterpolator, bluePurpleInterpolator, greenBlueInterpolator, orangeRedInterpolator, purpleBlueInterpolator, purpleBlueGreenInterpolator, purpleRedInterpolator, redPurpleInterpolator, yellowGreenInterpolator, yellowOrangeBrownInterpolator, yellowOrangeRedInterpolator, tealBluesInterpolator, goldGreensInterpolator, goldOrangeInterpolator, goldRedInterpolator, lightGreyRedInterpolator, lightGreyTealInterpolator, lightMultiInterpolator
+    , blueOrangeInterpolator, brownBlueGreenInterpolator, purpleGreenInterpolator, purpleOrangeInterpolator, redBlueInterpolator, redGreyInterpolator, yellowGreenBlueInterpolator, redYellowBlueInterpolator, redYellowGreenInterpolator, pinkYellowGreenInterpolator, spectralInterpolator, carbonDiverging1Interpolator, carbonDiverging2Interpolator
     , turboInterpolator, rainbowInterpolator, sinebowInterpolator
     , hexToColor
     )
@@ -14,28 +14,28 @@ module Scale.Color exposing
 
 Categorical color schemes can be used to encode discrete data values, each representing a distinct category.
 
-@docs category10, tableau10
+@docs category10, category20, category20b, category20c, paired, pastel1, pastel2, tableau10, tableau20
 
 
 # Sequential Single-Hue
 
 Sequential color schemes can be used to encode quantitative values. These color ramps are designed to encode increasing numeric values.
 
-@docs bluesInterpolator, greensInterpolator, greysInterpolator, orangesInterpolator, purplesInterpolator, redsInterpolator
+@docs bluesInterpolator, greensInterpolator, greysInterpolator, orangesInterpolator, purplesInterpolator, redsInterpolator, brownsInterpolator, tealInterpolator, warmGreysInterpolator, lightOrangeInterpolator
 
 
 # Sequential Multi-Hue
 
 Sequential color schemes can be used to encode quantitative values. These color ramps are designed to encode increasing numeric values, but use additional hues for more color discrimination, which may be useful for visualizations such as heatmaps. However, beware that using multiple hues may cause viewers to inaccurately see the data range as grouped into color-coded clusters.
 
-@docs viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator, blueGreenInterpolator, bluePurpleInterpolator, greenBlueInterpolator, orangeRedInterpolator, purpleBlueInterpolator, purpleBlueGreenInterpolator, purpleRedInterpolator, redPurpleInterpolator, yellowGreenInterpolator, yellowOrangeBrownInterpolator, yellowOrangeRedInterpolator
+@docs viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator, blueGreenInterpolator, bluePurpleInterpolator, greenBlueInterpolator, orangeRedInterpolator, purpleBlueInterpolator, purpleBlueGreenInterpolator, purpleRedInterpolator, redPurpleInterpolator, yellowGreenInterpolator, yellowOrangeBrownInterpolator, yellowOrangeRedInterpolator, tealBluesInterpolator, goldGreensInterpolator, goldOrangeInterpolator, goldRedInterpolator, lightGreyRedInterpolator, lightGreyTealInterpolator, lightMultiInterpolator
 
 
 # Diverging
 
 Diverging color schemes can be used to encode quantitative values with a meaningful mid-point, such as zero or the average value. Color ramps with different hues diverge with increasing saturation to highlight the values below and above the mid-point.
 
-@docs blueOrangeInterpolator, brownBlueGreenInterpolator, purpleGreenInterpolator, purpleOrangeInterpolator, redBlueInterpolator, redGreyInterpolator, yellowGreenBlueInterpolator, redYellowBlueInterpolator, redYellowGreenInterpolator, pinkYellowGreenInterpolator, spectralInterpolator
+@docs blueOrangeInterpolator, brownBlueGreenInterpolator, purpleGreenInterpolator, purpleOrangeInterpolator, redBlueInterpolator, redGreyInterpolator, yellowGreenBlueInterpolator, redYellowBlueInterpolator, redYellowGreenInterpolator, pinkYellowGreenInterpolator, spectralInterpolator, carbonDiverging1Interpolator, carbonDiverging2Interpolator
 
 
 # Cyclic
@@ -403,6 +403,33 @@ category10 =
     [ rgb255 31 119 180, rgb255 255 127 14, rgb255 44 160 44, rgb255 214 39 40, rgb255 148 103 189, rgb255 140 86 75, rgb255 227 119 194, rgb255 127 127 127, rgb255 188 189 34, rgb255 23 190 207 ]
 
 
+{-| A list of twenty categorical colors
+-}
+category20 : List Color
+category20 =
+    "1f77b4aec7e8ff7f0effbb782ca02c98df8ad62728ff98969467bdc5b0d58c564bc49c94e377c2f7b6d27f7f7fc7c7c7bcbd22dbdb8d17becf9edae5"
+        |> toHexColors
+        |> List.map hexToColor
+
+
+{-| A list of twenty categorical colors
+-}
+category20b : List Color
+category20b =
+    "393b795254a36b6ecf9c9ede6379398ca252b5cf6bcedb9c8c6d31bd9e39e7ba52e7cb94843c39ad494ad6616be7969c7b4173a55194ce6dbdde9ed6"
+        |> toHexColors
+        |> List.map hexToColor
+
+
+{-| A list of twenty categorical colors
+-}
+category20c : List Color
+category20c =
+    "3182bd6baed69ecae1c6dbefe6550dfd8d3cfdae6bfdd0a231a35474c476a1d99bc7e9c0756bb19e9ac8bcbddcdadaeb636363969696bdbdbdd9d9d9"
+        |> toHexColors
+        |> List.map hexToColor
+
+
 {-| ![category10](https://code.gampleman.eu/elm-visualization/misc/tableau10.png)
 
 A list of ten categorical colors
@@ -411,6 +438,42 @@ A list of ten categorical colors
 tableau10 : List Color
 tableau10 =
     [ rgb255 78 121 167, rgb255 242 142 44, rgb255 225 87 89, rgb255 118 183 178, rgb255 89 161 79, rgb255 237 201 73, rgb255 175 122 161, rgb255 255 157 167, rgb255 156 117 95, rgb255 186 176 171 ]
+
+
+{-| A list of twenty categorical colors
+-}
+tableau20 : List Color
+tableau20 =
+    "4c78a89ecae9f58518ffbf7954a24b88d27ab79a20f2cf5b43989483bcb6e45756ff9d9879706ebab0acd67195fcbfd2b279a2d6a5c99e765fd8b5a5"
+        |> toHexColors
+        |> List.map hexToColor
+
+
+{-| A list of nine categorical pastel colors
+-}
+pastel1 : List Color
+pastel1 =
+    "fbb4aeb3cde3ccebc5decbe4fed9a6ffffcce5d8bdfddaecf2f2f2"
+        |> toHexColors
+        |> List.map hexToColor
+
+
+{-| A list of eight categorical pastel colors
+-}
+pastel2 : List Color
+pastel2 =
+    "b3e2cdfdcdaccbd5e8f4cae4e6f5c9fff2aef1e2cccccccc"
+        |> toHexColors
+        |> List.map hexToColor
+
+
+{-| A list of twelve categorical paired colors
+-}
+paired : List Color
+paired =
+    "a6cee31f78b4b2df8a33a02cfb9a99e31a1cfdbf6fff7f00cab2d66a3d9affff99b15928"
+        |> toHexColors
+        |> List.map hexToColor
 
 
 
@@ -554,8 +617,105 @@ yellowOrangeRedInterpolator =
     mkPiecewiseInterpolator "fee087fed16ffebd59fea849fd903efc7335f9522bee3423de1b20ca0b22af0225"
 
 
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Browns” sequential color scheme
+-}
+brownsInterpolator : Interpolator Color
+brownsInterpolator =
+    mkPiecewiseInterpolator "eedbbdecca96e9b97ae4a865dc9856d18954c7784cc0673fb85536ad44339f3632"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Teal Blues” sequential color scheme
+-}
+tealBluesInterpolator : Interpolator Color
+tealBluesInterpolator =
+    mkPiecewiseInterpolator "bce4d89dd3d181c3cb65b3c245a2b9368fae347da0306a932c5985"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Teal” sequential color scheme
+-}
+tealInterpolator : Interpolator Color
+tealInterpolator =
+    mkPiecewiseInterpolator "bbdfdfa2d4d58ac9c975bcbb61b0af4da5a43799982b8b8c1e7f7f127273006667"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Warm Greys” sequential color scheme
+-}
+warmGreysInterpolator : Interpolator Color
+warmGreysInterpolator =
+    mkPiecewiseInterpolator "dcd4d0cec5c1c0b8b4b3aaa7a59c9998908c8b827f7e7673726866665c5a59504e"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Gold Green” sequential color scheme
+-}
+goldGreensInterpolator : Interpolator Color
+goldGreensInterpolator =
+    mkPiecewiseInterpolator "f4d166d5ca60b6c35c98bb597cb25760a6564b9c533f8f4f33834a257740146c36"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Gold Orange” sequential color scheme
+-}
+goldOrangeInterpolator : Interpolator Color
+goldOrangeInterpolator =
+    mkPiecewiseInterpolator "f4d166f8be5cf8aa4cf5983bf3852aef701be2621fd65322c54923b142239e3a26"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Gold Red” sequential color scheme
+-}
+goldRedInterpolator : Interpolator Color
+goldRedInterpolator =
+    mkPiecewiseInterpolator "f4d166f6be59f9aa51fc964ef6834bee734ae56249db5247cf4244c43141b71d3e"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Light Grey Red” sequential color scheme
+-}
+lightGreyRedInterpolator : Interpolator Color
+lightGreyRedInterpolator =
+    mkPiecewiseInterpolator "efe9e6e1dad7d5cbc8c8bdb9bbaea9cd967ddc7b43e15f19df4011dc000b"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Light Grey Teal” sequential color scheme
+-}
+lightGreyTealInterpolator : Interpolator Color
+lightGreyTealInterpolator =
+    mkPiecewiseInterpolator "e4eaead6dcddc8ced2b7c2c7a6b4bc64b0bf22a6c32295c11f85be1876bc"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Light Multi” sequential color scheme
+-}
+lightMultiInterpolator : Interpolator Color
+lightMultiInterpolator =
+    mkPiecewiseInterpolator "e0f1f2c4e9d0b0de9fd0e181f6e072f6c053f3993ef77440ef4a3c"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Light Orange” sequential color scheme
+-}
+lightOrangeInterpolator : Interpolator Color
+lightOrangeInterpolator =
+    mkPiecewiseInterpolator "f2e7daf7d5baf9c499fab184fa9c73f68967ef7860e8645bde515bd43d5b"
+
+
 
 -- DIVERGING
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Carbon palette1” diverging color scheme, from the [Carbon Design System](https://www.carbondesignsystem.com/data-visualization/color-palettes)
+
+The red-cyan palette has a natural association with temperature. Use this palette for data representing hot-vs-cold.
+
+-}
+carbonDiverging1Interpolator : Interpolator Color
+carbonDiverging1Interpolator =
+    mkPiecewiseInterpolator "750e13a2191fda1e28fa4d56ff8389ffb3b8ffd7d9fff1f1e5f6ffbae6ff82cfff33b1ff1192e80072c300539a003a6d"
+
+
+{-| Given a number t in the range [0,1], returns the corresponding color from the “Carbon palette2” diverging color scheme, from the [Carbon Design System](https://www.carbondesignsystem.com/data-visualization/color-palettes)
+
+The purple-teal palette is good for data with no temperature associations, such as performance, sales, and rates of change.
+
+-}
+carbonDiverging2Interpolator : Interpolator Color
+carbonDiverging2Interpolator =
+    mkPiecewiseInterpolator "491d8b6929c48a3ffca56effbe95ffd4bbffe8dafff6f2ffd9fbfb9ef0f03ddbd908bdba009d9a007d79005d5d004144"
 
 
 {-| Given a number t in the range [0,1], returns the corresponding color from the “Blue-Orange” diverging color scheme
