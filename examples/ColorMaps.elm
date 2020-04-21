@@ -13,7 +13,8 @@ import Html.Events exposing (onInput)
 import Interpolation exposing (Interpolator)
 import Scale.Color
     exposing
-        ( blueGreenInterpolator
+        ( accent
+        , blueGreenInterpolator
         , blueOrangeInterpolator
         , bluePurpleInterpolator
         , bluesInterpolator
@@ -22,9 +23,6 @@ import Scale.Color
         , carbonDiverging1Interpolator
         , carbonDiverging2Interpolator
         , category10
-        , category20
-        , category20b
-        , category20c
         , goldGreensInterpolator
         , goldOrangeInterpolator
         , goldRedInterpolator
@@ -58,7 +56,6 @@ import Scale.Color
         , sinebowInterpolator
         , spectralInterpolator
         , tableau10
-        , tableau20
         , tealBluesInterpolator
         , tealInterpolator
         , turboInterpolator
@@ -232,11 +229,8 @@ diverging =
 categorical : List (Html msg)
 categorical =
     [ ( "category10", category10 )
-    , ( "category20", category20 )
-    , ( "category20b", category20b )
-    , ( "category20c", category20c )
+    , ( "accent", accent )
     , ( "tableau10", tableau10 )
-    , ( "tableau20", tableau20 )
     , ( "paired", paired )
     , ( "pastel1", pastel1 )
     , ( "pastel2", pastel2 )

@@ -1,5 +1,5 @@
 module Scale.Color exposing
-    ( category10, category20, category20b, category20c, paired, pastel1, pastel2, tableau10, tableau20
+    ( category10, accent, paired, pastel1, pastel2, tableau10
     , bluesInterpolator, greensInterpolator, greysInterpolator, orangesInterpolator, purplesInterpolator, redsInterpolator, brownsInterpolator, tealInterpolator, warmGreysInterpolator, lightOrangeInterpolator
     , viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator, blueGreenInterpolator, bluePurpleInterpolator, greenBlueInterpolator, orangeRedInterpolator, purpleBlueInterpolator, purpleBlueGreenInterpolator, purpleRedInterpolator, redPurpleInterpolator, yellowGreenInterpolator, yellowOrangeBrownInterpolator, yellowOrangeRedInterpolator, tealBluesInterpolator, goldGreensInterpolator, goldOrangeInterpolator, goldRedInterpolator, lightGreyRedInterpolator, lightGreyTealInterpolator, lightMultiInterpolator
     , blueOrangeInterpolator, brownBlueGreenInterpolator, purpleGreenInterpolator, purpleOrangeInterpolator, redBlueInterpolator, redGreyInterpolator, yellowGreenBlueInterpolator, redYellowBlueInterpolator, redYellowGreenInterpolator, pinkYellowGreenInterpolator, spectralInterpolator, carbonDiverging1Interpolator, carbonDiverging2Interpolator
@@ -14,7 +14,7 @@ module Scale.Color exposing
 
 Categorical color schemes can be used to encode discrete data values, each representing a distinct category.
 
-@docs category10, category20, category20b, category20c, paired, pastel1, pastel2, tableau10, tableau20
+@docs category10, accent, paired, pastel1, pastel2, tableau10
 
 
 # Sequential Single-Hue
@@ -403,29 +403,11 @@ category10 =
     [ rgb255 31 119 180, rgb255 255 127 14, rgb255 44 160 44, rgb255 214 39 40, rgb255 148 103 189, rgb255 140 86 75, rgb255 227 119 194, rgb255 127 127 127, rgb255 188 189 34, rgb255 23 190 207 ]
 
 
-{-| A list of twenty categorical colors
+{-| A list of eight categorical colors
 -}
-category20 : List Color
-category20 =
-    "1f77b4aec7e8ff7f0effbb782ca02c98df8ad62728ff98969467bdc5b0d58c564bc49c94e377c2f7b6d27f7f7fc7c7c7bcbd22dbdb8d17becf9edae5"
-        |> toHexColors
-        |> List.map hexToColor
-
-
-{-| A list of twenty categorical colors
--}
-category20b : List Color
-category20b =
-    "393b795254a36b6ecf9c9ede6379398ca252b5cf6bcedb9c8c6d31bd9e39e7ba52e7cb94843c39ad494ad6616be7969c7b4173a55194ce6dbdde9ed6"
-        |> toHexColors
-        |> List.map hexToColor
-
-
-{-| A list of twenty categorical colors
--}
-category20c : List Color
-category20c =
-    "3182bd6baed69ecae1c6dbefe6550dfd8d3cfdae6bfdd0a231a35474c476a1d99bc7e9c0756bb19e9ac8bcbddcdadaeb636363969696bdbdbdd9d9d9"
+accent : List Color
+accent =
+    "7fc97fbeaed4fdc086ffff99386cb0f0027fbf5b17666666"
         |> toHexColors
         |> List.map hexToColor
 
@@ -438,15 +420,6 @@ A list of ten categorical colors
 tableau10 : List Color
 tableau10 =
     [ rgb255 78 121 167, rgb255 242 142 44, rgb255 225 87 89, rgb255 118 183 178, rgb255 89 161 79, rgb255 237 201 73, rgb255 175 122 161, rgb255 255 157 167, rgb255 156 117 95, rgb255 186 176 171 ]
-
-
-{-| A list of twenty categorical colors
--}
-tableau20 : List Color
-tableau20 =
-    "4c78a89ecae9f58518ffbf7954a24b88d27ab79a20f2cf5b43989483bcb6e45756ff9d9879706ebab0acd67195fcbfd2b279a2d6a5c99e765fd8b5a5"
-        |> toHexColors
-        |> List.map hexToColor
 
 
 {-| A list of nine categorical pastel colors
