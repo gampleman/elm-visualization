@@ -1,5 +1,5 @@
 module Scale.Color exposing
-    ( category10, accent, paired, pastel1, pastel2, tableau10
+    ( category10, accent, paired, pastel1, pastel2, tableau10, colorblind, set1, set2
     , bluesInterpolator, greensInterpolator, greysInterpolator, orangesInterpolator, purplesInterpolator, redsInterpolator, brownsInterpolator, tealInterpolator, warmGreysInterpolator, lightOrangeInterpolator
     , viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator, blueGreenInterpolator, bluePurpleInterpolator, greenBlueInterpolator, orangeRedInterpolator, purpleBlueInterpolator, purpleBlueGreenInterpolator, purpleRedInterpolator, redPurpleInterpolator, yellowGreenInterpolator, yellowOrangeBrownInterpolator, yellowOrangeRedInterpolator, tealBluesInterpolator, goldGreensInterpolator, goldOrangeInterpolator, goldRedInterpolator, lightGreyRedInterpolator, lightGreyTealInterpolator, lightMultiInterpolator
     , blueOrangeInterpolator, brownBlueGreenInterpolator, purpleGreenInterpolator, purpleOrangeInterpolator, redBlueInterpolator, redGreyInterpolator, yellowGreenBlueInterpolator, redYellowBlueInterpolator, redYellowGreenInterpolator, pinkYellowGreenInterpolator, spectralInterpolator, carbonDiverging1Interpolator, carbonDiverging2Interpolator
@@ -14,7 +14,7 @@ module Scale.Color exposing
 
 Categorical color schemes can be used to encode discrete data values, each representing a distinct category.
 
-@docs category10, accent, paired, pastel1, pastel2, tableau10
+@docs category10, accent, paired, pastel1, pastel2, tableau10, colorblind, set1, set2
 
 
 # Sequential Single-Hue
@@ -445,6 +445,33 @@ pastel2 =
 paired : List Color
 paired =
     "a6cee31f78b4b2df8a33a02cfb9a99e31a1cfdbf6fff7f00cab2d66a3d9affff99b15928"
+        |> toHexColors
+        |> List.map hexToColor
+
+
+{-| A list of eight colorblind friendly categorical colors
+-}
+colorblind : List Color
+colorblind =
+    "0x0072b2e69f00f0e442009e7356b4e9d55e00cc79a7000000"
+        |> toHexColors
+        |> List.map hexToColor
+
+
+{-| A list of nine categorical colors
+-}
+set1 : List Color
+set1 =
+    "e41a1c377eb84daf4a984ea3ff7f00ffff33a65628f781bf999999"
+        |> toHexColors
+        |> List.map hexToColor
+
+
+{-| A list of eight categorical colors
+-}
+set2 : List Color
+set2 =
+    "66c2a5fc8d628da0cbe78ac3a6d854ffd92fe5c494b3b3b3"
         |> toHexColors
         |> List.map hexToColor
 

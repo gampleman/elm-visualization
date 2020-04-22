@@ -23,6 +23,7 @@ import Scale.Color
         , carbonDiverging1Interpolator
         , carbonDiverging2Interpolator
         , category10
+        , colorblind
         , goldGreensInterpolator
         , goldOrangeInterpolator
         , goldRedInterpolator
@@ -53,6 +54,8 @@ import Scale.Color
         , redYellowBlueInterpolator
         , redYellowGreenInterpolator
         , redsInterpolator
+        , set1
+        , set2
         , sinebowInterpolator
         , spectralInterpolator
         , tableau10
@@ -234,6 +237,9 @@ categorical =
     , ( "paired", paired )
     , ( "pastel1", pastel1 )
     , ( "pastel2", pastel2 )
+    , ( "colorblind", colorblind )
+    , ( "set1", set1 )
+    , ( "set2", set2 )
     ]
         |> List.map
             (\( title, colors ) ->
