@@ -89,7 +89,7 @@ body {
 
 .wrapper {
     margin: 25px;
-    width: 940px;
+    width: 500px;
     position: relative;
 }
 
@@ -100,22 +100,8 @@ body {
 }
 
 .palette div {
-    height: 25px;
+    height: 30px;
     flex: 1;
-}
-
-.controls {
-    margin-bottom : 0;
-    display: flex;
-}
-
-.controls div {
-    margin : 0 20px 10px;
-}
-
-.controls input,
-.controls select {
-    margin-right : 10px;
 }
 """
 
@@ -151,16 +137,16 @@ cyclic =
 
 sequentialSingleHue : List (Html msg)
 sequentialSingleHue =
-    [ ( "blue", bluesInterpolator )
-    , ( "green", greensInterpolator )
-    , ( "grey", greysInterpolator )
-    , ( "orange", orangesInterpolator )
-    , ( "light-orange", lightOrangeInterpolator )
-    , ( "purple", purplesInterpolator )
-    , ( "red", redsInterpolator )
+    [ ( "blues", bluesInterpolator )
+    , ( "greens", greensInterpolator )
+    , ( "greys", greysInterpolator )
+    , ( "oranges", orangesInterpolator )
+    , ( "light-oranges", lightOrangeInterpolator )
+    , ( "purples", purplesInterpolator )
+    , ( "reds", redsInterpolator )
     , ( "browns", brownsInterpolator )
-    , ( "teal", tealInterpolator )
-    , ( "warm grey", warmGreysInterpolator )
+    , ( "teals", tealInterpolator )
+    , ( "warm greys", warmGreysInterpolator )
     ]
         |> List.map
             (\( title, interpolator ) ->
@@ -174,23 +160,23 @@ sequentialSingleHue =
 
 sequentialMultiHue : List (Html msg)
 sequentialMultiHue =
-    [ ( "blue-green", blueGreenInterpolator )
-    , ( "blue-purple", bluePurpleInterpolator )
-    , ( "green-blue", greenBlueInterpolator )
-    , ( "orange-red", orangeRedInterpolator )
-    , ( "purple-blue", purpleBlueInterpolator )
-    , ( "purple-blue-green", purpleBlueGreenInterpolator )
-    , ( "purple-red", purpleRedInterpolator )
-    , ( "red-purple", redPurpleInterpolator )
-    , ( "yellow-green", yellowGreenInterpolator )
-    , ( "yellow-orange-brown", yellowOrangeBrownInterpolator )
-    , ( "yellow-orange-red", yellowOrangeRedInterpolator )
-    , ( "teal-blues", tealBluesInterpolator )
-    , ( "gold-green", goldGreensInterpolator )
-    , ( "gold-orange", goldOrangeInterpolator )
-    , ( "gold-red", goldRedInterpolator )
-    , ( "light-grey-red", lightGreyRedInterpolator )
-    , ( "light-grey-teal", lightGreyTealInterpolator )
+    [ ( "blue-greens", blueGreenInterpolator )
+    , ( "blue-purples", bluePurpleInterpolator )
+    , ( "green-blues", greenBlueInterpolator )
+    , ( "orange-reds", orangeRedInterpolator )
+    , ( "purple-blues", purpleBlueInterpolator )
+    , ( "purple-blue-greens", purpleBlueGreenInterpolator )
+    , ( "purple-reds", purpleRedInterpolator )
+    , ( "red-purples", redPurpleInterpolator )
+    , ( "yellow-greens", yellowGreenInterpolator )
+    , ( "yellow-orange-browns", yellowOrangeBrownInterpolator )
+    , ( "yellow-orange-reds", yellowOrangeRedInterpolator )
+    , ( "teal-bluess", tealBluesInterpolator )
+    , ( "gold-greens", goldGreensInterpolator )
+    , ( "gold-oranges", goldOrangeInterpolator )
+    , ( "gold-reds", goldRedInterpolator )
+    , ( "light-grey-reds", lightGreyRedInterpolator )
+    , ( "light-grey-teals", lightGreyTealInterpolator )
     , ( "light-multi", lightMultiInterpolator )
     ]
         |> List.map
@@ -207,16 +193,16 @@ diverging : List (Html msg)
 diverging =
     [ ( "carbon palette1", carbonDiverging1Interpolator )
     , ( "carbon palette2", carbonDiverging2Interpolator )
-    , ( "blue-orange", blueOrangeInterpolator )
-    , ( "brown-blue-green", brownBlueGreenInterpolator )
-    , ( "purple-green", purpleGreenInterpolator )
-    , ( "purple-orange", purpleOrangeInterpolator )
-    , ( "red-blue", redBlueInterpolator )
-    , ( "red-grey", redGreyInterpolator )
-    , ( "yellow-green-blue", yellowGreenBlueInterpolator )
-    , ( "red-yellow-blue", redYellowBlueInterpolator )
-    , ( "red-yellow-green", redYellowGreenInterpolator )
-    , ( "pink-yellow-green", pinkYellowGreenInterpolator )
+    , ( "blue-oranges", blueOrangeInterpolator )
+    , ( "brown-blue-greens", brownBlueGreenInterpolator )
+    , ( "purple-greens", purpleGreenInterpolator )
+    , ( "purple-oranges", purpleOrangeInterpolator )
+    , ( "red-blues", redBlueInterpolator )
+    , ( "red-greys", redGreyInterpolator )
+    , ( "yellow-green-blues", yellowGreenBlueInterpolator )
+    , ( "red-yellow-blues", redYellowBlueInterpolator )
+    , ( "red-yellow-greens", redYellowGreenInterpolator )
+    , ( "pink-yellow-greens", pinkYellowGreenInterpolator )
     , ( "spectral", spectralInterpolator )
     ]
         |> List.map
@@ -232,14 +218,14 @@ diverging =
 categorical : List (Html msg)
 categorical =
     [ ( "category10", category10 )
-    , ( "accent", accent )
     , ( "tableau10", tableau10 )
     , ( "paired", paired )
+    , ( "set1", set1 )
+    , ( "set2", set2 )
+    , ( "accent", accent )
     , ( "pastel1", pastel1 )
     , ( "pastel2", pastel2 )
     , ( "colorblind", colorblind )
-    , ( "set1", set1 )
-    , ( "set2", set2 )
     ]
         |> List.map
             (\( title, colors ) ->
@@ -259,8 +245,8 @@ categorical =
 
 interpolation : Interpolator Color -> List (Html msg)
 interpolation interpolator =
-    List.range 1 41
-        |> List.map (\v -> toFloat v / 40)
+    List.range 1 61
+        |> List.map (\v -> toFloat v / 60)
         |> List.map interpolator
         |> List.map
             (\color ->
