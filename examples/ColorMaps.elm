@@ -20,6 +20,7 @@ import Scale.Color
         , bluesInterpolator
         , brownBlueGreenInterpolator
         , brownsInterpolator
+        , carbonAlert
         , carbonDiverging1Interpolator
         , carbonDiverging2Interpolator
         , category10
@@ -226,6 +227,7 @@ categorical =
     , ( "pastel1", pastel1 )
     , ( "pastel2", pastel2 )
     , ( "colorblind", colorblind )
+    , ( "carbonAlert", carbonAlert )
     ]
         |> List.map
             (\( title, colors ) ->

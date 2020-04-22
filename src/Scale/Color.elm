@@ -1,5 +1,5 @@
 module Scale.Color exposing
-    ( category10, accent, paired, pastel1, pastel2, tableau10, colorblind, set1, set2
+    ( category10, accent, paired, pastel1, pastel2, tableau10, colorblind, set1, set2, carbonAlert
     , bluesInterpolator, greensInterpolator, greysInterpolator, orangesInterpolator, purplesInterpolator, redsInterpolator, brownsInterpolator, tealInterpolator, warmGreysInterpolator, lightOrangeInterpolator
     , viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator, blueGreenInterpolator, bluePurpleInterpolator, greenBlueInterpolator, orangeRedInterpolator, purpleBlueInterpolator, purpleBlueGreenInterpolator, purpleRedInterpolator, redPurpleInterpolator, yellowGreenInterpolator, yellowOrangeBrownInterpolator, yellowOrangeRedInterpolator, tealBluesInterpolator, goldGreensInterpolator, goldOrangeInterpolator, goldRedInterpolator, lightGreyRedInterpolator, lightGreyTealInterpolator, lightMultiInterpolator
     , blueOrangeInterpolator, brownBlueGreenInterpolator, purpleGreenInterpolator, purpleOrangeInterpolator, redBlueInterpolator, redGreyInterpolator, yellowGreenBlueInterpolator, redYellowBlueInterpolator, redYellowGreenInterpolator, pinkYellowGreenInterpolator, spectralInterpolator, carbonDiverging1Interpolator, carbonDiverging2Interpolator
@@ -14,7 +14,7 @@ module Scale.Color exposing
 
 Categorical color schemes can be used to encode discrete data values, each representing a distinct category.
 
-@docs category10, accent, paired, pastel1, pastel2, tableau10, colorblind, set1, set2
+@docs category10, accent, paired, pastel1, pastel2, tableau10, colorblind, set1, set2, carbonAlert
 
 
 # Sequential Single-Hue
@@ -472,6 +472,15 @@ set1 =
 set2 : List Color
 set2 =
     "66c2a5fc8d628da0cbe78ac3a6d854ffd92fe5c494b3b3b3"
+        |> toHexColors
+        |> List.map hexToColor
+
+
+{-| A list of 4 categorical colors from the [Carbon Design System](https://www.carbondesignsystem.com/data-visualization/color-palettes)
+-}
+carbonAlert : List Color
+carbonAlert =
+    "da1e28ff832bf1c21b24a148"
         |> toHexColors
         |> List.map hexToColor
 
