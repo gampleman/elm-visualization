@@ -1,6 +1,6 @@
 module ColorMaps exposing (main)
 
-{-| This module shows how to build some simple colour space palettes.
+{-| This module shows the color schemes available in the Scale.Color module
 -}
 
 import Array
