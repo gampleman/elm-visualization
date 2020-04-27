@@ -6,7 +6,6 @@ module ColorMaps exposing (main)
 import Array
 import Browser
 import Color exposing (Color, rgb255)
-import Hex
 import Html exposing (Html, div)
 import Html.Attributes exposing (class, for, href, id, selected, style, type_, value)
 import Html.Events exposing (onInput)
@@ -31,7 +30,6 @@ import Scale.Color
         , greenBlueInterpolator
         , greensInterpolator
         , greysInterpolator
-        , hexToColor
         , lightGreyRedInterpolator
         , lightGreyTealInterpolator
         , lightMultiInterpolator

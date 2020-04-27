@@ -5,12 +5,12 @@ module ColorSpaceInterpolations exposing (main)
 
 import Browser
 import Color exposing (Color, rgb255)
+import Hex
 import Html exposing (Html, div)
 import Html.Attributes exposing (class, for, href, id, selected, style, type_, value)
 import Html.Events exposing (onInput)
 import Interpolation exposing (Interpolator)
 import Scale exposing (QuantizeScale)
-import Scale.Color exposing (hexToColor)
 
 
 css : String
@@ -183,3 +183,30 @@ selectNumberOfColors model =
 
 main =
     Browser.sandbox { init = init, update = update, view = view }
+
+
+{-| Hexadecimal color string to Color
+-}
+hexToColor : String -> Color
+hexToColor hex =
+    hex
+        |> String.dropLeft 1
+        |> (\s ->
+                let
+                    r =
+                        String.slice 0 2 s
+                            |> Hex.fromString
+                            |> Result.withDefault 0
+
+                    g =
+                        String.slice 2 4 s
+                            |> Hex.fromString
+                            |> Result.withDefault 0
+
+                    b =
+                        String.slice 4 6 s
+                            |> Hex.fromString
+                            |> Result.withDefault 0
+                in
+                rgb255 r g b
+           )

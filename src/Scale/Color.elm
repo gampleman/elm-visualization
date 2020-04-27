@@ -1,10 +1,10 @@
 module Scale.Color exposing
-    ( category10, accent, paired, pastel1, pastel2, tableau10, colorblind, set1, set2, carbonAlert
+    ( category10, accent, paired, pastel1, pastel2, tableau10, colorblind, set1, set2
     , bluesInterpolator, greensInterpolator, greysInterpolator, orangesInterpolator, purplesInterpolator, redsInterpolator, brownsInterpolator, tealInterpolator, warmGreysInterpolator, lightOrangeInterpolator
     , viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator, blueGreenInterpolator, bluePurpleInterpolator, greenBlueInterpolator, orangeRedInterpolator, purpleBlueInterpolator, purpleBlueGreenInterpolator, purpleRedInterpolator, redPurpleInterpolator, yellowGreenInterpolator, yellowOrangeBrownInterpolator, yellowOrangeRedInterpolator, tealBluesInterpolator, goldGreensInterpolator, goldOrangeInterpolator, goldRedInterpolator, lightGreyRedInterpolator, lightGreyTealInterpolator, lightMultiInterpolator
     , blueOrangeInterpolator, brownBlueGreenInterpolator, purpleGreenInterpolator, purpleOrangeInterpolator, redBlueInterpolator, redGreyInterpolator, yellowGreenBlueInterpolator, redYellowBlueInterpolator, redYellowGreenInterpolator, pinkYellowGreenInterpolator, spectralInterpolator, carbonDiverging1Interpolator, carbonDiverging2Interpolator
     , turboInterpolator, rainbowInterpolator, sinebowInterpolator
-    , hexToColor
+    , carbonAlert
     )
 
 {-| We provide sequential and categorical color schemes designed to work with [ordinal](Scale#OrdinalScale) and [sequential](Scale#SequentialScale) scales. Color types come from [avh4/elm-color](https://package.elm-lang.org/packages/avh4/elm-color/latest/).
@@ -14,10 +14,12 @@ module Scale.Color exposing
 
 Categorical color schemes can be used to encode discrete data values, each representing a distinct category.
 
-@docs category10, accent, paired, pastel1, pastel2, tableau10, colorblind, set1, set2, carbonAlert
+@docs category10, accent, paired, pastel1, pastel2, tableau10, colorblind, set1, set2
 
 
 # Sequential Single-Hue
+
+Given a number t in the range [0,1], returns the corresponding color from the color scheme
 
 Sequential color schemes can be used to encode quantitative values. These color ramps are designed to encode increasing numeric values.
 
@@ -26,12 +28,16 @@ Sequential color schemes can be used to encode quantitative values. These color 
 
 # Sequential Multi-Hue
 
+Given a number t in the range [0,1], returns the corresponding color from the color scheme
+
 Sequential color schemes can be used to encode quantitative values. These color ramps are designed to encode increasing numeric values, but use additional hues for more color discrimination, which may be useful for visualizations such as heatmaps. However, beware that using multiple hues may cause viewers to inaccurately see the data range as grouped into color-coded clusters.
 
 @docs viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator, blueGreenInterpolator, bluePurpleInterpolator, greenBlueInterpolator, orangeRedInterpolator, purpleBlueInterpolator, purpleBlueGreenInterpolator, purpleRedInterpolator, redPurpleInterpolator, yellowGreenInterpolator, yellowOrangeBrownInterpolator, yellowOrangeRedInterpolator, tealBluesInterpolator, goldGreensInterpolator, goldOrangeInterpolator, goldRedInterpolator, lightGreyRedInterpolator, lightGreyTealInterpolator, lightMultiInterpolator
 
 
 # Diverging
+
+Given a number t in the range [0,1], returns the corresponding color from the color scheme
 
 Diverging color schemes can be used to encode quantitative values with a meaningful mid-point, such as zero or the average value. Color ramps with different hues diverge with increasing saturation to highlight the values below and above the mid-point.
 
@@ -40,27 +46,30 @@ Diverging color schemes can be used to encode quantitative values with a meaning
 
 # Cyclic
 
+Given a number t in the range [0,1], returns the corresponding color from the color scheme
+
 Cyclical color schemes may be used to highlight periodic patterns in continuous data. However, these schemes are not well suited to accurately convey value differences.
 
 @docs turboInterpolator, rainbowInterpolator, sinebowInterpolator
 
 
-# Helpers
+# Alert
 
-@docs hexToColor
+Alert colors are used to reflect status. Typically, red represents danger or error; orange represents a serious warning; yellow represents a regular warning, and green represents normal or success.
+
+@docs carbonAlert
 
 -}
 
 import Array exposing (Array)
 import Color exposing (Color, black, rgb, rgb255)
 import Hex
-import Interpolation exposing (Interpolator)
+import Interpolation
 
 
 {-| ![Viridis](https://code.gampleman.eu/elm-visualization/misc/viridis.png)
 
-Given a number t in the range [0,1], returns the corresponding
-color from the “viridis” perceptually-uniform color scheme designed
+The “viridis” perceptually-uniform color scheme designed
 by [van der Walt, Smith and Firing](https://bids.github.io/colormap/)
 for matplotlib.
 
@@ -74,8 +83,7 @@ viridisInterpolator =
 
 {-| ![magma](https://code.gampleman.eu/elm-visualization/misc/magma.png)
 
-Given a number t in the range [0,1], returns the corresponding
-color from the “magma” perceptually-uniform color scheme designed
+The “magma” perceptually-uniform color scheme designed
 by [van der Walt, Smith and Firing](https://bids.github.io/colormap/)
 for matplotlib,.
 
@@ -88,8 +96,7 @@ magmaInterpolator =
 
 {-| ![Inferno](https://code.gampleman.eu/elm-visualization/misc/inferno.png)
 
-Given a number t in the range [0,1], returns the corresponding
-color from the “inferno” perceptually-uniform color scheme designed
+The “inferno” perceptually-uniform color scheme designed
 by [van der Walt, Smith and Firing](https://bids.github.io/colormap/)
 for matplotlib.
 
@@ -102,8 +109,7 @@ infernoInterpolator =
 
 {-| ![Plasma](https://code.gampleman.eu/elm-visualization/misc/plasma.png)
 
-Given a number t in the range [0,1], returns the corresponding
-color from the “plasma” perceptually-uniform color scheme designed
+The “plasma” perceptually-uniform color scheme designed
 by [van der Walt, Smith and Firing](https://bids.github.io/colormap/)
 for matplotlib.
 
@@ -116,8 +122,7 @@ plasmaInterpolator =
 
 {-| ![turbo](https://code.gampleman.eu/elm-visualization/misc/turbo.png)
 
-Given a number t in the range [0,1], returns the corresponding
-color from the “turbo” color scheme by [Anton Mikhailov](https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html).
+The “turbo” color scheme by [Anton Mikhailov](https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html).
 
 -}
 turboInterpolator : Float -> Color
@@ -487,9 +492,13 @@ set2 =
         |> List.map hexToColor
 
 
+
+-- ALERT PALETTE
+
+
 {-| ![carbonAlert](https://code.gampleman.eu/elm-visualization/misc/carbonAlert.png)
 
-A list of 4 categorical colors from the [Carbon Design System](https://www.carbondesignsystem.com/data-visualization/color-palettes)
+A list of alert colors from the [Carbon Design System](https://www.carbondesignsystem.com/data-visualization)
 
 -}
 carbonAlert : List Color
@@ -504,21 +513,15 @@ carbonAlert =
 
 
 {-| ![rainbow](https://code.gampleman.eu/elm-visualization/misc/rainbow.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Rainbow” sequential color scheme
-
 -}
-rainbowInterpolator : Interpolator Color
+rainbowInterpolator : Float -> Color
 rainbowInterpolator =
     mkPiecewiseInterpolator "6e40aa883eb1a43db3bf3cafd83fa4ee4395fe4b83ff576eff6659ff7847ff8c38f3a130e2b72fcfcc36bee044aff05b8ff4576ff65b52f6673af27828ea8d1ddfa319d0b81cbecb23abd82f96e03d82e14c6edb5a5dd0664dbf6e40aa"
 
 
 {-| ![sinebow](https://code.gampleman.eu/elm-visualization/misc/sinebow.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Sinebow” sequential color scheme
-
 -}
-sinebowInterpolator : Interpolator Color
+sinebowInterpolator : Float -> Color
 sinebowInterpolator =
     mkPiecewiseInterpolator "ff4040fc582af47218e78d0bd5a703bfbf00a7d5038de70b72f41858fc2a40ff402afc5818f4720be78d03d5a700bfbf03a7d50b8de71872f42a58fc4040ff582afc7218f48d0be7a703d5bf00bfd503a7e70b8df41872fc2a58ff4040"
 
@@ -528,279 +531,197 @@ sinebowInterpolator =
 
 
 {-| ![blues](https://code.gampleman.eu/elm-visualization/misc/blues.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Blues” sequential color scheme
-
 -}
-bluesInterpolator : Interpolator Color
+bluesInterpolator : Float -> Color
 bluesInterpolator =
     mkPiecewiseInterpolator "cfe1f2bed8eca8cee58fc1de74b2d75ba3cf4592c63181bd206fb2125ca40a4a90"
 
 
 {-| ![greens](https://code.gampleman.eu/elm-visualization/misc/greens.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Greens” sequential color scheme
-
 -}
-greensInterpolator : Interpolator Color
+greensInterpolator : Float -> Color
 greensInterpolator =
     mkPiecewiseInterpolator "d3eecdc0e6baabdda594d3917bc77d60ba6c46ab5e329a512089430e7735036429"
 
 
 {-| ![greys](https://code.gampleman.eu/elm-visualization/misc/greys.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Greys” sequential color scheme
-
 -}
-greysInterpolator : Interpolator Color
+greysInterpolator : Float -> Color
 greysInterpolator =
     mkPiecewiseInterpolator "e2e2e2d4d4d4c4c4c4b1b1b19d9d9d8888887575756262624d4d4d3535351e1e1e"
 
 
 {-| ![oranges](https://code.gampleman.eu/elm-visualization/misc/oranges.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Oranges” sequential color scheme
-
 -}
-orangesInterpolator : Interpolator Color
+orangesInterpolator : Float -> Color
 orangesInterpolator =
     mkPiecewiseInterpolator "fdd8b3fdc998fdb87bfda55efc9244f87f2cf06b18e4580bd14904b93d029f3303"
 
 
 {-| ![purples](https://code.gampleman.eu/elm-visualization/misc/purples.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Purples” sequential color scheme
-
 -}
-purplesInterpolator : Interpolator Color
+purplesInterpolator : Float -> Color
 purplesInterpolator =
     mkPiecewiseInterpolator "e2e1efd4d4e8c4c5e0b4b3d6a3a0cc928ec3827cb97566ae684ea25c3696501f8c"
 
 
 {-| ![reds](https://code.gampleman.eu/elm-visualization/misc/reds.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Reds” sequential color scheme
-
 -}
-redsInterpolator : Interpolator Color
+redsInterpolator : Float -> Color
 redsInterpolator =
     mkPiecewiseInterpolator "fdc9b4fcb49afc9e80fc8767fa7051f6573fec3f2fdc2a25c81b1db21218970b13"
 
 
 {-| ![blue-greens](https://code.gampleman.eu/elm-visualization/misc/blue-greens.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Blue-Green” sequential color scheme
-
 -}
-blueGreenInterpolator : Interpolator Color
+blueGreenInterpolator : Float -> Color
 blueGreenInterpolator =
     mkPiecewiseInterpolator "d5efedc1e8e0a7ddd18bd2be70c6a958ba9144ad77319c5d2089460e7736036429"
 
 
 {-| ![blue-purples](https://code.gampleman.eu/elm-visualization/misc/blue-purples.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Blue-Purple” sequential color scheme
-
 -}
-bluePurpleInterpolator : Interpolator Color
+bluePurpleInterpolator : Float -> Color
 bluePurpleInterpolator =
     mkPiecewiseInterpolator "ccddecbad0e4a8c2dd9ab0d4919cc98d85be8b6db28a55a6873c99822287730f71"
 
 
 {-| ![green-blues](https://code.gampleman.eu/elm-visualization/misc/green-blues.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Green-Blue” sequential color scheme
-
 -}
-greenBlueInterpolator : Interpolator Color
+greenBlueInterpolator : Float -> Color
 greenBlueInterpolator =
     mkPiecewiseInterpolator "d3eecec5e8c3b1e1bb9bd8bb82cec269c2ca51b2cd3c9fc7288abd1675b10b60a1"
 
 
 {-| ![orange-reds](https://code.gampleman.eu/elm-visualization/misc/orange-reds.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Orange-Red” sequential color scheme
-
 -}
-orangeRedInterpolator : Interpolator Color
+orangeRedInterpolator : Float -> Color
 orangeRedInterpolator =
     mkPiecewiseInterpolator "fddcaffdcf9bfdc18afdad77fb9562f67d53ee6545e24932d32d1ebf130da70403"
 
 
 {-| ![purples-blues](https://code.gampleman.eu/elm-visualization/misc/purples-blues.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Purple-Blue” sequential color scheme
-
 -}
-purpleBlueInterpolator : Interpolator Color
+purpleBlueInterpolator : Float -> Color
 purpleBlueInterpolator =
     mkPiecewiseInterpolator "dbdaebc8cee4b1c3de97b7d87bacd15b9fc93a90c01e7fb70b70ab056199045281"
 
 
 {-| ![purple-blue-greens](https://code.gampleman.eu/elm-visualization/misc/purple-blue-greens.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Purple-Blue-Green” sequential color scheme
-
 -}
-purpleBlueGreenInterpolator : Interpolator Color
+purpleBlueGreenInterpolator : Float -> Color
 purpleBlueGreenInterpolator =
     mkPiecewiseInterpolator "dbd8eac8cee4b0c3de93b7d872acd1549fc83892bb1c88a3097f8702736b016353"
 
 
 {-| ![purple-reds](https://code.gampleman.eu/elm-visualization/misc/purple-reds.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Purple-Red” sequential color scheme
-
 -}
-purpleRedInterpolator : Interpolator Color
+purpleRedInterpolator : Float -> Color
 purpleRedInterpolator =
     mkPiecewiseInterpolator "dcc9e2d3b3d7ce9eccd186c0da6bb2e14da0e23189d91e6fc61159ab07498f023a"
 
 
 {-| ![red-purples](https://code.gampleman.eu/elm-visualization/misc/red-purples.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Red-Purple” sequential color scheme
-
 -}
-redPurpleInterpolator : Interpolator Color
+redPurpleInterpolator : Float -> Color
 redPurpleInterpolator =
     mkPiecewiseInterpolator "fccfccfcbec0faa9b8f98faff571a5ec539ddb3695c41b8aa908808d0179700174"
 
 
 {-| ![yellow-greens](https://code.gampleman.eu/elm-visualization/misc/yellow-greens.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Yellow-Green” sequential color scheme
-
 -}
-yellowGreenInterpolator : Interpolator Color
+yellowGreenInterpolator : Float -> Color
 yellowGreenInterpolator =
     mkPiecewiseInterpolator "e4f4acd1eca0b9e2949ed68880c97c62bb6e47aa5e3297502083440e723b036034"
 
 
 {-| ![yellow-orange-browns](https://code.gampleman.eu/elm-visualization/misc/yellow-orange-browns.png)
-Given a number t in the range [0,1], returns the corresponding color from the “Yellow-Orange-Brown” sequential color scheme
 -}
-yellowOrangeBrownInterpolator : Interpolator Color
+yellowOrangeBrownInterpolator : Float -> Color
 yellowOrangeBrownInterpolator =
     mkPiecewiseInterpolator "feeaa1fedd84fecc63feb746fca031f68921eb7215db5e0bc54c05ab3d038f3204"
 
 
 {-| ![yellow-orange-reds](https://code.gampleman.eu/elm-visualization/misc/yellow-orange-reds.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Yellow-Orange-Red” sequential color scheme
-
 -}
-yellowOrangeRedInterpolator : Interpolator Color
+yellowOrangeRedInterpolator : Float -> Color
 yellowOrangeRedInterpolator =
     mkPiecewiseInterpolator "fee087fed16ffebd59fea849fd903efc7335f9522bee3423de1b20ca0b22af0225"
 
 
 {-| ![browns](https://code.gampleman.eu/elm-visualization/misc/browns.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Browns” sequential color scheme
-
 -}
-brownsInterpolator : Interpolator Color
+brownsInterpolator : Float -> Color
 brownsInterpolator =
     mkPiecewiseInterpolator "eedbbdecca96e9b97ae4a865dc9856d18954c7784cc0673fb85536ad44339f3632"
 
 
 {-| ![teal-blues](https://code.gampleman.eu/elm-visualization/misc/teal-blues.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Teal Blues” sequential color scheme
-
 -}
-tealBluesInterpolator : Interpolator Color
+tealBluesInterpolator : Float -> Color
 tealBluesInterpolator =
     mkPiecewiseInterpolator "bce4d89dd3d181c3cb65b3c245a2b9368fae347da0306a932c5985"
 
 
 {-| ![teals](https://code.gampleman.eu/elm-visualization/misc/teals.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Teal” sequential color scheme
-
 -}
-tealInterpolator : Interpolator Color
+tealInterpolator : Float -> Color
 tealInterpolator =
     mkPiecewiseInterpolator "bbdfdfa2d4d58ac9c975bcbb61b0af4da5a43799982b8b8c1e7f7f127273006667"
 
 
 {-| ![warm-greys](https://code.gampleman.eu/elm-visualization/misc/warm-greys.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Warm Greys” sequential color scheme
-
 -}
-warmGreysInterpolator : Interpolator Color
+warmGreysInterpolator : Float -> Color
 warmGreysInterpolator =
     mkPiecewiseInterpolator "dcd4d0cec5c1c0b8b4b3aaa7a59c9998908c8b827f7e7673726866665c5a59504e"
 
 
 {-| ![gold-greens](https://code.gampleman.eu/elm-visualization/misc/gold-greens.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Gold Green” sequential color scheme
-
 -}
-goldGreensInterpolator : Interpolator Color
+goldGreensInterpolator : Float -> Color
 goldGreensInterpolator =
     mkPiecewiseInterpolator "f4d166d5ca60b6c35c98bb597cb25760a6564b9c533f8f4f33834a257740146c36"
 
 
 {-| ![gold-oranges](https://code.gampleman.eu/elm-visualization/misc/gold-oranges.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Gold Orange” sequential color scheme
-
 -}
-goldOrangeInterpolator : Interpolator Color
+goldOrangeInterpolator : Float -> Color
 goldOrangeInterpolator =
     mkPiecewiseInterpolator "f4d166f8be5cf8aa4cf5983bf3852aef701be2621fd65322c54923b142239e3a26"
 
 
 {-| ![gold-reds](https://code.gampleman.eu/elm-visualization/misc/gold-reds.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Gold Red” sequential color scheme
-
 -}
-goldRedInterpolator : Interpolator Color
+goldRedInterpolator : Float -> Color
 goldRedInterpolator =
     mkPiecewiseInterpolator "f4d166f6be59f9aa51fc964ef6834bee734ae56249db5247cf4244c43141b71d3e"
 
 
 {-| ![light-grey-reds](https://code.gampleman.eu/elm-visualization/misc/light-grey-reds.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Light Grey Red” sequential color scheme
-
 -}
-lightGreyRedInterpolator : Interpolator Color
+lightGreyRedInterpolator : Float -> Color
 lightGreyRedInterpolator =
     mkPiecewiseInterpolator "efe9e6e1dad7d5cbc8c8bdb9bbaea9cd967ddc7b43e15f19df4011dc000b"
 
 
 {-| ![light-grey-teals](https://code.gampleman.eu/elm-visualization/misc/light-grey-teals.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Light Grey Teal” sequential color scheme
-
 -}
-lightGreyTealInterpolator : Interpolator Color
+lightGreyTealInterpolator : Float -> Color
 lightGreyTealInterpolator =
     mkPiecewiseInterpolator "e4eaead6dcddc8ced2b7c2c7a6b4bc64b0bf22a6c32295c11f85be1876bc"
 
 
 {-| ![light-multi](https://code.gampleman.eu/elm-visualization/misc/light-multi.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Light Multi” sequential color scheme
-
 -}
-lightMultiInterpolator : Interpolator Color
+lightMultiInterpolator : Float -> Color
 lightMultiInterpolator =
     mkPiecewiseInterpolator "e0f1f2c4e9d0b0de9fd0e181f6e072f6c053f3993ef77440ef4a3c"
 
 
 {-| ![light-oranges](https://code.gampleman.eu/elm-visualization/misc/light-oranges.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Light Orange” sequential color scheme
-
 -}
-lightOrangeInterpolator : Interpolator Color
+lightOrangeInterpolator : Float -> Color
 lightOrangeInterpolator =
     mkPiecewiseInterpolator "f2e7daf7d5baf9c499fab184fa9c73f68967ef7860e8645bde515bd43d5b"
 
@@ -811,134 +732,101 @@ lightOrangeInterpolator =
 
 {-| ![carbon-palette1](https://code.gampleman.eu/elm-visualization/misc/carbon-palette1.png)
 
-Given a number t in the range [0,1], returns the corresponding color from the “Carbon palette1” diverging color scheme, from the [Carbon Design System](https://www.carbondesignsystem.com/data-visualization/color-palettes)
+The “Carbon palette1” diverging color scheme, from the [Carbon Design System](https://www.carbondesignsystem.com/data-visualization/color-palettes)
 
 The red-cyan palette has a natural association with temperature. Use this palette for data representing hot-vs-cold.
 
 -}
-carbonDiverging1Interpolator : Interpolator Color
+carbonDiverging1Interpolator : Float -> Color
 carbonDiverging1Interpolator =
     mkPiecewiseInterpolator "750e13a2191fda1e28fa4d56ff8389ffb3b8ffd7d9fff1f1e5f6ffbae6ff82cfff33b1ff1192e80072c300539a003a6d"
 
 
 {-| ![carbon-palette2](https://code.gampleman.eu/elm-visualization/misc/carbon-palette2.png)
 
-Given a number t in the range [0,1], returns the corresponding color from the “Carbon palette2” diverging color scheme, from the [Carbon Design System](https://www.carbondesignsystem.com/data-visualization/color-palettes)
+The “Carbon palette2” diverging color scheme, from the [Carbon Design System](https://www.carbondesignsystem.com/data-visualization/color-palettes)
 
 The purple-teal palette is good for data with no temperature associations, such as performance, sales, and rates of change.
 
 -}
-carbonDiverging2Interpolator : Interpolator Color
+carbonDiverging2Interpolator : Float -> Color
 carbonDiverging2Interpolator =
     mkPiecewiseInterpolator "491d8b6929c48a3ffca56effbe95ffd4bbffe8dafff6f2ffd9fbfb9ef0f03ddbd908bdba009d9a007d79005d5d004144"
 
 
 {-| ![blue-oranges](https://code.gampleman.eu/elm-visualization/misc/blue-oranges.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Blue-Orange” diverging color scheme
-
 -}
-blueOrangeInterpolator : Interpolator Color
+blueOrangeInterpolator : Float -> Color
 blueOrangeInterpolator =
     mkPiecewiseInterpolator "134b852f78b35da2cb9dcae1d2e5eff2f0ebfce0bafbbf74e8932fc5690d994a07"
 
 
 {-| ![brown-blue-greens](https://code.gampleman.eu/elm-visualization/misc/brown-blue-greens.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Brown-Blue-Green” diverging color scheme
-
 -}
-brownBlueGreenInterpolator : Interpolator Color
+brownBlueGreenInterpolator : Float -> Color
 brownBlueGreenInterpolator =
     mkPiecewiseInterpolator "704108a0651ac79548e3c78af3e6c6eef1eac9e9e48ed1c74da79e187a72025147"
 
 
 {-| ![purple-greens](https://code.gampleman.eu/elm-visualization/misc/purple-greens.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Purple-Green” diverging color scheme
-
 -}
-purpleGreenInterpolator : Interpolator Color
+purpleGreenInterpolator : Float -> Color
 purpleGreenInterpolator =
     mkPiecewiseInterpolator "5b1667834792a67fb6c9aed3e6d6e8eff0efd9efd5aedda971bb75368e490e5e29"
 
 
 {-| ![purple-oranges](https://code.gampleman.eu/elm-visualization/misc/purple-oranges.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Purple-Orange” diverging color scheme
-
 -}
-purpleOrangeInterpolator : Interpolator Color
+purpleOrangeInterpolator : Float -> Color
 purpleOrangeInterpolator =
     mkPiecewiseInterpolator "4114696647968f83b7b9b4d6dadbebf3eeeafce0bafbbf74e8932fc5690d994a07"
 
 
 {-| ![red-blues](https://code.gampleman.eu/elm-visualization/misc/red-blues.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Red-Blue” diverging color scheme
-
 -}
-redBlueInterpolator : Interpolator Color
+redBlueInterpolator : Float -> Color
 redBlueInterpolator =
     mkPiecewiseInterpolator "8c0d25bf363adf745ef4ae91fbdbc9f2efeed2e5ef9dcae15da2cb2f78b3134b85"
 
 
 {-| ![red-greys](https://code.gampleman.eu/elm-visualization/misc/red-greys.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Red-Grey” diverging color scheme
-
 -}
-redGreyInterpolator : Interpolator Color
+redGreyInterpolator : Float -> Color
 redGreyInterpolator =
     mkPiecewiseInterpolator "8c0d25bf363adf745ef4ae91fcdccbfaf4f1e2e2e2c0c0c0969696646464343434"
 
 
 {-| ![yellow-green-blues](https://code.gampleman.eu/elm-visualization/misc/yellow-green-blues.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Yellow-Green-Blue” diverging color scheme
-
 -}
-yellowGreenBlueInterpolator : Interpolator Color
+yellowGreenBlueInterpolator : Float -> Color
 yellowGreenBlueInterpolator =
     mkPiecewiseInterpolator "eff9bddbf1b4bde5b594d5b969c5be45b4c22c9ec02182b82163aa23479c1c3185"
 
 
 {-| ![red-yellow-blues](https://code.gampleman.eu/elm-visualization/misc/red-yellow-blues.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Red-Yellow-Blue” diverging color scheme
-
 -}
-redYellowBlueInterpolator : Interpolator Color
+redYellowBlueInterpolator : Float -> Color
 redYellowBlueInterpolator =
     mkPiecewiseInterpolator "a50026d4322cf16e43fcac64fedd90faf8c1dcf1ecabd6e875abd04a74b4313695"
 
 
 {-| ![red-yellow-greens](https://code.gampleman.eu/elm-visualization/misc/red-yellow-greens.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Red-Yellow-Green” diverging color scheme
-
 -}
-redYellowGreenInterpolator : Interpolator Color
+redYellowGreenInterpolator : Float -> Color
 redYellowGreenInterpolator =
     mkPiecewiseInterpolator "a50026d4322cf16e43fcac63fedd8df9f7aed7ee8ea4d86e64bc6122964f006837"
 
 
 {-| ![pink-yellow-greens](https://code.gampleman.eu/elm-visualization/misc/pink-yellow-greens.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Pink-Yellow-Green” diverging color scheme
-
 -}
-pinkYellowGreenInterpolator : Interpolator Color
+pinkYellowGreenInterpolator : Float -> Color
 pinkYellowGreenInterpolator =
     mkPiecewiseInterpolator "8e0152c0267edd72adf0b3d6faddedf5f3efe1f2cab6de8780bb474f9125276419"
 
 
 {-| ![spectral](https://code.gampleman.eu/elm-visualization/misc/spectral.png)
-
-Given a number t in the range [0,1], returns the corresponding color from the “Spectral” diverging color scheme
-
 -}
-spectralInterpolator : Interpolator Color
+spectralInterpolator : Float -> Color
 spectralInterpolator =
     mkPiecewiseInterpolator "9e0142d13c4bf0704afcac63fedd8dfbf8b0e0f3a1a9dda269bda94288b55e4fa2"
 
@@ -957,7 +845,7 @@ mkInterpolator range =
         Maybe.withDefault black <| Array.get (max 0 (min (n - 1) (floor (t * toFloat n)))) range
 
 
-mkPiecewiseInterpolator : String -> Interpolator Color
+mkPiecewiseInterpolator : String -> (Float -> Color)
 mkPiecewiseInterpolator values =
     let
         hexColors =
