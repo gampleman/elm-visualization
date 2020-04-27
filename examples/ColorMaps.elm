@@ -225,7 +225,6 @@ categorical =
     , ( "pastel1", pastel1 )
     , ( "pastel2", pastel2 )
     , ( "colorblind", colorblind )
-    , ( "carbonAlert", carbonAlert )
     ]
         |> List.map
             (\( title, colors ) ->
