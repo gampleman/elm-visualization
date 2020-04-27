@@ -1,6 +1,10 @@
 module Scale.Color exposing
-    ( category10, tableau10
-    , viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator
+    ( category10, accent, paired, pastel1, pastel2, tableau10, colorblind, set1, set2
+    , bluesInterpolator, greensInterpolator, greysInterpolator, orangesInterpolator, purplesInterpolator, redsInterpolator, brownsInterpolator, tealInterpolator, warmGreysInterpolator, lightOrangeInterpolator
+    , viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator, blueGreenInterpolator, bluePurpleInterpolator, greenBlueInterpolator, orangeRedInterpolator, purpleBlueInterpolator, purpleBlueGreenInterpolator, purpleRedInterpolator, redPurpleInterpolator, yellowGreenInterpolator, yellowOrangeBrownInterpolator, yellowOrangeRedInterpolator, tealBluesInterpolator, goldGreensInterpolator, goldOrangeInterpolator, goldRedInterpolator, lightGreyRedInterpolator, lightGreyTealInterpolator, lightMultiInterpolator
+    , blueOrangeInterpolator, brownBlueGreenInterpolator, purpleGreenInterpolator, purpleOrangeInterpolator, redBlueInterpolator, redGreyInterpolator, yellowGreenBlueInterpolator, redYellowBlueInterpolator, redYellowGreenInterpolator, pinkYellowGreenInterpolator, spectralInterpolator, carbonDiverging1Interpolator, carbonDiverging2Interpolator
+    , turboInterpolator, rainbowInterpolator, sinebowInterpolator
+    , carbonAlert
     )
 
 {-| We provide sequential and categorical color schemes designed to work with [ordinal](Scale#OrdinalScale) and [sequential](Scale#SequentialScale) scales. Color types come from [avh4/elm-color](https://package.elm-lang.org/packages/avh4/elm-color/latest/).
@@ -8,33 +12,64 @@ module Scale.Color exposing
 
 # Categorical
 
-@docs category10, tableau10
+Categorical color schemes can be used to encode discrete data values, each representing a distinct category.
+
+@docs category10, accent, paired, pastel1, pastel2, tableau10, colorblind, set1, set2
 
 
-# Sequential (Multi-hue)
+# Sequential Single-Hue
 
-@docs viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator
+Given a number t in the range [0,1], returns the corresponding color from the color scheme
+
+Sequential color schemes can be used to encode quantitative values. These color ramps are designed to encode increasing numeric values.
+
+@docs bluesInterpolator, greensInterpolator, greysInterpolator, orangesInterpolator, purplesInterpolator, redsInterpolator, brownsInterpolator, tealInterpolator, warmGreysInterpolator, lightOrangeInterpolator
+
+
+# Sequential Multi-Hue
+
+Given a number t in the range [0,1], returns the corresponding color from the color scheme
+
+Sequential color schemes can be used to encode quantitative values. These color ramps are designed to encode increasing numeric values, but use additional hues for more color discrimination, which may be useful for visualizations such as heatmaps. However, beware that using multiple hues may cause viewers to inaccurately see the data range as grouped into color-coded clusters.
+
+@docs viridisInterpolator, infernoInterpolator, magmaInterpolator, plasmaInterpolator, blueGreenInterpolator, bluePurpleInterpolator, greenBlueInterpolator, orangeRedInterpolator, purpleBlueInterpolator, purpleBlueGreenInterpolator, purpleRedInterpolator, redPurpleInterpolator, yellowGreenInterpolator, yellowOrangeBrownInterpolator, yellowOrangeRedInterpolator, tealBluesInterpolator, goldGreensInterpolator, goldOrangeInterpolator, goldRedInterpolator, lightGreyRedInterpolator, lightGreyTealInterpolator, lightMultiInterpolator
+
+
+# Diverging
+
+Given a number t in the range [0,1], returns the corresponding color from the color scheme
+
+Diverging color schemes can be used to encode quantitative values with a meaningful mid-point, such as zero or the average value. Color ramps with different hues diverge with increasing saturation to highlight the values below and above the mid-point.
+
+@docs blueOrangeInterpolator, brownBlueGreenInterpolator, purpleGreenInterpolator, purpleOrangeInterpolator, redBlueInterpolator, redGreyInterpolator, yellowGreenBlueInterpolator, redYellowBlueInterpolator, redYellowGreenInterpolator, pinkYellowGreenInterpolator, spectralInterpolator, carbonDiverging1Interpolator, carbonDiverging2Interpolator
+
+
+# Cyclic
+
+Given a number t in the range [0,1], returns the corresponding color from the color scheme
+
+Cyclical color schemes may be used to highlight periodic patterns in continuous data. However, these schemes are not well suited to accurately convey value differences.
+
+@docs turboInterpolator, rainbowInterpolator, sinebowInterpolator
+
+
+# Alert
+
+Alert colors are used to reflect status. Typically, red represents danger or error; orange represents a serious warning; yellow represents a regular warning, and green represents normal or success.
+
+@docs carbonAlert
 
 -}
 
 import Array exposing (Array)
-import Color exposing (Color, black, rgb255)
-
-
-mkInterpolator : Array Color -> Float -> Color
-mkInterpolator range =
-    let
-        n =
-            Array.length range
-    in
-    \t ->
-        Maybe.withDefault black <| Array.get (max 0 (min (n - 1) (floor (t * toFloat n)))) range
+import Color exposing (Color, black, rgb, rgb255)
+import Hex
+import Interpolation
 
 
 {-| ![Viridis](https://code.gampleman.eu/elm-visualization/misc/viridis.png)
 
-Given a number t in the range [0,1], returns the corresponding
-color from the “viridis” perceptually-uniform color scheme designed
+The “viridis” perceptually-uniform color scheme designed
 by [van der Walt, Smith and Firing](https://bids.github.io/colormap/)
 for matplotlib.
 
@@ -48,8 +83,7 @@ viridisInterpolator =
 
 {-| ![magma](https://code.gampleman.eu/elm-visualization/misc/magma.png)
 
-Given a number t in the range [0,1], returns the corresponding
-color from the “magma” perceptually-uniform color scheme designed
+The “magma” perceptually-uniform color scheme designed
 by [van der Walt, Smith and Firing](https://bids.github.io/colormap/)
 for matplotlib,.
 
@@ -62,8 +96,7 @@ magmaInterpolator =
 
 {-| ![Inferno](https://code.gampleman.eu/elm-visualization/misc/inferno.png)
 
-Given a number t in the range [0,1], returns the corresponding
-color from the “inferno” perceptually-uniform color scheme designed
+The “inferno” perceptually-uniform color scheme designed
 by [van der Walt, Smith and Firing](https://bids.github.io/colormap/)
 for matplotlib.
 
@@ -76,8 +109,7 @@ infernoInterpolator =
 
 {-| ![Plasma](https://code.gampleman.eu/elm-visualization/misc/plasma.png)
 
-Given a number t in the range [0,1], returns the corresponding
-color from the “plasma” perceptually-uniform color scheme designed
+The “plasma” perceptually-uniform color scheme designed
 by [van der Walt, Smith and Firing](https://bids.github.io/colormap/)
 for matplotlib.
 
@@ -86,6 +118,274 @@ plasmaInterpolator : Float -> Color
 plasmaInterpolator =
     mkInterpolator <|
         Array.fromList [ rgb255 13 8 135, rgb255 16 7 136, rgb255 19 7 137, rgb255 22 7 138, rgb255 25 6 140, rgb255 27 6 141, rgb255 29 6 142, rgb255 32 6 143, rgb255 34 6 144, rgb255 36 6 145, rgb255 38 5 145, rgb255 40 5 146, rgb255 42 5 147, rgb255 44 5 148, rgb255 46 5 149, rgb255 47 5 150, rgb255 49 5 151, rgb255 51 5 151, rgb255 53 4 152, rgb255 55 4 153, rgb255 56 4 154, rgb255 58 4 154, rgb255 60 4 155, rgb255 62 4 156, rgb255 63 4 156, rgb255 65 4 157, rgb255 67 3 158, rgb255 68 3 158, rgb255 70 3 159, rgb255 72 3 159, rgb255 73 3 160, rgb255 75 3 161, rgb255 76 2 161, rgb255 78 2 162, rgb255 80 2 162, rgb255 81 2 163, rgb255 83 2 163, rgb255 85 2 164, rgb255 86 1 164, rgb255 88 1 164, rgb255 89 1 165, rgb255 91 1 165, rgb255 92 1 166, rgb255 94 1 166, rgb255 96 1 166, rgb255 97 0 167, rgb255 99 0 167, rgb255 100 0 167, rgb255 102 0 167, rgb255 103 0 168, rgb255 105 0 168, rgb255 106 0 168, rgb255 108 0 168, rgb255 110 0 168, rgb255 111 0 168, rgb255 113 0 168, rgb255 114 1 168, rgb255 116 1 168, rgb255 117 1 168, rgb255 119 1 168, rgb255 120 1 168, rgb255 122 2 168, rgb255 123 2 168, rgb255 125 3 168, rgb255 126 3 168, rgb255 128 4 168, rgb255 129 4 167, rgb255 131 5 167, rgb255 132 5 167, rgb255 134 6 166, rgb255 135 7 166, rgb255 136 8 166, rgb255 138 9 165, rgb255 139 10 165, rgb255 141 11 165, rgb255 142 12 164, rgb255 143 13 164, rgb255 145 14 163, rgb255 146 15 163, rgb255 148 16 162, rgb255 149 17 161, rgb255 150 19 161, rgb255 152 20 160, rgb255 153 21 159, rgb255 154 22 159, rgb255 156 23 158, rgb255 157 24 157, rgb255 158 25 157, rgb255 160 26 156, rgb255 161 27 155, rgb255 162 29 154, rgb255 163 30 154, rgb255 165 31 153, rgb255 166 32 152, rgb255 167 33 151, rgb255 168 34 150, rgb255 170 35 149, rgb255 171 36 148, rgb255 172 38 148, rgb255 173 39 147, rgb255 174 40 146, rgb255 176 41 145, rgb255 177 42 144, rgb255 178 43 143, rgb255 179 44 142, rgb255 180 46 141, rgb255 181 47 140, rgb255 182 48 139, rgb255 183 49 138, rgb255 184 50 137, rgb255 186 51 136, rgb255 187 52 136, rgb255 188 53 135, rgb255 189 55 134, rgb255 190 56 133, rgb255 191 57 132, rgb255 192 58 131, rgb255 193 59 130, rgb255 194 60 129, rgb255 195 61 128, rgb255 196 62 127, rgb255 197 64 126, rgb255 198 65 125, rgb255 199 66 124, rgb255 200 67 123, rgb255 201 68 122, rgb255 202 69 122, rgb255 203 70 121, rgb255 204 71 120, rgb255 204 73 119, rgb255 205 74 118, rgb255 206 75 117, rgb255 207 76 116, rgb255 208 77 115, rgb255 209 78 114, rgb255 210 79 113, rgb255 211 81 113, rgb255 212 82 112, rgb255 213 83 111, rgb255 213 84 110, rgb255 214 85 109, rgb255 215 86 108, rgb255 216 87 107, rgb255 217 88 106, rgb255 218 90 106, rgb255 218 91 105, rgb255 219 92 104, rgb255 220 93 103, rgb255 221 94 102, rgb255 222 95 101, rgb255 222 97 100, rgb255 223 98 99, rgb255 224 99 99, rgb255 225 100 98, rgb255 226 101 97, rgb255 226 102 96, rgb255 227 104 95, rgb255 228 105 94, rgb255 229 106 93, rgb255 229 107 93, rgb255 230 108 92, rgb255 231 110 91, rgb255 231 111 90, rgb255 232 112 89, rgb255 233 113 88, rgb255 233 114 87, rgb255 234 116 87, rgb255 235 117 86, rgb255 235 118 85, rgb255 236 119 84, rgb255 237 121 83, rgb255 237 122 82, rgb255 238 123 81, rgb255 239 124 81, rgb255 239 126 80, rgb255 240 127 79, rgb255 240 128 78, rgb255 241 129 77, rgb255 241 131 76, rgb255 242 132 75, rgb255 243 133 75, rgb255 243 135 74, rgb255 244 136 73, rgb255 244 137 72, rgb255 245 139 71, rgb255 245 140 70, rgb255 246 141 69, rgb255 246 143 68, rgb255 247 144 68, rgb255 247 145 67, rgb255 247 147 66, rgb255 248 148 65, rgb255 248 149 64, rgb255 249 151 63, rgb255 249 152 62, rgb255 249 154 62, rgb255 250 155 61, rgb255 250 156 60, rgb255 250 158 59, rgb255 251 159 58, rgb255 251 161 57, rgb255 251 162 56, rgb255 252 163 56, rgb255 252 165 55, rgb255 252 166 54, rgb255 252 168 53, rgb255 252 169 52, rgb255 253 171 51, rgb255 253 172 51, rgb255 253 174 50, rgb255 253 175 49, rgb255 253 177 48, rgb255 253 178 47, rgb255 253 180 47, rgb255 253 181 46, rgb255 254 183 45, rgb255 254 184 44, rgb255 254 186 44, rgb255 254 187 43, rgb255 254 189 42, rgb255 254 190 42, rgb255 254 192 41, rgb255 253 194 41, rgb255 253 195 40, rgb255 253 197 39, rgb255 253 198 39, rgb255 253 200 39, rgb255 253 202 38, rgb255 253 203 38, rgb255 252 205 37, rgb255 252 206 37, rgb255 252 208 37, rgb255 252 210 37, rgb255 251 211 36, rgb255 251 213 36, rgb255 251 215 36, rgb255 250 216 36, rgb255 250 218 36, rgb255 249 220 36, rgb255 249 221 37, rgb255 248 223 37, rgb255 248 225 37, rgb255 247 226 37, rgb255 247 228 37, rgb255 246 230 38, rgb255 246 232 38, rgb255 245 233 38, rgb255 245 235 39, rgb255 244 237 39, rgb255 243 238 39, rgb255 243 240 39, rgb255 242 242 39, rgb255 241 244 38, rgb255 241 245 37, rgb255 240 247 36, rgb255 240 249 33 ]
+
+
+{-| ![turbo](https://code.gampleman.eu/elm-visualization/misc/turbo.png)
+
+The “turbo” color scheme by [Anton Mikhailov](https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html).
+
+-}
+turboInterpolator : Float -> Color
+turboInterpolator =
+    mkInterpolator <|
+        Array.fromList
+            [ rgb 0.18995 0.07176 0.23217
+            , rgb 0.19483 0.08339 0.26149
+            , rgb 0.19956 0.09498 0.29024
+            , rgb 0.20415 0.10652 0.31844
+            , rgb 0.2086 0.11802 0.34607
+            , rgb 0.21291 0.12947 0.37314
+            , rgb 0.21708 0.14087 0.39964
+            , rgb 0.22111 0.15223 0.42558
+            , rgb 0.225 0.16354 0.45096
+            , rgb 0.22875 0.17481 0.47578
+            , rgb 0.23236 0.18603 0.50004
+            , rgb 0.23582 0.1972 0.52373
+            , rgb 0.23915 0.20833 0.54686
+            , rgb 0.24234 0.21941 0.56942
+            , rgb 0.24539 0.23044 0.59142
+            , rgb 0.2483 0.24143 0.61286
+            , rgb 0.25107 0.25237 0.63374
+            , rgb 0.25369 0.26327 0.65406
+            , rgb 0.25618 0.27412 0.67381
+            , rgb 0.25853 0.28492 0.693
+            , rgb 0.26074 0.29568 0.71162
+            , rgb 0.2628 0.30639 0.72968
+            , rgb 0.26473 0.31706 0.74718
+            , rgb 0.26652 0.32768 0.76412
+            , rgb 0.26816 0.33825 0.7805
+            , rgb 0.26967 0.34878 0.79631
+            , rgb 0.27103 0.35926 0.81156
+            , rgb 0.27226 0.3697 0.82624
+            , rgb 0.27334 0.38008 0.84037
+            , rgb 0.27429 0.39043 0.85393
+            , rgb 0.27509 0.40072 0.86692
+            , rgb 0.27576 0.41097 0.87936
+            , rgb 0.27628 0.42118 0.89123
+            , rgb 0.27667 0.43134 0.90254
+            , rgb 0.27691 0.44145 0.91328
+            , rgb 0.27701 0.45152 0.92347
+            , rgb 0.27698 0.46153 0.93309
+            , rgb 0.2768 0.47151 0.94214
+            , rgb 0.27648 0.48144 0.95064
+            , rgb 0.27603 0.49132 0.95857
+            , rgb 0.27543 0.50115 0.96594
+            , rgb 0.27469 0.51094 0.97275
+            , rgb 0.27381 0.52069 0.97899
+            , rgb 0.27273 0.5304 0.98461
+            , rgb 0.27106 0.54015 0.9893
+            , rgb 0.26878 0.54995 0.99303
+            , rgb 0.26592 0.55979 0.99583
+            , rgb 0.26252 0.56967 0.99773
+            , rgb 0.25862 0.57958 0.99876
+            , rgb 0.25425 0.5895 0.99896
+            , rgb 0.24946 0.59943 0.99835
+            , rgb 0.24427 0.60937 0.99697
+            , rgb 0.23874 0.61931 0.99485
+            , rgb 0.23288 0.62923 0.99202
+            , rgb 0.22676 0.63913 0.98851
+            , rgb 0.22039 0.64901 0.98436
+            , rgb 0.21382 0.65886 0.97959
+            , rgb 0.20708 0.66866 0.97423
+            , rgb 0.20021 0.67842 0.96833
+            , rgb 0.19326 0.68812 0.9619
+            , rgb 0.18625 0.69775 0.95498
+            , rgb 0.17923 0.70732 0.94761
+            , rgb 0.17223 0.7168 0.93981
+            , rgb 0.16529 0.7262 0.93161
+            , rgb 0.15844 0.73551 0.92305
+            , rgb 0.15173 0.74472 0.91416
+            , rgb 0.14519 0.75381 0.90496
+            , rgb 0.13886 0.76279 0.8955
+            , rgb 0.13278 0.77165 0.8858
+            , rgb 0.12698 0.78037 0.8759
+            , rgb 0.12151 0.78896 0.86581
+            , rgb 0.11639 0.7974 0.85559
+            , rgb 0.11167 0.80569 0.84525
+            , rgb 0.10738 0.81381 0.83484
+            , rgb 0.10357 0.82177 0.82437
+            , rgb 0.10026 0.82955 0.81389
+            , rgb 0.0975 0.83714 0.80342
+            , rgb 0.09532 0.84455 0.79299
+            , rgb 0.09377 0.85175 0.78264
+            , rgb 0.09287 0.85875 0.7724
+            , rgb 0.09267 0.86554 0.7623
+            , rgb 0.0932 0.87211 0.75237
+            , rgb 0.09451 0.87844 0.74265
+            , rgb 0.09662 0.88454 0.73316
+            , rgb 0.09958 0.8904 0.72393
+            , rgb 0.10342 0.896 0.715
+            , rgb 0.10815 0.90142 0.70599
+            , rgb 0.11374 0.90673 0.69651
+            , rgb 0.12014 0.91193 0.6866
+            , rgb 0.12733 0.91701 0.67627
+            , rgb 0.13526 0.92197 0.66556
+            , rgb 0.14391 0.9268 0.65448
+            , rgb 0.15323 0.93151 0.64308
+            , rgb 0.16319 0.93609 0.63137
+            , rgb 0.17377 0.94053 0.61938
+            , rgb 0.18491 0.94484 0.60713
+            , rgb 0.19659 0.94901 0.59466
+            , rgb 0.20877 0.95304 0.58199
+            , rgb 0.22142 0.95692 0.56914
+            , rgb 0.23449 0.96065 0.55614
+            , rgb 0.24797 0.96423 0.54303
+            , rgb 0.2618 0.96765 0.52981
+            , rgb 0.27597 0.97092 0.51653
+            , rgb 0.29042 0.97403 0.50321
+            , rgb 0.30513 0.97697 0.48987
+            , rgb 0.32006 0.97974 0.47654
+            , rgb 0.33517 0.98234 0.46325
+            , rgb 0.35043 0.98477 0.45002
+            , rgb 0.36581 0.98702 0.43688
+            , rgb 0.38127 0.98909 0.42386
+            , rgb 0.39678 0.99098 0.41098
+            , rgb 0.41229 0.99268 0.39826
+            , rgb 0.42778 0.99419 0.38575
+            , rgb 0.44321 0.99551 0.37345
+            , rgb 0.45854 0.99663 0.3614
+            , rgb 0.47375 0.99755 0.34963
+            , rgb 0.48879 0.99828 0.33816
+            , rgb 0.50362 0.99879 0.32701
+            , rgb 0.51822 0.9991 0.31622
+            , rgb 0.53255 0.99919 0.30581
+            , rgb 0.54658 0.99907 0.29581
+            , rgb 0.56026 0.99873 0.28623
+            , rgb 0.57357 0.99817 0.27712
+            , rgb 0.58646 0.99739 0.26849
+            , rgb 0.59891 0.99638 0.26038
+            , rgb 0.61088 0.99514 0.2528
+            , rgb 0.62233 0.99366 0.24579
+            , rgb 0.63323 0.99195 0.23937
+            , rgb 0.64362 0.98999 0.23356
+            , rgb 0.65394 0.98775 0.22835
+            , rgb 0.66428 0.98524 0.2237
+            , rgb 0.67462 0.98246 0.2196
+            , rgb 0.68494 0.97941 0.21602
+            , rgb 0.69525 0.9761 0.21294
+            , rgb 0.70553 0.97255 0.21032
+            , rgb 0.71577 0.96875 0.20815
+            , rgb 0.72596 0.9647 0.2064
+            , rgb 0.7361 0.96043 0.20504
+            , rgb 0.74617 0.95593 0.20406
+            , rgb 0.75617 0.95121 0.20343
+            , rgb 0.76608 0.94627 0.20311
+            , rgb 0.77591 0.94113 0.2031
+            , rgb 0.78563 0.93579 0.20336
+            , rgb 0.79524 0.93025 0.20386
+            , rgb 0.80473 0.92452 0.20459
+            , rgb 0.8141 0.91861 0.20552
+            , rgb 0.82333 0.91253 0.20663
+            , rgb 0.83241 0.90627 0.20788
+            , rgb 0.84133 0.89986 0.20926
+            , rgb 0.8501 0.89328 0.21074
+            , rgb 0.85868 0.88655 0.2123
+            , rgb 0.86709 0.87968 0.21391
+            , rgb 0.8753 0.87267 0.21555
+            , rgb 0.88331 0.86553 0.21719
+            , rgb 0.89112 0.85826 0.2188
+            , rgb 0.8987 0.85087 0.22038
+            , rgb 0.90605 0.84337 0.22188
+            , rgb 0.91317 0.83576 0.22328
+            , rgb 0.92004 0.82806 0.22456
+            , rgb 0.92666 0.82025 0.2257
+            , rgb 0.93301 0.81236 0.22667
+            , rgb 0.93909 0.80439 0.22744
+            , rgb 0.94489 0.79634 0.228
+            , rgb 0.95039 0.78823 0.22831
+            , rgb 0.9556 0.78005 0.22836
+            , rgb 0.96049 0.77181 0.22811
+            , rgb 0.96507 0.76352 0.22754
+            , rgb 0.96931 0.75519 0.22663
+            , rgb 0.97323 0.74682 0.22536
+            , rgb 0.97679 0.73842 0.22369
+            , rgb 0.98 0.73 0.22161
+            , rgb 0.98289 0.7214 0.21918
+            , rgb 0.98549 0.7125 0.2165
+            , rgb 0.98781 0.7033 0.21358
+            , rgb 0.98986 0.69382 0.21043
+            , rgb 0.99163 0.68408 0.20706
+            , rgb 0.99314 0.67408 0.20348
+            , rgb 0.99438 0.66386 0.19971
+            , rgb 0.99535 0.65341 0.19577
+            , rgb 0.99607 0.64277 0.19165
+            , rgb 0.99654 0.63193 0.18738
+            , rgb 0.99675 0.62093 0.18297
+            , rgb 0.99672 0.60977 0.17842
+            , rgb 0.99644 0.59846 0.17376
+            , rgb 0.99593 0.58703 0.16899
+            , rgb 0.99517 0.57549 0.16412
+            , rgb 0.99419 0.56386 0.15918
+            , rgb 0.99297 0.55214 0.15417
+            , rgb 0.99153 0.54036 0.1491
+            , rgb 0.98987 0.52854 0.14398
+            , rgb 0.98799 0.51667 0.13883
+            , rgb 0.9859 0.50479 0.13367
+            , rgb 0.9836 0.49291 0.12849
+            , rgb 0.98108 0.48104 0.12332
+            , rgb 0.97837 0.4692 0.11817
+            , rgb 0.97545 0.4574 0.11305
+            , rgb 0.97234 0.44565 0.10797
+            , rgb 0.96904 0.43399 0.10294
+            , rgb 0.96555 0.42241 0.09798
+            , rgb 0.96187 0.41093 0.0931
+            , rgb 0.95801 0.39958 0.08831
+            , rgb 0.95398 0.38836 0.08362
+            , rgb 0.94977 0.37729 0.07905
+            , rgb 0.94538 0.36638 0.07461
+            , rgb 0.94084 0.35566 0.07031
+            , rgb 0.93612 0.34513 0.06616
+            , rgb 0.93125 0.33482 0.06218
+            , rgb 0.92623 0.32473 0.05837
+            , rgb 0.92105 0.31489 0.05475
+            , rgb 0.91572 0.3053 0.05134
+            , rgb 0.91024 0.29599 0.04814
+            , rgb 0.90463 0.28696 0.04516
+            , rgb 0.89888 0.27824 0.04243
+            , rgb 0.89298 0.26981 0.03993
+            , rgb 0.88691 0.26152 0.03753
+            , rgb 0.88066 0.25334 0.03521
+            , rgb 0.87422 0.24526 0.03297
+            , rgb 0.8676 0.2373 0.03082
+            , rgb 0.86079 0.22945 0.02875
+            , rgb 0.8538 0.2217 0.02677
+            , rgb 0.84662 0.21407 0.02487
+            , rgb 0.83926 0.20654 0.02305
+            , rgb 0.83172 0.19912 0.02131
+            , rgb 0.82399 0.19182 0.01966
+            , rgb 0.81608 0.18462 0.01809
+            , rgb 0.80799 0.17753 0.0166
+            , rgb 0.79971 0.17055 0.0152
+            , rgb 0.79125 0.16368 0.01387
+            , rgb 0.7826 0.15693 0.01264
+            , rgb 0.77377 0.15028 0.01148
+            , rgb 0.76476 0.14374 0.01041
+            , rgb 0.75556 0.13731 0.00942
+            , rgb 0.74617 0.13098 0.00851
+            , rgb 0.73661 0.12477 0.00769
+            , rgb 0.72686 0.11867 0.00695
+            , rgb 0.71692 0.11268 0.00629
+            , rgb 0.7068 0.1068 0.00571
+            , rgb 0.6965 0.10102 0.00522
+            , rgb 0.68602 0.09536 0.00481
+            , rgb 0.67535 0.0898 0.00449
+            , rgb 0.66449 0.08436 0.00424
+            , rgb 0.65345 0.07902 0.00408
+            , rgb 0.64223 0.0738 0.00401
+            , rgb 0.63082 0.06868 0.00401
+            , rgb 0.61923 0.06367 0.0041
+            , rgb 0.60746 0.05878 0.00427
+            , rgb 0.5955 0.05399 0.00453
+            , rgb 0.58336 0.04931 0.00486
+            , rgb 0.57103 0.04474 0.00529
+            , rgb 0.55852 0.04028 0.00579
+            , rgb 0.54583 0.03593 0.00638
+            , rgb 0.53295 0.03169 0.00705
+            , rgb 0.51989 0.02756 0.0078
+            , rgb 0.50664 0.02354 0.00863
+            , rgb 0.49321 0.01963 0.00955
+            , rgb 0.4796 0.01583 0.01055
+            ]
 
 
 {-| ![category10](https://code.gampleman.eu/elm-visualization/misc/category10.png)
@@ -98,6 +398,18 @@ category10 =
     [ rgb255 31 119 180, rgb255 255 127 14, rgb255 44 160 44, rgb255 214 39 40, rgb255 148 103 189, rgb255 140 86 75, rgb255 227 119 194, rgb255 127 127 127, rgb255 188 189 34, rgb255 23 190 207 ]
 
 
+{-| ![accent](https://code.gampleman.eu/elm-visualization/misc/accent.png)
+
+A list of eight categorical colors
+
+-}
+accent : List Color
+accent =
+    "7fc97fbeaed4fdc086ffff99386cb0f0027fbf5b17666666"
+        |> toHexColorStrings
+        |> List.map hexToColor
+
+
 {-| ![category10](https://code.gampleman.eu/elm-visualization/misc/tableau10.png)
 
 A list of ten categorical colors
@@ -106,3 +418,490 @@ A list of ten categorical colors
 tableau10 : List Color
 tableau10 =
     [ rgb255 78 121 167, rgb255 242 142 44, rgb255 225 87 89, rgb255 118 183 178, rgb255 89 161 79, rgb255 237 201 73, rgb255 175 122 161, rgb255 255 157 167, rgb255 156 117 95, rgb255 186 176 171 ]
+
+
+{-| ![pastel1](https://code.gampleman.eu/elm-visualization/misc/pastel1.png)
+
+A list of nine categorical pastel colors
+
+-}
+pastel1 : List Color
+pastel1 =
+    "fbb4aeb3cde3ccebc5decbe4fed9a6ffffcce5d8bdfddaecf2f2f2"
+        |> toHexColorStrings
+        |> List.map hexToColor
+
+
+{-| ![pastel2](https://code.gampleman.eu/elm-visualization/misc/pastel2.png)
+
+A list of eight categorical pastel colors
+
+-}
+pastel2 : List Color
+pastel2 =
+    "b3e2cdfdcdaccbd5e8f4cae4e6f5c9fff2aef1e2cccccccc"
+        |> toHexColorStrings
+        |> List.map hexToColor
+
+
+{-| ![paired](https://code.gampleman.eu/elm-visualization/misc/paired.png)
+
+A list of twelve categorical paired colors
+
+-}
+paired : List Color
+paired =
+    "a6cee31f78b4b2df8a33a02cfb9a99e31a1cfdbf6fff7f00cab2d66a3d9affff99b15928"
+        |> toHexColorStrings
+        |> List.map hexToColor
+
+
+{-| ![colorblind](https://code.gampleman.eu/elm-visualization/misc/colorblind.png)
+
+A list of eight colorblind friendly categorical colors
+
+-}
+colorblind : List Color
+colorblind =
+    "0x0072b2e69f00f0e442009e7356b4e9d55e00cc79a7000000"
+        |> toHexColorStrings
+        |> List.map hexToColor
+
+
+{-| ![set1](https://code.gampleman.eu/elm-visualization/misc/set1.png)
+
+A list of nine categorical colors
+
+-}
+set1 : List Color
+set1 =
+    "e41a1c377eb84daf4a984ea3ff7f00ffff33a65628f781bf999999"
+        |> toHexColorStrings
+        |> List.map hexToColor
+
+
+{-| ![set2](https://code.gampleman.eu/elm-visualization/misc/set2.png)
+
+A list of eight categorical colors
+
+-}
+set2 : List Color
+set2 =
+    "66c2a5fc8d628da0cbe78ac3a6d854ffd92fe5c494b3b3b3"
+        |> toHexColorStrings
+        |> List.map hexToColor
+
+
+
+-- ALERT PALETTE
+
+
+{-| ![carbonAlert](https://code.gampleman.eu/elm-visualization/misc/carbonAlert.png)
+
+A list of alert colors from the [Carbon Design System](https://www.carbondesignsystem.com/data-visualization)
+
+-}
+carbonAlert : List Color
+carbonAlert =
+    "da1e28ff832bf1c21b24a148"
+        |> toHexColorStrings
+        |> List.map hexToColor
+
+
+
+-- CYCLIC
+
+
+{-| ![rainbow](https://code.gampleman.eu/elm-visualization/misc/rainbow.png)
+-}
+rainbowInterpolator : Float -> Color
+rainbowInterpolator =
+    mkPiecewiseInterpolator "6e40aa883eb1a43db3bf3cafd83fa4ee4395fe4b83ff576eff6659ff7847ff8c38f3a130e2b72fcfcc36bee044aff05b8ff4576ff65b52f6673af27828ea8d1ddfa319d0b81cbecb23abd82f96e03d82e14c6edb5a5dd0664dbf6e40aa"
+
+
+{-| ![sinebow](https://code.gampleman.eu/elm-visualization/misc/sinebow.png)
+-}
+sinebowInterpolator : Float -> Color
+sinebowInterpolator =
+    mkPiecewiseInterpolator "ff4040fc582af47218e78d0bd5a703bfbf00a7d5038de70b72f41858fc2a40ff402afc5818f4720be78d03d5a700bfbf03a7d50b8de71872f42a58fc4040ff582afc7218f48d0be7a703d5bf00bfd503a7e70b8df41872fc2a58ff4040"
+
+
+
+-- CONTINOUS
+
+
+{-| ![blues](https://code.gampleman.eu/elm-visualization/misc/blues.png)
+-}
+bluesInterpolator : Float -> Color
+bluesInterpolator =
+    mkPiecewiseInterpolator "cfe1f2bed8eca8cee58fc1de74b2d75ba3cf4592c63181bd206fb2125ca40a4a90"
+
+
+{-| ![greens](https://code.gampleman.eu/elm-visualization/misc/greens.png)
+-}
+greensInterpolator : Float -> Color
+greensInterpolator =
+    mkPiecewiseInterpolator "d3eecdc0e6baabdda594d3917bc77d60ba6c46ab5e329a512089430e7735036429"
+
+
+{-| ![greys](https://code.gampleman.eu/elm-visualization/misc/greys.png)
+-}
+greysInterpolator : Float -> Color
+greysInterpolator =
+    mkPiecewiseInterpolator "e2e2e2d4d4d4c4c4c4b1b1b19d9d9d8888887575756262624d4d4d3535351e1e1e"
+
+
+{-| ![oranges](https://code.gampleman.eu/elm-visualization/misc/oranges.png)
+-}
+orangesInterpolator : Float -> Color
+orangesInterpolator =
+    mkPiecewiseInterpolator "fdd8b3fdc998fdb87bfda55efc9244f87f2cf06b18e4580bd14904b93d029f3303"
+
+
+{-| ![purples](https://code.gampleman.eu/elm-visualization/misc/purples.png)
+-}
+purplesInterpolator : Float -> Color
+purplesInterpolator =
+    mkPiecewiseInterpolator "e2e1efd4d4e8c4c5e0b4b3d6a3a0cc928ec3827cb97566ae684ea25c3696501f8c"
+
+
+{-| ![reds](https://code.gampleman.eu/elm-visualization/misc/reds.png)
+-}
+redsInterpolator : Float -> Color
+redsInterpolator =
+    mkPiecewiseInterpolator "fdc9b4fcb49afc9e80fc8767fa7051f6573fec3f2fdc2a25c81b1db21218970b13"
+
+
+{-| ![blue-greens](https://code.gampleman.eu/elm-visualization/misc/blue-greens.png)
+-}
+blueGreenInterpolator : Float -> Color
+blueGreenInterpolator =
+    mkPiecewiseInterpolator "d5efedc1e8e0a7ddd18bd2be70c6a958ba9144ad77319c5d2089460e7736036429"
+
+
+{-| ![blue-purples](https://code.gampleman.eu/elm-visualization/misc/blue-purples.png)
+-}
+bluePurpleInterpolator : Float -> Color
+bluePurpleInterpolator =
+    mkPiecewiseInterpolator "ccddecbad0e4a8c2dd9ab0d4919cc98d85be8b6db28a55a6873c99822287730f71"
+
+
+{-| ![green-blues](https://code.gampleman.eu/elm-visualization/misc/green-blues.png)
+-}
+greenBlueInterpolator : Float -> Color
+greenBlueInterpolator =
+    mkPiecewiseInterpolator "d3eecec5e8c3b1e1bb9bd8bb82cec269c2ca51b2cd3c9fc7288abd1675b10b60a1"
+
+
+{-| ![orange-reds](https://code.gampleman.eu/elm-visualization/misc/orange-reds.png)
+-}
+orangeRedInterpolator : Float -> Color
+orangeRedInterpolator =
+    mkPiecewiseInterpolator "fddcaffdcf9bfdc18afdad77fb9562f67d53ee6545e24932d32d1ebf130da70403"
+
+
+{-| ![purples-blues](https://code.gampleman.eu/elm-visualization/misc/purples-blues.png)
+-}
+purpleBlueInterpolator : Float -> Color
+purpleBlueInterpolator =
+    mkPiecewiseInterpolator "dbdaebc8cee4b1c3de97b7d87bacd15b9fc93a90c01e7fb70b70ab056199045281"
+
+
+{-| ![purple-blue-greens](https://code.gampleman.eu/elm-visualization/misc/purple-blue-greens.png)
+-}
+purpleBlueGreenInterpolator : Float -> Color
+purpleBlueGreenInterpolator =
+    mkPiecewiseInterpolator "dbd8eac8cee4b0c3de93b7d872acd1549fc83892bb1c88a3097f8702736b016353"
+
+
+{-| ![purple-reds](https://code.gampleman.eu/elm-visualization/misc/purple-reds.png)
+-}
+purpleRedInterpolator : Float -> Color
+purpleRedInterpolator =
+    mkPiecewiseInterpolator "dcc9e2d3b3d7ce9eccd186c0da6bb2e14da0e23189d91e6fc61159ab07498f023a"
+
+
+{-| ![red-purples](https://code.gampleman.eu/elm-visualization/misc/red-purples.png)
+-}
+redPurpleInterpolator : Float -> Color
+redPurpleInterpolator =
+    mkPiecewiseInterpolator "fccfccfcbec0faa9b8f98faff571a5ec539ddb3695c41b8aa908808d0179700174"
+
+
+{-| ![yellow-greens](https://code.gampleman.eu/elm-visualization/misc/yellow-greens.png)
+-}
+yellowGreenInterpolator : Float -> Color
+yellowGreenInterpolator =
+    mkPiecewiseInterpolator "e4f4acd1eca0b9e2949ed68880c97c62bb6e47aa5e3297502083440e723b036034"
+
+
+{-| ![yellow-orange-browns](https://code.gampleman.eu/elm-visualization/misc/yellow-orange-browns.png)
+-}
+yellowOrangeBrownInterpolator : Float -> Color
+yellowOrangeBrownInterpolator =
+    mkPiecewiseInterpolator "feeaa1fedd84fecc63feb746fca031f68921eb7215db5e0bc54c05ab3d038f3204"
+
+
+{-| ![yellow-orange-reds](https://code.gampleman.eu/elm-visualization/misc/yellow-orange-reds.png)
+-}
+yellowOrangeRedInterpolator : Float -> Color
+yellowOrangeRedInterpolator =
+    mkPiecewiseInterpolator "fee087fed16ffebd59fea849fd903efc7335f9522bee3423de1b20ca0b22af0225"
+
+
+{-| ![browns](https://code.gampleman.eu/elm-visualization/misc/browns.png)
+-}
+brownsInterpolator : Float -> Color
+brownsInterpolator =
+    mkPiecewiseInterpolator "eedbbdecca96e9b97ae4a865dc9856d18954c7784cc0673fb85536ad44339f3632"
+
+
+{-| ![teal-blues](https://code.gampleman.eu/elm-visualization/misc/teal-blues.png)
+-}
+tealBluesInterpolator : Float -> Color
+tealBluesInterpolator =
+    mkPiecewiseInterpolator "bce4d89dd3d181c3cb65b3c245a2b9368fae347da0306a932c5985"
+
+
+{-| ![teals](https://code.gampleman.eu/elm-visualization/misc/teals.png)
+-}
+tealInterpolator : Float -> Color
+tealInterpolator =
+    mkPiecewiseInterpolator "bbdfdfa2d4d58ac9c975bcbb61b0af4da5a43799982b8b8c1e7f7f127273006667"
+
+
+{-| ![warm-greys](https://code.gampleman.eu/elm-visualization/misc/warm-greys.png)
+-}
+warmGreysInterpolator : Float -> Color
+warmGreysInterpolator =
+    mkPiecewiseInterpolator "dcd4d0cec5c1c0b8b4b3aaa7a59c9998908c8b827f7e7673726866665c5a59504e"
+
+
+{-| ![gold-greens](https://code.gampleman.eu/elm-visualization/misc/gold-greens.png)
+-}
+goldGreensInterpolator : Float -> Color
+goldGreensInterpolator =
+    mkPiecewiseInterpolator "f4d166d5ca60b6c35c98bb597cb25760a6564b9c533f8f4f33834a257740146c36"
+
+
+{-| ![gold-oranges](https://code.gampleman.eu/elm-visualization/misc/gold-oranges.png)
+-}
+goldOrangeInterpolator : Float -> Color
+goldOrangeInterpolator =
+    mkPiecewiseInterpolator "f4d166f8be5cf8aa4cf5983bf3852aef701be2621fd65322c54923b142239e3a26"
+
+
+{-| ![gold-reds](https://code.gampleman.eu/elm-visualization/misc/gold-reds.png)
+-}
+goldRedInterpolator : Float -> Color
+goldRedInterpolator =
+    mkPiecewiseInterpolator "f4d166f6be59f9aa51fc964ef6834bee734ae56249db5247cf4244c43141b71d3e"
+
+
+{-| ![light-grey-reds](https://code.gampleman.eu/elm-visualization/misc/light-grey-reds.png)
+-}
+lightGreyRedInterpolator : Float -> Color
+lightGreyRedInterpolator =
+    mkPiecewiseInterpolator "efe9e6e1dad7d5cbc8c8bdb9bbaea9cd967ddc7b43e15f19df4011dc000b"
+
+
+{-| ![light-grey-teals](https://code.gampleman.eu/elm-visualization/misc/light-grey-teals.png)
+-}
+lightGreyTealInterpolator : Float -> Color
+lightGreyTealInterpolator =
+    mkPiecewiseInterpolator "e4eaead6dcddc8ced2b7c2c7a6b4bc64b0bf22a6c32295c11f85be1876bc"
+
+
+{-| ![light-multi](https://code.gampleman.eu/elm-visualization/misc/light-multi.png)
+-}
+lightMultiInterpolator : Float -> Color
+lightMultiInterpolator =
+    mkPiecewiseInterpolator "e0f1f2c4e9d0b0de9fd0e181f6e072f6c053f3993ef77440ef4a3c"
+
+
+{-| ![light-oranges](https://code.gampleman.eu/elm-visualization/misc/light-oranges.png)
+-}
+lightOrangeInterpolator : Float -> Color
+lightOrangeInterpolator =
+    mkPiecewiseInterpolator "f2e7daf7d5baf9c499fab184fa9c73f68967ef7860e8645bde515bd43d5b"
+
+
+
+-- DIVERGING
+
+
+{-| ![carbon-palette1](https://code.gampleman.eu/elm-visualization/misc/carbon-palette1.png)
+
+The “Carbon palette1” diverging color scheme, from the [Carbon Design System](https://www.carbondesignsystem.com/data-visualization/color-palettes)
+
+The red-cyan palette has a natural association with temperature. Use this palette for data representing hot-vs-cold.
+
+-}
+carbonDiverging1Interpolator : Float -> Color
+carbonDiverging1Interpolator =
+    mkPiecewiseInterpolator "750e13a2191fda1e28fa4d56ff8389ffb3b8ffd7d9fff1f1e5f6ffbae6ff82cfff33b1ff1192e80072c300539a003a6d"
+
+
+{-| ![carbon-palette2](https://code.gampleman.eu/elm-visualization/misc/carbon-palette2.png)
+
+The “Carbon palette2” diverging color scheme, from the [Carbon Design System](https://www.carbondesignsystem.com/data-visualization/color-palettes)
+
+The purple-teal palette is good for data with no temperature associations, such as performance, sales, and rates of change.
+
+-}
+carbonDiverging2Interpolator : Float -> Color
+carbonDiverging2Interpolator =
+    mkPiecewiseInterpolator "491d8b6929c48a3ffca56effbe95ffd4bbffe8dafff6f2ffd9fbfb9ef0f03ddbd908bdba009d9a007d79005d5d004144"
+
+
+{-| ![blue-oranges](https://code.gampleman.eu/elm-visualization/misc/blue-oranges.png)
+-}
+blueOrangeInterpolator : Float -> Color
+blueOrangeInterpolator =
+    mkPiecewiseInterpolator "134b852f78b35da2cb9dcae1d2e5eff2f0ebfce0bafbbf74e8932fc5690d994a07"
+
+
+{-| ![brown-blue-greens](https://code.gampleman.eu/elm-visualization/misc/brown-blue-greens.png)
+-}
+brownBlueGreenInterpolator : Float -> Color
+brownBlueGreenInterpolator =
+    mkPiecewiseInterpolator "704108a0651ac79548e3c78af3e6c6eef1eac9e9e48ed1c74da79e187a72025147"
+
+
+{-| ![purple-greens](https://code.gampleman.eu/elm-visualization/misc/purple-greens.png)
+-}
+purpleGreenInterpolator : Float -> Color
+purpleGreenInterpolator =
+    mkPiecewiseInterpolator "5b1667834792a67fb6c9aed3e6d6e8eff0efd9efd5aedda971bb75368e490e5e29"
+
+
+{-| ![purple-oranges](https://code.gampleman.eu/elm-visualization/misc/purple-oranges.png)
+-}
+purpleOrangeInterpolator : Float -> Color
+purpleOrangeInterpolator =
+    mkPiecewiseInterpolator "4114696647968f83b7b9b4d6dadbebf3eeeafce0bafbbf74e8932fc5690d994a07"
+
+
+{-| ![red-blues](https://code.gampleman.eu/elm-visualization/misc/red-blues.png)
+-}
+redBlueInterpolator : Float -> Color
+redBlueInterpolator =
+    mkPiecewiseInterpolator "8c0d25bf363adf745ef4ae91fbdbc9f2efeed2e5ef9dcae15da2cb2f78b3134b85"
+
+
+{-| ![red-greys](https://code.gampleman.eu/elm-visualization/misc/red-greys.png)
+-}
+redGreyInterpolator : Float -> Color
+redGreyInterpolator =
+    mkPiecewiseInterpolator "8c0d25bf363adf745ef4ae91fcdccbfaf4f1e2e2e2c0c0c0969696646464343434"
+
+
+{-| ![yellow-green-blues](https://code.gampleman.eu/elm-visualization/misc/yellow-green-blues.png)
+-}
+yellowGreenBlueInterpolator : Float -> Color
+yellowGreenBlueInterpolator =
+    mkPiecewiseInterpolator "eff9bddbf1b4bde5b594d5b969c5be45b4c22c9ec02182b82163aa23479c1c3185"
+
+
+{-| ![red-yellow-blues](https://code.gampleman.eu/elm-visualization/misc/red-yellow-blues.png)
+-}
+redYellowBlueInterpolator : Float -> Color
+redYellowBlueInterpolator =
+    mkPiecewiseInterpolator "a50026d4322cf16e43fcac64fedd90faf8c1dcf1ecabd6e875abd04a74b4313695"
+
+
+{-| ![red-yellow-greens](https://code.gampleman.eu/elm-visualization/misc/red-yellow-greens.png)
+-}
+redYellowGreenInterpolator : Float -> Color
+redYellowGreenInterpolator =
+    mkPiecewiseInterpolator "a50026d4322cf16e43fcac63fedd8df9f7aed7ee8ea4d86e64bc6122964f006837"
+
+
+{-| ![pink-yellow-greens](https://code.gampleman.eu/elm-visualization/misc/pink-yellow-greens.png)
+-}
+pinkYellowGreenInterpolator : Float -> Color
+pinkYellowGreenInterpolator =
+    mkPiecewiseInterpolator "8e0152c0267edd72adf0b3d6faddedf5f3efe1f2cab6de8780bb474f9125276419"
+
+
+{-| ![spectral](https://code.gampleman.eu/elm-visualization/misc/spectral.png)
+-}
+spectralInterpolator : Float -> Color
+spectralInterpolator =
+    mkPiecewiseInterpolator "9e0142d13c4bf0704afcac63fedd8dfbf8b0e0f3a1a9dda269bda94288b55e4fa2"
+
+
+
+-- HELPERS
+
+
+mkInterpolator : Array Color -> Float -> Color
+mkInterpolator range =
+    let
+        n =
+            Array.length range
+    in
+    \t ->
+        Maybe.withDefault black <| Array.get (max 0 (min (n - 1) (floor (t * toFloat n)))) range
+
+
+mkPiecewiseInterpolator : String -> (Float -> Color)
+mkPiecewiseInterpolator values =
+    let
+        hexColors =
+            toHexColorStrings values
+
+        head =
+            hexColors
+                |> List.head
+                |> Maybe.withDefault "#fff"
+                |> hexToColor
+
+        tail =
+            hexColors
+                |> List.tail
+                |> Maybe.withDefault []
+                |> List.map hexToColor
+    in
+    Interpolation.piecewise Interpolation.rgb head tail
+
+
+toHexColorStrings : String -> List String
+toHexColorStrings palette =
+    let
+        n =
+            (String.length palette |> toFloat) / 6 |> round
+
+        f =
+            \i ->
+                "#" ++ String.slice (i * 6) ((i + 1) * 6) palette
+    in
+    Array.initialize n f
+        |> Array.toList
+
+
+{-| Hexadecimal color string to Color
+-}
+hexToColor : String -> Color
+hexToColor hex =
+    hex
+        |> String.dropLeft 1
+        |> (\s ->
+                let
+                    r =
+                        String.slice 0 2 s
+                            |> Hex.fromString
+                            |> Result.withDefault 0
+
+                    g =
+                        String.slice 2 4 s
+                            |> Hex.fromString
+                            |> Result.withDefault 0
+
+                    b =
+                        String.slice 4 6 s
+                            |> Hex.fromString
+                            |> Result.withDefault 0
+                in
+                rgb255 r g b
+           )
