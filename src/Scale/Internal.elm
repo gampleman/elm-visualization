@@ -1,24 +1,45 @@
-module Scale.Internal exposing (bimap, interpolateFloat, toFixed)
+module Scale.Internal exposing (convertTransform, interpolateFloat, invertTransform, toFixed)
 
 import String exposing (join, padRight, split)
 
 
-bimap :
-    ( comparable0, comparable0 )
-    -> ( comparable1, comparable1 )
-    -> (comparable0 -> comparable0 -> a -> b)
-    -> (comparable1 -> comparable1 -> b -> c)
-    -> (a -> c)
-bimap ( d0, d1 ) ( r0, r1 ) deinterpolate reinterpolate =
+normalize : Float -> Float -> Float -> Float
+normalize a b =
+    let
+        c =
+            b - a
+    in
+    if c == 0 then
+        always 0.5
+
+    else if isNaN c then
+        always (0 / 0)
+
+    else
+        \x -> (x - a) / c
+
+
+bimap : ( Float, Float ) -> ( a, a ) -> (a -> a -> Float -> a) -> (Float -> a)
+bimap ( d0, d1 ) ( r0, r1 ) interpolate =
     let
         ( de, re ) =
             if d1 < d0 then
-                ( deinterpolate d1 d0, reinterpolate r1 r0 )
+                ( normalize d1 d0, interpolate r1 r0 )
 
             else
-                ( deinterpolate d0 d1, reinterpolate r0 r1 )
+                ( normalize d0 d1, interpolate r0 r1 )
     in
     re << de
+
+
+convertTransform : (b -> Float) -> (a -> a -> Float -> a) -> ( b, b ) -> ( a, a ) -> (b -> a)
+convertTransform transform interpolate ( d0, d1 ) range =
+    transform >> bimap ( transform d0, transform d1 ) range interpolate
+
+
+invertTransform : (b -> Float) -> (Float -> b) -> ( b, b ) -> ( Float, Float ) -> (Float -> b)
+invertTransform transform untransform ( d0, d1 ) range =
+    bimap range ( transform d0, transform d1 ) interpolateFloat >> untransform
 
 
 interpolateFloat : Float -> Float -> Float -> Float

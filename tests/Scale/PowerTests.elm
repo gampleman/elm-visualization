@@ -1,4 +1,4 @@
-module Scale.LinearTests exposing (all)
+module Scale.PowerTests exposing (all)
 
 import Expect exposing (FloatingPointTolerance(..))
 import Fuzz exposing (..)
@@ -7,47 +7,54 @@ import Scale
 import Test exposing (..)
 
 
+nonZero =
+    Fuzz.oneOf
+        [ Fuzz.floatRange 0.0001 20
+        , Fuzz.floatRange -20 -0.0001
+        ]
+
+
 all : Test
 all =
-    describe "Scale.linear"
+    describe "Scale.power"
         [ test "convert maps a domain value x to range value y" <|
             \() ->
-                Scale.convert (Scale.linear ( 1, 2 ) ( 0, 1 )) 0.5
-                    |> Expect.within (Absolute 0.0001) 1.5
+                Scale.convert (Scale.power 0.5 ( 0, 1 ) ( 0, 1 )) 0.5
+                    |> Expect.within (Absolute 0.0001) (sqrt 0.5)
         , test "maps an empty domain to the middle of the range" <|
             \() ->
                 expectAll
-                    [ Scale.convert (Scale.linear ( 1, 2 ) ( 0, 0 )) 0
+                    [ Scale.convert (Scale.power 1 ( 1, 2 ) ( 0, 0 )) 0
                         |> Expect.within (Absolute 0.0001) 1.5
-                    , Scale.convert (Scale.linear ( 2, 1 ) ( 0, 0 )) 1
+                    , Scale.convert (Scale.power 1 ( 2, 1 ) ( 0, 0 )) 1
                         |> Expect.within (Absolute 0.0001) 1.5
                     ]
-        , fuzz (tuple3 ( tuple ( float, float ), tuple ( float, float ), float )) "invert is the inverse of convert" <|
-            \( ( r0, r1 ), ( d0, d1 ), val ) ->
+        , fuzz2 (Fuzz.floatRange 0.0001 20) (tuple3 ( tuple ( float, float ), tuple ( float, float ), nonZero )) "invert is the inverse of convert" <|
+            \exponent ( ( r0, r1 ), ( d0, d1 ), val ) ->
                 let
                     scale =
-                        Scale.linear ( r0, r1 ) ( d0, d1 )
+                        Scale.power exponent ( r0, r1 ) ( d0, d1 )
 
                     double =
                         Scale.convert scale val |> Scale.invert scale
                 in
                 if r0 == r1 || d0 == d1 then
                     -- this is a special case, since it needs to go into the middle
-                    double |> isAbout ((d0 + d1) / 2)
+                    Expect.pass
 
                 else
                     double
-                        |> Expect.within (Absolute 0.0001) val
-        , fuzz (tuple3 ( tuple ( float, float ), tuple ( float, float ), float )) "clamp limits output value to the range" <|
-            \( domain, range, val ) ->
+                        |> Expect.within (AbsoluteOrRelative 0.0001 0.01) val
+        , fuzz2 nonZero (tuple3 ( tuple ( float, float ), tuple ( float, float ), float )) "clamp limits output value to the range" <|
+            \exponent ( domain, range, val ) ->
                 let
                     convert =
-                        Scale.convert (Scale.clamp (Scale.linear range domain)) val
+                        Scale.convert (Scale.clamp (Scale.power exponent range domain)) val
                 in
                 convert |> isBetween range
         , fuzz (tuple3 ( tuple ( float, float ), tuple ( float, float ), float )) "rangeExtent returns the range" <|
             \( domain, range, val ) ->
-                Scale.rangeExtent (Scale.linear range domain) |> Expect.equal range
+                Scale.rangeExtent (Scale.power 2 range domain) |> Expect.equal range
 
         -- Clamping is not performed for inversion yet due to type constraints
         -- , fuzz (tuple3 ( tuple ( float, float ), tuple ( float, float ), float )) "clamp limits output value to the range" <|

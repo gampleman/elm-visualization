@@ -1,6 +1,6 @@
 module Helper exposing (expectAll, expectAny, expectMember, isAbout, isBetween, pathEqual, precision)
 
-import Expect exposing (Expectation)
+import Expect exposing (Expectation, FloatingPointTolerance(..))
 import Path exposing (Path)
 import Regex
 import Result
@@ -56,7 +56,7 @@ isAbout a b =
         Expect.pass
 
     else
-        Expect.equal a b
+        Expect.within (Absolute 0.00001) a b
 
 
 isBetween ( b, c ) a =

@@ -1,12 +1,27 @@
-module Scale.Linear exposing (convert, deinterpolate, invert, nice, rangeExtent, tickFormat, ticks)
+module Scale.Linear exposing (convert, invert, nice, scale, tickFormat, ticks)
 
-import Scale.Internal exposing (bimap, interpolateFloat, toFixed)
+import Scale.Internal as Continuous
 import Statistics
 
 
-rangeExtent : ( Float, Float ) -> ( Float, Float ) -> ( Float, Float )
-rangeExtent d r =
-    r
+scale range_ domain_ =
+    { domain = domain_
+    , range = range_
+    , convert = convert
+    , invert = invert
+    , ticks = ticks
+    , tickFormat = tickFormat
+    , nice = nice
+    , rangeExtent = \_ r -> r
+    }
+
+
+convert =
+    Continuous.convertTransform identity Continuous.interpolateFloat
+
+
+invert =
+    Continuous.invertTransform identity identity
 
 
 nice ( start, stop ) count =
@@ -38,32 +53,8 @@ precisionFixed step =
 tickFormat ( start, stop ) count =
     Statistics.tickStep start stop count
         |> precisionFixed
-        |> toFixed
-
-
-convert domain range =
-    bimap domain range deinterpolate interpolateFloat
-
-
-invert domain range =
-    bimap range domain deinterpolate interpolate
-
-
-deinterpolate a b x =
-    let
-        normalizedB =
-            b - a
-    in
-    if normalizedB == 0 then
-        0
-
-    else
-        (x - a) / normalizedB
+        |> Continuous.toFixed
 
 
 ticks ( start, end ) count =
     Statistics.ticks start end count
-
-
-interpolate =
-    interpolateFloat

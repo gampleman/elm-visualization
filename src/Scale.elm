@@ -1,6 +1,6 @@
 module Scale exposing
     ( Scale
-    , ContinuousScale, linear, log, identity, time
+    , ContinuousScale, linear, power, log, identity, time, radial
     , SequentialScale, sequential
     , QuantizeScale, quantize
     , OrdinalScale, ordinal
@@ -33,7 +33,7 @@ and format ticks for reference marks to aid in the construction of [axes](Axis).
 
 ### Scales
 
-  - [Continuous](#ContinuousScale) ([linear](#linear), [log](#log), [identity](#identity), [time](#time))
+  - [Continuous](#ContinuousScale) ([linear](#linear), [power](#power), [log](#log), [identity](#identity), [time](#time), [radial](#radial))
   - [Sequential](#SequentialScale)
   - [Quantize](#QuantizeScale)
   - [Ordinal](#OrdinalScale) ([Band](#BandScale))
@@ -43,7 +43,7 @@ and format ticks for reference marks to aid in the construction of [axes](Axis).
 
 # Continuous Scales
 
-@docs ContinuousScale, linear, log, identity, time
+@docs ContinuousScale, linear, power, log, identity, time, radial
 
 
 # Sequential Scales
@@ -102,7 +102,9 @@ import Scale.Band as Band
 import Scale.Linear as Linear
 import Scale.Log as Log
 import Scale.Ordinal as Ordinal
+import Scale.Power as Power
 import Scale.Quantize as Quantize
+import Scale.Radial as Radial
 import Scale.Sequential as Sequential
 import Scale.Time as TimeScale
 import Time
@@ -165,35 +167,26 @@ expressed as a function of the domain value x: y = mx + b.
 -}
 linear : ( Float, Float ) -> ( Float, Float ) -> ContinuousScale Float
 linear range_ domain_ =
-    Scale
-        { domain = domain_
-        , range = range_
-        , convert = Linear.convert
-        , invert = Linear.invert
-        , ticks = Linear.ticks
-        , tickFormat = Linear.tickFormat
-        , nice = Linear.nice
-        , rangeExtent = Linear.rangeExtent
-        }
+    Scale <| Linear.scale range_ domain_
 
 
+{-| Power scales are similar to linear scales, except an exponential transform
+is applied to the input domain value before the output range value is computed.
+Each range value y can be expressed as a function of the domain value x:
+y = mx^k + b, where k is the exponent value. Power scales also support negative
+domain values, in which case the input value and the resulting output value are
+multiplied by -1.
 
--- {-| Power scales are similar to linear scales, except an exponential transform
--- is applied to the input domain value before the output range value is computed.
--- Each range value y can be expressed as a function of the domain value x:
--- y = mx^k + b, where k is the exponent value. Power scales also support negative
--- domain values, in which case the input value and the resulting output value are
--- multiplied by -1.
---
--- The arguments are `exponent`, `domain` and `range`.
---
---     scale : ContinuousScale
---     scale = power 2 ( 0, 1 ) ( 50, 100 )
---     convert scale 0.5 == 62.5
--- -}
--- power : Float -> ( Float, Float ) -> ( Float, Float ) -> ContinuousScale
--- power exponent =
---     Debug.crash "not implemented"
+The arguments are `exponent`, `range` and `domain`
+
+    scale : ContinuousScale
+    scale = power 2 ( 0, 1 ) ( 50, 100 )
+    convert scale 0.5 == 62.5
+
+-}
+power : Float -> ( Float, Float ) -> ( Float, Float ) -> ContinuousScale Float
+power exponent range_ domain_ =
+    Scale <| Power.scale exponent range_ domain_
 
 
 {-| Log scales are similar to linear scales, except a logarithmic transform is
@@ -218,16 +211,7 @@ The arguments are `base`, `range`, and `domain`.
 -}
 log : Float -> ( Float, Float ) -> ( Float, Float ) -> ContinuousScale Float
 log base range_ domain_ =
-    Scale
-        { domain = domain_
-        , range = range_
-        , convert = Log.convert
-        , invert = Log.invert
-        , ticks = Log.ticks base
-        , tickFormat = Log.tickFormat base
-        , nice = Log.nice base
-        , rangeExtent = Log.rangeExtent
-        }
+    Scale <| Log.scale base range_ domain_
 
 
 {-| Identity scales are a special case of linear scales where the domain and
@@ -251,16 +235,14 @@ time zone that you will want to display your data in.
 -}
 time : Time.Zone -> ( Float, Float ) -> ( Time.Posix, Time.Posix ) -> ContinuousScale Time.Posix
 time zone range_ domain_ =
-    Scale
-        { domain = domain_
-        , range = range_
-        , convert = TimeScale.convert
-        , invert = TimeScale.invert
-        , ticks = TimeScale.ticks zone
-        , tickFormat = TimeScale.tickFormat zone
-        , nice = TimeScale.nice zone
-        , rangeExtent = TimeScale.rangeExtent
-        }
+    Scale <| TimeScale.scale zone range_ domain_
+
+
+{-| Radial scales are a variant of linear scales where the range is internally squared so that an input value corresponds linearly to the squared output value. These scales are useful when you want the input value to correspond to the area of a graphical mark and the mark is specified by radius, as in a radial bar chart.
+-}
+radial : ( Float, Float ) -> ( Float, Float ) -> ContinuousScale Float
+radial range_ domain_ =
+    Scale <| Radial.scale range_ domain_
 
 
 
