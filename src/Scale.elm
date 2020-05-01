@@ -1,6 +1,6 @@
 module Scale exposing
     ( Scale
-    , ContinuousScale, linear, power, log, identity, time, radial
+    , ContinuousScale, linear, power, log, symlog, identity, time, radial
     , SequentialScale, sequential
     , QuantizeScale, quantize
     , OrdinalScale, ordinal
@@ -43,7 +43,7 @@ and format ticks for reference marks to aid in the construction of [axes](Axis).
 
 # Continuous Scales
 
-@docs ContinuousScale, linear, power, log, identity, time, radial
+@docs ContinuousScale, linear, power, log, symlog, identity, time, radial
 
 
 # Sequential Scales
@@ -106,6 +106,7 @@ import Scale.Power as Power
 import Scale.Quantize as Quantize
 import Scale.Radial as Radial
 import Scale.Sequential as Sequential
+import Scale.Symlog as Symlog
 import Scale.Time as TimeScale
 import Time
 
@@ -212,6 +213,21 @@ The arguments are `base`, `range`, and `domain`.
 log : Float -> ( Float, Float ) -> ( Float, Float ) -> ContinuousScale Float
 log base range_ domain_ =
     Scale <| Log.scale base range_ domain_
+
+
+{-| The symlog scale is similar to a log scale in that is suitable for showing values
+with large and small quantities at the same time. However it also allows visualizing
+positive and negative quantities at the same time (as well as zero) with a smooth transform.
+
+This is controlled with a parameter. A good default value is `1 / logBase e 10` - this corresponds
+to a linear scale around zero.
+
+For more background, see [A bi-symmetric log transformation for wide-range data](https://www.researchgate.net/profile/John_Webber4/publication/233967063_A_bi-symmetric_log_transformation_for_wide-range_data/links/0fcfd50d791c85082e000000.pdf) by Weber.
+
+-}
+symlog : Float -> ( Float, Float ) -> ( Float, Float ) -> ContinuousScale Float
+symlog c range_ domain_ =
+    Scale <| Symlog.scale c range_ domain_
 
 
 {-| Identity scales are a special case of linear scales where the domain and
