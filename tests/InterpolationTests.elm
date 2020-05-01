@@ -127,8 +127,8 @@ suite =
                 \head tail t ->
                     Interpolation.piecewise Interpolation.float head tail t
                         |> Expect.all
-                            [ Expect.atMost (List.foldl max head tail)
-                            , Expect.atLeast (List.foldl min head tail)
+                            [ Expect.atMost (List.foldl max head tail + 0.00001)
+                            , Expect.atLeast (List.foldl min head tail - 0.00001)
                             ]
             ]
         , describe "inParallel"
