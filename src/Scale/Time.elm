@@ -1,8 +1,8 @@
 module Scale.Time exposing (scale)
 
 import DateFormat
-import Scale.Internal as Continuous
-import Scale.Linear as Linear
+import Interpolation
+import Scale.Continuous as Continuous
 import Time
 import Time.Extra exposing (Interval(..))
 
@@ -10,7 +10,7 @@ import Time.Extra exposing (Interval(..))
 scale zone range_ domain_ =
     { domain = domain_
     , range = range_
-    , convert = Continuous.convertTransform (Time.posixToMillis >> toFloat) Continuous.interpolateFloat
+    , convert = Continuous.convertTransform (Time.posixToMillis >> toFloat) Interpolation.float
     , invert = Continuous.invertTransform (Time.posixToMillis >> toFloat) (round >> Time.millisToPosix)
     , ticks = ticks zone
     , tickFormat = tickFormat zone

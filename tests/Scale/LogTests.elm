@@ -69,10 +69,15 @@ rangeExtentTest =
 
 
 powerOfTenTicks : String -> ( Float, Float ) -> List Float -> Test
-powerOfTenTicks desc ( begin, end ) expected =
+powerOfTenTicks desc =
+    powerOfTenTicksCount desc 10
+
+
+powerOfTenTicksCount : String -> Int -> ( Float, Float ) -> List Float -> Test
+powerOfTenTicksCount desc count ( begin, end ) expected =
     let
         description =
-            "generates the expected power-of-ten for " ++ desc ++ " domains when base = 10 for domain = ( " ++ String.fromFloat begin ++ ", " ++ String.fromFloat end ++ " )"
+            "generates the expected power-of-ten for " ++ desc ++ " domains when base = 10 for domain = ( " ++ String.fromFloat begin ++ ", " ++ String.fromFloat end ++ " ) and count = " ++ String.fromInt count
     in
     test description <|
         \() ->
@@ -98,6 +103,12 @@ ticksTest =
         , powerOfTenTicks "small" ( 5, 1 ) [ 5, 4, 3, 2, 1 ]
         , powerOfTenTicks "small" ( -1, -5 ) [ -1, -2, -3, -4, -5 ]
         , powerOfTenTicks "small" ( -5, -1 ) [ -5, -4, -3, -2, -1 ]
+
+        -- , powerOfTenTicksCount "small" 1 ( 286.9252014, 329.4978332 ) [ 300 ]
+        -- , powerOfTenTicksCount "small" 2 ( 286.9252014, 329.4978332 ) [ 300 ]
+        -- , powerOfTenTicksCount "small" 3 ( 286.9252014, 329.4978332 ) [ 300, 320 ]
+        -- , powerOfTenTicksCount "small" 4 ( 286.9252014, 329.4978332 ) [ 290, 300, 310, 320 ]
+        -- , powerOfTenTicks "small" ( 286.9252014, 329.4978332 ) [ 290, 295, 300, 305, 310, 315, 320, 325 ]
         , test "generates the expected power-of-base ticks" <|
             \() ->
                 let

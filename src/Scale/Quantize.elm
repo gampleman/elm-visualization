@@ -1,6 +1,6 @@
 module Scale.Quantize exposing (convert, invertExtent, nice, rangeExtent, tickFormat, ticks)
 
-import Scale.Linear as Linear
+import Scale.Continuous as Linear
 import Statistics
 
 

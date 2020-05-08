@@ -1,7 +1,7 @@
 module Scale.Log exposing (scale)
 
-import Scale.Internal as Continuous
-import Scale.Linear
+import Interpolation
+import Scale.Continuous as Continuous
 import Statistics
 
 
@@ -16,7 +16,7 @@ scale base range_ domain_ =
     in
     { domain = domain_
     , range = range_
-    , convert = Continuous.convertTransform transform Continuous.interpolateFloat
+    , convert = Continuous.convertTransform transform Interpolation.float
     , invert = Continuous.invertTransform transform untransform
     , ticks = ticks base
     , tickFormat = tickFormat base

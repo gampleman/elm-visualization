@@ -1,12 +1,18 @@
 module Scale exposing
     ( Scale
     , ContinuousScale, linear, power, log, symlog, identity, time, radial
-    , SequentialScale, sequential
+    , SequentialScale, sequential, sequentialLog, sequentialSymlog, sequentialPower
     , QuantizeScale, quantize
     , OrdinalScale, ordinal
     , BandScale, band, BandConfig, defaultBandConfig
     , convert, invert, invertExtent, domain, range, rangeExtent, ticks, tickFormat, clamp, nice, bandwidth, toRenderable
-    -- , power
+    ,  DivergingScale
+      , diverging
+      , divergingLog
+      , divergingPower
+      , divergingSymlog
+        -- , power
+
     )
 
 {-| Scales are a convenient abstraction for a fundamental task in visualization:
@@ -52,7 +58,7 @@ Sequential scales are similar to continuous scales in that they map a continuous
 numeric input domain to a continuous output range. However, unlike continuous
 scales, the output range of a sequential scale is fixed by its interpolator function.
 
-@docs SequentialScale, sequential
+@docs SequentialScale, sequential, sequentialLog, sequentialSymlog, sequentialPower
 
 You can find some premade color interpolators in the [Scale.Color](Scale-Color) module.
 
@@ -99,14 +105,12 @@ These functions take Scales and do something with them. Check the docs of each s
 
 import Color exposing (Color)
 import Scale.Band as Band
-import Scale.Linear as Linear
+import Scale.Continuous as Continuous
+import Scale.Diverging as Diverging
 import Scale.Log as Log
 import Scale.Ordinal as Ordinal
-import Scale.Power as Power
 import Scale.Quantize as Quantize
-import Scale.Radial as Radial
 import Scale.Sequential as Sequential
-import Scale.Symlog as Symlog
 import Scale.Time as TimeScale
 import Time
 
@@ -168,7 +172,7 @@ expressed as a function of the domain value x: y = mx + b.
 -}
 linear : ( Float, Float ) -> ( Float, Float ) -> ContinuousScale Float
 linear range_ domain_ =
-    Scale <| Linear.scale range_ domain_
+    Scale <| Continuous.linear range_ domain_
 
 
 {-| Power scales are similar to linear scales, except an exponential transform
@@ -187,7 +191,7 @@ The arguments are `exponent`, `range` and `domain`
 -}
 power : Float -> ( Float, Float ) -> ( Float, Float ) -> ContinuousScale Float
 power exponent range_ domain_ =
-    Scale <| Power.scale exponent range_ domain_
+    Scale <| Continuous.power exponent range_ domain_
 
 
 {-| Log scales are similar to linear scales, except a logarithmic transform is
@@ -227,7 +231,7 @@ For more background, see [A bi-symmetric log transformation for wide-range data]
 -}
 symlog : Float -> ( Float, Float ) -> ( Float, Float ) -> ContinuousScale Float
 symlog c range_ domain_ =
-    Scale <| Symlog.scale c range_ domain_
+    Scale <| Continuous.symlog c range_ domain_
 
 
 {-| Identity scales are a special case of linear scales where the domain and
@@ -258,7 +262,7 @@ time zone range_ domain_ =
 -}
 radial : ( Float, Float ) -> ( Float, Float ) -> ContinuousScale Float
 radial range_ domain_ =
-    Scale <| Radial.scale range_ domain_
+    Scale <| Continuous.radial range_ domain_
 
 
 
@@ -287,11 +291,76 @@ type alias SequentialScale a =
 -}
 sequential : (Float -> a) -> ( Float, Float ) -> SequentialScale a
 sequential interpolator domain_ =
+    Scale <| Sequential.scale interpolator domain_
+
+
+{-| A sequential scale with a logarithmic transform.
+-}
+sequentialLog : Float -> (Float -> a) -> ( Float, Float ) -> SequentialScale a
+sequentialLog base interpolator domain_ =
+    Scale <| Sequential.log base interpolator domain_
+
+
+{-| A sequential scale with a syslog transform.
+-}
+sequentialSymlog : Float -> (Float -> a) -> ( Float, Float ) -> SequentialScale a
+sequentialSymlog c interpolator domain_ =
+    Scale <| Sequential.symlog c interpolator domain_
+
+
+{-| A sequential scale with a power transform.
+-}
+sequentialPower : Float -> (Float -> a) -> ( Float, Float ) -> SequentialScale a
+sequentialPower expo interpolator domain_ =
+    Scale <| Sequential.power expo interpolator domain_
+
+
+type alias DivergingScale a =
     Scale
-        { domain = domain_
-        , range = interpolator
-        , convert = Sequential.convert
+        { domain : ( Float, Float, Float )
+        , range : Float -> a
+        , convert : ( Float, Float, Float ) -> (Float -> a) -> Float -> a
         }
+
+
+{-| Construct a diverging scale.
+
+Note that if you'd rather specify the interpolator also as a triple, you can do the following:
+
+    import Interpolation exposing (DivergingScale)
+    import Scale
+
+    makeDiverging : ( Float, Float, Float ) -> ( Float, Float, Float ) -> DivergingScale Float
+    makeDiverging ( r0, r1, r2 ) domain =
+        Scale.diverging (Interpolation.piecewise Interpolation.float r0 [ r1, r2 ]) domain
+
+You can adapt this to any type by replacing `Interpolation.float` with an appropriate interpolator.
+
+-}
+diverging : (Float -> a) -> ( Float, Float, Float ) -> DivergingScale a
+diverging interpolator domain_ =
+    Scale <| Diverging.scale interpolator domain_
+
+
+{-| A diverging scale with a logarithmic transform.
+-}
+divergingLog : Float -> (Float -> a) -> ( Float, Float, Float ) -> DivergingScale a
+divergingLog base interpolator domain_ =
+    Scale <| Diverging.log base interpolator domain_
+
+
+{-| A diverging scale with a syslog transform.
+-}
+divergingSymlog : Float -> (Float -> a) -> ( Float, Float, Float ) -> DivergingScale a
+divergingSymlog c interpolator domain_ =
+    Scale <| Diverging.symlog c interpolator domain_
+
+
+{-| A diverging scale with a power transform.
+-}
+divergingPower : Float -> (Float -> a) -> ( Float, Float, Float ) -> DivergingScale a
+divergingPower expo interpolator domain_ =
+    Scale <| Diverging.power expo interpolator domain_
 
 
 
