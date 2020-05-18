@@ -7,11 +7,14 @@ module Scale exposing
     , BandScale, band, BandConfig, defaultBandConfig
     , convert, invert, invertExtent, domain, range, rangeExtent, ticks, tickFormat, clamp, nice, bandwidth, toRenderable
     ,  DivergingScale
+      , QuantileScale
       , diverging
       , divergingLog
       , divergingPower
       , divergingSymlog
         -- , power
+      , quantile
+      , quantiles
 
     )
 
@@ -103,12 +106,14 @@ These functions take Scales and do something with them. Check the docs of each s
 
 -}
 
+import Array exposing (Array)
 import Color exposing (Color)
 import Scale.Band as Band
 import Scale.Continuous as Continuous
 import Scale.Diverging as Diverging
 import Scale.Log as Log
 import Scale.Ordinal as Ordinal
+import Scale.Quantile as Quantile
 import Scale.Quantize as Quantize
 import Scale.Sequential as Sequential
 import Scale.Time as TimeScale
@@ -416,16 +421,24 @@ quantize range_ domain_ =
 
 -- Quantile Scales
 --
--- type alias QuantileScale a =
---     Scale Quantile (List Float) (List a)
---
---
--- quantile : List Float -> List a -> QuantileScale a
--- quantile domain =
---     Debug.crash "not implemented"
---
---
---
+
+
+type alias QuantileScale a =
+    Scale
+        { domain : List Float
+        , range : ( a, Array a )
+        , convert : List Float -> ( a, Array a ) -> Float -> a
+        , invertExtent : List Float -> ( a, Array a ) -> a -> Maybe ( Float, Float )
+        , quantiles : List Float
+        }
+
+
+quantile : ( a, List a ) -> List Float -> QuantileScale a
+quantile range_ domain_ =
+    Scale <| Quantile.scale range_ domain_
+
+
+
 -- -- Threshold Scales
 --
 --
@@ -717,3 +730,8 @@ The first argument is the same as you would pass to ticks.
 nice : Int -> Scale { a | nice : domain -> Int -> domain, domain : domain } -> Scale { a | nice : domain -> Int -> domain, domain : domain }
 nice count (Scale scale) =
     Scale { scale | domain = scale.nice scale.domain count }
+
+
+quantiles : Scale { a | quantiles : b } -> b
+quantiles (Scale options) =
+    options.quantiles
