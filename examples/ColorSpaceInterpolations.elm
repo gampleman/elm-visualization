@@ -91,31 +91,6 @@ update msg model =
             { model | count = val |> String.toInt |> Maybe.withDefault 0 }
 
 
-hexToColor : String -> Color
-hexToColor hex =
-    hex
-        |> String.dropLeft 1
-        |> (\s ->
-                let
-                    r =
-                        String.slice 0 2 s
-                            |> Hex.fromString
-                            |> Result.withDefault 0
-
-                    g =
-                        String.slice 2 4 s
-                            |> Hex.fromString
-                            |> Result.withDefault 0
-
-                    b =
-                        String.slice 4 6 s
-                            |> Hex.fromString
-                            |> Result.withDefault 0
-                in
-                rgb255 r g b
-           )
-
-
 palette : Model -> (Color -> Color -> Interpolator Color) -> Html msg
 palette model colorSpaceInterpolator =
     div [ class "palette" ]
@@ -191,15 +166,8 @@ selectNumberOfColors model =
 
                                 else
                                     False
-
-                            modelValue =
-                                v
-                                    |> String.toInt
-                                    |> Maybe.withDefault 0
-                                    |> (+) -1
-                                    |> String.fromInt
                         in
-                        Html.option [ value modelValue, selected isSelected ] [ Html.text v ]
+                        Html.option [ value v, selected isSelected ] [ Html.text v ]
                     )
             )
         , Html.label [ for "number-of-colors" ] [ Html.text "Number of colors" ]
@@ -208,3 +176,30 @@ selectNumberOfColors model =
 
 main =
     Browser.sandbox { init = init, update = update, view = view }
+
+
+{-| Hexadecimal color string to Color
+-}
+hexToColor : String -> Color
+hexToColor hex =
+    hex
+        |> String.dropLeft 1
+        |> (\s ->
+                let
+                    r =
+                        String.slice 0 2 s
+                            |> Hex.fromString
+                            |> Result.withDefault 0
+
+                    g =
+                        String.slice 2 4 s
+                            |> Hex.fromString
+                            |> Result.withDefault 0
+
+                    b =
+                        String.slice 4 6 s
+                            |> Hex.fromString
+                            |> Result.withDefault 0
+                in
+                rgb255 r g b
+           )

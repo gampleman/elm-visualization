@@ -29,11 +29,11 @@ linear =
                         in
                         if r0 == r1 || d0 == d1 then
                             -- this is a special case, since it needs to go into the middle
-                            double |> isAbout ((d0 + d1) / 2)
+                            double |> Expect.within (Absolute 0.0001) ((d0 + d1) / 2)
 
                         else
                             double
-                                |> Expect.within (Absolute 0.0001) val
+                                |> Expect.within (Absolute 0.01) val
                , fuzz (tuple3 ( tuple ( float, float ), tuple ( float, float ), float )) "clamp limits output value to the range (fuzz)" <|
                     \( domain, range, val ) ->
                         let

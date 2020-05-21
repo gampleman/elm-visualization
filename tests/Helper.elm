@@ -1,4 +1,4 @@
-module Helper exposing (expectAll, expectAny, expectMember, isAbout, isBetween, pathEqual, precision)
+module Helper exposing (atLeastFloat, atMostFloat, expectAll, expectAny, expectMember, isAbout, isBetween, pathEqual, precision)
 
 import Expect exposing (Expectation, FloatingPointTolerance(..))
 import Path exposing (Path)
@@ -67,11 +67,49 @@ isBetween ( b, c ) a =
         ma =
             max b c
     in
-    if round (a * precision) >= round (mi * precision) && round (a * precision) <= round (ma * precision) then
+    if a >= mi && a <= ma then
         Expect.pass
 
     else
-        Expect.fail (Debug.toString a ++ "\n╷\n| isBetween\n╵\n" ++ Debug.toString ( mi, ma ))
+        let
+            withinExpAMin =
+                Expect.within (Absolute (1 / precision)) a mi
+
+            withinExpAMax =
+                Expect.within (Absolute (1 / precision)) a ma
+        in
+        if withinExpAMin == Expect.pass || withinExpAMax == Expect.pass then
+            Expect.pass
+
+        else
+            Expect.fail (Debug.toString a ++ "\n╷\n| isBetween\n╵\n" ++ Debug.toString ( mi, ma ))
+
+
+atMostFloat : Float -> Float -> Expectation
+atMostFloat a b =
+    compareOrEqual (<=) b a "atMost"
+
+
+atLeastFloat : Float -> Float -> Expectation
+atLeastFloat a b =
+    compareOrEqual (>=) b a "atLeast"
+
+
+compareOrEqual : (Float -> Float -> Bool) -> Float -> Float -> String -> Expectation
+compareOrEqual compareFun a b compStr =
+    if compareFun a b then
+        Expect.pass
+
+    else
+        let
+            withinExp =
+                Expect.within (Absolute (1 / precision)) a b
+        in
+        if withinExp == Expect.pass then
+            Expect.pass
+
+        else
+            Expect.fail (Debug.toString a ++ "\n╷\n|" ++ compStr ++ "\n╵\n" ++ Debug.toString b)
 
 
 expectAll : List Expectation -> Expectation
