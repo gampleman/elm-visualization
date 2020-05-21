@@ -1,37 +1,40 @@
-module Scale.Log exposing (convert, invert, nice, rangeExtent, tickFormat, ticks)
+module Scale.Log exposing (scale)
 
-import Scale.Internal exposing (bimap, interpolateFloat)
-import Scale.Linear
+import Interpolation
+import Scale.Continuous as Continuous
 import Statistics
 
 
-rangeExtent : ( Float, Float ) -> ( Float, Float ) -> ( Float, Float )
-rangeExtent d r =
-    r
+scale base range_ domain_ =
+    let
+        ( transform, untransform ) =
+            if Tuple.first domain_ < 0 then
+                ( reflect log, reflect exp )
+
+            else
+                ( log, exp )
+    in
+    { domain = domain_
+    , range = range_
+    , convert = Continuous.convertTransform transform Interpolation.float
+    , invert = Continuous.invertTransform transform untransform
+    , ticks = ticks base
+    , tickFormat = tickFormat base
+    , nice = nice base
+    , rangeExtent = \_ r -> r
+    }
+
+
+exp n =
+    e ^ n
+
+
+reflect f =
+    negate >> f >> negate
 
 
 log =
     logBase e
-
-
-convert domain range =
-    bimap domain range deinterpolate interpolateFloat
-
-
-invert domain range =
-    bimap range domain deinterpolate interpolate
-
-
-deinterpolate a b x =
-    log (x / a) / log (b / a)
-
-
-interpolate a b x =
-    if a < 0 then
-        -b ^ x * -a ^ (1 - x)
-
-    else
-        b ^ x * a ^ (1 - x)
 
 
 makePows start base =

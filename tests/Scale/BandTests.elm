@@ -1,4 +1,4 @@
-module Scale.BandTests exposing (convert)
+module Scale.BandTests exposing (band)
 
 import Expect
 import Fuzz exposing (..)
@@ -18,9 +18,9 @@ nonEmptyList fuzzer =
     Fuzz.map2 (\head tail -> head :: tail) fuzzer (list fuzzer)
 
 
-convert : Test
-convert =
-    describe "convert"
+band : Test
+band =
+    describe "band"
         [ test "convert a value in the domain returns a a nicely computed value in the range" <|
             \() ->
                 let

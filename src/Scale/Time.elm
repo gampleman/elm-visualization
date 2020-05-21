@@ -1,37 +1,26 @@
-module Scale.Time exposing (convert, invert, nice, rangeExtent, tickFormat, ticks)
+module Scale.Time exposing (scale)
 
 import DateFormat
-import Scale.Internal exposing (bimap, interpolateFloat)
-import Scale.Linear as Linear
+import Interpolation
+import Scale.Continuous as Continuous
 import Time
 import Time.Extra exposing (Interval(..))
 
 
+scale zone range_ domain_ =
+    { domain = domain_
+    , range = range_
+    , convert = Continuous.convertTransform (Time.posixToMillis >> toFloat) Interpolation.float
+    , invert = Continuous.invertTransform (Time.posixToMillis >> toFloat) (round >> Time.millisToPosix)
+    , ticks = ticks zone
+    , tickFormat = tickFormat zone
+    , nice = nice zone
+    , rangeExtent = \_ r -> r
+    }
+
+
 toTime ( a, b ) =
     ( Time.posixToMillis a |> toFloat, Time.posixToMillis b |> toFloat )
-
-
-convert : ( Time.Posix, Time.Posix ) -> ( Float, Float ) -> Time.Posix -> Float
-convert domain range =
-    bimap (toTime domain) range (\d r v -> deinterpolate d r (Time.posixToMillis v |> toFloat)) interpolateFloat
-
-
-invert : ( Time.Posix, Time.Posix ) -> ( Float, Float ) -> Float -> Time.Posix
-invert domain range =
-    bimap range (toTime domain) deinterpolate (\d r v -> Time.millisToPosix (round (interpolate d r v)))
-
-
-rangeExtent : ( Time.Posix, Time.Posix ) -> ( Float, Float ) -> ( Float, Float )
-rangeExtent d r =
-    r
-
-
-deinterpolate =
-    Linear.deinterpolate
-
-
-interpolate a b =
-    interpolateFloat a b
 
 
 ticks : Time.Zone -> ( Time.Posix, Time.Posix ) -> Int -> List Time.Posix

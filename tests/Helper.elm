@@ -56,7 +56,7 @@ isAbout a b =
         Expect.pass
 
     else
-        Expect.equal a b
+        Expect.within (Absolute 0.00001) a b
 
 
 isBetween ( b, c ) a =
