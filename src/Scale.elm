@@ -2,20 +2,14 @@ module Scale exposing
     ( Scale
     , ContinuousScale, linear, power, log, symlog, identity, time, radial
     , SequentialScale, sequential, sequentialLog, sequentialSymlog, sequentialPower
+    , DivergingScale, diverging, divergingLog, divergingSymlog, divergingPower
     , QuantizeScale, quantize
+    , QuantileScale, quantile
+    , ThresholdScale, threshold
     , OrdinalScale, ordinal
     , BandScale, band, BandConfig, defaultBandConfig
-    , convert, invert, invertExtent, domain, range, rangeExtent, ticks, tickFormat, clamp, nice, bandwidth, toRenderable
-    ,  DivergingScale
-      , QuantileScale
-      , diverging
-      , divergingLog
-      , divergingPower
-      , divergingSymlog
-        -- , power
-      , quantile
-      , quantiles
-
+    , point, PointConfig, defaultPointConfig
+    , convert, invert, invertExtent, domain, range, rangeExtent, ticks, tickFormat, clamp, nice, quantiles, bandwidth, toRenderable
     )
 
 {-| Scales are a convenient abstraction for a fundamental task in visualization:
@@ -42,10 +36,13 @@ and format ticks for reference marks to aid in the construction of [axes](Axis).
 
 ### Scales
 
-  - [Continuous](#ContinuousScale) ([linear](#linear), [power](#power), [log](#log), [identity](#identity), [time](#time), [radial](#radial))
+  - [Continuous](#ContinuousScale) ([linear](#linear), [power](#power), [log](#log), [symlog](#symlog), [identity](#identity), [time](#time), [radial](#radial))
   - [Sequential](#SequentialScale)
+  - [Diverging](#DivergingScale)
   - [Quantize](#QuantizeScale)
-  - [Ordinal](#OrdinalScale) ([Band](#BandScale))
+  - [Quantile](#QuantileScale)
+  - [Threshold](#ThresholdScale)
+  - [Ordinal](#OrdinalScale) ([Band](#BandScale), [Point](#point))
 
 @docs Scale
 
@@ -66,6 +63,17 @@ scales, the output range of a sequential scale is fixed by its interpolator func
 You can find some premade color interpolators in the [Scale.Color](Scale-Color) module.
 
 
+# Diverging Scales
+
+Diverging scales, like sequential scales, are similar to continuous scales in that they
+map a continuous, numeric input domain to a continuous output range. However, unlike
+continuous scales, the input domain and output range of a diverging scale always has exactly
+three elements, and the output range is specified as an interpolator rather than an array of
+values. These scales do not expose invert and interpolate methods.
+
+@docs DivergingScale, diverging, divergingLog, divergingSymlog, divergingPower
+
+
 # Quantize Scales
 
 Quantize scales are similar to linear scales, except they use a discrete rather
@@ -75,6 +83,25 @@ range. Each range value y can be expressed as a quantized linear function of the
 domain value `x`: `y = m round(x) + b`.
 
 @docs QuantizeScale, quantize
+
+
+# Quantile Scales
+
+Quantile scales map a sampled input domain to a discrete range. The number of values
+in the output range determines the number of quantiles that will be computed from the domain.
+To compute the quantiles, the domain is sorted, and treated as a population of discrete values;
+see [`Statistics.quantile`](https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Statistics#quantile).
+
+@docs QuantileScale, quantile
+
+
+# Threshold Scales
+
+Threshold scales are similar to quantize scales, except they allow you to map arbitrary
+subsets of the domain to discrete values in the range. The input domain is still continuous,
+and divided into slices based on a set of threshold values.
+
+@docs ThresholdScale, threshold
 
 
 # Ordinal Scales
@@ -88,7 +115,7 @@ or determine the horizontal positions of columns in a column chart.
 You can find some premade color schemes in the [Scale.Color](Scale-Color) module.
 
 
-# Band Scales
+## Band Scales
 
 Band scales are like ordinal scales except the output range is continuous and
 numeric. Discrete output values are automatically computed by the scale by
@@ -98,11 +125,19 @@ for bar charts with an ordinal or categorical dimension.
 @docs BandScale, band, BandConfig, defaultBandConfig
 
 
+## Point Scales
+
+Point scales are a variant of band scales with the bandwidth fixed to zero.
+Point scales are typically used for scatterplots with an ordinal or categorical dimension.
+
+@docs point, PointConfig, defaultPointConfig
+
+
 # Operations
 
 These functions take Scales and do something with them. Check the docs of each scale type to see which operations it supports.
 
-@docs convert, invert, invertExtent, domain, range, rangeExtent, ticks, tickFormat, clamp, nice, bandwidth, toRenderable
+@docs convert, invert, invertExtent, domain, range, rangeExtent, ticks, tickFormat, clamp, nice, quantiles, bandwidth, toRenderable
 
 -}
 
@@ -116,6 +151,7 @@ import Scale.Ordinal as Ordinal
 import Scale.Quantile as Quantile
 import Scale.Quantize as Quantize
 import Scale.Sequential as Sequential
+import Scale.Threshold as Threshold
 import Scale.Time as TimeScale
 import Time
 
@@ -320,6 +356,18 @@ sequentialPower expo interpolator domain_ =
     Scale <| Sequential.power expo interpolator domain_
 
 
+{-| This transforms a continuous `(Float, Float, Float)`
+domain to an arbitrary range `a` defined by the interpolator function `Float -> a`, where the `Float` goes from 0 to 1.
+
+The middle float is the neutral or zero point.
+
+Diverging scales support the following operations:
+
+  - [`convert : DivergingScale a -> Float -> a`](#convert)
+  - [`domain : DivergingScale a -> (Float, Float)`](#domain)
+  - [`range : DivergingScale a -> Float -> a`](#range)
+
+-}
 type alias DivergingScale a =
     Scale
         { domain : ( Float, Float, Float )
@@ -423,33 +471,77 @@ quantize range_ domain_ =
 --
 
 
+{-| These transform a `List Float` domain
+to an arbitrary non-empty list `(a, List a)`. However, internally this gets converted to a sorted Array.
+
+Quantile scales support the following operations:
+
+  - [`convert : QuantileScale a -> Float -> a`](#convert)
+  - [`invertExtent : QuantileScale a -> a -> Maybe (Float, Float)`](#invertExtent)
+  - [`domain : QuantileScale a -> List Float`](#domain)
+  - [`range : QuantileScale a -> Array a`](#range)
+  - [`quantiles : QuantileScale a -> List Float`](#quantiles)
+
+-}
 type alias QuantileScale a =
     Scale
         { domain : List Float
-        , range : ( a, Array a )
-        , convert : List Float -> ( a, Array a ) -> Float -> a
-        , invertExtent : List Float -> ( a, Array a ) -> a -> Maybe ( Float, Float )
+        , range : Array a
+        , convert : List Float -> Array a -> Float -> a
+        , invertExtent : List Float -> Array a -> a -> Maybe ( Float, Float )
         , quantiles : List Float
         }
 
 
+{-| Constructs a new quantile scale. The range must be non-empty and is represented as a `( head, tail )` tuple.
+-}
 quantile : ( a, List a ) -> List Float -> QuantileScale a
 quantile range_ domain_ =
     Scale <| Quantile.scale range_ domain_
 
 
 
--- -- Threshold Scales
---
---
--- type alias ThresholdScale comparable a =
---     Scale Threshold (List comparable) (List a)
---
---
--- threshold : List comparable -> List a -> ThresholdScale comparable a
--- threshold domain =
---     Debug.crash "not implemented"
---
+-- Threshold Scales
+
+
+{-| These transform a `Array comparable` domain to an arbitrary `Array a`.
+
+Threshold scales support the following operations:
+
+  - [`convert : ThresholdScale comparable a -> comparable -> a`](#convert)
+  - [`domain : ThresholdScale comparable a -> Array comparable`](#domain)
+  - [`range : ThresholdScale comparable a -> Array a`](#range)
+
+-}
+type alias ThresholdScale comparable a =
+    Scale
+        { domain : Array comparable
+        , range : Array a
+        , convert : Array comparable -> Array a -> comparable -> a
+        }
+
+
+{-| Constructs a threshold scale. The signature here is a bit different than
+other scales as it is designed to reinforce that the thresholds seperate the domain values.
+
+Hence: `temperatureScale = threshold ( blue, [ ( 0, yellow ), ( 200, red )])` intuitavely shows
+that temperatures lower than `0` will be `blue`, between `0` and `200` will be `yello` and above
+will be `red`. It also neatly avoids any questions of what happens if there are more than expected
+of either `domain` or `range` values, as this is impossible by construction.
+
+However, if you would like to use the traditional separate `domain` and `range` lists, you can
+make use of the following function, which simply ignores extra elements:
+
+    interleave : ( a, List a ) -> List comparable -> ( a, List ( comparable, a ) )
+    interleave ( r, range ) domain =
+        ( r, List.map2 Tuple.pair domain, range )
+
+You could of course make a variation that does some error handling if the lists don't match.
+
+-}
+threshold : ( a, List ( comparable, a ) ) -> ThresholdScale comparable a
+threshold =
+    Scale << Threshold.scale
 
 
 {-| Type alias for ordinal scales. These transform an arbitrary
@@ -560,6 +652,34 @@ band config range_ domain_ =
         , range = range_
         , convert = Band.convert config
         , bandwidth = Band.bandwidth config domain_ range_
+        }
+
+
+{-| Configuration options for Point scales. See [BandConfig](#BandConfig) for details, as `align` works exactly the same, and `padding` is equivalent to `paddingOuter`.
+-}
+type alias PointConfig =
+    { padding : Float, align : Float }
+
+
+{-| Creates some reasonable defaults for a PointConfig:
+
+    defaultPointConfig --> { padding = 0.0, align = 0.5 }
+
+-}
+defaultPointConfig : PointConfig
+defaultPointConfig =
+    { padding = 0.0, align = 0.5 }
+
+
+{-| Constructs a point scale.
+-}
+point : PointConfig -> ( Float, Float ) -> List a -> BandScale a
+point { padding, align } range_ domain_ =
+    Scale
+        { domain = domain_
+        , range = range_
+        , convert = Band.convert { paddingOuter = padding, align = align, paddingInner = 1.0 }
+        , bandwidth = 0
         }
 
 
@@ -693,12 +813,6 @@ tickFormat (Scale opts) =
     opts.tickFormat opts.domain
 
 
-
--- quantiles : Scale { a | quantiles : b } -> b
--- quantiles (Scale { quantiles }) =
---     quantiles
-
-
 {-| Enables clamping on the domain, meaning the return value of the scale is
 always within the scale’s range.
 
@@ -732,6 +846,8 @@ nice count (Scale scale) =
     Scale { scale | domain = scale.nice scale.domain count }
 
 
+{-| Returns the quantile thresholds. If the range contains `n` discrete values, the returned list will contain `n - 1` thresholds. Values less than the first threshold are considered in the first quantile; values greater than or equal to the first threshold but less than the second threshold are in the second quantile, and so on.
+-}
 quantiles : Scale { a | quantiles : b } -> b
 quantiles (Scale options) =
     options.quantiles
