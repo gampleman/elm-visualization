@@ -10,11 +10,11 @@ module NorwegianCarSales exposing (main)
 
 import Axis
 import Color exposing (Color)
+import Dict exposing (Dict)
 import Example
 import Html exposing (div, text)
 import Html.Attributes
 import List.Extra as List
-import Dict exposing (Dict)
 import Path exposing (Path)
 import Scale exposing (ContinuousScale, OrdinalScale, Scale)
 import Scale.Color

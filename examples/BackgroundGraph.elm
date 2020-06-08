@@ -182,6 +182,7 @@ view model =
 main =
     init |> view
 
+
 miserablesGraph =
     Graph.fromNodeLabelsAndEdgePairs
         [ "Myriel"
