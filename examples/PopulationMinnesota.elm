@@ -3,7 +3,6 @@ module PopulationMinnesota exposing (main)
 import Axis
 import Color exposing (Color)
 import List.Extra as List
-import SampleData exposing (Gender(..))
 import Scale exposing (BandScale, ContinuousScale, OrdinalScale, QuantizeScale, Scale, defaultBandConfig)
 import Scale.Color
 import Shape exposing (StackConfig, StackResult)
@@ -20,12 +19,12 @@ main =
     view (Shape.stack config)
 
 
-populationMinnesota1850 : { categories : List Int, data : List ( Int, List Float ), extent : ( Float, Float ) }
-populationMinnesota1850 =
+transformedData : { categories : List Int, data : List ( Int, List Float ), extent : ( Float, Float ) }
+transformedData =
     let
         partitioned =
             -- assumes sorted by year, then age
-            SampleData.populationMinnesota1850
+            populationMinnesota1850
                 |> List.filter (\{ year } -> year == 1850)
                 |> List.partition (\{ gender } -> gender == M)
 
@@ -67,7 +66,7 @@ padding =
 
 config : StackConfig Int
 config =
-    { data = populationMinnesota1850.data
+    { data = transformedData.data
     , offset = Shape.stackOffsetDiverging
     , order = identity
     }
@@ -116,13 +115,13 @@ view { values, labels, extent } =
 
         yScale : BandScale Int
         yScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( padding, h - padding ) populationMinnesota1850.categories
+            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( padding, h - padding ) transformedData.categories
     in
     svg [ viewBox 0 0 w h ]
         [ g [ transform [ Translate 0 (h - padding) ] ]
             [ Axis.bottom [ Axis.tickFormat (absoluteTickFormat xScale 10) ] xScale ]
         , g [ class [ "series" ] ] <|
-            List.map (column yScale) (List.map2 (\a b -> ( a, b )) populationMinnesota1850.categories scaledValues)
+            List.map (column yScale) (List.map2 (\a b -> ( a, b )) transformedData.categories scaledValues)
         , g [ transform [ Translate padding 0 ] ]
             [ Axis.left [] (Scale.toRenderable String.fromInt yScale)
             , text_ [ fontFamily [ "sans-serif" ], fontSize 14, x 5, y 65 ] [ text "Age" ]
@@ -170,3 +169,55 @@ absoluteTickFormat :
     -> String
 absoluteTickFormat scale tickCount value =
     Scale.tickFormat scale tickCount (abs value)
+
+
+type Gender
+    = M
+    | F
+
+
+type alias Population =
+    { year : Int, age : Int, gender : Gender, people : Int }
+
+
+populationMinnesota1850 : List Population
+populationMinnesota1850 =
+    [ Population 1850 0 M 1483789
+    , Population 1850 0 F 1450376
+    , Population 1850 5 M 1411067
+    , Population 1850 5 F 1359668
+    , Population 1850 10 M 1260099
+    , Population 1850 10 F 1216114
+    , Population 1850 15 M 1077133
+    , Population 1850 15 F 1110619
+    , Population 1850 20 M 1017281
+    , Population 1850 20 F 1003841
+    , Population 1850 25 M 862547
+    , Population 1850 25 F 799482
+    , Population 1850 30 M 730638
+    , Population 1850 30 F 639636
+    , Population 1850 35 M 588487
+    , Population 1850 35 F 505012
+    , Population 1850 40 M 475911
+    , Population 1850 40 F 428185
+    , Population 1850 45 M 384211
+    , Population 1850 45 F 341254
+    , Population 1850 50 M 321343
+    , Population 1850 50 F 286580
+    , Population 1850 55 M 194080
+    , Population 1850 55 F 187208
+    , Population 1850 60 M 174976
+    , Population 1850 60 F 162236
+    , Population 1850 65 M 106827
+    , Population 1850 65 F 105534
+    , Population 1850 70 M 73677
+    , Population 1850 70 F 71762
+    , Population 1850 75 M 40834
+    , Population 1850 75 F 40229
+    , Population 1850 80 M 23449
+    , Population 1850 80 F 22949
+    , Population 1850 85 M 8186
+    , Population 1850 85 F 10511
+    , Population 1850 90 M 5259
+    , Population 1850 90 F 6569
+    ]

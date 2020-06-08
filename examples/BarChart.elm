@@ -5,7 +5,6 @@ module BarChart exposing (main)
 
 import Axis
 import DateFormat
-import SampleData exposing (timeSeries)
 import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
 import Time
 import TypedSvg exposing (g, rect, style, svg, text_)
@@ -95,3 +94,15 @@ view model =
 
 main =
     view timeSeries
+
+
+timeSeries : List ( Time.Posix, Float )
+timeSeries =
+    [ ( Time.millisToPosix 1448928000000, 2.5 )
+    , ( Time.millisToPosix 1451606400000, 2 )
+    , ( Time.millisToPosix 1452211200000, 3.5 )
+    , ( Time.millisToPosix 1452816000000, 2 )
+    , ( Time.millisToPosix 1453420800000, 3 )
+    , ( Time.millisToPosix 1454284800000, 1 )
+    , ( Time.millisToPosix 1456790400000, 1.2 )
+    ]

@@ -7,7 +7,6 @@ the primitives provided in this library.
 import Axis
 import Color
 import Path exposing (Path)
-import SampleData exposing (timeSeries)
 import Scale exposing (ContinuousScale)
 import Shape
 import Time
@@ -100,3 +99,15 @@ view model =
 
 main =
     view timeSeries
+
+
+timeSeries : List ( Time.Posix, Float )
+timeSeries =
+    [ ( Time.millisToPosix 1448928000000, 2.5 )
+    , ( Time.millisToPosix 1451606400000, 2 )
+    , ( Time.millisToPosix 1452211200000, 3.5 )
+    , ( Time.millisToPosix 1452816000000, 2 )
+    , ( Time.millisToPosix 1453420800000, 3 )
+    , ( Time.millisToPosix 1454284800000, 1 )
+    , ( Time.millisToPosix 1456790400000, 1.2 )
+    ]
