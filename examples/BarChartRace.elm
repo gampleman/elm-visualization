@@ -27,10 +27,10 @@ import Statistics
 import Time
 import Transition exposing (Transition)
 import TypedSvg exposing (g, rect, svg, text_, tspan)
-import TypedSvg.Attributes exposing (class, fill, fontWeight, stroke, style, textAnchor, transform, viewBox)
+import TypedSvg.Attributes exposing (class, dy, fill, fillOpacity, fontWeight, stroke, style, textAnchor, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
-import TypedSvg.Core exposing (Svg, text)
-import TypedSvg.Types exposing (AnchorAlignment(..), FontWeight(..), Paint(..), Transform(..))
+import TypedSvg.Core exposing (Attribute, Svg, text)
+import TypedSvg.Types exposing (AnchorAlignment(..), FontWeight(..), Opacity(..), Paint(..), Transform(..), em)
 
 
 w : Float
@@ -43,16 +43,9 @@ h =
     504
 
 
+barSize : Float
 barSize =
     (h - 2 * margin) / (n * 1.1)
-
-
-dy =
-    TypedSvg.Core.attribute "dy"
-
-
-fillOpacity =
-    TypedSvg.Types.Opacity >> TypedSvg.Attributes.fillOpacity
 
 
 type alias Brand =
@@ -99,6 +92,7 @@ n =
     12
 
 
+init : () -> ( Model, Cmd Msg )
 init () =
     ( Loading
     , Http.get
@@ -135,6 +129,7 @@ type alias RawBrand =
     { name : String, value : Float, category : String, time : Time.Posix }
 
 
+decoder : Csv.Decoder (a -> a) a
 decoder =
     Csv.map RawBrand
         (Csv.field "name" Ok
@@ -144,6 +139,7 @@ decoder =
         )
 
 
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
         ( RecievedData (Ok rawData), _ ) ->
@@ -226,6 +222,7 @@ interpolateSubframe from to =
         |> Interpolation.inParallel
 
 
+interpolateRawBrand : RawBrand -> RawBrand
 interpolateRawBrand from to =
     Interpolation.map (\value -> { to | value = value })
         (Interpolation.float from.value to.value)
@@ -289,6 +286,7 @@ interpolateBrand from to =
         (Interpolation.float from.value to.value)
 
 
+view : Model -> Html Msg
 view model =
     case model of
         Loading ->
@@ -331,6 +329,7 @@ duration =
     2500
 
 
+viewAxes : Scale -> Svg msg
 viewAxes scale =
     g [ transform [ Translate 0 margin ] ]
         [ TypedSvg.Core.node "style" [] [ text """
@@ -353,6 +352,7 @@ viewAxes scale =
         ]
 
 
+viewBars : Scale.Color -> Scale -> Scale -> List Brand
 viewBars colorScale xScale yScale data =
     List.map
         (\datum ->
@@ -366,9 +366,10 @@ viewBars colorScale xScale yScale data =
                 []
         )
         data
-        |> g [ fillOpacity 0.6 ]
+        |> g [ fillOpacity <| Opacity 0.6 ]
 
 
+viewLabels : Scale -> Scale -> List Brand
 viewLabels xScale yScale data =
     List.map
         (\datum ->
@@ -376,29 +377,37 @@ viewLabels xScale yScale data =
                 [ transform [ Translate (Scale.convert xScale datum.value) (Scale.convert yScale datum.rank) ]
                 , height barSize
                 , x -6
-                , dy "-0.25em"
+                , dy (em -0.25)
                 , y (barSize / 2)
                 , width (Scale.convert xScale datum.value - Scale.convert xScale 0)
                 ]
                 [ text datum.name
-                , tspan [ fillOpacity 0.7, fontWeight FontWeightNormal, x -6, dy "1.15em" ] [ text (String.fromInt (round datum.value)) ]
+                , tspan
+                    [ fillOpacity <| Opacity 0.7
+                    , fontWeight FontWeightNormal
+                    , x -6
+                    , dy (em 1.15)
+                    ]
+                    [ text (String.fromInt (round datum.value)) ]
                 ]
         )
         data
         |> g [ style "font: bold 12px sans-serif; font-variant-numeric: tabular-nums;", textAnchor AnchorEnd ]
 
 
+viewTicker : Time.Posix -> Svg msg
 viewTicker time =
     text_
         [ style ("font: bold " ++ String.fromFloat barSize ++ "px sans-serif; font-variant-numeric: tabular-nums")
         , textAnchor AnchorEnd
         , x (w - 6)
         , y (margin + barSize * (toFloat n - 0.45))
-        , dy "0.32em"
+        , dy (em 0.32)
         ]
         [ text (formatYear time) ]
 
 
+formatYear : Time.Posix -> String
 formatYear =
     DateFormat.format [ DateFormat.yearNumber ] Time.utc
 

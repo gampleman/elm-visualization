@@ -5,7 +5,7 @@ module BackgroundGraph exposing (main)
 
 import Color exposing (Color)
 import Force exposing (State)
-import Graph exposing (Edge, Graph, Node, NodeId)
+import Graph exposing (Edge, Graph, Node, NodeContext, NodeId)
 import IntDict
 import List exposing (range)
 import Scale exposing (SequentialScale)
@@ -13,7 +13,7 @@ import Scale.Color
 import TypedSvg exposing (circle, g, line, polygon, svg, title)
 import TypedSvg.Attributes exposing (class, fill, points, stroke, viewBox)
 import TypedSvg.Attributes.InPx exposing (cx, cy, r, strokeWidth, x1, x2, y1, y2)
-import TypedSvg.Core exposing (Svg, text)
+import TypedSvg.Core exposing (Attribute, Svg, text)
 import TypedSvg.Types exposing (Paint(..))
 
 
@@ -94,6 +94,7 @@ updateGraphWithList =
     List.foldr (\node graph -> Graph.update node.id (graphUpdater node) graph)
 
 
+updateContextWithValue : NodeContext Entity () -> Entity -> NodeContext Entity ()
 updateContextWithValue nodeCtx value =
     let
         node =
@@ -125,6 +126,7 @@ linkElement graph edge =
         []
 
 
+hexagon : ( Float, Float ) -> Float -> List (Attribute msg) -> (List (Svg msg) -> Svg msg)
 hexagon ( x, y ) size attrs =
     let
         angle =
@@ -140,6 +142,7 @@ hexagon ( x, y ) size attrs =
         (p :: attrs)
 
 
+nodeSize : Float -> Entity -> Svg msg
 nodeSize size node =
     hexagon ( node.x, node.y )
         size
@@ -148,6 +151,7 @@ nodeSize size node =
         [ title [] [ text node.value.name ] ]
 
 
+nodeElement : Node Entity -> Svg msg
 nodeElement node =
     if node.label.value.rank < 5 then
         nodeSize 4 node.label
@@ -172,6 +176,7 @@ nodeElement node =
         nodeSize 10 node.label
 
 
+view : Graph Entity () -> Svg msg
 view model =
     svg [ viewBox 0 0 w h ]
         [ g [ class [ "links" ] ] <| List.map (linkElement model) <| Graph.edges model
@@ -183,6 +188,7 @@ main =
     init |> view
 
 
+miserablesGraph : Graph String ()
 miserablesGraph =
     Graph.fromNodeLabelsAndEdgePairs
         [ "Myriel"
