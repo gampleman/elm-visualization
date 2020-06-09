@@ -235,7 +235,7 @@ main =
         }
 
 
-miserablesGraph : Graph String ( Int, Int )
+miserablesGraph : Graph String ()
 miserablesGraph =
     Graph.fromNodeLabelsAndEdgePairs
         [ "Myriel"

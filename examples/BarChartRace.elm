@@ -16,11 +16,12 @@ import Csv.Decode as Csv
 import DateFormat
 import Dict exposing (Dict)
 import Example
+import Html exposing (Html)
 import Http
 import Interpolation exposing (Interpolator)
 import Iso8601
 import List.Extra
-import Scale exposing (Scale, defaultBandConfig)
+import Scale exposing (ContinuousScale, OrdinalScale, Scale, defaultBandConfig)
 import Scale.Color
 import Set
 import Statistics
@@ -56,8 +57,24 @@ type alias Brand =
     }
 
 
+
+-- TODO give this better name
+
+
+type alias BrandWithTime =
+    { category : String
+    , name : String
+    , time : Time.Posix
+    , value : Float
+    }
+
+
 type alias Frame =
     ( Time.Posix, List Brand )
+
+
+type alias ColorScale =
+    OrdinalScale String Color.Color
 
 
 type Model
@@ -129,7 +146,7 @@ type alias RawBrand =
     { name : String, value : Float, category : String, time : Time.Posix }
 
 
-decoder : Csv.Decoder (a -> a) a
+decoder : Csv.Decoder (RawBrand -> a) a
 decoder =
     Csv.map RawBrand
         (Csv.field "name" Ok
@@ -209,7 +226,7 @@ generateSubframes frameList =
         |> List.concat
 
 
-interpolateSubframe : List RawBrand -> List RawBrand -> Interpolator (List RawBrand)
+interpolateSubframe : List RawBrand -> List RawBrand -> Interpolator (List BrandWithTime)
 interpolateSubframe from to =
     Dict.merge
         (\name fromItem -> Dict.insert name (interpolateRawBrand fromItem { fromItem | value = 0 }))
@@ -222,7 +239,7 @@ interpolateSubframe from to =
         |> Interpolation.inParallel
 
 
-interpolateRawBrand : RawBrand -> RawBrand
+interpolateRawBrand : RawBrand -> RawBrand -> Interpolator BrandWithTime
 interpolateRawBrand from to =
     Interpolation.map (\value -> { to | value = value })
         (Interpolation.float from.value to.value)
@@ -329,7 +346,7 @@ duration =
     2500
 
 
-viewAxes : Scale -> Svg msg
+viewAxes : ContinuousScale Float -> Svg msg
 viewAxes scale =
     g [ transform [ Translate 0 margin ] ]
         [ TypedSvg.Core.node "style" [] [ text """
@@ -352,7 +369,7 @@ viewAxes scale =
         ]
 
 
-viewBars : Scale.Color -> Scale -> Scale -> List Brand
+viewBars : ColorScale -> ContinuousScale Float -> ContinuousScale Float -> List Brand -> Svg msg
 viewBars colorScale xScale yScale data =
     List.map
         (\datum ->
@@ -369,7 +386,7 @@ viewBars colorScale xScale yScale data =
         |> g [ fillOpacity <| Opacity 0.6 ]
 
 
-viewLabels : Scale -> Scale -> List Brand
+viewLabels : ContinuousScale Float -> ContinuousScale Float -> List Brand -> Svg msg
 viewLabels xScale yScale data =
     List.map
         (\datum ->
