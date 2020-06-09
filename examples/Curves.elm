@@ -168,6 +168,7 @@ parametrized prefix curveFn =
         |> List.map (\s -> ( prefix ++ " " ++ String.fromFloat s, curveFn s, Scale.convert scale s ))
 
 
+exampleData : List ( String, List ( String, Curve, Color ) )
 exampleData =
     [ ( "Linear", basic "linearCurve" Shape.linearCurve )
     , ( "Basis", basic "basisCurve" Shape.basisCurve )
