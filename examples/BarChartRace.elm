@@ -57,10 +57,6 @@ type alias Brand =
     }
 
 
-
--- TODO give this better name
-
-
 type alias BrandWithTime =
     { category : String
     , name : String
