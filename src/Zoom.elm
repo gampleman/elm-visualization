@@ -323,8 +323,8 @@ onDrag (Zoom { drag }) tagger =
                         , preventDefault = False
                         }
                     )
-                    (D.field "offsetX" D.float)
-                    (D.field "offsetY" D.float)
+                    (D.field "clientX" D.float)
+                    (D.field "clientY" D.float)
                     decodeSVGTransformMatrix
                 )
             ]
