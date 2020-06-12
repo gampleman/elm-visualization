@@ -165,6 +165,27 @@ applyForce alpha force entities =
             --Debug.crash "not implemented"
             entities
 
+        Custom fun ->
+            let
+                erase : comparable -> Entity comparable a -> Entity comparable {}
+                erase _ { x, y, vx, vy, id } =
+                    { x = x, y = y, vx = vx, vy = vy, id = id }
+
+                maybeUpdate : comparable -> Entity comparable {} -> Dict comparable (Entity comparable a) -> Dict comparable (Entity comparable a)
+                maybeUpdate _ { x, y, vx, vy, id } dict =
+                    case Dict.get id entities of
+                        Just ent ->
+                            Dict.insert id { ent | x = x, y = y, vx = vx, vy = vy } dict
+
+                        Nothing ->
+                            dict
+
+                reunify : Dict comparable (Entity comparable {}) -> Dict comparable (Entity comparable a)
+                reunify old =
+                    Dict.foldr maybeUpdate entities old
+            in
+            fun alpha (Dict.map erase entities)
+                |> reunify
 
 nTimes : (a -> a) -> Int -> a -> a
 nTimes fn times input =
@@ -285,6 +306,7 @@ type Force comparable
     | ManyBody Float (Dict comparable Float)
     | X (Dict comparable DirectionalParam)
     | Y (Dict comparable DirectionalParam)
+    | Custom (Float -> Dict comparable (Entity comparable {}) -> Dict comparable (Entity comparable {}))
 
 
 {-| The centering force translates nodes uniformly so that the mean position of all nodes (the center of mass) is at
