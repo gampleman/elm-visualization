@@ -60,7 +60,7 @@ offsetNone series =
 
         x :: xs ->
             let
-                weirdAdd ( s10, s11 ) ( s00, s01 ) =
+                weirdAdd ( _, s11 ) ( s00, s01 ) =
                     -- fall back to s00 when s01 is NaN
                     if isNaN s01 then
                         ( s00, s11 + s00 )
@@ -74,7 +74,7 @@ offsetNone series =
                     )
             in
             List.foldl helper ( x, [] ) xs
-                |> (\( a, b ) -> (::) a b)
+                |> (\( a, b ) -> a :: b)
                 |> List.reverse
 
 
@@ -86,7 +86,7 @@ offsetDiverging series =
         [] ->
             []
 
-        first :: rest ->
+        _ :: _ ->
             let
                 folder ( x, y ) ( yp, yn, accum ) =
                     let
@@ -120,7 +120,7 @@ offsetExpand series =
         normalizeColumn column =
             let
                 deltas =
-                    List.map (abs << (\( a, b ) -> (-) a b)) column
+                    List.map (abs << (\( a, b ) -> a - b)) column
 
                 total =
                     List.sum deltas
@@ -147,7 +147,7 @@ offsetSilhouette series =
                         |> List.transpose
                         |> List.map (List.sum << List.map Tuple.second)
             in
-            List.map2 (\( x, y ) newY -> ( -newY / 2, y + (-newY / 2) )) first ys
+            List.map2 (\( _, y ) newY -> ( -newY / 2, y + (-newY / 2) )) first ys
                 :: xs
                 |> offsetNone
 
@@ -205,7 +205,7 @@ offsetWiggle series =
                     pairwise deltaFractions columns
                         |> List.map2 (\a b -> ( a, b )) (List.drop 1 columns |> List.map List.sum)
                         |> List.scanl scanner 0
-                        |> List.map2 (\( x, y ) yValue -> ( yValue, y + yValue )) first
+                        |> List.map2 (\( _, y ) yValue -> ( yValue, y + yValue )) first
             in
             (newFirst :: rest)
                 |> offsetNone

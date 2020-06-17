@@ -1,11 +1,10 @@
 module Color.LabTests exposing (suite)
 
-import Array
 import Color exposing (Color)
 import Color.Lab as Lab
 import Expect exposing (Expectation, FloatingPointTolerance(..))
-import Fuzz exposing (Fuzzer, float, floatRange, intRange, list, tuple3)
-import Test exposing (..)
+import Fuzz exposing (Fuzzer, floatRange, intRange, tuple3)
+import Test exposing (Test, describe, fuzz, fuzz2, test)
 
 
 unit : Fuzzer Float
@@ -13,6 +12,7 @@ unit =
     floatRange 0 1
 
 
+guaranteedTolerance : FloatingPointTolerance
 guaranteedTolerance =
     Absolute 0.0000000001
 
@@ -29,7 +29,7 @@ toColorFloat n =
 
 color : Fuzzer Color
 color =
-    Fuzz.map4 (\r g b a -> Color.rgba (toColorFloat r) (toColorFloat g) (toColorFloat g) a) uint8 uint8 uint8 unit
+    Fuzz.map4 (\r g b a -> Color.rgba (toColorFloat r) (toColorFloat g) (toColorFloat b) a) uint8 uint8 uint8 unit
 
 
 suite : Test
@@ -67,6 +67,7 @@ suite =
         ]
 
 
+expectHclEqual : { a | hue : Float, chroma : Float, luminance : Float, alpha : d } -> { b | hue : Float, chroma : Float, luminance : Float, alpha : d } -> Expectation
 expectHclEqual expected actual =
     Expect.true (Debug.toString expected ++ "\n    ╷\n    │ expectHclEqual\n    ╵\n" ++ Debug.toString actual) <|
         areHclCoordsEqual actual.hue expected.hue
@@ -76,6 +77,7 @@ expectHclEqual expected actual =
             == actual.alpha
 
 
+expectRgbEqual : { a | red : Float, green : Float, blue : Float, alpha : d } -> { b | red : Float, green : Float, blue : Float, alpha : d } -> Expectation
 expectRgbEqual expected actual =
     Expect.true (Debug.toString expected ++ "\n    ╷\n    │ expectRgbEqual\n    ╵\n" ++ Debug.toString actual) <|
         areRgbCoordsEqual actual.red expected.red
@@ -85,9 +87,11 @@ expectRgbEqual expected actual =
             == actual.alpha
 
 
+areHclCoordsEqual : Float -> Float -> Bool
 areHclCoordsEqual expected actual =
     (isNaN actual && isNaN expected) || (expected - 1.0e-6 <= actual && actual <= expected + 1.0e-6)
 
 
+areRgbCoordsEqual : Float -> Float -> Bool
 areRgbCoordsEqual expected actual =
     round (expected * 255) == round (actual * 255)

@@ -1,12 +1,11 @@
 module InterpolationTests exposing (suite)
 
-import Array
 import Color exposing (Color)
 import Expect exposing (Expectation, FloatingPointTolerance(..))
-import Fuzz exposing (Fuzzer, float, floatRange, intRange, list)
+import Fuzz exposing (float, floatRange, intRange, list)
 import Helper exposing (atLeastFloat, atMostFloat)
 import Interpolation exposing (Interpolator)
-import Test exposing (..)
+import Test exposing (Test, describe, fuzz, fuzz2, fuzz3, test)
 
 
 suite : Test
@@ -206,7 +205,7 @@ suite =
 
 equalsSamples : (a -> a -> Expectation) -> List a -> Interpolator a -> Expectation
 equalsSamples eq expectedSamples interp =
-    Expect.all (List.map2 (\a b c -> eq a b) expectedSamples (Interpolation.samples (List.length expectedSamples) interp))
+    Expect.all (List.map2 (\a b _ -> eq a b) expectedSamples (Interpolation.samples (List.length expectedSamples) interp))
         ()
 
 

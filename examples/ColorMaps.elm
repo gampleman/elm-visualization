@@ -294,5 +294,6 @@ view =
         ]
 
 
+main : Html msg
 main =
     view

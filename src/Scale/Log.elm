@@ -25,18 +25,22 @@ scale base range_ domain_ =
     }
 
 
+exp : Float -> Float
 exp n =
     e ^ n
 
 
+reflect : (number -> number) -> number -> number
 reflect f =
     negate >> f >> negate
 
 
+log : Float -> Float
 log =
     logBase e
 
 
+makePows : number -> number -> number -> number
 makePows start base =
     if start < 0 then
         \x -> -(base ^ -x)
@@ -45,6 +49,7 @@ makePows start base =
         \x -> base ^ x
 
 
+makeLogs : number -> Float -> Float -> Float
 makeLogs start base =
     if start < 0 then
         \x -> -(logBase base -x)
@@ -137,6 +142,7 @@ ticks base ( domStart, domEnd ) count =
         reverse <| List.map (\a -> pows a) <| Statistics.ticks topi topj <| round (min (topj - topi) n)
 
 
+tickFormat : Float -> ( Float, Float ) -> Int -> Float -> String
 tickFormat base ( start, end ) count =
     let
         k =
@@ -194,6 +200,7 @@ formatFixed precision value =
         |> String.fromFloat
 
 
+formatExponential : Float -> String
 formatExponential num =
     let
         parts =
@@ -237,6 +244,7 @@ formatExponential num =
     helper 0 (String.toList digits0 |> List.reverse) (String.toList decimals0)
 
 
+nice : Float -> ( Float, Float ) -> c -> ( Float, Float )
 nice base ( start, stop ) _ =
     let
         f =

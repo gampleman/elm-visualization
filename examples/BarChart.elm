@@ -92,6 +92,7 @@ view model =
         ]
 
 
+main : Svg msg
 main =
     view timeSeries
 

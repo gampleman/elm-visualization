@@ -3,11 +3,11 @@ module Helper exposing (atLeastFloat, atMostFloat, expectAll, expectAny, expectM
 import Expect exposing (Expectation, FloatingPointTolerance(..))
 import Path exposing (Path)
 import Regex
-import Result
 import Test.Runner exposing (getFailureReason)
 import Test.Runner.Failure
 
 
+numRegex : Regex.Regex
 numRegex =
     Regex.fromString "[-+]?(?:\\d+\\.\\d+|\\d+\\.|\\.\\d+|\\d+)(?:[eE][-]?\\d+)?"
         |> Maybe.withDefault Regex.never
@@ -47,10 +47,12 @@ pathEqual str path =
             Expect.fail ("Parsing the model failed with:" ++ Debug.toString e)
 
 
+precision : number
 precision =
     100000
 
 
+isAbout : Float -> Float -> Expectation
 isAbout a b =
     if truncate ((a - b) * precision) == 0 then
         Expect.pass
@@ -59,6 +61,7 @@ isAbout a b =
         Expect.within (Absolute 0.00001) a b
 
 
+isBetween : ( Float, Float ) -> Float -> Expectation
 isBetween ( b, c ) a =
     let
         mi =

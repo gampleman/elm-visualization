@@ -37,6 +37,7 @@ padding =
     60
 
 
+series : List { label : String, accessor : { b | assault : a, murder : a, rape : a, robbery : a } -> a }
 series =
     [ { label = "Murder"
       , accessor = .murder
@@ -151,6 +152,7 @@ view model =
         ]
 
 
+main : Svg msg
 main =
     view crimeRates
 

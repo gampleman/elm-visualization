@@ -1,10 +1,10 @@
 module Scale.ContinousTests exposing (linear, power, radial, symlog)
 
 import Expect exposing (FloatingPointTolerance(..))
-import Fuzz exposing (..)
-import Helper exposing (expectAll, isAbout, isBetween)
+import Fuzz exposing (float, tuple, tuple3)
+import Helper exposing (expectAll, isBetween)
 import Scale
-import Test exposing (..)
+import Test exposing (Test, describe, fuzz, test)
 
 
 linear : Test
@@ -130,6 +130,6 @@ buildTests { convert, scale, convertExpected, convertEmptyExpected, invertExpect
                     |> Expect.within (Absolute 0.0001) 10
                 ]
     , fuzz (tuple3 ( tuple ( float, float ), tuple ( float, float ), float )) "rangeExtent returns the range" <|
-        \( domain, range, val ) ->
+        \( domain, range, _ ) ->
             Scale.rangeExtent (scale range domain) |> Expect.equal range
     ]

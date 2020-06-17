@@ -1,10 +1,11 @@
 module Scale.Band exposing (bandwidth, convert)
 
-import Json.Decode exposing (index)
-
 
 type alias Config =
-    { paddingInner : Float, paddingOuter : Float, align : Float }
+    { paddingInner : Float
+    , paddingOuter : Float
+    , align : Float
+    }
 
 
 normalizeConfig : Config -> Config
@@ -18,7 +19,7 @@ normalizeConfig { paddingInner, paddingOuter, align } =
 bandwidth : Config -> List a -> ( Float, Float ) -> Float
 bandwidth cfg domain ( d0, d1 ) =
     let
-        { paddingInner, paddingOuter, align } =
+        normCfg =
             normalizeConfig cfg
 
         ( start, stop ) =
@@ -32,12 +33,13 @@ bandwidth cfg domain ( d0, d1 ) =
             toFloat <| List.length domain
 
         step =
-            (stop - start) / max 1 (n - paddingInner + paddingOuter * 2)
+            (stop - start) / max 1 (n - normCfg.paddingInner + normCfg.paddingOuter * 2)
     in
-    step * (1 - paddingInner)
+    step * (1 - normCfg.paddingInner)
 
 
-computePositions index cfg n ( start, stop ) =
+computePositions : Config -> Float -> ( Float, Float ) -> ( Float, Float )
+computePositions cfg n ( start, stop ) =
     let
         { paddingInner, paddingOuter, align } =
             normalizeConfig cfg
@@ -62,14 +64,14 @@ convert cfg domain ( start, stop ) value =
             if start < stop then
                 let
                     ( start2, step ) =
-                        computePositions index cfg n ( start, stop )
+                        computePositions cfg n ( start, stop )
                 in
                 start2 + step * index
 
             else
                 let
                     ( stop2, step ) =
-                        computePositions index cfg n ( stop, start )
+                        computePositions cfg n ( stop, start )
                 in
                 stop2 + step * (n - index - 1)
 
@@ -77,10 +79,12 @@ convert cfg domain ( start, stop ) value =
             0 / 0
 
 
+indexOf : a -> List a -> Maybe number
 indexOf =
     indexOfHelp 0
 
 
+indexOfHelp : number -> a -> List a -> Maybe number
 indexOfHelp index value list =
     case list of
         [] ->

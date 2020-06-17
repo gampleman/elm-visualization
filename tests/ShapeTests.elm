@@ -1,12 +1,23 @@
 module ShapeTests exposing (arcTest, centroidTest, pieTest)
 
 import Expect
-import Fuzz exposing (..)
-import Helper exposing (expectAll, isAbout, isBetween, pathEqual)
+import Helper exposing (expectAll, pathEqual)
 import Shape exposing (defaultPieConfig)
-import Test exposing (..)
+import Test exposing (Test, describe, test)
 
 
+type alias Arc =
+    { innerRadius : Float
+    , outerRadius : Float
+    , cornerRadius : Float
+    , startAngle : Float
+    , endAngle : Float
+    , padAngle : Float
+    , padRadius : Float
+    }
+
+
+defaultArc : Arc
 defaultArc =
     { innerRadius = 0
     , outerRadius = 100
@@ -18,22 +29,22 @@ defaultArc =
     }
 
 
+withInner : Arc
 withInner =
     { defaultArc | innerRadius = 50 }
 
 
+infinity : Float
 infinity =
     1 / 0
 
 
+myRound : Float -> Float
 myRound n =
     toFloat (round (n * 1.0e6)) / 1.0e6
 
 
-
--- This will go away in 0.18
-
-
+tupleMap : (c -> d) -> ( c, c ) -> ( d, d )
 tupleMap f ( a, b ) =
     ( f a, f b )
 

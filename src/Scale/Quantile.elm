@@ -27,6 +27,7 @@ scale ( r, range ) domain =
     }
 
 
+convert : a -> Array comparable -> c -> Array a -> comparable -> a
 convert default thresholds domain range x =
     Array.get (bisectRight x thresholds Nothing) range |> Maybe.withDefault default
 

@@ -184,6 +184,7 @@ view model =
         ]
 
 
+main : Svg msg
 main =
     init |> view
 

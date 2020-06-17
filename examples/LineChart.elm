@@ -97,6 +97,7 @@ view model =
 -- a separate module.
 
 
+main : Svg msg
 main =
     view timeSeries
 

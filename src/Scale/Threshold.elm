@@ -5,6 +5,7 @@ import Histogram.Array exposing (bisectRight)
 import Statistics
 
 
+deinterleave : List ( a, b ) -> List a -> List b -> ( Array a, Array b )
 deinterleave domrange domain range =
     case domrange of
         ( d, r ) :: xs ->
@@ -25,5 +26,6 @@ scale ( r0, domrange ) =
     }
 
 
+convert : a -> Array comparable -> Array a -> comparable -> a
 convert default thresholds range x =
     Array.get (bisectRight x thresholds Nothing) range |> Maybe.withDefault default

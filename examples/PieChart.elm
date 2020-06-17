@@ -83,5 +83,6 @@ data =
     ]
 
 
+main : Svg msg
 main =
     view data

@@ -2,11 +2,12 @@ module Shape.Pie exposing (arc, centroid, pie)
 
 import Array
 import Dict
-import LowLevel.Command exposing (..)
+import LowLevel.Command exposing (ArcFlag, Direction, arcTo, clockwise, counterClockwise, largestArc, moveTo, smallestArc)
 import Path exposing (Path)
 import SubPath exposing (SubPath)
 
 
+boolToDirection : Bool -> Direction
 boolToDirection b =
     if b then
         counterClockwise
@@ -15,6 +16,7 @@ boolToDirection b =
         clockwise
 
 
+boolToArc : Bool -> ArcFlag
 boolToArc b =
     if b then
         largestArc
@@ -37,6 +39,7 @@ makeArc x y radius a0 a1 ccw =
     SubPath.continue (arc_ x y radius a0 a1 ccw)
 
 
+arc_ : Float -> Float -> Float -> Float -> Float -> Bool -> SubPath
 arc_ x y radius a0 a1 ccw =
     let
         r =

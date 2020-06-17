@@ -1,11 +1,9 @@
 module Scale.DivergingTests exposing (diverging, divergingLog)
 
 import Expect exposing (FloatingPointTolerance(..))
-import Fuzz exposing (..)
-import Helper exposing (expectAll, isAbout, isBetween)
-import Interpolation
+import Fuzz exposing (float)
 import Scale
-import Test exposing (..)
+import Test exposing (Test, describe, fuzz, test)
 
 
 convert val scale =
@@ -70,6 +68,7 @@ diverging =
         ]
 
 
+divergingLog : Test
 divergingLog =
     describe "Scale.divergingLog"
         [ test "handles a descending domain" <|
