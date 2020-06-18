@@ -1,0 +1,173 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Population Minnesota Example - Elm-Visualization</title><meta content="width=device-width,initial-scale=1" name="viewport"><meta content="Population Minnesota. <p> Make negative numbers appear as positive in the ticks</p>
+" name="description"><style media="screen">@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic,700italic|Source+Code+Pro);*{box-sizing:border-box}body,head,html{margin:0;min-height:100%}body{font-family:'Source Sans Pro','Trebuchet MS','Lucida Grande','Bitstream Vera Sans','Helvetica Neue',sans-serif;color:#293c4b;display:flex;flex-direction:column;align-items:center;width:100%}.top{border-bottom:1px solid #60b5cc;display:flex;width:100%;flex-shrink:0;align-items:center;justify-content:center;margin-bottom:20px}header{display:flex;align-items:center;width:100%;max-width:1306px;font-size:24px}h1,h2,h3{font-weight:400}header h1{margin:0;line-height:0;font-size:24px}header h1 img{max-width:421px;width:100%}header h2{margin:0;margin-left:20px;font-size:24px;color:#000}a{color:#1184ce;text-decoration:none}a:hover{color:#ea157a;text-decoration:underline}.bottom{display:flex;flex-direction:row;width:100%;max-width:1290px}main{width:calc(100vw - 315px);max-width:1006px;padding-left:15px;flex-shrink:1;flex-grow:1}aside{width:300px;padding-left:15px;overflow:hidden;transition:height 1s;flex-shrink:0}aside ul{padding:0}aside li{list-style-type:none;margin-bottom:10px}aside li.active a{text-decoration:underline;font-weight:700}.resp-container{position:relative;overflow:hidden;padding-top:50.90909090909091%;max-width:1006px}iframe{border:1px solid #eee;overflow:hidden;position:absolute;top:0;left:0;width:100%;height:100%;border:0}hr:first-of-type{display:none}pre{font-size:14px;overflow:auto;word-wrap:normal}@media only screen and (max-width:900px){header .title,header h2,header span{display:none}main{width:100%}.bottom{flex-direction:column-reverse}.bottom>a{margin:15px}}.hljs{display:block;overflow-x:auto;padding:.5em;color:#383a42;background:#fafafa}.hljs-comment,.hljs-quote{color:#a0a1a7;font-style:italic}.hljs-doctag,.hljs-formula,.hljs-keyword{color:#a626a4}.hljs-deletion,.hljs-name,.hljs-section,.hljs-selector-tag,.hljs-subst{color:#e45649}.hljs-literal{color:#0184bb}.hljs-addition,.hljs-attribute,.hljs-meta-string,.hljs-regexp,.hljs-string{color:#50a14f}.hljs-built_in,.hljs-class .hljs-title{color:#c18401}.hljs-attr,.hljs-number,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-pseudo,.hljs-template-variable,.hljs-type,.hljs-variable{color:#986801}.hljs-bullet,.hljs-link,.hljs-meta,.hljs-selector-id,.hljs-symbol,.hljs-title{color:#4078f2}.hljs-emphasis{font-style:italic}.hljs-strong{font-weight:700}.hljs-link{text-decoration:underline}</style></head><body><div class="top"><header><h1><img alt="ELM-VISUALIZATION" src="../misc/logo-inline.png"></h1><h2><a href="../">examples</a></h2><span style="margin:0 10px">/</span><h1 class="title">Population Minnesota</h1></header></div><div class="bottom"><main><div class="resp-container"><iframe frameborder="1" scrolling="no" src="iframe.html" title="Population Minnesota example"></iframe></div><h2>PopulationMinnesota</h2><div class="description"><p>Make negative numbers appear as positive in the ticks</p></div><pre><code class="elm"><span class="hljs-keyword">module</span> PopulationMinnesota <span class="hljs-keyword">exposing</span> (main)
+
+<span class="hljs-keyword">import</span> Axis
+<span class="hljs-keyword">import</span> Color <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Color</span>)
+<span class="hljs-keyword">import</span> List.Extra <span class="hljs-keyword">as</span> List
+<span class="hljs-keyword">import</span> SampleData <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Gender(..)</span>)
+<span class="hljs-keyword">import</span> Scale <span class="hljs-keyword">exposing</span> (<span class="hljs-type">BandScale</span>, <span class="hljs-type">ContinuousScale</span>, <span class="hljs-type">OrdinalScale</span>, <span class="hljs-type">QuantizeScale</span>, <span class="hljs-type">Scale</span>, defaultBandConfig)
+<span class="hljs-keyword">import</span> Scale.Color
+<span class="hljs-keyword">import</span> Shape <span class="hljs-keyword">exposing</span> (<span class="hljs-type">StackConfig</span>, <span class="hljs-type">StackResult</span>)
+<span class="hljs-keyword">import</span> Statistics
+<span class="hljs-keyword">import</span> TypedSvg <span class="hljs-keyword">exposing</span> (g, rect, svg, text_)
+<span class="hljs-keyword">import</span> TypedSvg.Attributes <span class="hljs-keyword">exposing</span> (class, dy, fill, fontFamily, textAnchor, transform, viewBox)
+<span class="hljs-keyword">import</span> TypedSvg.Attributes.InPx <span class="hljs-keyword">exposing</span> (fontSize, height, width, x, y)
+<span class="hljs-keyword">import</span> TypedSvg.Core <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Svg</span>, text)
+<span class="hljs-keyword">import</span> TypedSvg.Types <span class="hljs-keyword">exposing</span> (<span class="hljs-type">AnchorAlignment(..)</span>, <span class="hljs-type">Fill(..)</span>, <span class="hljs-type">Transform(..)</span>, em)
+
+
+<span class="hljs-title">main</span> : <span class="hljs-type">Svg</span> msg
+<span class="hljs-title">main</span> =
+    view (<span class="hljs-type">Shape</span>.stack config)
+
+
+<span class="hljs-title">populationMinnesota1850</span> : { categories : <span class="hljs-type">List</span> <span class="hljs-type">Int</span>, data : <span class="hljs-type">List</span> ( <span class="hljs-type">Int</span>, <span class="hljs-type">List</span> <span class="hljs-type">Float</span> ), extent : ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> ) }
+<span class="hljs-title">populationMinnesota1850</span> =
+    <span class="hljs-keyword">let</span>
+        partitioned =
+            <span class="hljs-comment">-- assumes sorted by year, then age</span>
+            <span class="hljs-type">SampleData</span>.populationMinnesota1850
+                |&gt; <span class="hljs-type">List</span>.filter (\{ year } -&gt; year == <span class="hljs-number">1850</span>)
+                |&gt; <span class="hljs-type">List</span>.partition (\{ gender } -&gt; gender == <span class="hljs-type">M</span>)
+
+        categories =
+            partitioned
+                |&gt; <span class="hljs-type">Tuple</span>.first
+                |&gt; <span class="hljs-type">List</span>.map .age
+                |&gt; <span class="hljs-type">List</span>.reverse
+
+        ( m, f ) =
+            partitioned
+                |&gt; (\( a, b ) -&gt; <span class="hljs-type">List</span>.map2 <span class="hljs-type">Tuple</span>.pair a b)
+                |&gt; <span class="hljs-type">List</span>.sortBy (<span class="hljs-type">Tuple</span>.second &gt;&gt; .people)
+                |&gt; <span class="hljs-type">List</span>.unzip
+    <span class="hljs-keyword">in</span>
+    { categories = categories
+    , data = [ ( <span class="hljs-number">1850</span>, <span class="hljs-type">List</span>.map (.people &gt;&gt; toFloat) m ), ( <span class="hljs-number">1850</span>, <span class="hljs-type">List</span>.map (.people &gt;&gt; toFloat &gt;&gt; negate) f ) ]
+    , extent =
+        <span class="hljs-type">Statistics</span>.extent categories
+            |&gt; <span class="hljs-type">Maybe</span>.map (\( a, b ) -&gt; ( toFloat a, toFloat b ))
+            |&gt; <span class="hljs-type">Maybe</span>.withDefault ( <span class="hljs-number">0</span>, <span class="hljs-number">0</span> )
+    }
+
+
+<span class="hljs-title">w</span> : <span class="hljs-type">Float</span>
+<span class="hljs-title">w</span> =
+    <span class="hljs-number">990</span>
+
+
+<span class="hljs-title">h</span> : <span class="hljs-type">Float</span>
+<span class="hljs-title">h</span> =
+    <span class="hljs-number">504</span>
+
+
+<span class="hljs-title">padding</span> : number
+<span class="hljs-title">padding</span> =
+    <span class="hljs-number">60</span>
+
+
+<span class="hljs-title">config</span> : <span class="hljs-type">StackConfig</span> <span class="hljs-type">Int</span>
+<span class="hljs-title">config</span> =
+    { data = populationMinnesota1850.data
+    , offset = <span class="hljs-type">Shape</span>.stackOffsetDiverging
+    , order = identity
+    }
+
+
+<span class="hljs-title">colors</span> : <span class="hljs-type">List</span> <span class="hljs-type">Color</span>
+<span class="hljs-title">colors</span> =
+    [ <span class="hljs-type">Scale</span>.<span class="hljs-type">Color</span>.viridisInterpolator <span class="hljs-number">0.3</span>
+    , <span class="hljs-type">Scale</span>.<span class="hljs-type">Color</span>.viridisInterpolator <span class="hljs-number">0.7</span>
+    ]
+
+
+<span class="hljs-title">column</span> : <span class="hljs-type">BandScale</span> <span class="hljs-type">Int</span> -&gt; ( <span class="hljs-type">Int</span>, <span class="hljs-type">List</span> ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> ) ) -&gt; <span class="hljs-type">Svg</span> msg
+<span class="hljs-title">column</span> yScale ( year, values ) =
+    <span class="hljs-keyword">let</span>
+        bandwidth =
+            <span class="hljs-type">Scale</span>.bandwidth yScale
+
+        block color ( upperY, lowerY ) =
+            rect
+                [ y &lt;| <span class="hljs-type">Scale</span>.convert yScale year
+                , x lowerY
+                , height bandwidth
+                , width (abs &lt;| upperY - lowerY)
+                , fill (<span class="hljs-type">Fill</span> color)
+                ]
+                []
+    <span class="hljs-keyword">in</span>
+    values
+        |&gt; <span class="hljs-type">List</span>.map2 block colors
+        |&gt; g [ class [ <span class="hljs-string">"column"</span> ] ]
+
+
+<span class="hljs-title">view</span> : <span class="hljs-type">StackResult</span> <span class="hljs-type">Int</span> -&gt; <span class="hljs-type">Svg</span> msg
+<span class="hljs-title">view</span> { values, labels, extent } =
+    <span class="hljs-keyword">let</span>
+        scaledValues =
+            values
+                |&gt; <span class="hljs-type">List</span>.transpose
+                |&gt; <span class="hljs-type">List</span>.map (<span class="hljs-type">List</span>.map (\( y1, y2 ) -&gt; ( <span class="hljs-type">Scale</span>.convert xScale y1, <span class="hljs-type">Scale</span>.convert xScale y2 )))
+
+        xScale : <span class="hljs-type">ContinuousScale</span> <span class="hljs-type">Float</span>
+        xScale =
+            <span class="hljs-type">Scale</span>.linear ( w - padding, padding ) extent
+                |&gt; <span class="hljs-type">Scale</span>.nice <span class="hljs-number">4</span>
+
+        yScale : <span class="hljs-type">BandScale</span> <span class="hljs-type">Int</span>
+        yScale =
+            <span class="hljs-type">Scale</span>.band { defaultBandConfig | paddingInner = <span class="hljs-number">0.1</span>, paddingOuter = <span class="hljs-number">0.2</span> } ( padding, h - padding ) populationMinnesota1850.categories
+    <span class="hljs-keyword">in</span>
+    svg [ viewBox <span class="hljs-number">0</span> <span class="hljs-number">0</span> w h ]
+        [ g [ transform [ <span class="hljs-type">Translate</span> <span class="hljs-number">0</span> (h - padding) ] ]
+            [ <span class="hljs-type">Axis</span>.bottom [ <span class="hljs-type">Axis</span>.tickFormat (absoluteTickFormat xScale <span class="hljs-number">10</span>) ] xScale ]
+        , g [ class [ <span class="hljs-string">"series"</span> ] ] &lt;|
+            <span class="hljs-type">List</span>.map (column yScale) (<span class="hljs-type">List</span>.map2 (\a b -&gt; ( a, b )) populationMinnesota1850.categories scaledValues)
+        , g [ transform [ <span class="hljs-type">Translate</span> padding <span class="hljs-number">0</span> ] ]
+            [ <span class="hljs-type">Axis</span>.left [] (<span class="hljs-type">Scale</span>.toRenderable <span class="hljs-type">String</span>.fromInt yScale)
+            , text_ [ fontFamily [ <span class="hljs-string">"sans-serif"</span> ], fontSize <span class="hljs-number">14</span>, x <span class="hljs-number">5</span>, y <span class="hljs-number">65</span> ] [ text <span class="hljs-string">"Age"</span> ]
+            ]
+        , g [ transform [ <span class="hljs-type">Translate</span> (w - padding) (padding + <span class="hljs-number">20</span>) ] ]
+            [ text_ [ fontFamily [ <span class="hljs-string">"sans-serif"</span> ], fontSize <span class="hljs-number">20</span>, textAnchor <span class="hljs-type">AnchorEnd</span> ] [ text <span class="hljs-string">"1850"</span> ]
+            , text_ [ fontFamily [ <span class="hljs-string">"sans-serif"</span> ], fontSize <span class="hljs-number">10</span>, textAnchor <span class="hljs-type">AnchorEnd</span>, dy (em <span class="hljs-number">1</span>) ] [ text <span class="hljs-string">"population distribution in Minnesota"</span> ]
+            ]
+        , text_
+            [ transform [ <span class="hljs-type">Translate</span> (<span class="hljs-type">Scale</span>.convert xScale <span class="hljs-number">500000</span>) (<span class="hljs-number">2</span> * padding) ]
+            , fontFamily [ <span class="hljs-string">"sans-serif"</span> ]
+            , fontSize <span class="hljs-number">20</span>
+            , textAnchor <span class="hljs-type">AnchorMiddle</span>
+            ]
+            [ text <span class="hljs-string">"Men"</span> ]
+        , text_
+            [ transform [ <span class="hljs-type">Translate</span> (<span class="hljs-type">Scale</span>.convert xScale <span class="hljs-number">-500000</span>) (<span class="hljs-number">2</span> * padding) ]
+            , fontFamily [ <span class="hljs-string">"sans-serif"</span> ]
+            , fontSize <span class="hljs-number">20</span>
+            , textAnchor <span class="hljs-type">AnchorMiddle</span>
+            ]
+            [ text <span class="hljs-string">"Women"</span> ]
+        , text_
+            [ transform [ <span class="hljs-type">Translate</span> (<span class="hljs-type">Scale</span>.convert xScale <span class="hljs-number">0</span>) (h - padding / <span class="hljs-number">2</span>) ]
+            , fontFamily [ <span class="hljs-string">"sans-serif"</span> ]
+            , fontSize <span class="hljs-number">14</span>
+            , textAnchor <span class="hljs-type">AnchorMiddle</span>
+            , dy (em <span class="hljs-number">1</span>)
+            ]
+            [ text <span class="hljs-string">"People"</span> ]
+        ]
+
+
+
+<span class="hljs-title">absoluteTickFormat</span> :
+    <span class="hljs-type">Scale</span>
+        { a
+            | convert : domain -&gt; range -&gt; number -&gt; b
+            , domain : domain
+            , tickFormat : domain -&gt; <span class="hljs-type">Int</span> -&gt; number -&gt; <span class="hljs-type">String</span>
+        }
+    -&gt; <span class="hljs-type">Int</span>
+    -&gt; number
+    -&gt; <span class="hljs-type">String</span>
+<span class="hljs-title">absoluteTickFormat</span> scale tickCount value =
+    <span class="hljs-type">Scale</span>.tickFormat scale tickCount (abs value)
+</code></pre><h2></h2><div class="description"></div><pre><code class="elm"></code></pre></main><aside><ul><li><a href="https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/">Docs</a></li><li><a href="https://github.com/gampleman/elm-visualization">GitHub</a></li><li><a href="https://github.com/gampleman/elm-visualization/releases">Changelog</a></li><li>#visualization on <a href="https://elmlang.herokuapp.com/">Elm slack</a></li></ul><h2>Examples</h2><ul><li><a href="../Background/">Background</a></li><li><a href="../BarChart/">Bar Chart</a></li><li><a href="../Centroid/">Centroid</a></li><li><a href="../CornerRadius/">Corner Radius</a></li><li><a href="../CrimeViz/">Crime Viz</a></li><li><a href="../Curves/">Curves</a></li><li><a href="../CustomPieChart/">Custom Pie Chart</a></li><li><a href="../ForceDirectedGraph/">Force Directed Graph</a></li><li><a href="../HistogramChart/">Histogram Chart</a></li><li><a href="../LineChart/">Line Chart</a></li><li><a href="../NorwegianCarSales/">Norwegian Car Sales</a></li><li><a href="../PadAngle/">Pad Angle</a></li><li><a href="../Petals/">Petals</a></li><li><a href="../PieChart/">Pie Chart</a></li><li><a href="../PolarPlot/">Polar Plot</a></li><li class="active"><a href="../PopulationMinnesota/">Population Minnesota</a></li><li><a href="../StackedBarChart/">Stacked Bar Chart</a></li></ul></aside></div><script>if(window.matchMedia("(max-width: 900px)").matches){var sidebar=document.querySelector(".bottom aside");sidebar.style.height="0";var link=document.createElement("a");link.href="#",link.innerText="Menu",open=!1,link.addEventListener("click",function(){open=!open,sidebar.style.height=open?"auto":"0"}),document.querySelector(".bottom").appendChild(link)}("serviceWorker"in navigator&&"localhost"!==location.hostname||"127.0.0.1"!==location.hostname)&&navigator.serviceWorker.register("../service-worker.js")</script></body></html>

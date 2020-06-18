@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Histogram Example</title>
+    <style media="screen">
+      body {
+        font-family: Helvetica, sans-serif;
+        display: flex;
+      }
+      main {
+        order: 1;
+      }
+      aside {
+        width: 300px;
+      }
+      aside ul {
+        padding: 0;
+      }
+      aside li {
+        list-style-type: none;
+        margin: 10px;
+      }
+      aside li.active a {
+        text-decoration: none;
+      }
+      iframe {
+        border: 1px solid black;
+      }
+      hr:first-of-type {
+        display: none;
+      }
+      /*
+
+Atom One Light by Daniel Gamage
+Original One Light Syntax theme from https://github.com/atom/one-light-syntax
+
+base:    #fafafa
+mono-1:  #383a42
+mono-2:  #686b77
+mono-3:  #a0a1a7
+hue-1:   #0184bb
+hue-2:   #4078f2
+hue-3:   #a626a4
+hue-4:   #50a14f
+hue-5:   #e45649
+hue-5-2: #c91243
+hue-6:   #986801
+hue-6-2: #c18401
+
+*/
+
+.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0.5em;
+  color: #383a42;
+  background: #fafafa;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #a0a1a7;
+  font-style: italic;
+}
+
+.hljs-doctag,
+.hljs-keyword,
+.hljs-formula {
+  color: #a626a4;
+}
+
+.hljs-section,
+.hljs-name,
+.hljs-selector-tag,
+.hljs-deletion,
+.hljs-subst {
+  color: #e45649;
+}
+
+.hljs-literal {
+  color: #0184bb;
+}
+
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-attribute,
+.hljs-meta-string {
+  color: #50a14f;
+}
+
+.hljs-built_in,
+.hljs-class .hljs-title {
+  color: #c18401;
+}
+
+.hljs-attr,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-type,
+.hljs-selector-class,
+.hljs-selector-attr,
+.hljs-selector-pseudo,
+.hljs-number {
+  color: #986801;
+}
+
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link,
+.hljs-meta,
+.hljs-selector-id,
+.hljs-title {
+  color: #4078f2;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
+
+.hljs-link {
+  text-decoration: underline;
+}
+
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Histogram</h1>
+
+      <iframe src="iframe.html" width="990" height="504" frameborder="1"></iframe>
+
+      
+        <hr />
+        <h3>Histogram</h3>
+        <div class="description"><p> Renders a histogram of a randomly generated data set</p>
+</div>
+        <pre><code class="elm"><span class="hljs-keyword">module</span> Histogram <span class="hljs-keyword">exposing</span> (main)
+
+
+<span class="hljs-keyword">import</span> Random.Pcg <span class="hljs-keyword">as</span> Random <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Generator</span>, <span class="hljs-type">Seed</span>)
+<span class="hljs-keyword">import</span> Visualization.Histogram <span class="hljs-keyword">as</span> Histogram <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Bin</span>, <span class="hljs-type">HistogramGenerator</span>)
+<span class="hljs-keyword">import</span> Svg <span class="hljs-keyword">exposing</span> (..)
+<span class="hljs-keyword">import</span> Svg.Attributes <span class="hljs-keyword">exposing</span> (..)
+<span class="hljs-keyword">import</span> Visualization.Axis <span class="hljs-keyword">as</span> Axis <span class="hljs-keyword">exposing</span> (defaultOptions)
+<span class="hljs-keyword">import</span> Visualization.Scale <span class="hljs-keyword">as</span> Scale <span class="hljs-keyword">exposing</span> (<span class="hljs-type">BandConfig</span>, <span class="hljs-type">BandScale</span>, <span class="hljs-type">ContinuousScale</span>, defaultBandConfig)
+
+
+<span class="hljs-comment">{-| We use addition here to approximate normal distribution.
+-}</span>
+<span class="hljs-title">generator</span> : <span class="hljs-type">Generator</span> (<span class="hljs-type">List</span> <span class="hljs-type">Float</span>)
+<span class="hljs-title">generator</span> =
+    <span class="hljs-type">Random</span>.list <span class="hljs-number">500</span> &lt;| <span class="hljs-type">Random</span>.map2 (+) (<span class="hljs-type">Random</span>.float <span class="hljs-number">0</span> <span class="hljs-number">10</span>) (<span class="hljs-type">Random</span>.float <span class="hljs-number">0</span> <span class="hljs-number">10</span>)
+
+
+<span class="hljs-title">seed</span> : <span class="hljs-type">Seed</span>
+<span class="hljs-title">seed</span> =
+    <span class="hljs-type">Random</span>.initialSeed <span class="hljs-number">227852860</span>
+
+
+<span class="hljs-title">model</span> : <span class="hljs-type">List</span> <span class="hljs-type">Float</span>
+<span class="hljs-title">model</span> =
+    <span class="hljs-type">Tuple</span>.first &lt;| <span class="hljs-type">Random</span>.step generator seed
+
+
+<span class="hljs-title">histogram</span> : <span class="hljs-type">List</span> <span class="hljs-type">Float</span> -&gt; <span class="hljs-type">List</span> (<span class="hljs-type">Bin</span> <span class="hljs-type">Float</span> <span class="hljs-type">Float</span>)
+<span class="hljs-title">histogram</span> model =
+    <span class="hljs-type">Histogram</span>.float
+        |&gt; <span class="hljs-type">Histogram</span>.withDomain ( <span class="hljs-number">0</span>, <span class="hljs-number">20</span> )
+        |&gt; <span class="hljs-type">Histogram</span>.compute model
+
+
+<span class="hljs-title">w</span> : <span class="hljs-type">Float</span>
+<span class="hljs-title">w</span> =
+    <span class="hljs-number">900</span>
+
+
+<span class="hljs-title">h</span> : <span class="hljs-type">Float</span>
+<span class="hljs-title">h</span> =
+    <span class="hljs-number">450</span>
+
+
+<span class="hljs-title">padding</span> : <span class="hljs-type">Float</span>
+<span class="hljs-title">padding</span> =
+    <span class="hljs-number">30</span>
+
+
+<span class="hljs-title">xScale</span> : <span class="hljs-type">ContinuousScale</span>
+<span class="hljs-title">xScale</span> =
+    <span class="hljs-type">Scale</span>.linear ( <span class="hljs-number">0</span>, <span class="hljs-number">20</span> ) ( <span class="hljs-number">0</span>, w - <span class="hljs-number">2</span> * padding )
+
+
+<span class="hljs-title">yScale</span> : <span class="hljs-type">List</span> (<span class="hljs-type">Bin</span> <span class="hljs-type">Float</span> <span class="hljs-type">Float</span>) -&gt; <span class="hljs-type">ContinuousScale</span>
+<span class="hljs-title">yScale</span> bins =
+    <span class="hljs-type">List</span>.map .length bins
+        |&gt; <span class="hljs-type">List</span>.maximum
+        |&gt; <span class="hljs-type">Maybe</span>.withDefault <span class="hljs-number">0</span>
+        |&gt; toFloat
+        |&gt; (,) <span class="hljs-number">0</span>
+        |&gt; flip <span class="hljs-type">Scale</span>.linear ( h - <span class="hljs-number">2</span> * padding, <span class="hljs-number">0</span> )
+
+
+<span class="hljs-title">xAxis</span> : <span class="hljs-type">List</span> <span class="hljs-type">Float</span> -&gt; <span class="hljs-type">Svg</span> msg
+<span class="hljs-title">xAxis</span> model =
+    <span class="hljs-type">Axis</span>.axis { defaultOptions | orientation = <span class="hljs-type">Axis</span>.<span class="hljs-type">Bottom</span> } xScale
+
+
+<span class="hljs-title">yAxis</span> : <span class="hljs-type">List</span> (<span class="hljs-type">Bin</span> <span class="hljs-type">Float</span> <span class="hljs-type">Float</span>) -&gt; <span class="hljs-type">Svg</span> msg
+<span class="hljs-title">yAxis</span> bins =
+    <span class="hljs-type">Axis</span>.axis { defaultOptions | orientation = <span class="hljs-type">Axis</span>.<span class="hljs-type">Left</span>, tickCount = <span class="hljs-number">5</span> } (yScale bins)
+
+
+<span class="hljs-title">column</span> : <span class="hljs-type">ContinuousScale</span> -&gt; <span class="hljs-type">ContinuousScale</span> -&gt; <span class="hljs-type">Bin</span> <span class="hljs-type">Float</span> <span class="hljs-type">Float</span> -&gt; <span class="hljs-type">Svg</span> msg
+<span class="hljs-title">column</span> xScale yScale { length, x0, x1 } =
+    rect
+        [ x &lt;| toString &lt;| <span class="hljs-type">Scale</span>.convert xScale x0
+        , y &lt;| toString &lt;| <span class="hljs-type">Scale</span>.convert yScale (toFloat length)
+        , width &lt;| toString &lt;| <span class="hljs-type">Scale</span>.convert xScale x1 - <span class="hljs-type">Scale</span>.convert xScale x0
+        , height &lt;| toString &lt;| h - <span class="hljs-type">Scale</span>.convert yScale (toFloat &lt;| <span class="hljs-type">Debug</span>.log <span class="hljs-string">"length"</span> length) - <span class="hljs-number">2</span> * padding
+        , stroke <span class="hljs-string">"none"</span>
+        , fill <span class="hljs-string">"rgb(46, 118, 149)"</span>
+        ]
+        []
+
+
+<span class="hljs-title">view</span> : <span class="hljs-type">List</span> <span class="hljs-type">Float</span> -&gt; <span class="hljs-type">Svg</span> msg
+<span class="hljs-title">view</span> model =
+    <span class="hljs-keyword">let</span>
+        bins =
+            <span class="hljs-type">Debug</span>.log <span class="hljs-string">"bins"</span> &lt;| histogram model
+    <span class="hljs-keyword">in</span>
+        svg [ width (toString w ++ <span class="hljs-string">"px"</span>), height (toString h ++ <span class="hljs-string">"px"</span>) ]
+            [ g [ transform (<span class="hljs-string">"translate("</span> ++ toString (padding - <span class="hljs-number">1</span>) ++ <span class="hljs-string">", "</span> ++ toString (h - padding) ++ <span class="hljs-string">")"</span>) ]
+                [ xAxis model ]
+            , g [ transform (<span class="hljs-string">"translate("</span> ++ toString (padding - <span class="hljs-number">1</span>) ++ <span class="hljs-string">", "</span> ++ toString padding ++ <span class="hljs-string">")"</span>) ]
+                [ yAxis bins ]
+            , g [ transform (<span class="hljs-string">"translate("</span> ++ toString padding ++ <span class="hljs-string">", "</span> ++ toString padding ++ <span class="hljs-string">")"</span>), class <span class="hljs-string">"series"</span> ] &lt;|
+                <span class="hljs-type">List</span>.map (column xScale (yScale bins)) bins
+            ]
+
+
+<span class="hljs-title">main</span> =
+    view model
+</code></pre>
+      
+    </main>
+    <aside>
+      <h2>Examples</h2>
+      <ul>
+        
+          <li >
+            <a href="../Background">Background</a>
+          </li>
+        
+          <li >
+            <a href="../BarChart">BarChart</a>
+          </li>
+        
+          <li >
+            <a href="../Centroid">Centroid</a>
+          </li>
+        
+          <li >
+            <a href="../CornerRadius">CornerRadius</a>
+          </li>
+        
+          <li >
+            <a href="../CrimeViz">CrimeViz</a>
+          </li>
+        
+          <li >
+            <a href="../Cross">Cross</a>
+          </li>
+        
+          <li >
+            <a href="../Curves">Curves</a>
+          </li>
+        
+          <li >
+            <a href="../CustomPieChart">CustomPieChart</a>
+          </li>
+        
+          <li >
+            <a href="../ForceDirectedGraph">ForceDirectedGraph</a>
+          </li>
+        
+          <li class="active">
+            <a href="../Histogram">Histogram</a>
+          </li>
+        
+          <li >
+            <a href="../LineChart">LineChart</a>
+          </li>
+        
+          <li >
+            <a href="../NorwegianCarSales">NorwegianCarSales</a>
+          </li>
+        
+          <li >
+            <a href="../PadAngle">PadAngle</a>
+          </li>
+        
+          <li >
+            <a href="../Petals">Petals</a>
+          </li>
+        
+          <li >
+            <a href="../PieChart">PieChart</a>
+          </li>
+        
+          <li >
+            <a href="../PolarPlot">PolarPlot</a>
+          </li>
+        
+          <li >
+            <a href="../PopulationMinnesota">PopulationMinnesota</a>
+          </li>
+        
+          <li >
+            <a href="../StackedBarChart">StackedBarChart</a>
+          </li>
+        
+      </ul>
+    </aside>
+  </body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Norwegian Car Sales Example - Elm-Visualization</title><meta content="width=device-width,initial-scale=1" name="viewport"><meta content="Norwegian Car Sales. <p> This example demonstates using different kinds of layouts for stacked graphs.</p>
+" name="description"><style media="screen">@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic,700italic|Source+Code+Pro);*{box-sizing:border-box}body,head,html{margin:0;min-height:100%}body{font-family:'Source Sans Pro','Trebuchet MS','Lucida Grande','Bitstream Vera Sans','Helvetica Neue',sans-serif;color:#293c4b;display:flex;flex-direction:column;align-items:center;width:100%}.top{border-bottom:1px solid #60b5cc;display:flex;width:100%;flex-shrink:0;align-items:center;justify-content:center;margin-bottom:20px}header{display:flex;align-items:center;width:100%;max-width:1306px;font-size:24px}h1,h2,h3{font-weight:400}header h1{margin:0;line-height:0;font-size:24px}header h1 img{max-width:421px;width:100%}header h2{margin:0;margin-left:20px;font-size:24px;color:#000}a{color:#1184ce;text-decoration:none}a:hover{color:#ea157a;text-decoration:underline}.bottom{display:flex;flex-direction:row;width:100%;max-width:1290px}main{width:calc(100vw - 315px);max-width:1006px;padding-left:15px;flex-shrink:1;flex-grow:1}aside{width:300px;padding-left:15px;overflow:hidden;transition:height 1s;flex-shrink:0}aside ul{padding:0}aside li{list-style-type:none;margin-bottom:10px}aside li.active a{text-decoration:underline;font-weight:700}.resp-container{position:relative;overflow:hidden;padding-top:50.90909090909091%;max-width:1006px}iframe{border:1px solid #eee;overflow:hidden;position:absolute;top:0;left:0;width:100%;height:100%;border:0}hr:first-of-type{display:none}pre{font-size:14px;overflow:auto;word-wrap:normal}@media only screen and (max-width:900px){header .title,header h2,header span{display:none}main{width:100%}.bottom{flex-direction:column-reverse}.bottom>a{margin:15px}}.hljs{display:block;overflow-x:auto;padding:.5em;color:#383a42;background:#fafafa}.hljs-comment,.hljs-quote{color:#a0a1a7;font-style:italic}.hljs-doctag,.hljs-formula,.hljs-keyword{color:#a626a4}.hljs-deletion,.hljs-name,.hljs-section,.hljs-selector-tag,.hljs-subst{color:#e45649}.hljs-literal{color:#0184bb}.hljs-addition,.hljs-attribute,.hljs-meta-string,.hljs-regexp,.hljs-string{color:#50a14f}.hljs-built_in,.hljs-class .hljs-title{color:#c18401}.hljs-attr,.hljs-number,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-pseudo,.hljs-template-variable,.hljs-type,.hljs-variable{color:#986801}.hljs-bullet,.hljs-link,.hljs-meta,.hljs-selector-id,.hljs-symbol,.hljs-title{color:#4078f2}.hljs-emphasis{font-style:italic}.hljs-strong{font-weight:700}.hljs-link{text-decoration:underline}</style></head><body><div class="top"><header><h1><img alt="ELM-VISUALIZATION" src="../misc/logo-inline.png"></h1><h2><a href="../">examples</a></h2><span style="margin:0 10px">/</span><h1 class="title">Norwegian Car Sales</h1></header></div><div class="bottom"><main><div class="resp-container"><iframe frameborder="1" scrolling="no" src="iframe.html" title="Norwegian Car Sales example"></iframe></div><h2>NorwegianCarSales</h2><div class="description"><p>This example demonstates using different kinds of layouts for stacked graphs.</p></div><pre><code class="elm"><span class="hljs-keyword">module</span> NorwegianCarSales <span class="hljs-keyword">exposing</span> (main)
+
+
+<span class="hljs-keyword">import</span> Axis
+<span class="hljs-keyword">import</span> Color <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Color</span>)
+<span class="hljs-keyword">import</span> Example
+<span class="hljs-keyword">import</span> Html <span class="hljs-keyword">exposing</span> (div, text)
+<span class="hljs-keyword">import</span> Html.Attributes
+<span class="hljs-keyword">import</span> List.Extra <span class="hljs-keyword">as</span> List
+<span class="hljs-keyword">import</span> Path <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Path</span>)
+<span class="hljs-keyword">import</span> SampleData
+<span class="hljs-keyword">import</span> Scale <span class="hljs-keyword">exposing</span> (<span class="hljs-type">ContinuousScale</span>, <span class="hljs-type">OrdinalScale</span>, <span class="hljs-type">Scale</span>)
+<span class="hljs-keyword">import</span> Scale.Color
+<span class="hljs-keyword">import</span> Shape <span class="hljs-keyword">exposing</span> (<span class="hljs-type">StackConfig</span>, <span class="hljs-type">StackResult</span>)
+<span class="hljs-keyword">import</span> Time <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Month(..)</span>)
+<span class="hljs-keyword">import</span> Time.Extra <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Parts</span>)
+<span class="hljs-keyword">import</span> TypedSvg <span class="hljs-keyword">exposing</span> (g, svg, text_)
+<span class="hljs-keyword">import</span> TypedSvg.Attributes <span class="hljs-keyword">exposing</span> (class, fill, fontFamily, transform, viewBox)
+<span class="hljs-keyword">import</span> TypedSvg.Attributes.InPx <span class="hljs-keyword">exposing</span> (fontSize)
+<span class="hljs-keyword">import</span> TypedSvg.Core <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Svg</span>)
+<span class="hljs-keyword">import</span> TypedSvg.Types <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Fill(..)</span>, <span class="hljs-type">Transform(..)</span>)
+
+
+<span class="hljs-title">exampleConfig</span> : <span class="hljs-type">List</span> ( <span class="hljs-type">String</span>, <span class="hljs-type">StackConfig</span> <span class="hljs-type">String</span> )
+<span class="hljs-title">exampleConfig</span> =
+    [ ( <span class="hljs-string">"Stream Graph"</span>
+      , { data = samples
+        , offset = <span class="hljs-type">Shape</span>.stackOffsetWiggle
+        , order = <span class="hljs-type">Shape</span>.sortByInsideOut (<span class="hljs-type">Tuple</span>.second &gt;&gt; <span class="hljs-type">List</span>.sum)
+        }
+      )
+    , ( <span class="hljs-string">"Silhouette"</span>
+      , { data = samples
+        , offset = <span class="hljs-type">Shape</span>.stackOffsetSilhouette
+        , order = <span class="hljs-type">Shape</span>.sortByInsideOut (<span class="hljs-type">Tuple</span>.second &gt;&gt; <span class="hljs-type">List</span>.sum)
+        }
+      )
+    , ( <span class="hljs-string">"Stacked Area"</span>
+      , { data = samples
+        , offset = <span class="hljs-type">Shape</span>.stackOffsetNone
+        , order = <span class="hljs-type">List</span>.sortBy (<span class="hljs-type">Tuple</span>.second &gt;&gt; <span class="hljs-type">List</span>.sum &gt;&gt; negate)
+        }
+      )
+    ]
+
+
+<span class="hljs-title">samples</span> : <span class="hljs-type">List</span> ( <span class="hljs-type">String</span>, <span class="hljs-type">List</span> <span class="hljs-type">Float</span> )
+<span class="hljs-title">samples</span> =
+    <span class="hljs-type">SampleData</span>.norwegianCarSalesMiddlePlayers
+
+
+<span class="hljs-title">colorScale</span> : <span class="hljs-type">OrdinalScale</span> <span class="hljs-type">String</span> <span class="hljs-type">Color</span>
+<span class="hljs-title">colorScale</span> =
+    <span class="hljs-type">List</span>.map <span class="hljs-type">Tuple</span>.first samples
+        |&gt; <span class="hljs-type">List</span>.reverse
+        |&gt; <span class="hljs-type">Scale</span>.ordinal <span class="hljs-type">Scale</span>.<span class="hljs-type">Color</span>.category10
+
+
+<span class="hljs-title">sampleColor</span> : <span class="hljs-type">String</span> -&gt; <span class="hljs-type">Color</span>
+<span class="hljs-title">sampleColor</span> label =
+    <span class="hljs-type">Scale</span>.convert colorScale label |&gt; <span class="hljs-type">Maybe</span>.withDefault <span class="hljs-type">Color</span>.black
+
+
+<span class="hljs-title">colors</span> : <span class="hljs-type">List</span> <span class="hljs-type">String</span> -&gt; <span class="hljs-type">List</span> <span class="hljs-type">Color</span>
+<span class="hljs-title">colors</span> labels =
+    <span class="hljs-type">List</span>.map sampleColor labels
+
+
+<span class="hljs-title">w</span> : <span class="hljs-type">Float</span>
+<span class="hljs-title">w</span> =
+    <span class="hljs-number">990</span>
+
+
+<span class="hljs-title">h</span> : <span class="hljs-type">Float</span>
+<span class="hljs-title">h</span> =
+    <span class="hljs-number">504</span>
+
+
+<span class="hljs-title">padding</span> : <span class="hljs-type">Float</span>
+<span class="hljs-title">padding</span> =
+    <span class="hljs-number">40</span>
+
+
+<span class="hljs-title">fromCalendarDate</span> : <span class="hljs-type">Int</span> -&gt; <span class="hljs-type">Month</span> -&gt; <span class="hljs-type">Int</span> -&gt; <span class="hljs-type">Time</span>.<span class="hljs-type">Posix</span>
+<span class="hljs-title">fromCalendarDate</span> year month day =
+    <span class="hljs-type">Time</span>.<span class="hljs-type">Extra</span>.partsToPosix <span class="hljs-type">Time</span>.utc (<span class="hljs-type">Parts</span> year month day <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span>)
+
+
+<span class="hljs-title">view</span> : <span class="hljs-type">StackResult</span> <span class="hljs-type">String</span> -&gt; <span class="hljs-type">Svg</span> <span class="hljs-type">String</span>
+<span class="hljs-title">view</span> { values, labels, extent } =
+    <span class="hljs-keyword">let</span>
+        labelsWidth =
+            <span class="hljs-number">50</span>
+
+        size : <span class="hljs-type">Int</span>
+        size =
+            <span class="hljs-type">List</span>.head values
+                |&gt; <span class="hljs-type">Maybe</span>.map <span class="hljs-type">List</span>.length
+                |&gt; <span class="hljs-type">Maybe</span>.withDefault <span class="hljs-number">0</span>
+
+        xScale : <span class="hljs-type">ContinuousScale</span> <span class="hljs-type">Float</span>
+        xScale =
+            <span class="hljs-comment">-- map an index to screen space</span>
+            <span class="hljs-type">Scale</span>.linear ( padding, w - padding - labelsWidth ) ( <span class="hljs-number">0</span>, toFloat size - <span class="hljs-number">1</span> )
+
+        yScale : <span class="hljs-type">ContinuousScale</span> <span class="hljs-type">Float</span>
+        yScale =
+            <span class="hljs-type">Scale</span>.linear ( h - padding, padding ) extent
+                |&gt; <span class="hljs-type">Scale</span>.nice <span class="hljs-number">4</span>
+
+        xAxis : <span class="hljs-type">Svg</span> msg
+        xAxis =
+            <span class="hljs-comment">-- construct the time domain for display</span>
+            <span class="hljs-comment">-- the data is per-month, so we have to pick a day</span>
+            <span class="hljs-comment">-- to get the ticks to show up correctly, the upper bound needs to be Jan 2 (Jan 1 does not work).</span>
+            <span class="hljs-type">Scale</span>.time <span class="hljs-type">Time</span>.utc ( <span class="hljs-number">0</span>, w - padding * <span class="hljs-number">2</span> - labelsWidth ) ( fromCalendarDate <span class="hljs-number">2007</span> <span class="hljs-type">Jan</span> <span class="hljs-number">1</span>, fromCalendarDate <span class="hljs-number">2017</span> <span class="hljs-type">Jan</span> <span class="hljs-number">2</span> )
+                |&gt; <span class="hljs-type">Axis</span>.bottom [ <span class="hljs-type">Axis</span>.tickCount <span class="hljs-number">1</span> ]
+
+        yAxis : <span class="hljs-type">Svg</span> msg
+        yAxis =
+            <span class="hljs-type">Axis</span>.left [] yScale
+
+        paths =
+            <span class="hljs-type">List</span>.map2 (renderStream ( xScale, yScale )) (colors labels) values
+
+        labelPositions =
+            <span class="hljs-keyword">let</span>
+                position ys =
+                    ys
+                        |&gt; <span class="hljs-type">List</span>.last
+                        |&gt; <span class="hljs-type">Maybe</span>.withDefault ( <span class="hljs-number">0</span>, <span class="hljs-number">0</span> )
+                        |&gt; (\( y1, y2 ) -&gt; (y2 + y1) / <span class="hljs-number">2</span>)
+                        |&gt; <span class="hljs-type">Scale</span>.convert yScale
+            <span class="hljs-keyword">in</span>
+            <span class="hljs-type">List</span>.map position values
+
+        labelElement : <span class="hljs-type">String</span> -&gt; <span class="hljs-type">Float</span> -&gt; <span class="hljs-type">Svg</span> msg
+        labelElement label yPosition =
+            g [ transform [ <span class="hljs-type">Translate</span> (w - padding - labelsWidth + <span class="hljs-number">10</span>) yPosition ] ]
+                [ text_ [ fill (sampleColor label |&gt; <span class="hljs-type">Fill</span>) ] [ text label ] ]
+    <span class="hljs-keyword">in</span>
+    div []
+        [ titleNavigation
+        , svg [ viewBox <span class="hljs-number">0</span> <span class="hljs-number">0</span> w h ]
+            [ g [ transform [ <span class="hljs-type">Translate</span> (padding - <span class="hljs-number">1</span>) (h - padding) ] ]
+                [ xAxis ]
+            , g [ class [ <span class="hljs-string">"series"</span> ] ] paths
+            , g [ fontFamily [ <span class="hljs-string">"sans-serif"</span> ], fontSize <span class="hljs-number">10</span> ]
+                (<span class="hljs-type">List</span>.map2 labelElement labels labelPositions)
+            ]
+        ]
+
+
+<span class="hljs-title">titleNavigation</span> : <span class="hljs-type">Html</span>.<span class="hljs-type">Html</span> <span class="hljs-type">String</span>
+<span class="hljs-title">titleNavigation</span> =
+    div [ <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.style <span class="hljs-string">"padding"</span> (<span class="hljs-type">String</span>.fromFloat padding ++ <span class="hljs-string">"px"</span>), <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.style <span class="hljs-string">"font-family"</span> <span class="hljs-string">"sans-serif"</span>, <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.style <span class="hljs-string">"position"</span> <span class="hljs-string">"absolute"</span> ]
+        [ <span class="hljs-type">Html</span>.h1 [ <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.style <span class="hljs-string">"margin-top"</span> <span class="hljs-string">"0px"</span>, <span class="hljs-type">Html</span>.<span class="hljs-type">Attributes</span>.style <span class="hljs-string">"font-size"</span> <span class="hljs-string">"20px"</span> ] [ text <span class="hljs-string">"Car Sales in Norway"</span> ]
+        , <span class="hljs-type">Example</span>.navigation <span class="hljs-string">"Layout"</span> exampleConfig
+        ]
+
+
+<span class="hljs-comment">{-| Renders one colored stream with given scaling
+-}</span>
+<span class="hljs-title">renderStream</span> : ( <span class="hljs-type">ContinuousScale</span> <span class="hljs-type">Float</span>, <span class="hljs-type">ContinuousScale</span> <span class="hljs-type">Float</span> ) -&gt; <span class="hljs-type">Color</span> -&gt; <span class="hljs-type">List</span> ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> ) -&gt; <span class="hljs-type">Svg</span> msg
+<span class="hljs-title">renderStream</span> scales color coords =
+    <span class="hljs-type">Path</span>.element (toArea scales coords) [ fill (<span class="hljs-type">Fill</span> color) ]
+
+
+<span class="hljs-comment">{-| Create a svg path string that draws the area between two lines
+-}</span>
+<span class="hljs-title">toArea</span> : ( <span class="hljs-type">ContinuousScale</span> <span class="hljs-type">Float</span>, <span class="hljs-type">ContinuousScale</span> <span class="hljs-type">Float</span> ) -&gt; <span class="hljs-type">List</span> ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> ) -&gt; <span class="hljs-type">Path</span>
+<span class="hljs-title">toArea</span> ( scaleX, scaleY ) ys =
+    <span class="hljs-keyword">let</span>
+        mapper : <span class="hljs-type">Int</span> -&gt; ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> ) -&gt; <span class="hljs-type">Maybe</span> ( ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> ), ( <span class="hljs-type">Float</span>, <span class="hljs-type">Float</span> ) )
+        mapper index ( y1, y2 ) =
+            <span class="hljs-keyword">let</span>
+                xCoord =
+                    index
+                        |&gt; toFloat
+                        |&gt; <span class="hljs-type">Scale</span>.convert scaleX
+
+                ( low, high ) =
+                    <span class="hljs-keyword">if</span> y1 &lt; y2 <span class="hljs-keyword">then</span>
+                        ( y1, y2 )
+
+                    <span class="hljs-keyword">else</span>
+                        ( y2, y1 )
+            <span class="hljs-keyword">in</span>
+            <span class="hljs-type">Just</span>
+                ( ( xCoord, <span class="hljs-type">Scale</span>.convert scaleY low )
+                , ( xCoord, <span class="hljs-type">Scale</span>.convert scaleY high )
+                )
+    <span class="hljs-keyword">in</span>
+    <span class="hljs-type">List</span>.indexedMap mapper ys
+        |&gt; <span class="hljs-type">Shape</span>.area <span class="hljs-type">Shape</span>.monotoneInXCurve
+
+
+<span class="hljs-title">main</span> =
+    <span class="hljs-type">Example</span>.switchableViews exampleConfig (<span class="hljs-type">Shape</span>.stack &gt;&gt; view)
+
+
+
+
+</code></pre><h2></h2><div class="description"></div><pre><code class="elm"></code></pre><h2></h2><div class="description"></div><pre><code class="elm"></code></pre></main><aside><ul><li><a href="https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/">Docs</a></li><li><a href="https://github.com/gampleman/elm-visualization">GitHub</a></li><li><a href="https://github.com/gampleman/elm-visualization/releases">Changelog</a></li><li>#visualization on <a href="https://elmlang.herokuapp.com/">Elm slack</a></li></ul><h2>Examples</h2><ul><li><a href="../Background/">Background</a></li><li><a href="../BarChart/">Bar Chart</a></li><li><a href="../Centroid/">Centroid</a></li><li><a href="../CornerRadius/">Corner Radius</a></li><li><a href="../CrimeViz/">Crime Viz</a></li><li><a href="../Curves/">Curves</a></li><li><a href="../CustomPieChart/">Custom Pie Chart</a></li><li><a href="../ForceDirectedGraph/">Force Directed Graph</a></li><li><a href="../HistogramChart/">Histogram Chart</a></li><li><a href="../LineChart/">Line Chart</a></li><li class="active"><a href="../NorwegianCarSales/">Norwegian Car Sales</a></li><li><a href="../PadAngle/">Pad Angle</a></li><li><a href="../Petals/">Petals</a></li><li><a href="../PieChart/">Pie Chart</a></li><li><a href="../PolarPlot/">Polar Plot</a></li><li><a href="../PopulationMinnesota/">Population Minnesota</a></li><li><a href="../StackedBarChart/">Stacked Bar Chart</a></li></ul></aside></div><script>if(window.matchMedia("(max-width: 900px)").matches){var sidebar=document.querySelector(".bottom aside");sidebar.style.height="0";var link=document.createElement("a");link.href="#",link.innerText="Menu",open=!1,link.addEventListener("click",function(){open=!open,sidebar.style.height=open?"auto":"0"}),document.querySelector(".bottom").appendChild(link)}("serviceWorker"in navigator&&"localhost"!==location.hostname||"127.0.0.1"!==location.hostname)&&navigator.serviceWorker.register("../service-worker.js")</script></body></html>

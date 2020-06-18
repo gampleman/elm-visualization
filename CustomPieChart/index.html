@@ -1,0 +1,232 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Custom Pie Chart Example - Elm-Visualization</title><meta content="width=device-width,initial-scale=1" name="viewport"><meta content="Custom Pie Chart. <p> An interactive example showing the effect of various options on pie generators.</p>
+" name="description"><style media="screen">@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic,700italic|Source+Code+Pro);*{box-sizing:border-box}body,head,html{margin:0;min-height:100%}body{font-family:'Source Sans Pro','Trebuchet MS','Lucida Grande','Bitstream Vera Sans','Helvetica Neue',sans-serif;color:#293c4b;display:flex;flex-direction:column;align-items:center;width:100%}.top{border-bottom:1px solid #60b5cc;display:flex;width:100%;flex-shrink:0;align-items:center;justify-content:center;margin-bottom:20px}header{display:flex;align-items:center;width:100%;max-width:1306px;font-size:24px}h1,h2,h3{font-weight:400}header h1{margin:0;line-height:0;font-size:24px}header h1 img{max-width:421px;width:100%}header h2{margin:0;margin-left:20px;font-size:24px;color:#000}a{color:#1184ce;text-decoration:none}a:hover{color:#ea157a;text-decoration:underline}.bottom{display:flex;flex-direction:row;width:100%;max-width:1290px}main{width:calc(100vw - 315px);max-width:1006px;padding-left:15px;flex-shrink:1;flex-grow:1}aside{width:300px;padding-left:15px;overflow:hidden;transition:height 1s;flex-shrink:0}aside ul{padding:0}aside li{list-style-type:none;margin-bottom:10px}aside li.active a{text-decoration:underline;font-weight:700}.resp-container{position:relative;overflow:hidden;padding-top:50.90909090909091%;max-width:1006px}iframe{border:1px solid #eee;overflow:hidden;position:absolute;top:0;left:0;width:100%;height:100%;border:0}hr:first-of-type{display:none}pre{font-size:14px;overflow:auto;word-wrap:normal}@media only screen and (max-width:900px){header .title,header h2,header span{display:none}main{width:100%}.bottom{flex-direction:column-reverse}.bottom>a{margin:15px}}.hljs{display:block;overflow-x:auto;padding:.5em;color:#383a42;background:#fafafa}.hljs-comment,.hljs-quote{color:#a0a1a7;font-style:italic}.hljs-doctag,.hljs-formula,.hljs-keyword{color:#a626a4}.hljs-deletion,.hljs-name,.hljs-section,.hljs-selector-tag,.hljs-subst{color:#e45649}.hljs-literal{color:#0184bb}.hljs-addition,.hljs-attribute,.hljs-meta-string,.hljs-regexp,.hljs-string{color:#50a14f}.hljs-built_in,.hljs-class .hljs-title{color:#c18401}.hljs-attr,.hljs-number,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-pseudo,.hljs-template-variable,.hljs-type,.hljs-variable{color:#986801}.hljs-bullet,.hljs-link,.hljs-meta,.hljs-selector-id,.hljs-symbol,.hljs-title{color:#4078f2}.hljs-emphasis{font-style:italic}.hljs-strong{font-weight:700}.hljs-link{text-decoration:underline}</style></head><body><div class="top"><header><h1><img alt="ELM-VISUALIZATION" src="../misc/logo-inline.png"></h1><h2><a href="../">examples</a></h2><span style="margin:0 10px">/</span><h1 class="title">Custom Pie Chart</h1></header></div><div class="bottom"><main><div class="resp-container"><iframe frameborder="1" scrolling="no" src="iframe.html" title="Custom Pie Chart example"></iframe></div><h2>CustomPieChart</h2><div class="description"><p>An interactive example showing the effect of various options on pie generators.</p></div><pre><code class="elm"><span class="hljs-keyword">module</span> CustomPieChart <span class="hljs-keyword">exposing</span> (main)
+
+
+<span class="hljs-keyword">import</span> Array <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Array</span>)
+<span class="hljs-keyword">import</span> Browser
+<span class="hljs-keyword">import</span> Color <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Color</span>)
+<span class="hljs-keyword">import</span> Html <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Html</span>, br, div, h2, input, label)
+<span class="hljs-keyword">import</span> Html.Attributes <span class="hljs-keyword">as</span> Attr <span class="hljs-keyword">exposing</span> (step, style, type_, value)
+<span class="hljs-keyword">import</span> Html.Events <span class="hljs-keyword">exposing</span> (onInput)
+<span class="hljs-keyword">import</span> Path
+<span class="hljs-keyword">import</span> Shape <span class="hljs-keyword">exposing</span> (defaultPieConfig)
+<span class="hljs-keyword">import</span> TypedSvg <span class="hljs-keyword">exposing</span> (g, svg, text_)
+<span class="hljs-keyword">import</span> TypedSvg.Attributes <span class="hljs-keyword">exposing</span> (dy, fill, stroke, textAnchor, transform, viewBox)
+<span class="hljs-keyword">import</span> TypedSvg.Attributes.InPx <span class="hljs-keyword">exposing</span> (width, height)
+<span class="hljs-keyword">import</span> TypedSvg.Core <span class="hljs-keyword">exposing</span> (<span class="hljs-type">Svg</span>, text)
+<span class="hljs-keyword">import</span> TypedSvg.Types <span class="hljs-keyword">exposing</span> (<span class="hljs-type">AnchorAlignment(..)</span>, <span class="hljs-type">Fill(..)</span>, <span class="hljs-type">Transform(..)</span>, em)
+
+
+<span class="hljs-title">w</span> : <span class="hljs-type">Float</span>
+<span class="hljs-title">w</span> =
+    <span class="hljs-number">990</span>
+
+
+<span class="hljs-title">h</span> : <span class="hljs-type">Float</span>
+<span class="hljs-title">h</span> =
+    <span class="hljs-number">504</span>
+
+
+<span class="hljs-title">colors</span> : <span class="hljs-type">Array</span> <span class="hljs-type">Color</span>
+<span class="hljs-title">colors</span> =
+    <span class="hljs-type">Array</span>.fromList
+        [ <span class="hljs-type">Color</span>.rgb255 <span class="hljs-number">152</span> <span class="hljs-number">171</span> <span class="hljs-number">198</span>
+        , <span class="hljs-type">Color</span>.rgb255 <span class="hljs-number">138</span> <span class="hljs-number">137</span> <span class="hljs-number">166</span>
+        , <span class="hljs-type">Color</span>.rgb255 <span class="hljs-number">123</span> <span class="hljs-number">104</span> <span class="hljs-number">136</span>
+        , <span class="hljs-type">Color</span>.rgb255 <span class="hljs-number">107</span> <span class="hljs-number">72</span> <span class="hljs-number">107</span>
+        , <span class="hljs-type">Color</span>.rgb255 <span class="hljs-number">159</span> <span class="hljs-number">92</span> <span class="hljs-number">85</span>
+        , <span class="hljs-type">Color</span>.rgb255 <span class="hljs-number">208</span> <span class="hljs-number">116</span> <span class="hljs-number">60</span>
+        , <span class="hljs-type">Color</span>.rgb255 <span class="hljs-number">255</span> <span class="hljs-number">96</span> <span class="hljs-number">0</span>
+        ]
+
+
+<span class="hljs-title">radius</span> : <span class="hljs-type">Float</span>
+<span class="hljs-title">radius</span> =
+    min w h / <span class="hljs-number">2</span>
+
+
+<span class="hljs-keyword">type</span> <span class="hljs-keyword">alias</span> <span class="hljs-type">ChartConfig</span> =
+    { outerRadius : <span class="hljs-type">Float</span>
+    , innerRadius : <span class="hljs-type">Float</span>
+    , padAngle : <span class="hljs-type">Float</span>
+    , cornerRadius : <span class="hljs-type">Float</span>
+    , labelPosition : <span class="hljs-type">Float</span>
+    }
+
+
+<span class="hljs-keyword">type</span> <span class="hljs-type">Msg</span>
+    = <span class="hljs-type">UpdateOuterRadius</span> <span class="hljs-type">String</span>
+    | <span class="hljs-type">UpdateInnerRadius</span> <span class="hljs-type">String</span>
+    | <span class="hljs-type">UpdatePadAngle</span> <span class="hljs-type">String</span>
+    | <span class="hljs-type">UpdateCornerRadius</span> <span class="hljs-type">String</span>
+    | <span class="hljs-type">UpdateLabelPosition</span> <span class="hljs-type">String</span>
+
+
+<span class="hljs-keyword">type</span> <span class="hljs-keyword">alias</span> <span class="hljs-type">Model</span> =
+    { config : <span class="hljs-type">ChartConfig</span>
+    , data : <span class="hljs-type">List</span> ( <span class="hljs-type">String</span>, <span class="hljs-type">Float</span> )
+    }
+
+
+<span class="hljs-title">drawChart</span> : <span class="hljs-type">ChartConfig</span> -&gt; <span class="hljs-type">List</span> ( <span class="hljs-type">String</span>, <span class="hljs-type">Float</span> ) -&gt; <span class="hljs-type">Svg</span> msg
+<span class="hljs-title">drawChart</span> config model =
+    <span class="hljs-keyword">let</span>
+        pieData =
+            model
+                |&gt; <span class="hljs-type">List</span>.map <span class="hljs-type">Tuple</span>.second
+                |&gt; <span class="hljs-type">Shape</span>.pie
+                    { defaultPieConfig
+                        | innerRadius = config.innerRadius
+                        , outerRadius = config.outerRadius
+                        , padAngle = config.padAngle
+                        , cornerRadius = config.cornerRadius
+                        , sortingFn = \_ _ -&gt; <span class="hljs-type">EQ</span>
+                    }
+
+        makeSlice index datum =
+            <span class="hljs-type">Path</span>.element (<span class="hljs-type">Shape</span>.arc datum) [ fill &lt;| <span class="hljs-type">Fill</span> &lt;| <span class="hljs-type">Maybe</span>.withDefault <span class="hljs-type">Color</span>.black &lt;| <span class="hljs-type">Array</span>.get index colors, stroke <span class="hljs-type">Color</span>.white ]
+
+        makeLabel slice ( label, value ) =
+            <span class="hljs-keyword">let</span>
+                ( x, y ) =
+                    <span class="hljs-type">Shape</span>.centroid { slice | innerRadius = config.labelPosition, outerRadius = config.labelPosition }
+            <span class="hljs-keyword">in</span>
+            text_
+                [ transform [ <span class="hljs-type">Translate</span> x y ]
+                , dy (em <span class="hljs-number">0.35</span>)
+                , textAnchor <span class="hljs-type">AnchorMiddle</span>
+                ]
+                [ text label ]
+    <span class="hljs-keyword">in</span>
+    svg [width
+     (radius * <span class="hljs-number">2</span>), height (radius * <span class="hljs-number">2</span>) ]
+        [ g [ transform [ <span class="hljs-type">Translate</span> radius radius ] ]
+            [ g [] &lt;| <span class="hljs-type">List</span>.indexedMap makeSlice pieData
+            , g [] &lt;| <span class="hljs-type">List</span>.map2 makeLabel pieData model
+            ]
+        ]
+
+
+<span class="hljs-title">update</span> : <span class="hljs-type">Msg</span> -&gt; <span class="hljs-type">Model</span> -&gt; <span class="hljs-type">Model</span>
+<span class="hljs-title">update</span> msg model =
+    <span class="hljs-keyword">let</span>
+        config =
+            model.config
+    <span class="hljs-keyword">in</span>
+    <span class="hljs-keyword">case</span> msg <span class="hljs-keyword">of</span>
+        <span class="hljs-type">UpdateOuterRadius</span> amount -&gt;
+            { model | config = { config | outerRadius = <span class="hljs-type">Maybe</span>.withDefault <span class="hljs-number">0</span> &lt;| <span class="hljs-type">String</span>.toFloat amount } }
+
+        <span class="hljs-type">UpdateInnerRadius</span> amount -&gt;
+            { model | config = { config | innerRadius = <span class="hljs-type">Maybe</span>.withDefault <span class="hljs-number">0</span> &lt;| <span class="hljs-type">String</span>.toFloat amount } }
+
+        <span class="hljs-type">UpdatePadAngle</span> amount -&gt;
+            { model | config = { config | padAngle = <span class="hljs-type">Maybe</span>.withDefault <span class="hljs-number">0</span> &lt;| <span class="hljs-type">String</span>.toFloat amount } }
+
+        <span class="hljs-type">UpdateCornerRadius</span> amount -&gt;
+            { model | config = { config | cornerRadius = <span class="hljs-type">Maybe</span>.withDefault <span class="hljs-number">0</span> &lt;| <span class="hljs-type">String</span>.toFloat amount } }
+
+        <span class="hljs-type">UpdateLabelPosition</span> amount -&gt;
+            { model | config = { config | labelPosition = <span class="hljs-type">Maybe</span>.withDefault <span class="hljs-number">0</span> &lt;| <span class="hljs-type">String</span>.toFloat amount } }
+
+
+<span class="hljs-title">view</span> : <span class="hljs-type">Model</span> -&gt; <span class="hljs-type">Html</span> <span class="hljs-type">Msg</span>
+<span class="hljs-title">view</span> model =
+    div [ style <span class="hljs-string">"display"</span> <span class="hljs-string">"flex"</span>, style <span class="hljs-string">"justify-content"</span> <span class="hljs-string">"space-around"</span> ]
+        [ drawChart model.config model.data
+        , div []
+            [ h2 [] [ text <span class="hljs-string">"Pie Configuration"</span> ]
+            , label [] [ text <span class="hljs-string">"Outer Radius"</span> ]
+            , input
+                [ type_ "range"
+                , onInput <span class="hljs-type">UpdateOuterRadius</span>
+                , value (<span class="hljs-type">String</span>.fromFloat model.config.outerRadius)
+                , <span class="hljs-type">Attr</span>.min <span class="hljs-string">"0"</span>
+                , <span class="hljs-type">Attr</span>.max (<span class="hljs-type">String</span>.fromFloat radius)
+                ]
+                []
+            , text (<span class="hljs-type">String</span>.fromFloat model.config.outerRadius)
+            , br [] []
+            , label [] [ text <span class="hljs-string">"Inner Radius"</span> ]
+            , input
+                [ type_ "range"
+                , onInput <span class="hljs-type">UpdateInnerRadius</span>
+                , value (<span class="hljs-type">String</span>.fromFloat model.config.innerRadius)
+                , <span class="hljs-type">Attr</span>.min <span class="hljs-string">"0"</span>
+                , <span class="hljs-type">Attr</span>.max (<span class="hljs-type">String</span>.fromFloat radius)
+                ]
+                []
+            , text (<span class="hljs-type">String</span>.fromFloat model.config.innerRadius)
+            , br [] []
+            , label [] [ text <span class="hljs-string">"Pad Angle"</span> ]
+            , input
+                [ type_ "range"
+                , onInput <span class="hljs-type">UpdatePadAngle</span>
+                , value (<span class="hljs-type">String</span>.fromFloat model.config.padAngle)
+                , <span class="hljs-type">Attr</span>.min <span class="hljs-string">"0"</span>
+                , <span class="hljs-type">Attr</span>.max <span class="hljs-string">"0.8"</span>
+                , step <span class="hljs-string">"0.01"</span>
+                ]
+                []
+            , text (<span class="hljs-type">String</span>.fromFloat model.config.padAngle)
+            , br [] []
+            , label [] [ text <span class="hljs-string">"Corner Radius"</span> ]
+            , input
+                [ type_ "range"
+                , onInput <span class="hljs-type">UpdateCornerRadius</span>
+                , value (<span class="hljs-type">String</span>.fromFloat model.config.cornerRadius)
+                , <span class="hljs-type">Attr</span>.min <span class="hljs-string">"0"</span>
+                , <span class="hljs-type">Attr</span>.max <span class="hljs-string">"20"</span>
+                , step <span class="hljs-string">"0.25"</span>
+                ]
+                []
+            , text (<span class="hljs-type">String</span>.fromFloat model.config.cornerRadius)
+            , br [] []
+            , label [] [ text <span class="hljs-string">"Label Position"</span> ]
+            , input
+                [ type_ "range"
+                , onInput <span class="hljs-type">UpdateLabelPosition</span>
+                , value (<span class="hljs-type">String</span>.fromFloat model.config.labelPosition)
+                , <span class="hljs-type">Attr</span>.min <span class="hljs-string">"0"</span>
+                , <span class="hljs-type">Attr</span>.max (<span class="hljs-type">String</span>.fromFloat radius)
+                ]
+                []
+            , text (<span class="hljs-type">String</span>.fromFloat model.config.labelPosition)
+            , br [] []
+            ]
+        ]
+
+
+<span class="hljs-title">data</span> : <span class="hljs-type">List</span> ( <span class="hljs-type">String</span>, <span class="hljs-type">Float</span> )
+<span class="hljs-title">data</span> =
+    [ ( <span class="hljs-string">"&lt;5"</span>, <span class="hljs-number">2704659</span> )
+    , ( <span class="hljs-string">"5-13"</span>, <span class="hljs-number">4499890</span> )
+    , ( <span class="hljs-string">"14-17"</span>, <span class="hljs-number">2159981</span> )
+    , ( <span class="hljs-string">"18-24"</span>, <span class="hljs-number">3853788</span> )
+    , ( <span class="hljs-string">"25-44"</span>, <span class="hljs-number">14106543</span> )
+    , ( <span class="hljs-string">"45-64"</span>, <span class="hljs-number">8819342</span> )
+    , ( <span class="hljs-string">"≥65"</span>, <span class="hljs-number">612463</span> )
+    ]
+
+
+<span class="hljs-title">init</span> : { config : <span class="hljs-type">ChartConfig</span>, data : <span class="hljs-type">List</span> ( <span class="hljs-type">String</span>, <span class="hljs-type">Float</span> ) }
+<span class="hljs-title">init</span> =
+    { config =
+        { outerRadius = <span class="hljs-number">210</span>
+        , innerRadius = <span class="hljs-number">200</span>
+        , padAngle = <span class="hljs-number">0.02</span>
+        , cornerRadius = <span class="hljs-number">20</span>
+        , labelPosition = <span class="hljs-number">230</span>
+        }
+    , data = data
+    }
+
+
+<span class="hljs-title">main</span> : <span class="hljs-type">Program</span> () { config : <span class="hljs-type">ChartConfig</span>, data : <span class="hljs-type">List</span> ( <span class="hljs-type">String</span>, <span class="hljs-type">Float</span> ) } <span class="hljs-type">Msg</span>
+<span class="hljs-title">main</span> =
+    <span class="hljs-type">Browser</span>.sandbox
+        { init = init
+        , update = update
+        , view = view
+        }
+</code></pre></main><aside><ul><li><a href="https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/">Docs</a></li><li><a href="https://github.com/gampleman/elm-visualization">GitHub</a></li><li><a href="https://github.com/gampleman/elm-visualization/releases">Changelog</a></li><li>#visualization on <a href="https://elmlang.herokuapp.com/">Elm slack</a></li></ul><h2>Examples</h2><ul><li><a href="../Background/">Background</a></li><li><a href="../BarChart/">Bar Chart</a></li><li><a href="../Centroid/">Centroid</a></li><li><a href="../CornerRadius/">Corner Radius</a></li><li><a href="../CrimeViz/">Crime Viz</a></li><li><a href="../Curves/">Curves</a></li><li class="active"><a href="../CustomPieChart/">Custom Pie Chart</a></li><li><a href="../ForceDirectedGraph/">Force Directed Graph</a></li><li><a href="../HistogramChart/">Histogram Chart</a></li><li><a href="../LineChart/">Line Chart</a></li><li><a href="../NorwegianCarSales/">Norwegian Car Sales</a></li><li><a href="../PadAngle/">Pad Angle</a></li><li><a href="../Petals/">Petals</a></li><li><a href="../PieChart/">Pie Chart</a></li><li><a href="../PolarPlot/">Polar Plot</a></li><li><a href="../PopulationMinnesota/">Population Minnesota</a></li><li><a href="../StackedBarChart/">Stacked Bar Chart</a></li></ul></aside></div><script>if(window.matchMedia("(max-width: 900px)").matches){var sidebar=document.querySelector(".bottom aside");sidebar.style.height="0";var link=document.createElement("a");link.href="#",link.innerText="Menu",open=!1,link.addEventListener("click",function(){open=!open,sidebar.style.height=open?"auto":"0"}),document.querySelector(".bottom").appendChild(link)}("serviceWorker"in navigator&&"localhost"!==location.hostname||"127.0.0.1"!==location.hostname)&&navigator.serviceWorker.register("../service-worker.js")</script></body></html>
