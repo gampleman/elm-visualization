@@ -6,18 +6,7 @@ import Shape exposing (defaultPieConfig)
 import Test exposing (Test, describe, test)
 
 
-type alias Arc =
-    { innerRadius : Float
-    , outerRadius : Float
-    , cornerRadius : Float
-    , startAngle : Float
-    , endAngle : Float
-    , padAngle : Float
-    , padRadius : Float
-    }
-
-
-defaultArc : Arc
+defaultArc : Shape.Arc
 defaultArc =
     { innerRadius = 0
     , outerRadius = 100

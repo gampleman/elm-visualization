@@ -19,7 +19,7 @@ normalizeConfig { paddingInner, paddingOuter, align } =
 bandwidth : Config -> List a -> ( Float, Float ) -> Float
 bandwidth cfg domain ( d0, d1 ) =
     let
-        normCfg =
+       { paddingInner, paddingOuter } =
             normalizeConfig cfg
 
         ( start, stop ) =

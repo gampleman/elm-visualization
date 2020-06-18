@@ -30,7 +30,7 @@ exp n =
     e ^ n
 
 
-reflect : (number -> number) -> number -> number
+reflect : (Float -> Float) -> Float -> Float
 reflect f =
     negate >> f >> negate
 
