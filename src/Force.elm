@@ -26,6 +26,7 @@ In the domain of information visualization, physical simulations are useful for 
 -}
 
 import Dict exposing (Dict)
+import Force.Collision as Collision
 import Force.ManyBody as ManyBody
 
 
@@ -84,7 +85,7 @@ entity : Int -> a -> Entity Int { value : a }
 entity index a =
     let
         radius =
-            sqrt (toFloat index) * initialRadius
+            sqrt (0.5 + toFloat index) * initialRadius
 
         angle =
             toFloat index * initialAngle
@@ -117,9 +118,9 @@ applyForce alpha force entities =
             in
             Dict.map (\_ ent -> { ent | x = ent.x - sx, y = ent.y - sy }) entities
 
-        Collision float collisionParamidDict ->
+        Collision iters collisionParams ->
             --Debug.crash "not implemented"
-            entities
+            Collision.wrapper alpha iters collisionParams entities
 
         Links iters lnks ->
             nTimes
@@ -157,13 +158,29 @@ applyForce alpha force entities =
         ManyBody theta entityStrengths ->
             ManyBody.wrapper alpha theta entityStrengths entities
 
-        X directionalParamidDict ->
-            --Debug.crash "not implemented"
-            entities
+        X entityConfigs ->
+            let
+                mapper id ent =
+                    case Dict.get id entityConfigs of
+                        Just { strength, position } ->
+                            { ent | vx = ent.vx + (position - ent.x) * strength * alpha }
 
-        Y directionalParamidDict ->
-            --Debug.crash "not implemented"
-            entities
+                        Nothing ->
+                            ent
+            in
+            Dict.map mapper entities
+
+        Y entityConfigs ->
+            let
+                mapper id ent =
+                    case Dict.get id entityConfigs of
+                        Just { strength, position } ->
+                            { ent | vy = ent.vy + (position - ent.y) * strength * alpha }
+
+                        Nothing ->
+                            ent
+            in
+            Dict.map mapper entities
 
         Custom fun ->
             let
@@ -171,21 +188,22 @@ applyForce alpha force entities =
                 erase _ { x, y, vx, vy, id } =
                     { x = x, y = y, vx = vx, vy = vy, id = id }
 
-                maybeUpdate : comparable -> Entity comparable {} -> Dict comparable (Entity comparable a) -> Dict comparable (Entity comparable a)
-                maybeUpdate _ { x, y, vx, vy, id } dict =
-                    case Dict.get id entities of
-                        Just ent ->
-                            Dict.insert id { ent | x = x, y = y, vx = vx, vy = vy } dict
+                maybeUpdate : Dict comparable (Entity comparable {}) -> comparable -> Entity comparable a -> Entity comparable a
+                maybeUpdate newEntities id oldValue =
+                    case Dict.get id newEntities of
+                        Just { x, y, vx, vy } ->
+                            { oldValue | x = x, y = y, vx = vx, vy = vy }
 
                         Nothing ->
-                            dict
+                            oldValue
 
                 reunify : Dict comparable (Entity comparable {}) -> Dict comparable (Entity comparable a)
-                reunify old =
-                    Dict.foldr maybeUpdate entities old
+                reunify new =
+                    Dict.map (maybeUpdate new) entities
             in
             fun alpha (Dict.map erase entities)
                 |> reunify
+
 
 nTimes : (a -> a) -> Int -> a -> a
 nTimes fn times input =
@@ -290,7 +308,7 @@ type alias LinkParam comparable =
 
 
 type alias DirectionalParam =
-    { force : Float
+    { strength : Float
     , position : Float
     }
 
@@ -301,7 +319,7 @@ or keeping linked nodes a fixed distance apart.
 -}
 type Force comparable
     = Center Float Float
-    | Collision Float (Dict comparable CollisionParam)
+    | Collision Int (Dict comparable CollisionParam)
     | Links Int (List (LinkParam comparable))
     | ManyBody Float (Dict comparable Float)
     | X (Dict comparable DirectionalParam)
