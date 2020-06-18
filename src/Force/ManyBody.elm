@@ -83,13 +83,13 @@ wrapper alpha theta strengths points =
             manyBody alpha theta vertices
 
         updater newVertex maybePoint =
-            Maybe.andThen
+            Maybe.map
                 (\point ->
                     let
                         ( dvx, dvy ) =
                             Vector2d.components newVertex.velocity
                     in
-                    Just { point | vx = point.vx + dvx, vy = point.vy + dvy }
+                    { point | vx = point.vx + dvx, vy = point.vy + dvy }
                 )
                 maybePoint
 
