@@ -37,7 +37,7 @@ padding =
     60
 
 
-series : List { label : String, accessor : { b | assault : a, murder : a, rape : a, robbery : a } -> a }
+series : List { label : String, accessor : CrimeRate -> Int }
 series =
     [ { label = "Murder"
       , accessor = .murder
