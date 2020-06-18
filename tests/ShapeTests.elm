@@ -18,7 +18,7 @@ defaultArc =
     }
 
 
-withInner : Arc
+withInner : Shape.Arc
 withInner =
     { defaultArc | innerRadius = 50 }
 

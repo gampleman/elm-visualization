@@ -19,7 +19,7 @@ normalizeConfig { paddingInner, paddingOuter, align } =
 bandwidth : Config -> List a -> ( Float, Float ) -> Float
 bandwidth cfg domain ( d0, d1 ) =
     let
-       { paddingInner, paddingOuter } =
+        { paddingInner, paddingOuter } =
             normalizeConfig cfg
 
         ( start, stop ) =
@@ -33,9 +33,9 @@ bandwidth cfg domain ( d0, d1 ) =
             toFloat <| List.length domain
 
         step =
-            (stop - start) / max 1 (n - normCfg.paddingInner + normCfg.paddingOuter * 2)
+            (stop - start) / max 1 (n - paddingInner + paddingOuter * 2)
     in
-    step * (1 - normCfg.paddingInner)
+    step * (1 - paddingInner)
 
 
 computePositions : Config -> Float -> ( Float, Float ) -> ( Float, Float )
