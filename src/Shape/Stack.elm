@@ -82,35 +82,30 @@ offsetDiverging :
     List (List ( number, number ))
     -> List (List ( number, number ))
 offsetDiverging series =
-    case series of
-        [] ->
-            []
-
-        _ :: _ ->
+    let
+        folder ( x, y ) ( yp, yn, accum ) =
             let
-                folder ( x, y ) ( yp, yn, accum ) =
-                    let
-                        dy =
-                            y - x
-                    in
-                    if dy >= 0 then
-                        ( yp + dy, yn, ( yp, yp + dy ) :: accum )
-
-                    else if dy < 0 then
-                        ( yp, yn + dy, ( yn + dy, yn ) :: accum )
-
-                    else
-                        ( yp, yn, ( yp, y ) :: accum )
-
-                modifyColumn column =
-                    List.foldl folder ( 0, 0, [] ) column
-                        |> (\( _, _, newColumn ) -> newColumn)
-                        |> List.reverse
+                dy =
+                    y - x
             in
-            series
-                |> List.transpose
-                |> List.map modifyColumn
-                |> List.transpose
+            if dy >= 0 then
+                ( yp + dy, yn, ( yp, yp + dy ) :: accum )
+
+            else if dy < 0 then
+                ( yp, yn + dy, ( yn + dy, yn ) :: accum )
+
+            else
+                ( yp, yn, ( yp, y ) :: accum )
+
+        modifyColumn column =
+            List.foldl folder ( 0, 0, [] ) column
+                |> (\( _, _, newColumn ) -> newColumn)
+                |> List.reverse
+    in
+    series
+        |> List.transpose
+        |> List.map modifyColumn
+        |> List.transpose
 
 
 offsetExpand : List (List ( Float, Float )) -> List (List ( Float, Float ))
