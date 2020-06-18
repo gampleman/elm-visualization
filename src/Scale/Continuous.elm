@@ -68,11 +68,6 @@ radial range_ domain_ =
     }
 
 
-withSquaredRange : (b -> ( Float, Float ) -> a) -> b -> ( Float, Float ) -> a
-withSquaredRange f domain ( r0, r1 ) =
-    f domain ( square r0, square r1 )
-
-
 squareRange : ( Float, Float ) -> ( Float, Float )
 squareRange ( a, b ) =
     ( square a, square b )
