@@ -9,7 +9,7 @@ import String exposing (join, padRight, split)
 -- Transforms
 
 
-transformPow : number -> number -> number
+transformPow : Float -> Float -> Float
 transformPow expon x =
     if x < 0 then
         -(-x ^ expon)
