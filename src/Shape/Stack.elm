@@ -120,7 +120,7 @@ offsetExpand series =
         normalizeColumn column =
             let
                 deltas =
-                    List.map (abs << (\( a, b ) -> a - b)) column
+                    List.map (\( a, b ) -> abs (a - b)) column
 
                 total =
                     List.sum deltas
