@@ -153,6 +153,16 @@ tuple ia ib ( fromA, fromB ) ( toA, toB ) =
 
 
 
+-- We can also provide an `andThen` function for our Interpolator:
+--
+--     andThen : (a -> Interpolator b) -> Interpolator a -> Interpolator b
+--     andThen fn interpolator =
+--           \param ->
+--                 fn (interpolator param) param
+--
+--   However, we have not actually come up with a scenario where this would make sense.
+--
+--
 -- Basic interpolators
 
 
