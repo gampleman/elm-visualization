@@ -1,10 +1,9 @@
 module Scale.QuantileTests exposing (all)
 
 import Expect
-import Fuzz exposing (..)
-import Helper exposing (expectAll, isAbout, isBetween)
+import Fuzz exposing (Fuzzer, list, tuple)
 import Scale
-import Test exposing (..)
+import Test exposing (Test, describe, fuzz, test)
 
 
 type Data
@@ -17,10 +16,12 @@ convert val scale =
     Scale.convert scale val
 
 
+datum : Fuzzer Data
 datum =
     Fuzz.oneOf [ Fuzz.constant A, Fuzz.constant B, Fuzz.constant C ]
 
 
+randomRange : Fuzzer ( Data, List Data )
 randomRange =
     tuple ( datum, list datum )
 

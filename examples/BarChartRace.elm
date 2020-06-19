@@ -93,14 +93,17 @@ main =
         }
 
 
+margin : number
 margin =
     10
 
 
+paddingY : number
 paddingY =
     10
 
 
+n : number
 n =
     12
 

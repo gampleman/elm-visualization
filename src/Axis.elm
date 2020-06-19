@@ -65,8 +65,8 @@ For example, here is a typical bottom-oriented axis:
 -}
 
 import Scale exposing (Scale)
-import Svg exposing (..)
-import Svg.Attributes as Attrs exposing (..)
+import Svg exposing (Svg, g, line, text, text_)
+import Svg.Attributes as Attrs exposing (class, d, dy, fill, fontFamily, fontSize, stroke, textAnchor, transform)
 
 
 {-| -}

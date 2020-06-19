@@ -2,7 +2,10 @@ module Zoom.Transform exposing (Transform, identity, invert, scale, toString, tr
 
 
 type alias Transform =
-    { k : Float, x : Float, y : Float }
+    { k : Float
+    , x : Float
+    , y : Float
+    }
 
 
 identity : Transform

@@ -175,7 +175,7 @@ isComplete (Transition soFar total _ _) =
 --     -> List (Interpolator a)
 --     -> Transition (List a)
 -- stagger { duration, delay, easing } interpolations =
---     Debug.todo "not implemeneted yet"
+--     "not implemeneted yet"
 
 
 {-| Easing is a method of distorting time to control apparent motion in animation. It is most commonly used for [slow-in, slow-out](https://en.wikipedia.org/wiki/Twelve_basic_principles_of_animation#Slow_In_and_Slow_Out). By easing time, animated transitions are smoother and exhibit more plausible motion.
@@ -447,46 +447,57 @@ easeBack s =
 -- Bounce
 
 
+b1 : Float
 b1 =
     4 / 11
 
 
+b2 : Float
 b2 =
     6 / 11
 
 
+b3 : Float
 b3 =
     8 / 11
 
 
+b4 : Float
 b4 =
     3 / 4
 
 
+b5 : Float
 b5 =
     9 / 11
 
 
+b6 : Float
 b6 =
     10 / 11
 
 
+b7 : Float
 b7 =
     15 / 16
 
 
+b8 : Float
 b8 =
     21 / 22
 
 
+b9 : Float
 b9 =
     63 / 64
 
 
+b0 : Float
 b0 =
     1 / b1 / b1
 
 
+bounceOut : Float -> Float
 bounceOut t =
     if t < b1 then
         b0 * t * t

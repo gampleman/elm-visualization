@@ -2,17 +2,23 @@ module Force.ManyBody exposing (AggregateVertex, Vertex, applyForce, config, con
 
 import BoundingBox2d exposing (BoundingBox2d)
 import Dict exposing (Dict)
-import Force.QuadTree as QuadTree exposing (QuadTree)
+import Force.QuadTree as QuadTree
 import Point2d exposing (Point2d)
 import Vector2d exposing (Vector2d)
 
 
 type alias Vertex comparable =
-    { key : comparable, position : Point2d, strength : Float, velocity : Vector2d }
+    { key : comparable
+    , position : Point2d
+    , strength : Float
+    , velocity : Vector2d
+    }
 
 
 type alias AggregateVertex =
-    { position : Point2d, strength : Float }
+    { position : Point2d
+    , strength : Float
+    }
 
 
 {-| Combine a non-empty list of points into one superpoint
@@ -64,7 +70,7 @@ wrapper alpha theta strengths points =
         vertices =
             Dict.toList points
                 |> List.map
-                    (\( key, { x, y } as point ) ->
+                    (\( key, { x, y } ) ->
                         let
                             strength =
                                 Dict.get key strengths
@@ -77,16 +83,15 @@ wrapper alpha theta strengths points =
             manyBody alpha theta vertices
 
         updater newVertex maybePoint =
-            case maybePoint of
-                Nothing ->
-                    Nothing
-
-                Just point ->
+            Maybe.map
+                (\point ->
                     let
                         ( dvx, dvy ) =
                             Vector2d.components newVertex.velocity
                     in
-                    Just { point | vx = point.vx + dvx, vy = point.vy + dvy }
+                    { point | vx = point.vx + dvx, vy = point.vy + dvy }
+                )
+                maybePoint
 
         folder newVertex pointsDict =
             Dict.update newVertex.key (updater newVertex) pointsDict

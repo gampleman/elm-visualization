@@ -108,5 +108,6 @@ view model =
         ]
 
 
+main : Svg msg
 main =
     view data

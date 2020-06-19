@@ -2,12 +2,10 @@ module AxisTests exposing (renderingTest)
 
 import Axis
 import Expect
-import Fuzz exposing (..)
-import Helper exposing (expectAll, isAbout, isBetween)
 import Scale
 import Svg exposing (g, line, path, text, text_)
-import Svg.Attributes exposing (class, d, dy, fill, fontFamily, fontSize, stroke, textAnchor, transform, x, x1, x2, y, y1, y2)
-import Test exposing (..)
+import Svg.Attributes exposing (class, d, dy, fill, fontFamily, fontSize, stroke, textAnchor, transform, x, x2, y, y1, y2)
+import Test exposing (Test, test)
 
 
 renderingTest : Test

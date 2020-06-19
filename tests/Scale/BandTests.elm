@@ -1,21 +1,9 @@
 module Scale.BandTests exposing (band)
 
 import Expect
-import Fuzz exposing (..)
 import Helper exposing (expectAll)
 import Scale exposing (defaultBandConfig)
-import Svg.Attributes exposing (scale)
-import Test exposing (..)
-
-
-elementInList : Fuzzer a -> Fuzzer ( a, List a )
-elementInList fuzzer =
-    Fuzz.map3 (\prefix item postfix -> ( item, List.concat [ prefix, [ item ], postfix ] )) (list fuzzer) fuzzer (list fuzzer)
-
-
-nonEmptyList : Fuzzer a -> Fuzzer (List a)
-nonEmptyList fuzzer =
-    Fuzz.map2 (\head tail -> head :: tail) fuzzer (list fuzzer)
+import Test exposing (Test, describe, test)
 
 
 band : Test

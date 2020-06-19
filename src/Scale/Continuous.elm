@@ -9,6 +9,7 @@ import String exposing (join, padRight, split)
 -- Transforms
 
 
+transformPow : Float -> Float -> Float
 transformPow expon x =
     if x < 0 then
         -(-x ^ expon)
@@ -17,6 +18,7 @@ transformPow expon x =
         x ^ expon
 
 
+transformSymlog : Float -> Float -> Float
 transformSymlog c x =
     if x < 0 then
         -(logBase e (abs (x / c) + 1))
@@ -25,6 +27,7 @@ transformSymlog c x =
         logBase e (abs (x / c) + 1)
 
 
+transformSymexp : Float -> Float -> Float
 transformSymexp c x =
     if x < 0 then
         -(e ^ -x - 1) * c
@@ -65,10 +68,7 @@ radial range_ domain_ =
     }
 
 
-withSquaredRange f domain ( r0, r1 ) =
-    f domain ( square r0, square r1 )
-
-
+squareRange : ( Float, Float ) -> ( Float, Float )
 squareRange ( a, b ) =
     ( square a, square b )
 
@@ -85,6 +85,7 @@ square x =
         * x
 
 
+unsquare : Float -> Float
 unsquare x =
     (if x >= 0 then
         1
@@ -111,6 +112,7 @@ scaleWithTransform transform untransform range_ domain_ =
     }
 
 
+nice : ( Float, Float ) -> Int -> ( Float, Float )
 nice ( start, stop ) count =
     let
         step0 =
@@ -143,6 +145,7 @@ tickFormat ( start, stop ) count =
         |> toFixed
 
 
+ticks : ( Float, Float ) -> Int -> List Float
 ticks ( start, end ) count =
     Statistics.ticks start end count
 

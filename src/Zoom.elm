@@ -93,9 +93,9 @@ Finally, set up your view:
 import Browser.Events
 import Html.Attributes exposing (style)
 import Json.Decode as D exposing (Decoder)
-import Svg exposing (Attribute, Svg)
+import Svg exposing (Attribute)
 import Svg.Attributes as A
-import Svg.Events exposing (custom, preventDefaultOn)
+import Svg.Events exposing (custom)
 import Time
 import Zoom.Interpolation
 import Zoom.Matrix as Matrix exposing (Matrix2x3)
@@ -132,7 +132,11 @@ asRecord (Zoom zoom) =
 
 
 type alias Rect =
-    { x : Float, y : Float, width : Float, height : Float }
+    { x : Float
+    , y : Float
+    , width : Float
+    , height : Float
+    }
 
 
 {-| This is the Msg type used. You will want to pass these to `Zoom.update`.
@@ -181,11 +185,16 @@ type OnZoom
 
 
 type alias Touch =
-    { position : ( Float, Float ), identifier : Int }
+    { position : ( Float, Float )
+    , identifier : Int
+    }
 
 
 type alias TrackedTouch =
-    { position : ( Float, Float ), previous : ( Float, Float ), identifier : Int }
+    { position : ( Float, Float )
+    , previous : ( Float, Float )
+    , identifier : Int
+    }
 
 
 touchDelay : Float
@@ -193,6 +202,7 @@ touchDelay =
     500
 
 
+infinity : Float
 infinity =
     1 / 0
 
@@ -439,8 +449,6 @@ decodeMousePosition =
 
 decodeSVGTransformMatrix : Decoder (Maybe Matrix2x3)
 decodeSVGTransformMatrix =
-    -- TODO Take into account offsets of viewBox
-    -- TODO Check for aspect ratio, currentScale, currentTranslate, etc...
     D.oneOf
         [ D.map3
             (\viewBox width height ->
@@ -534,11 +542,6 @@ subscriptions (Zoom zoom) tagger =
         , Maybe.map (always (Browser.Events.onAnimationFrameDelta (Tick >> tagger))) zoom.transition
             |> Maybe.withDefault Sub.none
         ]
-
-
-negate : ( Float, Float ) -> ( Float, Float )
-negate ( a, b ) =
-    ( -a, -b )
 
 
 schedule : Transform -> ( Float, Float ) -> Zoom -> Zoom
@@ -882,6 +885,7 @@ constrain ( extentT, extentB ) ( translateExtentT, translateExtentB ) tsfm =
         tsfm
 
 
+easingInOutCubic : Float -> Float
 easingInOutCubic t =
     if t < 0.5 then
         ((t * 2) ^ 3) / 2

@@ -21,30 +21,37 @@ For an explanation of the math in this module, see <https://observablehq.com/@mb
 -- Constants
 
 
+nan : Float
 nan =
     0 / 0
 
 
+xn : Float
 xn =
     0.96422
 
 
+zn : Float
 zn =
     0.82521
 
 
+t0 : Float
 t0 =
     4 / 29
 
 
+t1 : Float
 t1 =
     6 / 29
 
 
+t2 : Float
 t2 =
     3 * t1 ^ 2
 
 
+t3 : Float
 t3 =
     t1 ^ 3
 
@@ -87,6 +94,7 @@ srgb2lrgb v =
 
 {-| Converts (a coordinate) from the XYZ color space to the LAB color space.
 -}
+xyz2lab : Float -> Float
 xyz2lab t =
     if t > t3 then
         t ^ (1 / 3)
@@ -136,6 +144,7 @@ from l a b =
 
 {-| Converts (a coordinate) from the LAB color space to the XYZ color space.
 -}
+lab2xyz : Float -> Float
 lab2xyz t =
     if t > t1 then
         t ^ 3
@@ -144,6 +153,7 @@ lab2xyz t =
         t2 * (t - t0)
 
 
+lrgb2srgb : Float -> Float
 lrgb2srgb v =
     if v <= 0.0031308 then
         12.92 * v

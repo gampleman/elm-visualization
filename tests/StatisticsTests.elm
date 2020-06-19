@@ -7,6 +7,7 @@ import Statistics
 import Test exposing (..)
 
 
+tolerance : FloatingPointTolerance
 tolerance =
     Absolute 0.00001
 
