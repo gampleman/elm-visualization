@@ -1,6 +1,7 @@
 module PieChart exposing (main)
 
 {-| An example showing how to render a basic pie chart.
+@category Basics
 -}
 
 import Array exposing (Array)

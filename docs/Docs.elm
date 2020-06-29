@@ -3,14 +3,14 @@ module Docs exposing (main)
 import Css exposing (..)
 import Css.Global
 import Css.Media
-import ExamplePublisher exposing (Document, Example)
+import Dict exposing (Dict)
+import ExamplePublisher exposing (Document)
 import Html
 import Html.Attributes
-import Html.Styled exposing (Attribute, Html, a, aside, code, div, h1, h2, h3, header, iframe, img, li, main_, nav, source, span, styled, text, ul)
+import Html.Styled exposing (Attribute, Html, a, aside, code, div, h1, h2, h3, header, iframe, img, li, main_, nav, p, section, source, span, styled, text, ul)
 import Html.Styled.Attributes as A exposing (alt, class, css, href, rel, src, type_)
-import Json.Decode
+import Json.Decode as Decode
 import Markdown
-
 
 
 projectName : String
@@ -23,6 +23,25 @@ authorName =
     "gampleman"
 
 
+type alias Example =
+    ExamplePublisher.Example { category : String }
+
+
+byCategory : List Example -> Dict String (List Example)
+byCategory =
+    List.foldl (\item -> Dict.update item.tags.category (Maybe.map ((::) item) >> Maybe.withDefault [ item ] >> Just)) Dict.empty
+        >> Dict.map (\_ l -> List.reverse l)
+
+
+categories : List ( String, String )
+categories =
+    [ ( "Basics", "Simple examples to get you started making simple charts and graphs." )
+    , ( "Advanced", "More complex charts or illustrations of trickier techniques." )
+    , ( "Art", "You can use elm-visualization to make some pretty cool art." )
+    , ( "Reference", "Examples here aren't meant as standalone, but rather illustrate some details of how the different features of elm-visualization works." )
+    ]
+
+
 {-| ExamplePublisher.application is the entry point we are given for this templating system. It has 3 fields:
 
   - `tagDecoder` is a JSON decoder for any `@tags` that the examples have. This mechanism allows us to augment the `Example` type by arbitrary data. This allows us the implement any features we like.
@@ -30,16 +49,16 @@ authorName =
   - `showView` takes the current example and a list of all examples. The tool will invoke this function for each example.
 
 -}
-main : ExamplePublisher.Program ()
+main : ExamplePublisher.Program { category : String }
 main =
     ExamplePublisher.application
-        { tagDecoder = Json.Decode.succeed ()
+        { tagDecoder = Decode.map (\category -> { category = category }) (Decode.field "category" Decode.string)
         , indexView = indexView
         , showView = showView
         }
 
 
-indexView : List (Example tags) -> Document
+indexView : List Example -> Document
 indexView examples =
     { title = projectName ++ " Examples"
     , meta =
@@ -54,7 +73,7 @@ indexView examples =
     }
 
 
-showView : Example tags -> List (Example tags) -> Document
+showView : Example -> List Example -> Document
 showView example examples =
     { title = projectName ++ " " ++ example.basename ++ " Example"
     , meta = [ ( "viewport", "width=device-width, initial-scale=1.0" ) ]
@@ -80,10 +99,14 @@ showView example examples =
 {-| This will humanize the Example name to be more human readable.
 -}
 displayName : { a | basename : String } -> String
-displayName example =
-    example.basename
-        |> String.toList
-        |> List.concatMap
+displayName =
+    .basename >> humanize
+
+
+humanize : String -> String
+humanize =
+    String.toList
+        >> List.concatMap
             (\char ->
                 if Char.isUpper char then
                     [ ' ', char ]
@@ -91,17 +114,20 @@ displayName example =
                 else
                     [ char ]
             )
-        |> String.fromList
-        |> String.split " "
-        |> List.map
+        >> String.fromList
+        >> String.split " "
+        >> List.map
             (\word ->
                 if word == "And" then
                     "and"
 
+                else if word == "With" then
+                    "with"
+
                 else
                     word
             )
-        |> String.join " "
+        >> String.join " "
 
 
 {-| Formats a bit of markdown.
@@ -156,7 +182,7 @@ linkStyle =
 
 {-| This will actually embed the rendered example as an iFrame, but making sure it can shrink in an aspect preserving way for smaller devices.
 -}
-responsiveExampleFrame : Example tags -> Html a
+responsiveExampleFrame : Example -> Html a
 responsiveExampleFrame example =
     div
         [ css
@@ -187,7 +213,7 @@ responsiveExampleFrame example =
 
 {-| Builds a responsive srcset for an example. Format should be either "png" or "webp".
 -}
-srcset : Example tags -> String -> Attribute msg
+srcset : Example -> String -> Attribute msg
 srcset example format =
     example.basename
         ++ "/preview."
@@ -206,7 +232,7 @@ srcset example format =
 
 {-| This will show a retina ready version of the thumbnail of the example. Images have gotten pretty complicated these days.
 -}
-examplePreview : Example tags -> Html msg
+examplePreview : Example -> Html msg
 examplePreview example =
     picture []
         [ source [ srcset example "webp", type_ "image/webp" ] []
@@ -217,7 +243,7 @@ examplePreview example =
 
 {-| This is the main header. You will probably want to customize it for your project.
 -}
-headerView : Maybe (Example tags) -> Html msg
+headerView : Maybe Example -> Html msg
 headerView currentExample =
     div
         [ css
@@ -367,37 +393,49 @@ headerView currentExample =
         )
 
 
-mainView : List (Example tags) -> Html a
+mainView : List Example -> Html a
 mainView examples =
-    main_ []
-        [ ul
-            [ css
-                [ listStyleType none
-                , padding zero
-                ]
-            ]
-          <|
-            List.map
-                (\example ->
-                    li
-                        [ css
-                            [ border3 (px 1) solid (hex "#eeeeee")
-                            , float left
-                            , width (px (toFloat (example.width // 3 + 20)))
-                            , maxWidth (calc (vh 100) minus (px 40))
-                            , margin (px 20)
-                            , padding4 (px 10) (px 10) zero (px 10)
-                            , boxSizing borderBox
-                            , onMobile
-                                [ maxWidth (pct 100)
-                                , height auto
+    let
+        categorizedExample =
+            byCategory examples
+    in
+    main_ [ css [ marginBottom (px 40) ] ] <|
+        List.map
+            (\( category, description ) ->
+                section []
+                    [ h3 [ css [ marginLeft (px 20), marginTop (px 35), property "clear" "both" ] ] [ text category ]
+                    , p [ css [ marginLeft (px 20) ] ] [ text description ]
+                    , categorizedExample
+                        |> Dict.get category
+                        |> Maybe.withDefault []
+                        |> List.map
+                            (\example ->
+                                li
+                                    [ css
+                                        [ border3 (px 1) solid (hex "#eeeeee")
+                                        , float left
+                                        , width (px (toFloat (example.width // 3 + 20)))
+                                        , maxWidth (calc (vh 100) minus (px 40))
+                                        , margin (px 20)
+                                        , padding4 (px 10) (px 10) zero (px 10)
+                                        , boxSizing borderBox
+                                        , onMobile
+                                            [ maxWidth (pct 100)
+                                            , height auto
+                                            ]
+                                        ]
+                                    ]
+                                    [ a [ href example.basename, css [ linkStyle ] ] [ examplePreview example, h3 [ css [ marginLeft (px 10), fontWeight normal ] ] [ text (displayName example) ] ] ]
+                            )
+                        |> ul
+                            [ css
+                                [ listStyleType none
+                                , padding zero
                                 ]
                             ]
-                        ]
-                        [ a [ href example.basename, css [ linkStyle ] ] [ examplePreview example, h3 [ css [ marginLeft (px 10), fontWeight normal ] ] [ text (displayName example) ] ] ]
-                )
-                examples
-        ]
+                    ]
+            )
+            categories
 
 
 {-| This is here mostly to set up basic typography.
@@ -440,7 +478,7 @@ navItem url label active =
         ]
 
 
-ellieLinkView : Example tags -> Html msg
+ellieLinkView : Example -> Html msg
 ellieLinkView example =
     case example.ellieLink of
         Just url ->
@@ -450,8 +488,14 @@ ellieLinkView example =
             text ""
 
 
-exampleView : Example tags -> List (Example tags) -> Html msg
+exampleView : Example -> List Example -> Html msg
 exampleView example examples =
+    let
+        fromCategory =
+            byCategory examples
+                |> Dict.get example.tags.category
+                |> Maybe.withDefault []
+    in
     div
         [ css
             [ displayFlex
@@ -497,8 +541,8 @@ exampleView example examples =
                 , navItem ("https://github.com/" ++ authorName ++ "/" ++ projectName ++ "/releases") "Changelog" False
                 , navItem "https://elmlang.slack.com/channels/visualization" "#visualization on Elm slack" False
                 ]
-            , h2 [ css [ fontWeight normal, marginBottom (px 10) ] ] [ text "Examples" ]
-            , examples
+            , h2 [ css [ fontWeight normal, marginBottom (px 10) ] ] [ text example.tags.category ]
+            , fromCategory
                 |> List.map (\ex -> navItem ("../" ++ ex.basename) (displayName ex) (ex == example))
                 |> ul [ css [ padding zero ] ]
             ]

@@ -1,6 +1,8 @@
 module ColorSpaceInterpolations exposing (main)
 
 {-| This module shows how to build some simple colour space palettes.
+
+@category Reference
 -}
 
 import Browser

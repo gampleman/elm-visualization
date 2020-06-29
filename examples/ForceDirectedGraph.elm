@@ -4,7 +4,7 @@ module ForceDirectedGraph exposing (main)
 based on their co-occurence in a scene. Try dragging the nodes!
 
 @delay 5
-
+@category Basics
 -}
 
 import Browser

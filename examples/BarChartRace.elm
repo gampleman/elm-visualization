@@ -3,8 +3,7 @@ module BarChartRace exposing (main)
 {-| Demonstrates a complex animation.
 
 @requires data/category-brands.csv
-@delay 6
-
+@category Advanced
 -}
 
 import Axis
