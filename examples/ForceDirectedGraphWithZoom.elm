@@ -4,7 +4,7 @@ module ForceDirectedGraphWithZoom exposing (main)
 functionality.
 
 @delay 5
-
+@category Advanced
 -}
 
 import Browser

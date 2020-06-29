@@ -1,6 +1,8 @@
 module ColorMaps exposing (main)
 
 {-| This module shows the color schemes available in the Scale.Color module
+
+@category Reference
 -}
 
 import Array

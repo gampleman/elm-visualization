@@ -1,6 +1,8 @@
 module BackgroundGraph exposing (main)
 
 {-| Part of a composition used for the background of my Elm Europe talk.
+
+@category Art
 -}
 
 import Color exposing (Color)

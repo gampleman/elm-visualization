@@ -1,4 +1,7 @@
 module PopulationMinnesota exposing (main)
+{-|
+@category Advanced
+ -}
 
 import Axis
 import Color exposing (Color)

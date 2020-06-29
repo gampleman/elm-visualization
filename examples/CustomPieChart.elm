@@ -1,6 +1,8 @@
 module CustomPieChart exposing (main)
 
 {-| An interactive example showing the effect of various options on pie generators.
+
+@category Reference
 -}
 
 import Array exposing (Array)
