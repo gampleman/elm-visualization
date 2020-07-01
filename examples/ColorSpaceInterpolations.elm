@@ -3,10 +3,11 @@ module ColorSpaceInterpolations exposing (main)
 {-| This module shows how to build some simple colour space palettes.
 
 @category Reference
+
 -}
 
-import Browser
 import Color exposing (Color, rgb255)
+import Example
 import Hex
 import Html exposing (Html, div)
 import Html.Attributes exposing (class, for, href, id, selected, style, type_, value)
@@ -15,193 +16,66 @@ import Interpolation exposing (Interpolator)
 import Scale exposing (QuantizeScale)
 
 
-css : String
-css =
-    """
-h1 {
-    font-size: 24px;
-}
-
-body {
-    font-family: Sans-Serif;
-}
-
-.wrapper {
-    margin: 25px;
-    width: 940px;
-    position: relative;
-}
-
-.palette {
-    display: flex;
-    width: 100%;
-    margin: 2px 0 10px;
-}
-
-.palette div {
-    height: 40px;
-    flex: 1;
-}
-
-.controls {
-    margin-bottom : 0;
-    display: flex;
-}
-
-.controls div {
-    margin : 0 20px 10px;
-}
-
-.controls input,
-.controls select {
-    margin-right : 10px;
-}
-"""
-
-
 type alias Model =
-    { fromColorValue : String
-    , toColorValue : String
+    { fromColorValue : Color
+    , toColorValue : Color
     , count : Int
     }
 
 
-init : Model
-init =
-    { fromColorValue = "#00ff00"
-    , toColorValue = "#ff0200"
-    , count = 50
-    }
-
-
-type Msg
-    = FromColorInput String
-    | ToColorInput String
-    | Count String
-
-
-update : Msg -> Model -> Model
-update msg model =
-    case msg of
-        FromColorInput val ->
-            { model | fromColorValue = val }
-
-        ToColorInput val ->
-            { model | toColorValue = val }
-
-        Count val ->
-            { model | count = val |> String.toInt |> Maybe.withDefault 0 }
+configuration : Example.Configuration Model
+configuration =
+    Example.configuration
+        { fromColorValue = Color.rgb255 0 255 0
+        , toColorValue = Color.rgb255 255 2 0
+        , count = 50
+        }
+        [ Example.colorPicker "Start Color" .fromColorValue (\v m -> { m | fromColorValue = v })
+        , Example.colorPicker "End Color" .toColorValue (\v m -> { m | toColorValue = v })
+        , Example.intSlider "Number of Colors" .count (\v m -> { m | count = v }) 3 100
+        ]
 
 
 palette : Model -> (Color -> Color -> Interpolator Color) -> Html msg
 palette model colorSpaceInterpolator =
-    div [ class "palette" ]
+    div [ style "display" "flex", style "flex-grow" "1" ]
         (Interpolation.samples model.count
-            (colorSpaceInterpolator (hexToColor model.fromColorValue) (hexToColor model.toColorValue))
+            (colorSpaceInterpolator model.fromColorValue model.toColorValue)
             |> List.map
                 (\color ->
-                    Html.div [ style "background-color" (Color.toCssString color) ] []
+                    Html.div [ style "background-color" (Color.toCssString color), style "flex-grow" "1" ] []
                 )
         )
 
 
-view : Model -> Html Msg
+view : Model -> Html (Example.ConfigMsg Model)
 view model =
-    Html.div []
-        [ Html.node "style" [] [ Html.text css ]
-        , Html.div
-            [ class "wrapper" ]
-            [ div [] [ Html.h1 [] [ Html.text "Color Space Interpolations" ] ]
-            , controls model
-            , div [] [ Html.a [ href "https://en.wikipedia.org/wiki/CIELAB_color_space" ] [ Html.text "lab" ] ]
-            , palette model Interpolation.lab
-            , div [] [ Html.text "rgb" ]
+    Html.div [ style "display" "flex", style "min-height" "100vh", style "padding-right" "10px" ]
+        [ Html.div
+            [ style "flex-grow" "1", style "margin-right" "20px", style "display" "flex", style "flex-direction" "column" ]
+            [ title "rgb" "https://en.wikipedia.org/wiki/RGB_color_model"
             , palette model Interpolation.rgb
-            , div [] [ Html.a [ href "https://en.wikipedia.org/wiki/HCL_color_space" ] [ Html.text "hcl" ] ]
-            , palette model Interpolation.hcl
-            , div [] [ Html.a [ href "https://en.wikipedia.org/wiki/HSL_and_HSV" ] [ Html.text "hsl" ] ]
+            , title "hsl" "https://en.wikipedia.org/wiki/HSL_and_HSV"
             , palette model Interpolation.hsl
-            , div [] [ Html.a [ href "https://en.wikipedia.org/wiki/HCL_color_space" ] [ Html.text "hclLong" ] ]
-            , palette model Interpolation.hclLong
-            , div [] [ Html.a [ href "https://en.wikipedia.org/wiki/HSL_and_HSV" ] [ Html.text "hslLong" ] ]
+            , title "hslLong" "https://en.wikipedia.org/wiki/HSL_and_HSV"
             , palette model Interpolation.hslLong
+            , title "lab" "https://en.wikipedia.org/wiki/CIELAB_color_space"
+            , palette model Interpolation.lab
+            , title "hcl" "https://en.wikipedia.org/wiki/HCL_color_space"
+            , palette model Interpolation.hcl
+            , title "hclLong" "https://en.wikipedia.org/wiki/HCL_color_space"
+            , palette model Interpolation.hclLong
             ]
+        , Example.verticalPanel "Color Space Interpolations" configuration model
         ]
 
 
-controls : Model -> Html Msg
-controls model =
-    div [ class "controls" ]
-        [ fromColorInput model
-        , toColorInput model
-        , selectNumberOfColors model
-        ]
-
-
-fromColorInput : Model -> Html Msg
-fromColorInput model =
-    div []
-        [ Html.input [ id "from", type_ "color", onInput FromColorInput, value model.fromColorValue ] []
-        , Html.label [ for "from" ] [ Html.text "Start color" ]
-        ]
-
-
-toColorInput : Model -> Html Msg
-toColorInput model =
-    div []
-        [ Html.input [ id "to", type_ "color", onInput ToColorInput, value model.toColorValue ] []
-        , Html.label [ for "to" ] [ Html.text "End color" ]
-        ]
-
-
-selectNumberOfColors : Model -> Html Msg
-selectNumberOfColors model =
-    div []
-        [ Html.select [ id "number-of-colors", onInput Count ]
-            ([ "2", "3", "4", "5", "6", "7", "8", "9", "10", "15", "20", "25", "30", "35", "40", "45", "50", "100" ]
-                |> List.map
-                    (\v ->
-                        let
-                            isSelected =
-                                if model.count |> String.fromInt |> (==) v then
-                                    True
-
-                                else
-                                    False
-                        in
-                        Html.option [ value v, selected isSelected ] [ Html.text v ]
-                    )
-            )
-        , Html.label [ for "number-of-colors" ] [ Html.text "Number of colors" ]
+title : String -> String -> Html msg
+title label url =
+    Html.h3 [ style "margin-bottom" "5px", style "margin-left" "5px", style "font" "16px -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif" ]
+        [ Html.a [ href url ] [ Html.text label ]
         ]
 
 
 main =
-    Browser.sandbox { init = init, update = update, view = view }
-
-
-{-| Hexadecimal color string to Color
--}
-hexToColor : String -> Color
-hexToColor hex =
-    hex
-        |> String.dropLeft 1
-        |> (\s ->
-                let
-                    r =
-                        String.slice 0 2 s
-                            |> Hex.fromString
-                            |> Result.withDefault 0
-
-                    g =
-                        String.slice 2 4 s
-                            |> Hex.fromString
-                            |> Result.withDefault 0
-
-                    b =
-                        String.slice 4 6 s
-                            |> Hex.fromString
-                            |> Result.withDefault 0
-                in
-                rgb255 r g b
-           )
+    Example.configurable configuration view
