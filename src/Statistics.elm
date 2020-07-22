@@ -3,6 +3,7 @@ module Statistics exposing
     , variance, deviation, quantile
     , peaks
     , ticks, tickStep, range
+    , mean, median
     )
 
 {-|
@@ -321,6 +322,11 @@ quantile p values =
 mean : List Float -> Float
 mean xs =
     List.sum xs / toFloat (List.length xs)
+
+
+median : List Float -> Maybe Float
+median xs =
+    List.sort xs |> quantile 0.5
 
 
 {-| This functions detects (positive) peaks in a timeseries.
