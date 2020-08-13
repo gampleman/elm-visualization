@@ -1,5 +1,5 @@
 module Scale exposing
-    ( Scale
+    ( Scale(..)
     , ContinuousScale, linear, power, log, symlog, identity, time, radial
     , SequentialScale, sequential, sequentialLog, sequentialSymlog, sequentialPower
     , DivergingScale, diverging, divergingLog, divergingSymlog, divergingPower
