@@ -22,7 +22,7 @@
             "elm-community/list-extra": "8.2.4",
             "elm-community/typed-svg": "6.0.0",
             "elm-explorations/linear-algebra": "1.0.3",
-            "elm-explorations/webgl": "1.1.1",
+            "elm-explorations/webgl": "1.1.2",
             "ericgj/elm-csv-decode": "2.0.1",
             "folkertdev/one-true-path-experiment": "4.0.3",
             "gampleman/elm-examples-helper": "1.0.0",
