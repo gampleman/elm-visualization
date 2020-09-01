@@ -27,6 +27,7 @@
             "elm-explorations/webgl": "1.1.2",
             "ericgj/elm-csv-decode": "2.0.1",
             "folkertdev/one-true-path-experiment": "4.0.3",
+            "gampleman/elm-examples-helper": "1.0.0",
             "ianmackenzie/elm-geometry": "1.2.1",
             "justinmimbs/time-extra": "1.1.0",
             "lovasoa/elm-csv": "1.1.7",

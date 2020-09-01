@@ -3,6 +3,7 @@ module HistogramChart exposing (main)
 {-| Renders a histogram of a randomly generated data set
 
 @category Basics
+
 -}
 
 import Axis

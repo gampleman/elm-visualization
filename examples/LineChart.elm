@@ -4,6 +4,7 @@ module LineChart exposing (main)
 the primitives provided in this library.
 
 @category Basics
+
 -}
 
 import Axis

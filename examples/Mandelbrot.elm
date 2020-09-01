@@ -5,6 +5,7 @@ module Mandelbrot exposing (main)
 This example demonstrates how one can use the Zoom module for other rendering technologies, in this case for a WebGL scene.
 
 @category Advanced
+
 -}
 
 import Browser

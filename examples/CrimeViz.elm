@@ -6,6 +6,7 @@ module CrimeViz exposing (main)
   - We position and color a label next to each series.
 
 @category Advanced
+
 -}
 
 import Axis

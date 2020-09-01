@@ -18,6 +18,7 @@ module Curves exposing (main)
 @screenshot natural
 
 @category Reference
+
 -}
 
 import Color exposing (Color)
