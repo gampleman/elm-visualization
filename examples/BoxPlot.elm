@@ -1,6 +1,9 @@
 module BoxPlot exposing (main)
 
 {-| This module shows how to build a box-and-whisker plot, see <https://en.wikipedia.org/wiki/Box_plot> for details.
+
+@category Basics
+
 -}
 
 import Axis
