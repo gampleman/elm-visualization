@@ -5,7 +5,7 @@ module NorwegianCarSales exposing (main)
 @screenshot stream-graph
 @screenshot silhouette
 @screenshot stacked-area
-
+@category Advanced
 -}
 
 import Axis

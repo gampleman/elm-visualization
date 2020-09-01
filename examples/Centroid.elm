@@ -3,6 +3,8 @@ module Centroid exposing (main)
 {-| The black dots show the midpoint computed by `centroid`. Note that this is
 not the geometric center of the arc, which may be outside the arc; this method
 is merely a convenience for positioning labels.
+
+@category Reference
 -}
 
 import Array exposing (Array)
