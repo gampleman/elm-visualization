@@ -25,7 +25,7 @@ import TypedSvg exposing (g, svg, text_)
 import TypedSvg.Attributes exposing (class, fill, fontFamily, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (fontSize)
 import TypedSvg.Core exposing (Svg)
-import TypedSvg.Types exposing (Fill(..), Transform(..))
+import TypedSvg.Types exposing (Paint(..), Transform(..))
 
 
 exampleConfig : List ( String, StackConfig String )
@@ -144,7 +144,7 @@ view { values, labels, extent } =
         labelElement : String -> Float -> Svg msg
         labelElement label yPosition =
             g [ transform [ Translate (w - padding - labelsWidth + 10) yPosition ] ]
-                [ text_ [ fill (sampleColor label |> Fill) ] [ text label ] ]
+                [ text_ [ fill (sampleColor label |> Paint) ] [ text label ] ]
     in
     div []
         [ titleNavigation
@@ -170,7 +170,7 @@ titleNavigation =
 -}
 renderStream : ( ContinuousScale Float, ContinuousScale Float ) -> Color -> List ( Float, Float ) -> Svg msg
 renderStream scales color coords =
-    Path.element (toArea scales coords) [ fill (Fill color) ]
+    Path.element (toArea scales coords) [ fill (Paint color) ]
 
 
 {-| Create a svg path string that draws the area between two lines

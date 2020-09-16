@@ -11,7 +11,7 @@ import TypedSvg exposing (g, rect, svg)
 import TypedSvg.Attributes exposing (class, fill, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg)
-import TypedSvg.Types exposing (Fill(..), Transform(..))
+import TypedSvg.Types exposing (Paint(..), Transform(..))
 
 
 main : Svg msg
@@ -100,7 +100,7 @@ column xScale ( year, values ) =
                 , y <| lowerY
                 , width <| Scale.bandwidth xScale
                 , height <| (abs <| upperY - lowerY)
-                , fill (Fill color)
+                , fill (Paint color)
                 ]
                 []
     in

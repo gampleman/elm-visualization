@@ -22,7 +22,7 @@ import TypedSvg exposing (circle, g, line, svg, title)
 import TypedSvg.Attributes exposing (class, fill, stroke, viewBox)
 import TypedSvg.Attributes.InPx exposing (cx, cy, r, strokeWidth, x1, x2, y1, y2)
 import TypedSvg.Core exposing (Attribute, Svg, text)
-import TypedSvg.Types exposing (Fill(..))
+import TypedSvg.Types exposing (Paint(..))
 
 
 w : Float
@@ -192,7 +192,7 @@ linkElement graph edge =
     in
     line
         [ strokeWidth 1
-        , stroke (Color.rgb255 170 170 170)
+        , stroke (Paint (Color.rgb255 170 170 170))
         , x1 source.x
         , y1 source.y
         , x2 target.x
@@ -204,8 +204,8 @@ linkElement graph edge =
 nodeElement node =
     circle
         [ r 2.5
-        , fill (Fill Color.black)
-        , stroke (Color.rgba 0 0 0 0)
+        , fill (Paint Color.black)
+        , stroke (Paint (Color.rgba 0 0 0 0))
         , strokeWidth 7
         , onMouseDown node.id
         , cx node.label.x

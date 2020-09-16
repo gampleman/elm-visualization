@@ -15,7 +15,7 @@ import TypedSvg exposing (circle, g, svg)
 import TypedSvg.Attributes exposing (fill, stroke, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (cx, cy, r)
 import TypedSvg.Core exposing (Svg)
-import TypedSvg.Types exposing (Fill(..), Transform(..))
+import TypedSvg.Types exposing (Paint(..), Transform(..))
 
 
 w : Float
@@ -73,8 +73,8 @@ circular arcs =
     let
         makeSlice index datum =
             Path.element (Shape.arc datum)
-                [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors
-                , stroke Color.black
+                [ fill <| Paint <| Maybe.withDefault Color.black <| Array.get index colors
+                , stroke <| Paint <| Color.black
                 ]
 
         makeDot datum =
@@ -95,8 +95,8 @@ annular arcs =
     let
         makeSlice index datum =
             Path.element (Shape.arc { datum | innerRadius = radius - 60 })
-                [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors
-                , stroke Color.black
+                [ fill <| Paint <| Maybe.withDefault Color.black <| Array.get index colors
+                , stroke <| Paint <| Color.black
                 ]
 
         makeDot datum =

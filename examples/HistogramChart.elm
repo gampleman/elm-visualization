@@ -12,7 +12,7 @@ import TypedSvg exposing (g, rect, svg)
 import TypedSvg.Attributes exposing (class, fill, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg)
-import TypedSvg.Types exposing (Fill(..), Transform(..))
+import TypedSvg.Types exposing (Paint(..), Transform(..))
 
 
 {-| We use addition here to approximate normal distribution.
@@ -87,7 +87,7 @@ column yScale { length, x0, x1 } =
         , y <| Scale.convert yScale (toFloat length)
         , width <| Scale.convert xScale x1 - Scale.convert xScale x0
         , height <| h - Scale.convert yScale (toFloat length) - 2 * padding
-        , fill <| Fill <| Color.rgb255 46 118 149
+        , fill <| Paint <| Color.rgb255 46 118 149
         ]
         []
 

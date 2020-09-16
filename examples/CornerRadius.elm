@@ -11,7 +11,7 @@ import TypedSvg exposing (circle, g, svg)
 import TypedSvg.Attributes exposing (fill, stroke, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (cx, cy, r)
 import TypedSvg.Core exposing (Svg)
-import TypedSvg.Types exposing (Fill(..), Transform(..))
+import TypedSvg.Types exposing (Paint(..), Transform(..))
 
 
 w : Float
@@ -77,8 +77,8 @@ corner angle radius sign =
                 (sign * cornerRadius * cos angle + sqrt (radius ^ 2 - cornerRadius ^ 2) * sin angle)
                 (sign * cornerRadius * sin angle - sqrt (radius ^ 2 - cornerRadius ^ 2) * cos angle)
             ]
-        , stroke Color.black
-        , fill FillNone
+        , stroke <| Paint <| Color.black
+        , fill PaintNone
         ]
 
 
@@ -87,8 +87,8 @@ circular arcs =
     let
         makeSlice index datum =
             Path.element (Shape.arc datum)
-                [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors
-                , stroke Color.white
+                [ fill <| Paint <| Maybe.withDefault Color.black <| Array.get index colors
+                , stroke <| Paint <| Color.white
                 ]
 
         makeCorners : { a | startAngle : Float, endAngle : Float, outerRadius : Float } -> List (Svg msg)
@@ -108,8 +108,8 @@ annular arcs =
     let
         makeSlice index datum =
             Path.element (Shape.arc { datum | innerRadius = mainRadius - 60 })
-                [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors
-                , stroke Color.white
+                [ fill <| Paint <| Maybe.withDefault Color.black <| Array.get index colors
+                , stroke <| Paint <| Color.white
                 ]
 
         makeCorners { startAngle, endAngle, outerRadius, innerRadius } =
