@@ -1,39 +1,46 @@
-module Scale.Log exposing (convert, invert, nice, rangeExtent, tickFormat, ticks)
+module Scale.Log exposing (scale)
 
-import Scale.Internal exposing (bimap, interpolateFloat)
-import Scale.Linear
+import Interpolation
+import Scale.Continuous as Continuous
 import Statistics
 
 
-rangeExtent : ( Float, Float ) -> ( Float, Float ) -> ( Float, Float )
-rangeExtent d r =
-    r
+scale base range_ domain_ =
+    let
+        ( transform, untransform ) =
+            if Tuple.first domain_ < 0 then
+                ( reflect log, reflect exp )
+
+            else
+                ( log, exp )
+    in
+    { domain = domain_
+    , range = range_
+    , convert = Continuous.convertTransform transform Interpolation.float
+    , invert = Continuous.invertTransform transform untransform
+    , ticks = ticks base
+    , tickFormat = tickFormat base
+    , nice = nice base
+    , rangeExtent = \_ r -> r
+    }
 
 
+exp : Float -> Float
+exp n =
+    e ^ n
+
+
+reflect : (Float -> Float) -> Float -> Float
+reflect f =
+    negate >> f >> negate
+
+
+log : Float -> Float
 log =
     logBase e
 
 
-convert domain range =
-    bimap domain range deinterpolate interpolateFloat
-
-
-invert domain range =
-    bimap range domain deinterpolate interpolate
-
-
-deinterpolate a b x =
-    log (x / a) / log (b / a)
-
-
-interpolate a b x =
-    if a < 0 then
-        -b ^ x * -a ^ (1 - x)
-
-    else
-        b ^ x * a ^ (1 - x)
-
-
+makePows : number -> number -> number -> number
 makePows start base =
     if start < 0 then
         \x -> -(base ^ -x)
@@ -42,6 +49,7 @@ makePows start base =
         \x -> base ^ x
 
 
+makeLogs : number -> Float -> Float -> Float
 makeLogs start base =
     if start < 0 then
         \x -> -(logBase base -x)
@@ -134,6 +142,7 @@ ticks base ( domStart, domEnd ) count =
         reverse <| List.map (\a -> pows a) <| Statistics.ticks topi topj <| round (min (topj - topi) n)
 
 
+tickFormat : Float -> ( Float, Float ) -> Int -> Float -> String
 tickFormat base ( start, end ) count =
     let
         k =
@@ -191,6 +200,7 @@ formatFixed precision value =
         |> String.fromFloat
 
 
+formatExponential : Float -> String
 formatExponential num =
     let
         parts =
@@ -234,6 +244,7 @@ formatExponential num =
     helper 0 (String.toList digits0 |> List.reverse) (String.toList decimals0)
 
 
+nice : Float -> ( Float, Float ) -> c -> ( Float, Float )
 nice base ( start, stop ) _ =
     let
         f =

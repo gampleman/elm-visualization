@@ -1,6 +1,7 @@
 module PieChart exposing (main)
 
 {-| An example showing how to render a basic pie chart.
+@category Basics
 -}
 
 import Array exposing (Array)
@@ -49,7 +50,7 @@ view model =
             model |> List.map Tuple.second |> Shape.pie { defaultPieConfig | outerRadius = radius }
 
         makeSlice index datum =
-            Path.element (Shape.arc datum) [ fill <| Paint <| Maybe.withDefault Color.black <| Array.get index colors, stroke <| Paint <| Color.white ]
+            Path.element (Shape.arc datum) [ fill <| Paint <| Maybe.withDefault Color.black <| Array.get index colors, stroke <| Paint Color.white ]
 
         makeLabel slice ( label, value ) =
             let
@@ -83,5 +84,6 @@ data =
     ]
 
 
+main : Svg msg
 main =
     view data

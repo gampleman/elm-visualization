@@ -1,10 +1,9 @@
 module HistogramTests exposing (histogram)
 
 import Expect
-import Fuzz exposing (..)
-import Helper exposing (expectAll, expectAny)
+import Fuzz exposing (float, list)
 import Histogram
-import Test exposing (..)
+import Test exposing (Test, describe, fuzz, fuzz2)
 
 
 histogram : Test

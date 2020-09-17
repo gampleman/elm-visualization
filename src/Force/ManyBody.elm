@@ -10,11 +10,17 @@ import Vector2d exposing (Vector2d)
 
 
 type alias Vertex comparable =
-    { key : comparable, position : Point2d Pixels UserCoords, strength : Float, velocity : Vector2d Pixels UserCoords }
+    { key : comparable
+    , position : Point2d Pixels UserCoords
+    , strength : Float
+    , velocity : Vector2d Pixels UserCoords
+    }
 
 
 type alias AggregateVertex =
-    { position : Point2d Pixels UserCoords, strength : Float }
+    { position : Point2d Pixels UserCoords
+    , strength : Float
+    }
 
 
 {-| Combine a non-empty list of points into one superpoint
@@ -66,7 +72,7 @@ wrapper alpha theta strengths points =
         vertices =
             Dict.toList points
                 |> List.map
-                    (\( key, { x, y } as point ) ->
+                    (\( key, { x, y } ) ->
                         let
                             strength =
                                 Dict.get key strengths
@@ -78,17 +84,15 @@ wrapper alpha theta strengths points =
         newVertices =
             manyBody alpha theta vertices
 
-        updater newVertex maybePoint =
-            case maybePoint of
-                Nothing ->
-                    Nothing
-
-                Just point ->
+        updater newVertex =
+            Maybe.map
+                (\point ->
                     let
                         dv =
                             Vector2d.toPixels newVertex.velocity
                     in
-                    Just { point | vx = point.vx + dv.x, vy = point.vy + dv.y }
+                    { point | vx = point.vx + dv.x, vy = point.vy + dv.y }
+                )
 
         folder newVertex pointsDict =
             Dict.update newVertex.key (updater newVertex) pointsDict

@@ -1,6 +1,8 @@
 module CornerRadius exposing (main)
 
 {-| A demonstration of cornerRadius for arcs
+
+@category Reference
 -}
 
 import Array exposing (Array)
@@ -77,7 +79,7 @@ corner angle radius sign =
                 (sign * cornerRadius * cos angle + sqrt (radius ^ 2 - cornerRadius ^ 2) * sin angle)
                 (sign * cornerRadius * sin angle - sqrt (radius ^ 2 - cornerRadius ^ 2) * cos angle)
             ]
-        , stroke <| Paint <| Color.black
+        , stroke <| Paint Color.black
         , fill PaintNone
         ]
 
@@ -88,7 +90,7 @@ circular arcs =
         makeSlice index datum =
             Path.element (Shape.arc datum)
                 [ fill <| Paint <| Maybe.withDefault Color.black <| Array.get index colors
-                , stroke <| Paint <| Color.white
+                , stroke <| Paint Color.white
                 ]
 
         makeCorners : { a | startAngle : Float, endAngle : Float, outerRadius : Float } -> List (Svg msg)
@@ -109,7 +111,7 @@ annular arcs =
         makeSlice index datum =
             Path.element (Shape.arc { datum | innerRadius = mainRadius - 60 })
                 [ fill <| Paint <| Maybe.withDefault Color.black <| Array.get index colors
-                , stroke <| Paint <| Color.white
+                , stroke <| Paint Color.white
                 ]
 
         makeCorners { startAngle, endAngle, outerRadius, innerRadius } =

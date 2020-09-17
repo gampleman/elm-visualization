@@ -1,6 +1,7 @@
 module PadAngle exposing (main)
 
 {-| A demonstration of padAngle for arcs
+@category Reference
 -}
 
 import Array exposing (Array)
@@ -60,7 +61,7 @@ circular arcs =
         makeSlice index datum =
             Path.element (Shape.arc datum)
                 [ fill <| Paint <| Maybe.withDefault Color.black <| Array.get index colors
-                , stroke <| Paint <| Color.black
+                , stroke <| Paint Color.black
                 ]
     in
     g [ transform [ Translate radius radius ] ]
@@ -74,7 +75,7 @@ annular arcs =
         makeSlice index datum =
             Path.element (Shape.arc { datum | innerRadius = radius - 60 })
                 [ fill <| Paint <| Maybe.withDefault Color.black <| Array.get index colors
-                , stroke <| Paint <| Color.black
+                , stroke <| Paint Color.black
                 ]
     in
     g [ transform [ Translate (3 * radius + 20) radius ] ]

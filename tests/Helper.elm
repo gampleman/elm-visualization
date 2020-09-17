@@ -1,13 +1,13 @@
-module Helper exposing (expectAll, expectAny, expectMember, isAbout, isBetween, pathEqual, precision)
+module Helper exposing (atLeastFloat, atMostFloat, expectAll, expectAny, expectMember, isAbout, isBetween, pathEqual, precision)
 
-import Expect exposing (Expectation)
+import Expect exposing (Expectation, FloatingPointTolerance(..))
 import Path exposing (Path)
 import Regex
-import Result
 import Test.Runner exposing (getFailureReason)
 import Test.Runner.Failure
 
 
+numRegex : Regex.Regex
 numRegex =
     Regex.fromString "[-+]?(?:\\d+\\.\\d+|\\d+\\.|\\.\\d+|\\d+)(?:[eE][-]?\\d+)?"
         |> Maybe.withDefault Regex.never
@@ -47,18 +47,21 @@ pathEqual str path =
             Expect.fail ("Parsing the model failed with:" ++ Debug.toString e)
 
 
+precision : number
 precision =
     100000
 
 
+isAbout : Float -> Float -> Expectation
 isAbout a b =
     if truncate ((a - b) * precision) == 0 then
         Expect.pass
 
     else
-        Expect.equal a b
+        Expect.within (Absolute 0.00001) a b
 
 
+isBetween : ( Float, Float ) -> Float -> Expectation
 isBetween ( b, c ) a =
     let
         mi =
@@ -67,11 +70,49 @@ isBetween ( b, c ) a =
         ma =
             max b c
     in
-    if round (a * precision) >= round (mi * precision) && round (a * precision) <= round (ma * precision) then
+    if a >= mi && a <= ma then
         Expect.pass
 
     else
-        Expect.fail (Debug.toString a ++ "\n╷\n| isBetween\n╵\n" ++ Debug.toString ( mi, ma ))
+        let
+            withinExpAMin =
+                Expect.within (Absolute (1 / precision)) a mi
+
+            withinExpAMax =
+                Expect.within (Absolute (1 / precision)) a ma
+        in
+        if withinExpAMin == Expect.pass || withinExpAMax == Expect.pass then
+            Expect.pass
+
+        else
+            Expect.fail (Debug.toString a ++ "\n╷\n| isBetween\n╵\n" ++ Debug.toString ( mi, ma ))
+
+
+atMostFloat : Float -> Float -> Expectation
+atMostFloat a b =
+    compareOrEqual (<=) b a "atMost"
+
+
+atLeastFloat : Float -> Float -> Expectation
+atLeastFloat a b =
+    compareOrEqual (>=) b a "atLeast"
+
+
+compareOrEqual : (Float -> Float -> Bool) -> Float -> Float -> String -> Expectation
+compareOrEqual compareFun a b compStr =
+    if compareFun a b then
+        Expect.pass
+
+    else
+        let
+            withinExp =
+                Expect.within (Absolute (1 / precision)) a b
+        in
+        if withinExp == Expect.pass then
+            Expect.pass
+
+        else
+            Expect.fail (Debug.toString a ++ "\n╷\n|" ++ compStr ++ "\n╵\n" ++ Debug.toString b)
 
 
 expectAll : List Expectation -> Expectation

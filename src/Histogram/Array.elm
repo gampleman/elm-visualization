@@ -22,7 +22,7 @@ bisectRight item array extent =
                             mid =
                                 Bitwise.shiftRightZfBy 1 (lo + hi)
                         in
-                        if get mid >= item then
+                        if get mid > item then
                             helper lo mid
 
                         else

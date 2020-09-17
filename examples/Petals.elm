@@ -1,6 +1,8 @@
 module Petals exposing (main)
 
 {-| Based on the arrangement of petals in a sunflower. Demonstrates the initial layout of Force.entity.
+
+@category Art
 -}
 
 import Color exposing (Color)
@@ -38,7 +40,7 @@ makePetal i =
         angle =
             modBy 360 (floor (toFloat i * (3 - sqrt 5) * pi * 180 - sqrt (toFloat i) * 4))
     in
-    circle [ cx x, cy y, r 5, fill (Paint (color angle)) ] []
+    circle [ cx x, cy y, r 5, fill <| Paint <| color angle ] []
 
 
 view : List Int -> Svg msg
@@ -47,5 +49,6 @@ view model =
         List.map makePetal model
 
 
+main : Svg msg
 main =
     view <| List.range 1 10000

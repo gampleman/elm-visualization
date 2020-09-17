@@ -1,6 +1,6 @@
 module Interpolation exposing
     ( Interpolator
-    , float, int, step, rgb, rgbWithGamma, hsl, hslLong
+    , float, int, step, rgb, rgbWithGamma, hsl, hslLong, lab, hcl, hclLong
     , map, map2, map3, map4, map5, piecewise, tuple
     , inParallel, list, ListCombiner(..), combineParallel
     , samples
@@ -15,7 +15,7 @@ so that you can build interpolators for your own custom datatypes.
 
 ### Primitive interpolators
 
-@docs float, int, step, rgb, rgbWithGamma, hsl, hslLong
+@docs float, int, step, rgb, rgbWithGamma, hsl, hslLong, lab, hcl, hclLong
 
 
 ### Composition
@@ -35,7 +35,8 @@ so that you can build interpolators for your own custom datatypes.
 -}
 
 import Array
-import Color exposing (Color)
+import Color exposing (Color, toRgba)
+import Color.Lab as Lab
 import Dict exposing (Dict)
 
 
@@ -152,16 +153,16 @@ tuple ia ib ( fromA, fromB ) ( toA, toB ) =
 
 
 
--- Does this even make any sense?
-
-
-andThen : (a -> Interpolator b) -> Interpolator a -> Interpolator b
-andThen fn interpolator =
-    \param ->
-        fn (interpolator param) param
-
-
-
+-- We can also provide an `andThen` function for our Interpolator:
+--
+--     andThen : (a -> Interpolator b) -> Interpolator a -> Interpolator b
+--     andThen fn interpolator =
+--           \param ->
+--                 fn (interpolator param) param
+--
+--   However, we have not actually come up with a scenario where this would make sense.
+--
+--
 -- Basic interpolators
 
 
@@ -286,6 +287,69 @@ hslImpl hueInt from to =
     map4 Color.hsla (hueInt start.hue end.hue) (float start.saturation end.saturation) (float start.lightness end.lightness) (float start.alpha end.alpha)
 
 
+{-| Interpolates between two Color values using the [CIELAB](https://en.wikipedia.org/wiki/CIELAB_color_space) color space, that is more perceptually linear than other color spaces.
+Perceptually linear means that a change of the same amount in a color value should produce a change of about the same visual importance.
+This property makes it ideal for accurate visual encoding of data.
+-}
+lab : Color -> Color -> Interpolator Color
+lab from to =
+    let
+        start =
+            Lab.toLab from
+
+        end =
+            Lab.toLab to
+    in
+    map4 (\l a b alpha -> Lab.fromLab { l = l, a = a, b = b, alpha = alpha })
+        (float start.l end.l)
+        (float start.a end.a)
+        (float start.b end.b)
+        (float start.alpha end.alpha)
+
+
+{-| Interpolates between two Color values using the [CIE Lch(ab)](https://en.wikipedia.org/wiki/HCL_color_space) color space.
+-}
+hcl : Color -> Color -> Interpolator Color
+hcl =
+    hclImpl hue360
+
+
+{-| Like hcl, but does not use the shortest path between hues.
+-}
+hclLong : Color -> Color -> Interpolator Color
+hclLong =
+    hclImpl float
+
+
+{-| We do not want negative values in an rgb color
+TODO: is ths a non issue or does it hide a problem in the Color.Lab module?
+-}
+forcePositive : Color -> Color
+forcePositive c =
+    let
+        rgbaColor =
+            c |> Color.toRgba
+    in
+    Color.rgb (clamp 0 1 rgbaColor.red) (clamp 0 1 rgbaColor.green) (clamp 0 1 rgbaColor.blue)
+
+
+hclImpl : (Float -> Float -> Interpolator Float) -> Color -> Color -> Interpolator Color
+hclImpl hueInt from to =
+    let
+        start =
+            Lab.toHcl from
+
+        end =
+            Lab.toHcl to
+    in
+    map4 (\h c l alpha -> Lab.fromHcl { hue = h, chroma = c, luminance = l, alpha = alpha })
+        (hueInt start.hue end.hue)
+        (float start.chroma end.chroma)
+        (float start.luminance end.luminance)
+        (float start.alpha end.alpha)
+        >> forcePositive
+
+
 hue : Float -> Float -> Interpolator Float
 hue from to =
     let
@@ -299,6 +363,11 @@ hue from to =
          else
             to
         )
+
+
+hue360 : Float -> Float -> Interpolator Float
+hue360 from to =
+    hue (from / 360) (to / 360) >> (*) 360
 
 
 gammaCorrected : Float -> Float -> Float -> Interpolator Float
@@ -332,24 +401,6 @@ Can be quite handy when debugging interpolators or as a way to create a quantize
 samples : Int -> Interpolator a -> List a
 samples n interpolator =
     List.map (\i -> interpolator (toFloat i / (toFloat n - 1))) (List.range 0 (n - 1))
-
-
-
--- modifications
-
-
-delay : Float -> Interpolator a -> Interpolator a
-delay time inter =
-    let
-        t =
-            clamp 0 0.99999 time
-    in
-    \p ->
-        if p <= t then
-            inter 0
-
-        else
-            inter ((p - t) / (1 - t))
 
 
 
@@ -431,7 +482,7 @@ list config from to =
         onTop =
             Dict.toList additions
                 |> List.filter (\( idx, _ ) -> idx > fromMaxIndex)
-                |> List.map (\( idx, a ) -> config.add a)
+                |> List.map (\( _, a ) -> config.add a)
 
         folder : comparable -> ( Int, a ) -> List (Interpolator a) -> List (Interpolator a)
         folder id ( idx, a ) result =
@@ -441,14 +492,14 @@ list config from to =
                         |> Maybe.map (\x -> config.add x)
                         |> Maybe.map List.singleton
                         |> Maybe.withDefault []
-            in
-            result
-                ++ [ if Dict.member id removals then
+
+                interpolator =
+                    if Dict.member id removals then
                         config.remove a
 
-                     else
+                    else
                         case Dict.get id toIds of
-                            Just ( idxB, b ) ->
+                            Just ( _, b ) ->
                                 if b == a then
                                     always b
 
@@ -457,8 +508,8 @@ list config from to =
 
                             Nothing ->
                                 cantHappen ()
-                   ]
-                ++ add
+            in
+            result ++ (interpolator :: add)
 
         cantHappen a =
             cantHappen a

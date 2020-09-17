@@ -1,26 +1,14 @@
-module Scale.BandTests exposing (convert)
+module Scale.BandTests exposing (band)
 
 import Expect
-import Fuzz exposing (..)
 import Helper exposing (expectAll)
 import Scale exposing (defaultBandConfig)
-import Svg.Attributes exposing (scale)
-import Test exposing (..)
+import Test exposing (Test, describe, test)
 
 
-elementInList : Fuzzer a -> Fuzzer ( a, List a )
-elementInList fuzzer =
-    Fuzz.map3 (\prefix item postfix -> ( item, List.concat [ prefix, [ item ], postfix ] )) (list fuzzer) fuzzer (list fuzzer)
-
-
-nonEmptyList : Fuzzer a -> Fuzzer (List a)
-nonEmptyList fuzzer =
-    Fuzz.map2 (\head tail -> head :: tail) fuzzer (list fuzzer)
-
-
-convert : Test
-convert =
-    describe "convert"
+band : Test
+band =
+    describe "band"
         [ test "convert a value in the domain returns a a nicely computed value in the range" <|
             \() ->
                 let

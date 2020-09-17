@@ -2,12 +2,13 @@ module LineChart exposing (main)
 
 {-| This module shows how to build a simple line and area chart using some of
 the primitives provided in this library.
+
+@category Basics
 -}
 
 import Axis
 import Color
 import Path exposing (Path)
-import SampleData exposing (timeSeries)
 import Scale exposing (ContinuousScale)
 import Shape
 import Time
@@ -87,7 +88,7 @@ view model =
             [ yAxis ]
         , g [ transform [ Translate padding padding ], class [ "series" ] ]
             [ Path.element (area model) [ strokeWidth 3, fill <| Paint <| Color.rgba 1 0 0 0.54 ]
-            , Path.element (line model) [ stroke (Paint (Color.rgb 1 0 0)), strokeWidth 3, fill PaintNone ]
+            , Path.element (line model) [ stroke <| Paint <| Color.rgb 1 0 0, strokeWidth 3, fill PaintNone ]
             ]
         ]
 
@@ -98,5 +99,18 @@ view model =
 -- a separate module.
 
 
+main : Svg msg
 main =
     view timeSeries
+
+
+timeSeries : List ( Time.Posix, Float )
+timeSeries =
+    [ ( Time.millisToPosix 1448928000000, 2.5 )
+    , ( Time.millisToPosix 1451606400000, 2 )
+    , ( Time.millisToPosix 1452211200000, 3.5 )
+    , ( Time.millisToPosix 1452816000000, 2 )
+    , ( Time.millisToPosix 1453420800000, 3 )
+    , ( Time.millisToPosix 1454284800000, 1 )
+    , ( Time.millisToPosix 1456790400000, 1.2 )
+    ]

@@ -1,6 +1,8 @@
 module HistogramChart exposing (main)
 
 {-| Renders a histogram of a randomly generated data set
+
+@category Basics
 -}
 
 import Axis
@@ -108,5 +110,6 @@ view model =
         ]
 
 
+main : Svg msg
 main =
     view data

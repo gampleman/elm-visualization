@@ -1,10 +1,10 @@
 module Scale.LogTests exposing (clampTest, convertTest, rangeExtentTest, tickFormatTest, ticksTest)
 
 import Expect exposing (FloatingPointTolerance(..))
-import Fuzz exposing (..)
-import Helper exposing (expectAll, isAbout, isBetween)
+import Fuzz exposing (float, floatRange, tuple, tuple3)
+import Helper exposing (isBetween)
 import Scale
-import Test exposing (..)
+import Test exposing (Test, describe, fuzz, test)
 
 
 convertsTo : Float -> Float -> Test
@@ -31,6 +31,7 @@ empty ( a, b ) =
     a == b
 
 
+wiggeIfZero : Float -> Float
 wiggeIfZero a =
     if a == 0 then
         0.01
@@ -39,6 +40,7 @@ wiggeIfZero a =
         a
 
 
+normalizeDomain : ( Float, Float ) -> ( Float, Float )
 normalizeDomain ( mn, mx ) =
     if mn < 0 then
         ( wiggeIfZero mn, -1 * wiggeIfZero (abs mx) )
@@ -62,17 +64,23 @@ clampTest =
                 convert |> isBetween range
 
 
+rangeExtentTest : Test
 rangeExtentTest =
     fuzz (tuple3 ( tuple ( float, float ), tuple ( float, float ), tuple ( float, float ) )) "rangeExtent returns the range" <|
-        \( domain, range, ( base, val ) ) ->
+        \( domain, range, ( base, _ ) ) ->
             Scale.rangeExtent (Scale.log base range domain) |> Expect.equal range
 
 
 powerOfTenTicks : String -> ( Float, Float ) -> List Float -> Test
-powerOfTenTicks desc ( begin, end ) expected =
+powerOfTenTicks desc =
+    powerOfTenTicksCount desc 10
+
+
+powerOfTenTicksCount : String -> Int -> ( Float, Float ) -> List Float -> Test
+powerOfTenTicksCount desc count ( begin, end ) expected =
     let
         description =
-            "generates the expected power-of-ten for " ++ desc ++ " domains when base = 10 for domain = ( " ++ String.fromFloat begin ++ ", " ++ String.fromFloat end ++ " )"
+            "generates the expected power-of-ten for " ++ desc ++ " domains when base = 10 for domain = ( " ++ String.fromFloat begin ++ ", " ++ String.fromFloat end ++ " ) and count = " ++ String.fromInt count
     in
     test description <|
         \() ->
@@ -98,6 +106,12 @@ ticksTest =
         , powerOfTenTicks "small" ( 5, 1 ) [ 5, 4, 3, 2, 1 ]
         , powerOfTenTicks "small" ( -1, -5 ) [ -1, -2, -3, -4, -5 ]
         , powerOfTenTicks "small" ( -5, -1 ) [ -5, -4, -3, -2, -1 ]
+
+        -- , powerOfTenTicksCount "small" 1 ( 286.9252014, 329.4978332 ) [ 300 ]
+        -- , powerOfTenTicksCount "small" 2 ( 286.9252014, 329.4978332 ) [ 300 ]
+        -- , powerOfTenTicksCount "small" 3 ( 286.9252014, 329.4978332 ) [ 300, 320 ]
+        -- , powerOfTenTicksCount "small" 4 ( 286.9252014, 329.4978332 ) [ 290, 300, 310, 320 ]
+        -- , powerOfTenTicks "small" ( 286.9252014, 329.4978332 ) [ 290, 295, 300, 305, 310, 315, 320, 325 ]
         , test "generates the expected power-of-base ticks" <|
             \() ->
                 let
@@ -123,6 +137,7 @@ baseFormat base count expected =
                 |> Expect.equal expected
 
 
+baseTenFormat : Int -> List String -> Test
 baseTenFormat =
     baseFormat 10
 

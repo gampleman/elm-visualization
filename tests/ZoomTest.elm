@@ -1,9 +1,7 @@
 module ZoomTest exposing (interpolateTest)
 
 import Expect exposing (FloatingPointTolerance(..))
-import Fuzz exposing (..)
-import Helper exposing (expectAll, expectAny)
-import Test exposing (..)
+import Test exposing (Test, test)
 import Zoom.Interpolation exposing (interpolate)
 
 
@@ -18,7 +16,7 @@ interpolateTest =
                 b =
                     { cx = 324.6872108946794, cy = 59.43501601062763, size = 7.399052110984391 }
 
-                ( t, inter ) =
+                ( _, inter ) =
                     interpolate a b
             in
             inter 0.5

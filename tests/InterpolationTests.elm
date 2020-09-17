@@ -1,11 +1,11 @@
 module InterpolationTests exposing (suite)
 
-import Array
 import Color exposing (Color)
 import Expect exposing (Expectation, FloatingPointTolerance(..))
-import Fuzz exposing (..)
+import Fuzz exposing (float, floatRange, intRange, list)
+import Helper exposing (atLeastFloat, atMostFloat)
 import Interpolation exposing (Interpolator)
-import Test exposing (..)
+import Test exposing (Test, describe, fuzz, fuzz2, fuzz3, test)
 
 
 suite : Test
@@ -104,13 +104,31 @@ suite =
                             , Color.rgb255 191 64 85
                             ]
             ]
+        , describe "lab" <|
+            [ test "interpolates in lab" <|
+                \() ->
+                    interpolateColorTest Interpolation.lab
+                        { red = 134, green = 120, blue = 146 }
+            ]
+        , describe "hcl" <|
+            [ test "interpolates in hcl" <|
+                \() ->
+                    interpolateColorTest Interpolation.hcl
+                        { red = 106, green = 121, blue = 206 }
+            ]
+        , describe "hclLong" <|
+            [ test "interpolates in hcl" <|
+                \() ->
+                    interpolateColorTest Interpolation.hclLong
+                        { red = 0, green = 144, blue = 169 }
+            ]
         , describe "piecewise"
             [ fuzz3 float (list float) (floatRange 0 1) "never exceeds the range" <|
                 \head tail t ->
                     Interpolation.piecewise Interpolation.float head tail t
                         |> Expect.all
-                            [ Expect.atMost (List.foldl max head tail)
-                            , Expect.atLeast (List.foldl min head tail)
+                            [ atMostFloat <| List.foldl max head tail
+                            , atLeastFloat <| List.foldl min head tail
                             ]
             ]
         , describe "inParallel"
@@ -187,7 +205,7 @@ suite =
 
 equalsSamples : (a -> a -> Expectation) -> List a -> Interpolator a -> Expectation
 equalsSamples eq expectedSamples interp =
-    Expect.all (List.map2 (\a b c -> eq a b) expectedSamples (Interpolation.samples (List.length expectedSamples) interp))
+    Expect.all (List.map2 (\a b _ -> eq a b) expectedSamples (Interpolation.samples (List.length expectedSamples) interp))
         ()
 
 

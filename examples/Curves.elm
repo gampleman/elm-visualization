@@ -17,6 +17,7 @@ module Curves exposing (main)
 @screenshot step
 @screenshot natural
 
+@category Reference
 -}
 
 import Color exposing (Color)
@@ -86,7 +87,7 @@ xGridLine index tick =
         , Explicit.y2 (percent 100)
         , x1 (Scale.convert xScale tick)
         , x2 (Scale.convert xScale tick)
-        , stroke <| Paint <| Color.white
+        , stroke <| Paint Color.white
         , strokeWidth (Basics.max (toFloat (modBy 2 index)) 0.5)
         ]
         []
@@ -99,7 +100,7 @@ yGridLine index tick =
         , Explicit.x2 (percent 100)
         , y1 (Scale.convert yScale tick)
         , y2 (Scale.convert yScale tick)
-        , stroke <| Paint <| Color.white
+        , stroke <| Paint Color.white
         , strokeWidth (Basics.max (toFloat (modBy 2 index)) 0.5)
         ]
         []
@@ -131,7 +132,7 @@ view model =
             , g [] <| List.indexedMap xGridLine <| Scale.ticks xScale 20
             , g [] <|
                 List.map drawCurve model
-            , g [] <| List.map (\( dx, dy ) -> Path.element circle [ fill (Paint Color.white), stroke <| Paint <| Color.black, transform [ Translate dx dy ] ]) preparedPoints
+            , g [] <| List.map (\( dx, dy ) -> Path.element circle [ fill (Paint Color.white), stroke (Paint Color.black), transform [ Translate dx dy ] ]) preparedPoints
             , g [] <| List.indexedMap drawLegend <| model
             ]
         ]
@@ -168,6 +169,7 @@ parametrized prefix curveFn =
         |> List.map (\s -> ( prefix ++ " " ++ String.fromFloat s, curveFn s, Scale.convert scale s ))
 
 
+exampleData : List ( String, List ( String, Curve, Color ) )
 exampleData =
     [ ( "Linear", basic "linearCurve" Shape.linearCurve )
     , ( "Basis", basic "basisCurve" Shape.basisCurve )

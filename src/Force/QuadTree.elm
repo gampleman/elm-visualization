@@ -227,9 +227,6 @@ type Quadrant
 quadrant : BoundingBox2d Pixels UserCoords -> Point2d Pixels UserCoords -> Quadrant
 quadrant boundingBox point =
     let
-        { minX, minY, maxX, maxY } =
-            BoundingBox2d.extrema boundingBox
-
         ( midX, midY ) =
             BoundingBox2d.centerPoint boundingBox |> Point2d.coordinates
 

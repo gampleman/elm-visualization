@@ -60,7 +60,7 @@ offsetNone series =
 
         x :: xs ->
             let
-                weirdAdd ( s10, s11 ) ( s00, s01 ) =
+                weirdAdd ( _, s11 ) ( s00, s01 ) =
                     -- fall back to s00 when s01 is NaN
                     if isNaN s01 then
                         ( s00, s11 + s00 )
@@ -74,7 +74,7 @@ offsetNone series =
                     )
             in
             List.foldl helper ( x, [] ) xs
-                |> (\( a, b ) -> (::) a b)
+                |> (\( a, b ) -> a :: b)
                 |> List.reverse
 
 
@@ -82,35 +82,30 @@ offsetDiverging :
     List (List ( number, number ))
     -> List (List ( number, number ))
 offsetDiverging series =
-    case series of
-        [] ->
-            []
-
-        first :: rest ->
+    let
+        folder ( x, y ) ( yp, yn, accum ) =
             let
-                folder ( x, y ) ( yp, yn, accum ) =
-                    let
-                        dy =
-                            y - x
-                    in
-                    if dy >= 0 then
-                        ( yp + dy, yn, ( yp, yp + dy ) :: accum )
-
-                    else if dy < 0 then
-                        ( yp, yn + dy, ( yn + dy, yn ) :: accum )
-
-                    else
-                        ( yp, yn, ( yp, y ) :: accum )
-
-                modifyColumn column =
-                    List.foldl folder ( 0, 0, [] ) column
-                        |> (\( _, _, newColumn ) -> newColumn)
-                        |> List.reverse
+                dy =
+                    y - x
             in
-            series
-                |> List.transpose
-                |> List.map modifyColumn
-                |> List.transpose
+            if dy >= 0 then
+                ( yp + dy, yn, ( yp, yp + dy ) :: accum )
+
+            else if dy < 0 then
+                ( yp, yn + dy, ( yn + dy, yn ) :: accum )
+
+            else
+                ( yp, yn, ( yp, y ) :: accum )
+
+        modifyColumn column =
+            List.foldl folder ( 0, 0, [] ) column
+                |> (\( _, _, newColumn ) -> newColumn)
+                |> List.reverse
+    in
+    series
+        |> List.transpose
+        |> List.map modifyColumn
+        |> List.transpose
 
 
 offsetExpand : List (List ( Float, Float )) -> List (List ( Float, Float ))
@@ -120,7 +115,7 @@ offsetExpand series =
         normalizeColumn column =
             let
                 deltas =
-                    List.map (abs << (\( a, b ) -> (-) a b)) column
+                    List.map (\( a, b ) -> abs (a - b)) column
 
                 total =
                     List.sum deltas
@@ -147,7 +142,7 @@ offsetSilhouette series =
                         |> List.transpose
                         |> List.map (List.sum << List.map Tuple.second)
             in
-            List.map2 (\( x, y ) newY -> ( -newY / 2, y + (-newY / 2) )) first ys
+            List.map2 (\( _, y ) newY -> ( -newY / 2, y + (-newY / 2) )) first ys
                 :: xs
                 |> offsetNone
 
@@ -205,7 +200,7 @@ offsetWiggle series =
                     pairwise deltaFractions columns
                         |> List.map2 (\a b -> ( a, b )) (List.drop 1 columns |> List.map List.sum)
                         |> List.scanl scanner 0
-                        |> List.map2 (\( x, y ) yValue -> ( yValue, y + yValue )) first
+                        |> List.map2 (\( _, y ) yValue -> ( yValue, y + yValue )) first
             in
             (newFirst :: rest)
                 |> offsetNone

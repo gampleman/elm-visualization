@@ -12,6 +12,23 @@ that uniquely suite your needs.
 
 [![Examples](https://code.gampleman.eu/elm-visualization/misc/examples-600.png)](https://elm-visualization.netlify.com/)
 
+## Getting started
+
+You will need to have [elm](https://elm-lang.org) installed. Then run:
+
+```sh
+elm init
+elm install gampleman/elm-visualization
+```
+
+However, there are other packages that you will likely need to produce a visualization. Which depends somewhat on what you want to achieve, here are some common ones:
+
+- [avh4/elm-color](https://package.elm-lang.org/packages/avh4/elm-color/latest) for the `Color` type
+- [elm-community/typed-svg](https://package.elm-lang.org/packages/elm-community/typed-svg/latest) for rendering
+- [folkertdev/one-true-path-experiment](https://package.elm-lang.org/packages/folkertdev/one-true-path-experiment/latest) for the `Path` type
+
+You can use [this Ellie](https://ellie-app.com/8592jsvBL2ka1) to run the examples, since it has all the dependencies already installed into it.
+
 ## What's included?
 
 ### [Scales](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Scale)
@@ -25,7 +42,6 @@ sizes, colors, labels and other ways to display data.
 
 A component that allows you to visualize a Scale. Those little ticks that describe
 the dimensions of a plot.
-
 
 ### [Shapes](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Shape)
 
@@ -43,7 +59,6 @@ Smoothly transition between pairs of values. Useful for animation, or generating
 ### [Transition](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Transition)
 
 Build complex animations using Interpolation.
-
 
 ### [Histogram](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Histogram)
 
