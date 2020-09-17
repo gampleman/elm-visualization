@@ -101,7 +101,7 @@ column xScale ( year, values ) =
                 , y <| lowerY
                 , width <| Scale.bandwidth xScale
                 , height <| (abs <| upperY - lowerY)
-                , fill <| Paint color
+                , fill (Paint color)
                 ]
                 []
     in
