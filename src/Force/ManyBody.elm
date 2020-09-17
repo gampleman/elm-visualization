@@ -113,7 +113,7 @@ manyBody alpha theta vertices =
     List.map updateVertex vertices
 
 
-applyForce : Float -> Float -> QuadTree.QuadTree AggregateVertex (Vertex comparable) -> Vertex comparable -> Vector2d Pixels UserCoords
+applyForce : Float -> Float -> QuadTree AggregateVertex (Vertex comparable) -> Vertex comparable -> Vector2d Pixels UserCoords
 applyForce alpha theta qtree vertex =
     let
         -- based on https://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation#Calculating_the_force_acting_on_a_body

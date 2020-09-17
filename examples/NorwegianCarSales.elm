@@ -144,7 +144,7 @@ view { values, labels, extent } =
         labelElement : String -> Float -> Svg msg
         labelElement label yPosition =
             g [ transform [ Translate (w - padding - labelsWidth + 10) yPosition ] ]
-                [ text_ [ fill (sampleColor label |> Paint) ] [ text label ] ]
+                [ text_ [ fill <| Paint <| sampleColor label ] [ text label ] ]
     in
     div []
         [ titleNavigation
