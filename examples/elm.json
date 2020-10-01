@@ -23,7 +23,7 @@
       "ericgj/elm-csv-decode": "2.0.1",
       "folkertdev/one-true-path-experiment": "5.0.0",
       "ianmackenzie/elm-geometry": "3.6.0",
-      "ianmackenzie/elm-units-prefixed": "2.0.0",
+      "ianmackenzie/elm-units-prefixed": "2.7.0",
       "justinmimbs/time-extra": "1.1.0",
       "lovasoa/elm-csv": "1.1.7",
       "mpizenberg/elm-pointer-events": "4.0.2",
