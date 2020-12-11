@@ -18,6 +18,7 @@ module Curves exposing (main)
 @screenshot natural
 
 @category Reference
+
 -}
 
 import Color exposing (Color)
@@ -110,31 +111,26 @@ type alias Curve =
     List ( Float, Float ) -> SubPath
 
 
-drawCurve : ( String, Curve, Color ) -> Svg msg
-drawCurve ( name, curve, color ) =
-    List.map Just preparedPoints
-        |> Shape.line curve
-        |> (\path -> Path.element path [ stroke (Paint color), fill PaintNone, strokeWidth 2 ])
+drawCurve : ( String, Path, Color ) -> Svg msg
+drawCurve ( name, path, color ) =
+    Path.element path [ stroke (Paint color), fill PaintNone, strokeWidth 2 ]
 
 
-drawLegend : Int -> ( String, Curve, Color ) -> Svg msg
-drawLegend index ( name, curve, color ) =
+drawLegend : Int -> ( String, Path, Color ) -> Svg msg
+drawLegend index ( name, _, color ) =
     text_ [ fill (Paint color), fontFamily [ "monospace" ], x padding, y (toFloat index * 20 + padding) ] [ text name ]
 
 
-view : List ( String, Curve, Color ) -> Svg String
+view : List ( String, Path, Color ) -> Svg msg
 view model =
-    div []
-        [ Example.navigation "Curve type" exampleData
-        , svg [ viewBox 0 0 w h ]
-            [ rect [ width w, height h, fill <| Paint <| Color.rgb255 223 223 223 ] []
-            , g [] <| List.indexedMap yGridLine <| Scale.ticks yScale 10
-            , g [] <| List.indexedMap xGridLine <| Scale.ticks xScale 20
-            , g [] <|
-                List.map drawCurve model
-            , g [] <| List.map (\( dx, dy ) -> Path.element circle [ fill (Paint Color.white), stroke (Paint Color.black), transform [ Translate dx dy ] ]) preparedPoints
-            , g [] <| List.indexedMap drawLegend <| model
-            ]
+    svg [ viewBox 0 0 w h ]
+        [ rect [ width w, height h, fill <| Paint <| Color.rgb255 223 223 223 ] []
+        , g [] <| List.indexedMap yGridLine <| Scale.ticks yScale 10
+        , g [] <| List.indexedMap xGridLine <| Scale.ticks xScale 20
+        , g [] <|
+            List.map drawCurve model
+        , g [] <| List.map (\( dx, dy ) -> Path.element circle [ fill (Paint Color.white), stroke (Paint Color.black), transform [ Translate dx dy ] ]) preparedPoints
+        , g [] <| List.indexedMap drawLegend <| model
         ]
 
 
@@ -151,12 +147,12 @@ circle =
         }
 
 
-basic : String -> Curve -> List ( String, Curve, Color )
+basic : String -> Curve -> List ( String, Path, Color )
 basic prefix curveFn =
-    [ ( prefix, curveFn, Color.black ) ]
+    [ ( prefix, [ curveFn preparedPoints ], Color.black ) ]
 
 
-parametrized : String -> (Float -> Curve) -> List ( String, Curve, Color )
+parametrized : String -> (Float -> Curve) -> List ( String, Path, Color )
 parametrized prefix curveFn =
     let
         scale =
@@ -166,11 +162,11 @@ parametrized prefix curveFn =
             [ 0, 0.25, 0.5, 0.75, 1 ]
     in
     stops
-        |> List.map (\s -> ( prefix ++ " " ++ String.fromFloat s, curveFn s, Scale.convert scale s ))
+        |> List.map (\s -> ( prefix ++ " " ++ String.fromFloat s, [ curveFn s preparedPoints ], Scale.convert scale s ))
 
 
-exampleData : List ( String, List ( String, Curve, Color ) )
-exampleData =
+main : Example.Program (List ( String, Path, Color ))
+main =
     [ ( "Linear", basic "linearCurve" Shape.linearCurve )
     , ( "Basis", basic "basisCurve" Shape.basisCurve )
     , ( "BasisClosed", basic "basisCurveClosed" Shape.basisCurveClosed )
@@ -186,7 +182,5 @@ exampleData =
     , ( "Step", parametrized "stepCurve" Shape.stepCurve )
     , ( "Natural", basic "naturalCurve" Shape.naturalCurve )
     ]
-
-
-main =
-    Example.switchableViews exampleData view
+        |> Example.tabbed "Curve type:"
+        |> Example.application view

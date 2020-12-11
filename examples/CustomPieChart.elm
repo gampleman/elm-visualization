@@ -58,28 +58,11 @@ type alias ChartConfig =
     }
 
 
-configuration : Example.Configuration ChartConfig
-configuration =
-    Example.configuration
-        { outerRadius = 210
-        , innerRadius = 200
-        , padAngle = 0.02
-        , cornerRadius = 20
-        , labelPosition = 230
-        }
-        [ Example.floatSlider "Outer Radius" .outerRadius (\v m -> { m | outerRadius = v }) 0 radius
-        , Example.floatSlider "Inner Radius" .innerRadius (\v m -> { m | innerRadius = v }) 0 radius
-        , Example.floatSlider "Pad Angle" .padAngle (\v m -> { m | padAngle = v }) 0 0.8
-        , Example.floatSlider "Corner Radius" .cornerRadius (\v m -> { m | cornerRadius = v }) 0 20
-        , Example.floatSlider "Label Position" .labelPosition (\v m -> { m | labelPosition = v }) 0 radius
-        ]
-
-
-drawChart : ChartConfig -> List ( String, Float ) -> Svg msg
-drawChart config model =
+view : ChartConfig -> Svg msg
+view config =
     let
         pieData =
-            model
+            data
                 |> List.map Tuple.second
                 |> Shape.pie
                     { defaultPieConfig
@@ -108,16 +91,8 @@ drawChart config model =
     svg [ width (radius * 2), height (radius * 2) ]
         [ g [ transform [ Translate radius radius ] ]
             [ g [] <| List.indexedMap makeSlice pieData
-            , g [] <| List.map2 makeLabel pieData model
+            , g [] <| List.map2 makeLabel pieData data
             ]
-        ]
-
-
-view : ChartConfig -> Html (Example.ConfigMsg ChartConfig)
-view model =
-    div [ style "display" "flex", style "justify-content" "space-around" ]
-        [ drawChart model data
-        , Example.verticalPanel "Pie Configuration" configuration model
         ]
 
 
@@ -133,5 +108,21 @@ data =
     ]
 
 
+main : Example.Program ChartConfig
 main =
-    Example.configurable configuration view
+    Example.configuration
+        { outerRadius = 210
+        , innerRadius = 200
+        , padAngle = 0.02
+        , cornerRadius = 20
+        , labelPosition = 230
+        }
+        [ Example.floatSlider "Outer Radius" { min = 0, max = radius } .outerRadius (\v m -> { m | outerRadius = v })
+        , Example.floatSlider "Inner Radius" { min = 0, max = radius } .innerRadius (\v m -> { m | innerRadius = v })
+        , Example.floatSlider "Pad Angle" { min = 0, max = 0.8 } .padAngle (\v m -> { m | padAngle = v })
+        , Example.floatSlider "Corner Radius" { min = 0, max = 20 } .cornerRadius (\v m -> { m | cornerRadius = v })
+        , Example.floatSlider "Label Position" { min = 0, max = radius } .labelPosition (\v m -> { m | labelPosition = v })
+        ]
+        |> Example.withTitle "Pie Configuration"
+        |> Example.withCustomCss ".example-layout-horizontal { justify-content: space-around; }"
+        |> Example.application view
