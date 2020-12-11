@@ -4,6 +4,7 @@ module BarChartRace exposing (main)
 
 @requires data/category-brands.csv
 @category Advanced
+
 -}
 
 import Axis

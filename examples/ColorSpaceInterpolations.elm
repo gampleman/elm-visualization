@@ -17,30 +17,17 @@ import Scale exposing (QuantizeScale)
 
 
 type alias Model =
-    { fromColorValue : Color
-    , toColorValue : Color
+    { startColor : Color
+    , endColor : Color
     , count : Int
     }
-
-
-configuration : Example.Configuration Model
-configuration =
-    Example.configuration
-        { fromColorValue = Color.rgb255 0 255 0
-        , toColorValue = Color.rgb255 255 2 0
-        , count = 50
-        }
-        [ Example.colorPicker "Start Color" .fromColorValue (\v m -> { m | fromColorValue = v })
-        , Example.colorPicker "End Color" .toColorValue (\v m -> { m | toColorValue = v })
-        , Example.intSlider "Number of Colors" .count (\v m -> { m | count = v }) 3 100
-        ]
 
 
 palette : Model -> (Color -> Color -> Interpolator Color) -> Html msg
 palette model colorSpaceInterpolator =
     div [ style "display" "flex", style "flex-grow" "1" ]
         (Interpolation.samples model.count
-            (colorSpaceInterpolator model.fromColorValue model.toColorValue)
+            (colorSpaceInterpolator model.startColor model.endColor)
             |> List.map
                 (\color ->
                     Html.div [ style "background-color" (Color.toCssString color), style "flex-grow" "1" ] []
@@ -48,9 +35,9 @@ palette model colorSpaceInterpolator =
         )
 
 
-view : Model -> Html (Example.ConfigMsg Model)
+view : Model -> Html msg
 view model =
-    Html.div [ style "display" "flex", style "min-height" "100vh", style "padding-right" "10px" ]
+    Html.div [ style "display" "flex", style "min-height" "100vh", style "padding-right" "10px", style "flex-grow" "1" ]
         [ Html.div
             [ style "flex-grow" "1", style "margin-right" "20px", style "display" "flex", style "flex-direction" "column" ]
             [ title "rgb" "https://en.wikipedia.org/wiki/RGB_color_model"
@@ -66,7 +53,6 @@ view model =
             , title "hclLong" "https://en.wikipedia.org/wiki/HCL_color_space"
             , palette model Interpolation.hclLong
             ]
-        , Example.verticalPanel "Color Space Interpolations" configuration model
         ]
 
 
@@ -77,5 +63,16 @@ title label url =
         ]
 
 
+main : Example.Program Model
 main =
-    Example.configurable configuration view
+    Example.configuration
+        { startColor = Color.rgb255 0 255 0
+        , endColor = Color.rgb255 255 2 0
+        , count = 50
+        }
+        [ Example.colorPicker "Start Color" .startColor (\v m -> { m | startColor = v })
+        , Example.colorPicker "End Color" .endColor (\v m -> { m | endColor = v })
+        , Example.intSlider "Number of Colors" { min = 3, max = 100 } .count (\v m -> { m | count = v })
+        ]
+        |> Example.withTitle "Color Space Interpolations"
+        |> Example.application view
