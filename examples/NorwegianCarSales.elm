@@ -119,9 +119,7 @@ fromCalendarDate year month day =
 
 
 
--- view : StackResult String -> Svg String
-
-
+view : StackResult String -> Svg msg
 view ({ values, labels, extent } as model) =
     let
         labelsWidth =
@@ -236,7 +234,7 @@ map2WithOrders fn aOrd bOrd aList bList =
         (List.sortBy Tuple.first (List.map2 Tuple.pair aOrd aList))
         (List.sortBy Tuple.first (List.map2 Tuple.pair bOrd bList))
 
-
+main : Example.Program (StackResult String)
 main =
     stacks
         |> Example.tabbed "Layout: "
