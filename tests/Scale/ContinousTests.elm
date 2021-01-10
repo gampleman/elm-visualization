@@ -1,10 +1,10 @@
 module Scale.ContinousTests exposing (linear, power, radial, symlog)
 
 import Expect exposing (FloatingPointTolerance(..))
-import Fuzz exposing (float, tuple, tuple3)
+import Fuzz exposing (float, int, intRange, oneOf, tuple, tuple3)
 import Helper exposing (expectAll, isBetween)
 import Scale
-import Test exposing (Test, describe, fuzz, test)
+import Test exposing (Test, describe, fuzz, fuzz2, test)
 
 
 nonDegenerateDomain =
