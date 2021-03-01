@@ -19,7 +19,7 @@
       "elm-community/list-extra": "8.2.4",
       "elm-community/typed-svg": "6.0.0",
       "elm-explorations/linear-algebra": "1.0.3",
-      "elm-explorations/webgl": "1.1.2",
+      "elm-explorations/webgl": "1.1.3",
       "ericgj/elm-csv-decode": "2.0.1",
       "folkertdev/one-true-path-experiment": "5.0.2",
       "ianmackenzie/elm-geometry": "3.6.0",
