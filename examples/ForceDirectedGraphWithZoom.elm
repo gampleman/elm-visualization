@@ -4,6 +4,7 @@ module ForceDirectedGraphWithZoom exposing (main)
 functionality.
 
 @delay 5
+@category Advanced
 
 -}
 
@@ -19,63 +20,11 @@ import Html.Events.Extra.Mouse as Mouse
 import Json.Decode as Decode
 import Task
 import Time
-import TypedSvg
-    exposing
-        ( circle
-        , defs
-        , g
-        , line
-        , marker
-        , polygon
-        , rect
-        , svg
-        , text_
-        , title
-        )
-import TypedSvg.Attributes as Attrs
-    exposing
-        ( class
-        , cursor
-        , fill
-        , fontSize
-        , id
-        , markerEnd
-        , markerHeight
-        , markerWidth
-        , orient
-        , pointerEvents
-        , points
-        , refX
-        , refY
-        , stroke
-        , transform
-        )
-import TypedSvg.Attributes.InPx
-    exposing
-        ( cx
-        , cy
-        , dx
-        , dy
-        , height
-        , r
-        , strokeWidth
-        , width
-        , x1
-        , x2
-        , y1
-        , y2
-        )
+import TypedSvg exposing (circle, defs, g, line, marker, polygon, rect, svg, text_, title)
+import TypedSvg.Attributes as Attrs exposing (class, cursor, fill, fontSize, id, markerEnd, markerHeight, markerWidth, orient, pointerEvents, points, refX, refY, stroke, transform)
+import TypedSvg.Attributes.InPx exposing (cx, cy, dx, dy, height, r, strokeWidth, width, x1, x2, y1, y2)
 import TypedSvg.Core exposing (Attribute, Svg, text)
-import TypedSvg.Types
-    exposing
-        ( AlignmentBaseline(..)
-        , AnchorAlignment(..)
-        , Cursor(..)
-        , Length(..)
-        , Opacity(..)
-        , Paint(..)
-        , Transform(..)
-        )
+import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Cursor(..), Length(..), Opacity(..), Paint(..), Transform(..))
 import Zoom exposing (OnZoom, Zoom)
 
 

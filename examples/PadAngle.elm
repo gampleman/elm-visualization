@@ -1,6 +1,7 @@
 module PadAngle exposing (main)
 
 {-| A demonstration of padAngle for arcs
+@category Reference
 -}
 
 import Array exposing (Array)

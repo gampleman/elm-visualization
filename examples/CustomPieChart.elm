@@ -1,11 +1,14 @@
 module CustomPieChart exposing (main)
 
 {-| An interactive example showing the effect of various options on pie generators.
+
+@category Reference
+
 -}
 
 import Array exposing (Array)
-import Browser
 import Color exposing (Color)
+import Example
 import Html exposing (Html, br, div, h2, input, label)
 import Html.Attributes as Attr exposing (step, style, type_, value)
 import Html.Events exposing (onInput)
@@ -55,25 +58,11 @@ type alias ChartConfig =
     }
 
 
-type Msg
-    = UpdateOuterRadius String
-    | UpdateInnerRadius String
-    | UpdatePadAngle String
-    | UpdateCornerRadius String
-    | UpdateLabelPosition String
-
-
-type alias Model =
-    { config : ChartConfig
-    , data : List ( String, Float )
-    }
-
-
-drawChart : ChartConfig -> List ( String, Float ) -> Svg msg
-drawChart config model =
+view : ChartConfig -> Svg msg
+view config =
     let
         pieData =
-            model
+            data
                 |> List.map Tuple.second
                 |> Shape.pie
                     { defaultPieConfig
@@ -102,97 +91,7 @@ drawChart config model =
     svg [ width (radius * 2), height (radius * 2) ]
         [ g [ transform [ Translate radius radius ] ]
             [ g [] <| List.indexedMap makeSlice pieData
-            , g [] <| List.map2 makeLabel pieData model
-            ]
-        ]
-
-
-update : Msg -> Model -> Model
-update msg model =
-    let
-        config =
-            model.config
-    in
-    case msg of
-        UpdateOuterRadius amount ->
-            { model | config = { config | outerRadius = Maybe.withDefault 0 <| String.toFloat amount } }
-
-        UpdateInnerRadius amount ->
-            { model | config = { config | innerRadius = Maybe.withDefault 0 <| String.toFloat amount } }
-
-        UpdatePadAngle amount ->
-            { model | config = { config | padAngle = Maybe.withDefault 0 <| String.toFloat amount } }
-
-        UpdateCornerRadius amount ->
-            { model | config = { config | cornerRadius = Maybe.withDefault 0 <| String.toFloat amount } }
-
-        UpdateLabelPosition amount ->
-            { model | config = { config | labelPosition = Maybe.withDefault 0 <| String.toFloat amount } }
-
-
-view : Model -> Html Msg
-view model =
-    div [ style "display" "flex", style "justify-content" "space-around" ]
-        [ drawChart model.config model.data
-        , div []
-            [ h2 [] [ text "Pie Configuration" ]
-            , label [] [ text "Outer Radius" ]
-            , input
-                [ type_ "range"
-                , onInput UpdateOuterRadius
-                , value (String.fromFloat model.config.outerRadius)
-                , Attr.min "0"
-                , Attr.max (String.fromFloat radius)
-                ]
-                []
-            , text (String.fromFloat model.config.outerRadius)
-            , br [] []
-            , label [] [ text "Inner Radius" ]
-            , input
-                [ type_ "range"
-                , onInput UpdateInnerRadius
-                , value (String.fromFloat model.config.innerRadius)
-                , Attr.min "0"
-                , Attr.max (String.fromFloat radius)
-                ]
-                []
-            , text (String.fromFloat model.config.innerRadius)
-            , br [] []
-            , label [] [ text "Pad Angle" ]
-            , input
-                [ type_ "range"
-                , onInput UpdatePadAngle
-                , value (String.fromFloat model.config.padAngle)
-                , Attr.min "0"
-                , Attr.max "0.8"
-                , step "0.01"
-                ]
-                []
-            , text (String.fromFloat model.config.padAngle)
-            , br [] []
-            , label [] [ text "Corner Radius" ]
-            , input
-                [ type_ "range"
-                , onInput UpdateCornerRadius
-                , value (String.fromFloat model.config.cornerRadius)
-                , Attr.min "0"
-                , Attr.max "20"
-                , step "0.25"
-                ]
-                []
-            , text (String.fromFloat model.config.cornerRadius)
-            , br [] []
-            , label [] [ text "Label Position" ]
-            , input
-                [ type_ "range"
-                , onInput UpdateLabelPosition
-                , value (String.fromFloat model.config.labelPosition)
-                , Attr.min "0"
-                , Attr.max (String.fromFloat radius)
-                ]
-                []
-            , text (String.fromFloat model.config.labelPosition)
-            , br [] []
+            , g [] <| List.map2 makeLabel pieData data
             ]
         ]
 
@@ -209,23 +108,21 @@ data =
     ]
 
 
-init : { config : ChartConfig, data : List ( String, Float ) }
-init =
-    { config =
+main : Example.Program ChartConfig
+main =
+    Example.configuration
         { outerRadius = 210
         , innerRadius = 200
         , padAngle = 0.02
         , cornerRadius = 20
         , labelPosition = 230
         }
-    , data = data
-    }
-
-
-main : Program () { config : ChartConfig, data : List ( String, Float ) } Msg
-main =
-    Browser.sandbox
-        { init = init
-        , update = update
-        , view = view
-        }
+        [ Example.floatSlider "Outer Radius" { min = 0, max = radius } .outerRadius (\v m -> { m | outerRadius = v })
+        , Example.floatSlider "Inner Radius" { min = 0, max = radius } .innerRadius (\v m -> { m | innerRadius = v })
+        , Example.floatSlider "Pad Angle" { min = 0, max = 0.8 } .padAngle (\v m -> { m | padAngle = v })
+        , Example.floatSlider "Corner Radius" { min = 0, max = 20 } .cornerRadius (\v m -> { m | cornerRadius = v })
+        , Example.floatSlider "Label Position" { min = 0, max = radius } .labelPosition (\v m -> { m | labelPosition = v })
+        ]
+        |> Example.withTitle "Pie Configuration"
+        |> Example.withCustomCss ".example-layout-horizontal { justify-content: space-around; }"
+        |> Example.application view

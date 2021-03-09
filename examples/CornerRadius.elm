@@ -1,6 +1,8 @@
 module CornerRadius exposing (main)
 
 {-| A demonstration of cornerRadius for arcs
+
+@category Reference
 -}
 
 import Array exposing (Array)

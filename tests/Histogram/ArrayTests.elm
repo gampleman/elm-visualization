@@ -1,11 +1,10 @@
 module Histogram.ArrayTests exposing (bisectRight)
 
-import Array exposing (Array)
+import Array
 import Expect
-import Fuzz exposing (..)
-import Helper exposing (expectAll, expectAny)
+import Fuzz exposing (int, list)
 import Histogram.Array as Array
-import Test exposing (..)
+import Test exposing (Test, describe, fuzz2)
 
 
 bisectRight : Test

@@ -19,6 +19,7 @@ scale zone range_ domain_ =
     }
 
 
+toTime : ( Time.Posix, Time.Posix ) -> ( Float, Float )
 toTime ( a, b ) =
     ( Time.posixToMillis a |> toFloat, Time.posixToMillis b |> toFloat )
 
@@ -38,6 +39,7 @@ ticks zone domain count =
     Time.Extra.range interval (round step) zone (Tuple.first domain) (Tuple.second domain)
 
 
+tickIntervals : List ( Interval, number )
 tickIntervals =
     [ ( Second, 1 )
     , ( Second, 5 )
@@ -60,6 +62,7 @@ tickIntervals =
     ]
 
 
+timeLength : Interval -> number
 timeLength interval =
     case interval of
         Millisecond ->
@@ -93,6 +96,7 @@ timeLength interval =
             0
 
 
+findInterval : Float -> List ( Interval, Float ) -> ( Interval, Float )
 findInterval target intervals =
     case intervals of
         [] ->

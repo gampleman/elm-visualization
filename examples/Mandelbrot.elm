@@ -4,6 +4,8 @@ module Mandelbrot exposing (main)
 
 This example demonstrates how one can use the Zoom module for other rendering technologies, in this case for a WebGL scene.
 
+@category Advanced
+
 -}
 
 import Browser
@@ -28,6 +30,7 @@ h =
     504
 
 
+main : Program () Zoom Zoom.OnZoom
 main =
     Browser.element
         { init =
@@ -43,6 +46,7 @@ main =
         }
 
 
+view : Zoom -> Html Zoom.OnZoom
 view zoom =
     WebGL.toHtml
         ([ width (round (w * 2))

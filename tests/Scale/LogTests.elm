@@ -1,10 +1,10 @@
 module Scale.LogTests exposing (clampTest, convertTest, rangeExtentTest, tickFormatTest, ticksTest)
 
 import Expect exposing (FloatingPointTolerance(..))
-import Fuzz exposing (..)
-import Helper exposing (expectAll, isAbout, isBetween)
+import Fuzz exposing (float, floatRange, tuple, tuple3)
+import Helper exposing (isBetween)
 import Scale
-import Test exposing (..)
+import Test exposing (Test, describe, fuzz, test)
 
 
 convertsTo : Float -> Float -> Test
@@ -31,6 +31,7 @@ empty ( a, b ) =
     a == b
 
 
+wiggeIfZero : Float -> Float
 wiggeIfZero a =
     if a == 0 then
         0.01
@@ -39,6 +40,7 @@ wiggeIfZero a =
         a
 
 
+normalizeDomain : ( Float, Float ) -> ( Float, Float )
 normalizeDomain ( mn, mx ) =
     if mn < 0 then
         ( wiggeIfZero mn, -1 * wiggeIfZero (abs mx) )
@@ -62,9 +64,10 @@ clampTest =
                 convert |> isBetween range
 
 
+rangeExtentTest : Test
 rangeExtentTest =
     fuzz (tuple3 ( tuple ( float, float ), tuple ( float, float ), tuple ( float, float ) )) "rangeExtent returns the range" <|
-        \( domain, range, ( base, val ) ) ->
+        \( domain, range, ( base, _ ) ) ->
             Scale.rangeExtent (Scale.log base range domain) |> Expect.equal range
 
 
@@ -134,6 +137,7 @@ baseFormat base count expected =
                 |> Expect.equal expected
 
 
+baseTenFormat : Int -> List String -> Test
 baseTenFormat =
     baseFormat 10
 

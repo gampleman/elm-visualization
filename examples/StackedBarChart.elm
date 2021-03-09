@@ -1,5 +1,7 @@
 module StackedBarChart exposing (main)
 
+{-| @category Advanced -}
+
 import Axis
 import Color exposing (Color)
 import List.Extra as List
@@ -99,7 +101,7 @@ column xScale ( year, values ) =
                 , y <| lowerY
                 , width <| Scale.bandwidth xScale
                 , height <| (abs <| upperY - lowerY)
-                , fill <| Paint color
+                , fill (Paint color)
                 ]
                 []
     in

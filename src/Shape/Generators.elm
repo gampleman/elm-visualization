@@ -58,8 +58,5 @@ area curve data =
 
         makeShape topline bottomline =
             curve topline |> SubPath.connect (curve bottomline)
-
-        shapes =
-            List.map2 makeShape topLineData bottomLineData
     in
     List.map2 makeShape topLineData bottomLineData

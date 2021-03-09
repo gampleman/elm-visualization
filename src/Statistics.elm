@@ -298,7 +298,7 @@ quantile p values =
             [ head ] ->
                 Just head
 
-            x :: y :: tail ->
+            x :: y :: _ ->
                 let
                     n =
                         List.length values |> toFloat

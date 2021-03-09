@@ -2,9 +2,10 @@ module Shape.StackTests exposing (offset, series3x3, series4x4)
 
 import Expect
 import Shape
-import Test exposing (..)
+import Test exposing (Test, describe, test)
 
 
+series3x3 : List (List ( Float, Float ))
 series3x3 =
     [ [ ( 0, 1 ), ( 0, 2 ), ( 0, 1 ) ]
     , [ ( 0, 3 ), ( 0, 4 ), ( 0, 2 ) ]
@@ -12,6 +13,7 @@ series3x3 =
     ]
 
 
+series4x4 : List (List ( Float, Float ))
 series4x4 =
     [ [ ( 0, 1 ), ( 0, 2 ), ( 0, 1 ), ( 1, 0 ) ]
     , [ ( 0, 3 ), ( 0, 4 ), ( 0, 2 ), ( 2, 0 ) ]

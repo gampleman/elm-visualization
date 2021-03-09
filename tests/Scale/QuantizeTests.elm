@@ -1,10 +1,9 @@
 module Scale.QuantizeTests exposing (all)
 
 import Expect
-import Fuzz exposing (..)
-import Helper exposing (expectAll, isAbout, isBetween)
+import Helper exposing (expectAll)
 import Scale
-import Test exposing (..)
+import Test exposing (Test, describe, test)
 
 
 type Data

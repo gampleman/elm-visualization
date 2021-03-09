@@ -1,10 +1,10 @@
 module Scale.OrdinalTests exposing (convert)
 
 import Expect
-import Fuzz exposing (..)
+import Fuzz exposing (Fuzzer, int, list, string)
 import Helper exposing (expectMember)
 import Scale
-import Test exposing (..)
+import Test exposing (Test, describe, fuzz2, test)
 
 
 elementInList : Fuzzer a -> Fuzzer ( a, List a )

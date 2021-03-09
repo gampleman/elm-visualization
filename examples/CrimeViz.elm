@@ -5,6 +5,7 @@ module CrimeViz exposing (main)
   - The y axis tick marks show the starting values of each series.
   - We position and color a label next to each series.
 
+@category Advanced
 -}
 
 import Axis
@@ -37,6 +38,7 @@ padding =
     60
 
 
+series : List { label : String, accessor : CrimeRate -> Int }
 series =
     [ { label = "Murder"
       , accessor = .murder
@@ -151,6 +153,7 @@ view model =
         ]
 
 
+main : Svg msg
 main =
     view crimeRates
 

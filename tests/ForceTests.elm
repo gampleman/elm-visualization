@@ -3,7 +3,7 @@ module ForceTests exposing (entityTest, integrationTest)
 import Array
 import Expect
 import Force
-import Test exposing (..)
+import Test exposing (Test, describe, test)
 
 
 entityTest : Test

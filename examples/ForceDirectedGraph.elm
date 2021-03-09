@@ -4,7 +4,7 @@ module ForceDirectedGraph exposing (main)
 based on their co-occurence in a scene. Try dragging the nodes!
 
 @delay 5
-
+@category Basics
 -}
 
 import Browser
@@ -181,6 +181,7 @@ onMouseDown index =
     Mouse.onDown (.clientPos >> DragStart index)
 
 
+linkElement : Graph Entity () -> Edge () -> Svg msg
 linkElement graph edge =
     let
         source =
@@ -200,6 +201,7 @@ linkElement graph edge =
         []
 
 
+nodeElement : { a | id : NodeId, label : { b | x : Float, y : Float, value : String } } -> Svg Msg
 nodeElement node =
     circle
         [ r 2.5

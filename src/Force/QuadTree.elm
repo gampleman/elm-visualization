@@ -1,4 +1,4 @@
-module Force.QuadTree exposing (Config, QuadTree(..), Quadrant(..), empty, fromList, getAggregate, insertBy, performAggregate, quadrant, singleton, size, toList)
+module Force.QuadTree exposing (Config, QuadTree(..), Quadrant(..), UserCoords, empty, fromList, getAggregate, insertBy, performAggregate, quadrant, singleton, size, toList)
 
 {-| A quadtree that can store an aggregate in the nodes.
 Intended for use in n-body simulation, specifically Barnes-Hut
@@ -9,13 +9,19 @@ Intended for use in n-body simulation, specifically Barnes-Hut
 
 import BoundingBox2d exposing (BoundingBox2d)
 import Point2d exposing (Point2d)
+import Units.Pixels exposing (Pixels)
+import Units.Quantity as Quantity
+
+
+type UserCoords
+    = UserCoords
 
 
 type QuadTree aggregate item
     = Empty
-    | Leaf { boundingBox : BoundingBox2d, aggregate : aggregate, children : ( item, List item ) }
+    | Leaf { boundingBox : BoundingBox2d Pixels UserCoords, aggregate : aggregate, children : ( item, List item ) }
     | Node
-        { boundingBox : BoundingBox2d
+        { boundingBox : BoundingBox2d Pixels UserCoords
         , aggregate : aggregate
         , nw : QuadTree aggregate item
         , ne : QuadTree aggregate item
@@ -27,7 +33,7 @@ type QuadTree aggregate item
 type alias Config aggregate vertex =
     { combineVertices : vertex -> List vertex -> aggregate
     , combineAggregates : aggregate -> List aggregate -> aggregate
-    , toPoint : vertex -> Point2d
+    , toPoint : vertex -> Point2d Pixels UserCoords
     }
 
 
@@ -40,7 +46,7 @@ empty =
 
 {-| A singleton tree, using () as the aggregate
 -}
-singleton : (vertex -> Point2d) -> vertex -> QuadTree () vertex
+singleton : (vertex -> Point2d Pixels UserCoords) -> vertex -> QuadTree () vertex
 singleton toPoint vertex =
     Leaf
         { boundingBox = BoundingBox2d.singleton (toPoint vertex)
@@ -66,7 +72,7 @@ size qtree =
             size node.nw + size node.ne + size node.se + size node.sw
 
 
-insertBy : (vertex -> Point2d) -> vertex -> QuadTree () vertex -> QuadTree () vertex
+insertBy : (vertex -> Point2d Pixels UserCoords) -> vertex -> QuadTree () vertex -> QuadTree () vertex
 insertBy toPoint vertex qtree =
     case qtree of
         Empty ->
@@ -96,7 +102,7 @@ insertBy toPoint vertex qtree =
                 let
                     initial =
                         Node
-                            { boundingBox = BoundingBox2d.hull leaf.boundingBox (BoundingBox2d.singleton (toPoint vertex))
+                            { boundingBox = BoundingBox2d.union leaf.boundingBox (BoundingBox2d.singleton (toPoint vertex))
                             , ne = Empty
                             , se = Empty
                             , nw = Empty
@@ -108,7 +114,7 @@ insertBy toPoint vertex qtree =
 
             else
                 Leaf
-                    { boundingBox = BoundingBox2d.hull leaf.boundingBox (BoundingBox2d.singleton (toPoint vertex))
+                    { boundingBox = BoundingBox2d.union leaf.boundingBox (BoundingBox2d.singleton (toPoint vertex))
                     , children = ( vertex, first :: rest )
                     , aggregate = ()
                     }
@@ -172,7 +178,7 @@ insertBy toPoint vertex qtree =
                 case quadrant node.boundingBox point of
                     NE ->
                         Node
-                            { boundingBox = BoundingBox2d.fromExtrema { minX = minX, maxX = maxX + width, minY = minY, maxY = maxY + height }
+                            { boundingBox = BoundingBox2d.fromExtrema { minX = minX, maxX = maxX |> Quantity.plus width, minY = minY, maxY = maxY |> Quantity.plus height }
                             , ne = singleton toPoint vertex
                             , sw = qtree
                             , se = Empty
@@ -182,7 +188,7 @@ insertBy toPoint vertex qtree =
 
                     SE ->
                         Node
-                            { boundingBox = BoundingBox2d.fromExtrema { maxY = maxY, minX = minX, maxX = maxX + width, minY = minY - height }
+                            { boundingBox = BoundingBox2d.fromExtrema { maxY = maxY, minX = minX, maxX = maxX |> Quantity.plus width, minY = minY |> Quantity.minus height }
                             , se = singleton toPoint vertex
                             , nw = qtree
                             , sw = Empty
@@ -192,7 +198,7 @@ insertBy toPoint vertex qtree =
 
                     NW ->
                         Node
-                            { boundingBox = BoundingBox2d.fromExtrema { maxX = maxX, minY = minY, maxY = maxY + height, minX = minX - width }
+                            { boundingBox = BoundingBox2d.fromExtrema { maxX = maxX, minY = minY, maxY = maxY |> Quantity.plus height, minX = minX |> Quantity.minus width }
                             , nw = singleton toPoint vertex
                             , se = qtree
                             , sw = Empty
@@ -202,7 +208,7 @@ insertBy toPoint vertex qtree =
 
                     SW ->
                         Node
-                            { boundingBox = BoundingBox2d.fromExtrema { maxX = maxX, maxY = maxY, minX = minX - width, minY = minY - height }
+                            { boundingBox = BoundingBox2d.fromExtrema { maxX = maxX, maxY = maxY, minX = minX |> Quantity.minus width, minY = minY |> Quantity.minus height }
                             , sw = singleton toPoint vertex
                             , ne = qtree
                             , se = Empty
@@ -218,33 +224,30 @@ type Quadrant
     | SW
 
 
-quadrant : BoundingBox2d -> Point2d -> Quadrant
+quadrant : BoundingBox2d Pixels UserCoords -> Point2d Pixels UserCoords -> Quadrant
 quadrant boundingBox point =
     let
-        { minX, minY, maxX, maxY } =
-            BoundingBox2d.extrema boundingBox
-
         ( midX, midY ) =
-            BoundingBox2d.centroid boundingBox |> Point2d.coordinates
+            BoundingBox2d.centerPoint boundingBox |> Point2d.coordinates
 
         ( x, y ) =
             Point2d.coordinates point
     in
-    if y >= midY then
-        if x >= midX then
+    if y |> Quantity.greaterThanOrEqualTo midY then
+        if x |> Quantity.greaterThanOrEqualTo midX then
             NE
 
         else
             NW
 
-    else if x >= midX then
+    else if x |> Quantity.greaterThanOrEqualTo midX then
         SE
 
     else
         SW
 
 
-fromList : (vertex -> Point2d) -> List vertex -> QuadTree () vertex
+fromList : (vertex -> Point2d Pixels UserCoords) -> List vertex -> QuadTree () vertex
 fromList toPoint =
     List.foldl (insertBy toPoint) empty
 

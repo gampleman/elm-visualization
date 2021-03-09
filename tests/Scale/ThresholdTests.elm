@@ -1,10 +1,8 @@
 module Scale.ThresholdTests exposing (all)
 
 import Expect
-import Fuzz exposing (..)
-import Helper exposing (expectAll, isAbout, isBetween)
 import Scale
-import Test exposing (..)
+import Test exposing (Test, describe, test)
 
 
 type Data

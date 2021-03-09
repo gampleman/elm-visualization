@@ -3,7 +3,7 @@ module BarChartRace exposing (main)
 {-| Demonstrates a complex animation.
 
 @requires data/category-brands.csv
-@delay 6
+@category Advanced
 
 -}
 
@@ -93,14 +93,17 @@ main =
         }
 
 
+margin : number
 margin =
     10
 
 
+paddingY : number
 paddingY =
     10
 
 
+n : number
 n =
     12
 
