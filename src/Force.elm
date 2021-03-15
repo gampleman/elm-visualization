@@ -1,6 +1,7 @@
 module Force exposing
     ( Entity, entity, simulation, State, isCompleted, reheat, iterations, computeSimulation, tick
-    , Force, center, links, customLinks, manyBody, manyBodyStrength, customManyBody
+    , Force, center, links, customLinks, manyBody, manyBodyStrength, customManyBody, collision, customCollision
+    , towardsX, towardsY, customRadial
     )
 
 {-| This module implements a velocity Verlet numerical integrator for simulating physical forces on particles.
@@ -21,7 +22,11 @@ In the domain of information visualization, physical simulations are useful for 
 
 ## Forces
 
-@docs Force, center, links, customLinks, manyBody, manyBodyStrength, customManyBody
+@docs Force, center, links, customLinks, manyBody, manyBodyStrength, customManyBody, collision, customCollision
+
+The x- and y-positioning forces push nodes towards a desired position along the given dimension with a configurable strength. The strength of the force is proportional to the one-dimensional distance between the node’s position and the target position.
+
+@docs towardsX, towardsY, customRadial
 
 -}
 
@@ -118,9 +123,8 @@ applyForce alpha force entities =
             in
             Dict.map (\_ ent -> { ent | x = ent.x - sx, y = ent.y - sy }) entities
 
-        Collision iters collisionParams ->
-            --Debug.crash "not implemented"
-            Collision.wrapper alpha iters collisionParams entities
+        Collision iters strength radii ->
+            Collision.wrapper strength iters radii entities
 
         Links iters lnks ->
             nTimes
@@ -182,27 +186,56 @@ applyForce alpha force entities =
             in
             Dict.map mapper entities
 
-        Custom fun ->
+        Radial entityConfigs ->
             let
-                erase : comparable -> Entity comparable a -> Entity comparable {}
-                erase _ { x, y, vx, vy, id } =
-                    { x = x, y = y, vx = vx, vy = vy, id = id }
+                mapper id ent =
+                    case Dict.get id entityConfigs of
+                        Just { strength, x, y, radius } ->
+                            let
+                                dx =
+                                    ent.x - x
 
-                maybeUpdate : Dict comparable (Entity comparable {}) -> comparable -> Entity comparable a -> Entity comparable a
-                maybeUpdate newEntities id oldValue =
-                    case Dict.get id newEntities of
-                        Just { x, y, vx, vy } ->
-                            { oldValue | x = x, y = y, vx = vx, vy = vy }
+                                dy =
+                                    ent.y - y
+
+                                r =
+                                    sqrt (dx ^ 2 + dy ^ 2)
+
+                                k =
+                                    (radius - r) * strength * alpha / r
+                            in
+                            { ent | vx = ent.vx + dx * k, vy = ent.vy + dy * k }
 
                         Nothing ->
-                            oldValue
-
-                reunify : Dict comparable (Entity comparable {}) -> Dict comparable (Entity comparable a)
-                reunify new =
-                    Dict.map (maybeUpdate new) entities
+                            ent
             in
-            fun alpha (Dict.map erase entities)
-                |> reunify
+            Dict.map mapper entities
+
+
+
+{- Here is a sketch for a custom function implementation:
+   Custom fun ->
+       let
+           erase : comparable -> Entity comparable a -> Entity comparable {}
+           erase _ { x, y, vx, vy, id } =
+               { x = x, y = y, vx = vx, vy = vy, id = id }
+
+           maybeUpdate : Dict comparable (Entity comparable {}) -> comparable -> Entity comparable a -> Entity comparable a
+           maybeUpdate newEntities id oldValue =
+               case Dict.get id newEntities of
+                   Just { x, y, vx, vy } ->
+                       { oldValue | x = x, y = y, vx = vx, vy = vy }
+
+                   Nothing ->
+                       oldValue
+
+           reunify : Dict comparable (Entity comparable {}) -> Dict comparable (Entity comparable a)
+           reunify new =
+               Dict.map (maybeUpdate new) entities
+       in
+       fun alpha (Dict.map erase entities)
+           |> reunify
+-}
 
 
 nTimes : (a -> a) -> Int -> a -> a
@@ -292,12 +325,6 @@ type State comparable
         }
 
 
-type alias CollisionParam =
-    { radius : Float
-    , strength : Float
-    }
-
-
 type alias LinkParam comparable =
     { source : comparable
     , target : comparable
@@ -313,18 +340,26 @@ type alias DirectionalParam =
     }
 
 
+type alias RadialParam =
+    { strength : Float
+    , x : Float
+    , y : Float
+    , radius : Float
+    }
+
+
 {-| A force modifies nodes’ positions or velocities; in this context, a force can apply a classical physical force such
 as electrical charge or gravity, or it can resolve a geometric constraint, such as keeping nodes within a bounding box
 or keeping linked nodes a fixed distance apart.
 -}
 type Force comparable
     = Center Float Float
-    | Collision Int (Dict comparable CollisionParam)
+    | Collision Int Float (Dict comparable Float)
     | Links Int (List (LinkParam comparable))
     | ManyBody Float (Dict comparable Float)
     | X (Dict comparable DirectionalParam)
     | Y (Dict comparable DirectionalParam)
-    | Custom (Float -> Dict comparable (Entity comparable {}) -> Dict comparable (Entity comparable {}))
+    | Radial (Dict comparable RadialParam)
 
 
 {-| The centering force translates nodes uniformly so that the mean position of all nodes (the center of mass) is at
@@ -417,3 +452,55 @@ customLinks iters list =
                 }
             )
         |> Links iters
+
+
+{-| The collision force simulates each node as a circle with a given radius and modifies their velocities to prevent the circles from overlapping.
+
+Pass in the radius and a list of nodes that you would like the force to apply to.
+
+-}
+collision : Float -> List comparable -> Force comparable
+collision radius =
+    List.map (\item -> ( item, radius )) >> Dict.fromList >> Collision 1 1
+
+
+{-| This allows you to specify a radius for each node specifically.
+
+**Strength:** Overlapping nodes are resolved through iterative relaxation. For each node, the other nodes that are anticipated to overlap at the next tick (using the anticipated positions ⟨x + vx,y + vy⟩) are determined; the node’s velocity is then modified to push the node out of each overlapping node. The change in velocity is dampened by the force’s strength such that the resolution of simultaneous overlaps can be blended together to find a stable solution. Set it to a value [0, 1], `collision` defaults to 1.
+
+**Iterations:** `collision` defaults to 1 - this makes the constraint more rigid, but makes the computation slower.
+
+-}
+customCollision : { iterations : Int, strength : Float } -> List ( comparable, Float ) -> Force comparable
+customCollision params radii =
+    Collision params.iterations params.strength (Dict.fromList radii)
+
+
+{-| A positioning force along the X axis.
+-}
+towardsX : List { node : comparable, strength : Float, target : Float } -> Force comparable
+towardsX configs =
+    X (Dict.fromList (List.map (\{ node, strength, target } -> ( node, { strength = strength, position = target } )) configs))
+
+
+{-| A positioning force along the Y axis.
+-}
+towardsY : List { node : comparable, strength : Float, target : Float } -> Force comparable
+towardsY configs =
+    Y (Dict.fromList (List.map (\{ node, strength, target } -> ( node, { strength = strength, position = target } )) configs))
+
+
+{-| A positioning force that pushes towards the nearest point on the given circle.
+-}
+customRadial :
+    List
+        ( comparable
+        , { strength : Float
+          , x : Float
+          , y : Float
+          , radius : Float
+          }
+        )
+    -> Force comparable
+customRadial =
+    Dict.fromList >> Radial
