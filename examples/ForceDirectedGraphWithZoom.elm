@@ -149,18 +149,21 @@ initSimulation graph width height =
         [ -- Defines the force that pulls connected nodes together. You can use
           -- `Force.customLinks` if you need to adjust the distance and
           -- strength.
-          Force.links <| List.map link <| Graph.edges graph
+           Force.links <| List.map link <| Graph.edges graph
 
         -- Defines the force that pushes the nodes apart. The default strength
         -- is `-30`, but since we are drawing fairly large circles for each
         -- node, we need to increase the repulsion by decreasing the strength to
-        -- `-200`.
-        , Force.manyBodyStrength -200 <| List.map .id <| Graph.nodes graph
+        -- `-150`.
+        , Force.manyBodyStrength -150 <| List.map .id <| Graph.nodes graph
+
+        , Force.collision 21 <| List.map .id <| Graph.nodes graph
 
         -- Defines the force that pulls nodes to a center. We set the center
         -- coordinates to the center of the svg viewport.
         , Force.center (width / 2) (height / 2)
         ]
+        |> Force.iterations 400
 
 
 {-| Initializes the zoom and sets a minimum and maximum zoom level.
