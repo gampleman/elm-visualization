@@ -8,7 +8,7 @@ module Histogram exposing
 numerical data. It is an estimate of the probability distribution of a continuous
 variable (quantitative variable)
 
-[![Histogram](https://elm-visualization.netlify.com/Histogram/preview.png)](https://elm-visualization.netlify.com/Histogram/)
+[![Histogram](https://elm-visualization.netlify.com/HistogramChart/preview.png)](https://elm-visualization.netlify.com/HistogramChart/)
 
 To compute a histogram, one first configures a Histogram Generator and then uses
 it to compute a histogram. Histograms can then be visualized in a variety of ways,
