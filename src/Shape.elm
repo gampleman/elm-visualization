@@ -349,7 +349,7 @@ basisCurveClosed =
 
 {-| Produces a cubic basis spline using the specified control points. Unlike basis, the first and last points are not repeated, and thus the curve typically does not intersect these points.
 
-[![open basis curve illustration]https://elm-visualization.netlify.com/Curves/basisopen@2x.png)](https://elm-visualization.netlify.com/Curves/#basisopen)
+[![open basis curve illustration]<https://elm-visualization.netlify.com/Curves/basisopen@2x.png>)](https://elm-visualization.netlify.com/Curves/#basisopen)
 
 -}
 basisCurveOpen : List ( Float, Float ) -> SubPath
