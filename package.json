@@ -10,7 +10,8 @@
   },
   "scripts": {
     "build-docs": "elm-example-publisher --ellie --ellie-dep gampleman/elm-visualization@2.1.1 --base-url https://elm-visualization.netlify.com/",
-    "ci-tests": "elm-format --validate . && elm-analyse && elm-test"
+    "test": "elm-test",
+    "validate-format": "elm-format --validate src/ tests/"
   },
   "repository": {
     "type": "git",
