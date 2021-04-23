@@ -1,6 +1,6 @@
 module BoxPlot exposing (main)
 
-{-| This module shows how to build a box-and-whisker plot, see <https://en.wikipedia.org/wiki/Box_plot> for details.
+{-| This module shows how to build a [box-and-whisker plot](https://en.wikipedia.org/wiki/Box_plot).
 
 @category Basics
 
@@ -9,8 +9,11 @@ module BoxPlot exposing (main)
 import Axis
 import Color
 import List.Extra
+import LowLevel.Command exposing (lineTo, moveTo)
+import Path
 import Scale exposing (BandScale, ContinuousScale, defaultBandConfig)
-import Statistics exposing (median, quantile)
+import Statistics exposing (quantile)
+import SubPath
 import TypedSvg exposing (circle, defs, g, line, linearGradient, rect, stop, svg)
 import TypedSvg.Attributes exposing (class, fill, id, offset, opacity, stopColor, stroke, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, strokeWidth, width, x, x1, x2, y, y1, y2)
@@ -33,25 +36,67 @@ padding =
     30
 
 
-xAxisWidth : Float
-xAxisWidth =
-    w - 10 * padding
-
-
-yAxisHeight : Float
-yAxisHeight =
-    h - 2 * padding
-
-
 xScale : List (List Float) -> BandScale Int
 xScale model =
     List.range 0 (List.length model - 1)
-        |> Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( 0, xAxisWidth )
+        |> Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( 0, w - 2 * padding )
 
 
 yScale : ContinuousScale Float
 yScale =
-    Scale.linear ( yAxisHeight, 0 ) ( -12, 12 )
+    Scale.linear ( h - 2 * padding, 0 ) ( -12, 12 )
+
+
+type alias BoxStats =
+    { firstQuartile : Float, median : Float, thirdQuartile : Float, max : Float, min : Float, outliers : List Float }
+
+
+computeStatistics : List Float -> BoxStats
+computeStatistics yList =
+    let
+        sortedYList =
+            List.sort yList
+
+        reverseSortedYList =
+            List.reverse sortedYList
+
+        -- Gather stats
+        firstQuartile =
+            Statistics.quantile 0.25 sortedYList
+                |> Maybe.withDefault 0
+
+        thirdQuartile =
+            Maybe.withDefault 0 <| quantile 0.75 sortedYList
+
+        interQuartileRange =
+            thirdQuartile - firstQuartile
+
+        whiskerTopMax =
+            thirdQuartile + 1.5 * interQuartileRange
+
+        whiskerBottomMin =
+            firstQuartile - (1.5 * interQuartileRange)
+    in
+    { firstQuartile = firstQuartile
+    , median = Statistics.quantile 0.5 sortedYList |> Maybe.withDefault 0
+    , thirdQuartile = thirdQuartile
+    , max = computeWhiskerMax (<=) (Maybe.withDefault 0 (List.head reverseSortedYList)) whiskerTopMax reverseSortedYList
+    , min = computeWhiskerMax (>=) (Maybe.withDefault 0 (List.head sortedYList)) whiskerBottomMin sortedYList
+    , outliers =
+        List.Extra.takeWhile (\y -> y < whiskerBottomMin) sortedYList
+            ++ List.Extra.takeWhile (\y -> y > whiskerTopMax) reverseSortedYList
+    }
+
+
+{-| The whiskers should be either 1.5 the interquantile range or the highest datum, whichever is lowest.
+-}
+computeWhiskerMax : (number -> number -> Bool) -> number -> number -> List number -> number
+computeWhiskerMax cmp dataMax whiskerMax sortedData =
+    if cmp whiskerMax dataMax then
+        Maybe.withDefault 0 <| List.head <| List.Extra.dropWhile (cmp whiskerMax) sortedData
+
+    else
+        dataMax
 
 
 xAxis : List (List Float) -> Svg msg
@@ -64,172 +109,86 @@ yAxis =
     Axis.left [ Axis.tickCount 9 ] yScale
 
 
-column : BandScale Int -> List Float -> Int -> Svg msg
-column scale yList indx =
+whisker : { max : Float, min : Float, width : Float, center : Float } -> Svg msg
+whisker { max, min, width, center } =
+    Path.element
+        [ SubPath.with (moveTo ( center, min )) [ lineTo [ ( center, max ) ] ]
+        , SubPath.with (moveTo ( center - width / 2, max )) [ lineTo [ ( center + width / 2, max ) ] ]
+        ]
+        [ strokeWidth 1
+        , stroke <| Paint <| Color.black
+        , opacity <| Opacity 0.7
+        ]
+
+
+column : BandScale Int -> BoxStats -> Int -> Svg msg
+column scale stats index =
     let
-        orZero =
-            Maybe.withDefault 0
+        -- Prepare for viz
+        seriesMedianY =
+            stats.median
+                |> Scale.convert yScale
 
-        yConvert =
-            Scale.convert yScale
+        firstQuartileY =
+            Scale.convert yScale stats.firstQuartile
 
-        sortedYS =
-            List.sort yList
+        thirdQuartileY =
+            Scale.convert yScale stats.thirdQuartile
 
-        revSortYS =
-            List.reverse sortedYS
-
-        serieMedian =
-            orZero <| median yList
-
-        serieMedianY =
-            yConvert serieMedian
-
-        firstQuantile =
-            orZero <| quantile 0.25 sortedYS
-
-        firstQuantileY =
-            yConvert firstQuantile
-
-        thirdQuantile =
-            orZero <| quantile 0.75 sortedYS
-
-        thirdQuantileY =
-            yConvert thirdQuantile
-
-        interQuantileRange =
-            thirdQuantile - firstQuantile
-
-        maxY =
-            orZero <| List.Extra.last sortedYS
-
-        minY =
-            orZero <| List.head sortedYS
-
-        whiskerTopMax =
-            thirdQuantile + 1.5 * interQuantileRange
-
-        whiskerBottomMin =
-            firstQuantile - (1.5 * interQuantileRange)
-
-        whiskerTop =
-            if maxY > whiskerTopMax then
-                orZero <| List.head <| List.Extra.dropWhile (\y -> y >= whiskerTopMax) revSortYS
-
-            else
-                orZero <| List.head revSortYS
-
-        whiskerBottom =
-            if minY < whiskerBottomMin then
-                orZero <| List.head <| List.Extra.dropWhile (\y -> y <= whiskerBottomMin) sortedYS
-
-            else
-                orZero <| List.head sortedYS
-
-        whiskerTopY =
-            yConvert whiskerTop
-
-        whiskerBottomY =
-            yConvert whiskerBottom
-
-        indxXLeft =
-            Scale.convert scale indx
+        leftSide =
+            Scale.convert scale index
 
         boxWidth =
             Scale.bandwidth scale
 
-        whiskerWidth =
-            boxWidth / 3
-
-        boxMidX =
-            indxXLeft + boxWidth / 2
-
-        outliers =
-            List.Extra.takeWhile (\y -> y < whiskerBottomMin) sortedYS
-                ++ List.Extra.takeWhile (\y -> y > whiskerTopMax) revSortYS
-
-        outliersY =
-            List.map (\y -> yConvert y) outliers
-
-        outliersXY =
-            List.map (\y -> ( boxMidX, y )) outliersY
+        center =
+            leftSide + boxWidth / 2
     in
     g [ class [ "column" ] ]
-        ([ line
-            --top vertical line through rectangle
-            [ x1 boxMidX
-            , y1 thirdQuantileY
-            , x2 boxMidX
-            , y2 whiskerTopY
-            , strokeWidth 1
-            , stroke <| Paint <| Color.black
-            , opacity <| Opacity 0.7
-            ]
-            []
-         , line
-            --bottom vertical line through rectangle
-            [ x1 boxMidX
-            , y1 whiskerBottomY
-            , x2 boxMidX
-            , y2 firstQuantileY
-            , strokeWidth 1
-            , stroke <| Paint <| Color.black
-            , opacity <| Opacity 0.7
-            ]
-            []
-         , line
-            --bottom whsiker
-            [ x1 <| boxMidX - whiskerWidth / 2
-            , y1 whiskerBottomY
-            , x2 <| boxMidX + whiskerWidth / 2
-            , y2 whiskerBottomY
-            , strokeWidth 1
-            , stroke <| Paint <| Color.black
-            ]
-            []
-         , line
-            --top whisker
-            [ x1 <| boxMidX - whiskerWidth / 2
-            , y1 whiskerTopY
-            , x2 <| boxMidX + whiskerWidth / 2
-            , y2 whiskerTopY
-            , strokeWidth 1
-            , stroke <| Paint <| Color.black
-            ]
-            []
+        ([ whisker
+            { max = Scale.convert yScale stats.max
+            , min = thirdQuartileY
+            , width = boxWidth / 3
+            , center = center
+            }
+         , whisker
+            { max = Scale.convert yScale stats.min
+            , min = firstQuartileY
+            , width = boxWidth / 3
+            , center = center
+            }
          , rect
-            [ x indxXLeft
-            , y thirdQuantileY
+            [ x leftSide
+            , y thirdQuartileY
             , width boxWidth
-            , height (firstQuantileY - thirdQuantileY)
-            , fill <| Reference "linGradientDuo"
-            , opacity <| Opacity 0.8
+            , height (firstQuartileY - thirdQuartileY)
+            , fill <| Reference "linearGradient"
+            , opacity <| Opacity 0.9
             ]
             []
          , line
             -- median line in middle of rectangle
-            [ x1 indxXLeft
-            , y1 serieMedianY
-            , x2 <| indxXLeft + boxWidth
-            , y2 serieMedianY
+            [ x1 leftSide
+            , y1 seriesMedianY
+            , x2 <| leftSide + boxWidth
+            , y2 seriesMedianY
             , strokeWidth 1
             , stroke <| Paint <| Color.black
             , opacity <| Opacity 0.6
             ]
             []
          ]
-            ++ List.map outlierCircle outliersXY
+            ++ List.map (Scale.convert yScale >> outlierCircle center) stats.outliers
         )
 
 
-outlierCircle : ( Float, Float ) -> Svg msg
-outlierCircle ( x, y ) =
+outlierCircle : Float -> Float -> Svg msg
+outlierCircle x y =
     circle
         [ cx x
         , cy y
         , r 3
         , fill <| Paint <| Color.rgb255 180 20 20
-        , strokeWidth 0
         , stroke <| PaintNone
         , opacity <| Opacity 0.7
         ]
@@ -240,34 +199,20 @@ yGridLine : Int -> Float -> Svg msg
 yGridLine index tick =
     line
         [ x1 0
-        , x2 xAxisWidth
+        , x2 (w - 2 * padding)
         , y1 (Scale.convert yScale tick)
         , y2 (Scale.convert yScale tick)
         , stroke <| Paint Color.black
-        , strokeWidth (Basics.max (toFloat (modBy 2 index)) 0.5)
-        , opacity <| Opacity 0.4
+        , strokeWidth (toFloat (modBy 2 index) * 0.25 + 0.25)
+        , opacity <| Opacity 0.3
         ]
         []
 
 
-
--- rectangle for colored background
--- bgRect : Svg msg
--- bgRect =
---     rect [ x 0
---             , y 0
---             , width <| xAxisWidth
---             , height <| yAxisHeight
---             , fill <| Paint <| Color.red
---             , opacity <| Opacity 0.2
---             ]
---             []
-
-
-myDefs : List (Svg msg)
-myDefs =
-    [ linearGradient
-        [ id "linGradientDuo"
+gradient : Svg msg
+gradient =
+    linearGradient
+        [ id "linearGradient"
         , TypedSvg.Attributes.x1 <| Percent 0.0
         , TypedSvg.Attributes.y1 <| Percent 0.0
         , TypedSvg.Attributes.x2 <| Percent 0.0
@@ -276,24 +221,19 @@ myDefs =
         [ stop [ offset "0%", stopColor "#e52d27" ] []
         , stop [ offset "100%", stopColor "#b31217" ] []
         ]
-    ]
 
 
 view : List (List Float) -> Svg msg
 view model =
     svg [ viewBox 0 0 w h ]
-        [ defs [] myDefs
-
-        -- enable for colored plot background
-        -- , g [ transform [ Translate padding padding ], class [ "bg-rect" ] ] <|
-        --     [ bgRect ]
+        [ defs [] [ gradient ]
         , g [ transform [ Translate padding (padding + 0.5) ] ] <| List.indexedMap yGridLine <| Scale.ticks yScale 9
         , g [ transform [ Translate (padding - 1) (h - padding) ] ]
             [ xAxis model ]
         , g [ transform [ Translate (padding - 1) padding ] ]
             [ yAxis ]
         , g [ transform [ Translate padding padding ], class [ "series" ] ] <|
-            List.indexedMap (\indx lst -> column (xScale model) lst indx) model
+            List.indexedMap (\index datum -> column (xScale model) (computeStatistics datum) index) model
         ]
 
 
