@@ -319,6 +319,8 @@ Sequential scales support the following operations:
   - [`domain : SequentialScale a -> (Float, Float)`](#domain)
   - [`range : SequentialScale a -> Float -> a`](#range)
 
+Sequential scales can easily be used with [Interpolators](./Interpolation).
+
 -}
 type alias SequentialScale a =
     Scale

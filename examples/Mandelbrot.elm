@@ -30,6 +30,7 @@ h =
     504
 
 
+main : Program () Zoom Zoom.OnZoom
 main =
     Browser.element
         { init =
@@ -45,6 +46,7 @@ main =
         }
 
 
+view : Zoom -> Html Zoom.OnZoom
 view zoom =
     WebGL.toHtml
         ([ width (round (w * 2))

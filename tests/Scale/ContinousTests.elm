@@ -1,10 +1,14 @@
 module Scale.ContinousTests exposing (linear, power, radial, symlog)
 
 import Expect exposing (FloatingPointTolerance(..))
-import Fuzz exposing (float, tuple, tuple3)
+import Fuzz exposing (float, int, intRange, oneOf, tuple, tuple3)
 import Helper exposing (expectAll, isBetween)
 import Scale
-import Test exposing (Test, describe, fuzz, test)
+import Test exposing (Test, describe, fuzz, fuzz2, test)
+
+
+nonDegenerateDomain =
+    Fuzz.map2 (\a b -> ( toFloat a, toFloat (a + b) )) int (oneOf [ intRange -1000 -1, intRange 1 1000 ])
 
 
 linear : Test
@@ -41,6 +45,55 @@ linear =
                                 Scale.convert (Scale.clamp (Scale.linear range domain)) val
                         in
                         convert |> isBetween range
+               , test "nice extends the domain to match the desired ticks" <|
+                    \() ->
+                        (\dom ->
+                            Scale.linear ( 0, 1 ) dom
+                                |> Scale.nice 10
+                                |> Scale.domain
+                        )
+                            |> Expect.all
+                                [ \niceFn -> niceFn ( 0, 0.96 ) |> Expect.equal ( 0, 1 )
+                                , \niceFn -> niceFn ( 0, 96 ) |> Expect.equal ( 0, 100 )
+                                , \niceFn -> niceFn ( 0.96, 0 ) |> Expect.equal ( 1, 0 )
+                                , \niceFn -> niceFn ( 96, 0 ) |> Expect.equal ( 100, 0 )
+                                , \niceFn -> niceFn ( 0, -0.96 ) |> Expect.equal ( 0, -1 )
+                                , \niceFn -> niceFn ( 0, -96 ) |> Expect.equal ( 0, -100 )
+                                , \niceFn -> niceFn ( -0.96, 0 ) |> Expect.equal ( -1, 0 )
+                                , \niceFn -> niceFn ( -96, 0 ) |> Expect.equal ( -100, 0 )
+                                ]
+               , fuzz2 nonDegenerateDomain (intRange 2 100) "ticks x spans a niced domain (at least in int ranges)" <|
+                    \domain count ->
+                        let
+                            scale =
+                                Scale.linear ( 0, 1 ) domain
+                                    |> Scale.nice count
+
+                            ticks =
+                                Scale.ticks scale count
+
+                            ( d0, d1 ) =
+                                Scale.domain scale
+                        in
+                        case ( ticks, List.reverse ticks ) of
+                            ( min :: _, max :: _ ) ->
+                                expectAll
+                                    [ min |> Expect.within (Absolute 0.0001) d0
+                                    , max |> Expect.within (Absolute 0.0001) d1
+                                    ]
+
+                            _ ->
+                                Expect.fail "Didn't produce enough ticks"
+               , fuzz2 nonDegenerateDomain (intRange 2 100) "nice is indempotent" <|
+                    \domain count ->
+                        let
+                            scale =
+                                Scale.linear ( 0, 1 ) domain
+                        in
+                        scale
+                            |> Scale.nice count
+                            |> Scale.nice count
+                            |> Expect.equal (scale |> Scale.nice count)
                ]
 
 

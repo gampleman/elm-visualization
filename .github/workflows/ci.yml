@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 15
+        uses: actions/setup-node@v1
+        with:
+          node-version: 15
+      # Re-use node_modules between runs until package-lock.json changes.
+      - name: Cache node_modules
+        id: cache-node_modules
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: node_modules-${{ hashFiles('package-lock.json') }}
+
+      # Re-use ~/.elm between runs until elm.json, elm-tooling.json or
+      # review/elm.json changes. The Elm compiler saves downloaded Elm packages
+      # to ~/.elm, and elm-tooling saves downloaded tool executables there.
+      - name: Cache ~/.elm
+        uses: actions/cache@v2
+        with:
+          path: ~/.elm
+          key: elm-${{ hashFiles('elm.json') }}
+
+      # Install npm packages, unless we restored them from cache.
+      # Since `npm ci` removes the node_modules folder before running it’s
+      # important to skip this step if cache was restored.
+      - name: npm ci
+        if: steps.cache-node_modules.outputs.cache-hit != 'true'
+        run: npm ci
+      - name: Tests
+        run: npm test
+      - name: elm-format
+        run: npm run validate-format

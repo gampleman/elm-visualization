@@ -102,7 +102,7 @@ column xScale ( year, values ) =
                 , y <| lowerY
                 , width <| Scale.bandwidth xScale
                 , height <| (abs <| upperY - lowerY)
-                , fill <| Paint color
+                , fill (Paint color)
                 ]
                 []
     in
@@ -121,11 +121,11 @@ view { values, labels, extent } =
 
         xScale : BandScale Year
         xScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( 0, w - (padding.top + padding.bottom) ) years
+            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( 0, w - (padding.left + padding.right) ) years
 
         yScale : ContinuousScale Float
         yScale =
-            Scale.linear ( h - (padding.left + padding.right), 0 ) extent
+            Scale.linear ( h - (padding.top + padding.bottom), 0 ) extent
                 |> Scale.nice 4
 
         scaledValues =
