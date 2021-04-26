@@ -1,6 +1,9 @@
 module HistogramChart exposing (main)
 
-{-| Renders a histogram of a randomly generated data set
+{-| Renders a histogram of a randomly generated data set.
+
+This is very similar to the [Bar Chart](../BarChart), but computes the bars from data.
+Note that the x scale here is linear rather than a band scale, since x axis is not categorical.
 
 @category Basics
 

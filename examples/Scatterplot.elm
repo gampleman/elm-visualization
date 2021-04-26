@@ -9,10 +9,10 @@ module Scatterplot exposing (main)
 import Axis
 import List
 import Scale exposing (ContinuousScale)
-import TypedSvg exposing (circle, defs, g, linearGradient, stop, style, svg)
+import TypedSvg exposing (circle, defs, g, linearGradient, stop, svg)
 import TypedSvg.Attributes exposing (class, fill, id, offset, opacity, stopColor, stroke, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (cx, cy, r, strokeWidth)
-import TypedSvg.Core exposing (Svg, text)
+import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (AnchorAlignment(..), CoordinateSystem(..), Length(..), Opacity(..), Paint(..), Transform(..), px)
 
 
@@ -101,12 +101,7 @@ view : List ( Float, Float ) -> Svg msg
 view model =
     svg [ viewBox 0 0 w h ]
         --
-        [ style [] [ text """
-            .points-overlay:hover { opacity: 1.0;}
-            .points-overlay { opacity: 0.0;}
-            .points-overlay p {margin-left: 5px; margin-right: 5px}
-          """ ]
-        , defs [] myDefs
+        [ defs [] myDefs
         , g [ transform [ Translate (padding - 1) (h - padding) ] ]
             [ xAxis ]
         , g [ transform [ Translate (padding - 1) padding ] ]

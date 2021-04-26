@@ -2,6 +2,9 @@ module BoxPlot exposing (main)
 
 {-| This module shows how to build a [box-and-whisker plot](https://en.wikipedia.org/wiki/Box_plot).
 
+The trick is first computing all the statistical pieces that a box plot requires, then we use scales
+to transform these into coordinates and finally draw the various SVG pieces.
+
 @category Basics
 
 -}
