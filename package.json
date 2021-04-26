@@ -9,7 +9,7 @@
     "test": "tests"
   },
   "scripts": {
-    "build-docs": "elm-example-publisher --ellie --ellie-dep gampleman/elm-visualization@2.1.1 --base-url https://elm-visualization.netlify.com/",
+    "build-docs": "elm-example-publisher --ellie --ellie-dep gampleman/elm-visualization@2.2.0 --base-url https://elm-visualization.netlify.com/",
     "test": "elm-test",
     "validate-format": "elm-format --validate src/ tests/"
   },
