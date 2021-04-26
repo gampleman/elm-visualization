@@ -15,6 +15,7 @@ Based on a [notebook](https://observablehq.com/@yurivish/peak-detection) by Yuri
 @todo Interactive hover based tooltip with snapping to peaks.
 @todo Interactive controls for tuning the peaks mechanism.
 @category Advanced
+
 -}
 
 import Axis

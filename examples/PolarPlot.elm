@@ -3,6 +3,7 @@ module PolarPlot exposing (main)
 {-| A polar plot of `sin(2x)cos(2x)`.
 
 @category Advanced
+
 -}
 
 import Path

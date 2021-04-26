@@ -3,7 +3,10 @@ module LineChart exposing (main)
 {-| This module shows how to build a simple line and area chart using some of
 the primitives provided in this library.
 
+Specifically we define scales, use these to create shapes, then transform those into SVG.
+
 @category Basics
+
 -}
 
 import Axis

@@ -1,6 +1,7 @@
 module StackedBarChart exposing (main)
 
-{-| @category Advanced -}
+{-| @category Advanced
+-}
 
 import Axis
 import Color exposing (Color)

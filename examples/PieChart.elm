@@ -1,7 +1,9 @@
 module PieChart exposing (main)
 
 {-| An example showing how to render a basic pie chart.
+
 @category Basics
+
 -}
 
 import Array exposing (Array)
@@ -43,31 +45,35 @@ radius =
     min w h / 2
 
 
+pieSlice : Int -> Shape.Arc -> Svg msg
+pieSlice index datum =
+    Path.element (Shape.arc datum) [ fill <| Paint <| Maybe.withDefault Color.black <| Array.get index colors, stroke <| Paint Color.white ]
+
+
+pieLabel : Shape.Arc -> ( String, Float ) -> Svg msg
+pieLabel slice ( label, _ ) =
+    let
+        ( x, y ) =
+            Shape.centroid { slice | innerRadius = radius - 40, outerRadius = radius - 40 }
+    in
+    text_
+        [ transform [ Translate x y ]
+        , dy (em 0.35)
+        , textAnchor AnchorMiddle
+        ]
+        [ text label ]
+
+
 view : List ( String, Float ) -> Svg msg
 view model =
     let
         pieData =
             model |> List.map Tuple.second |> Shape.pie { defaultPieConfig | outerRadius = radius }
-
-        makeSlice index datum =
-            Path.element (Shape.arc datum) [ fill <| Paint <| Maybe.withDefault Color.black <| Array.get index colors, stroke <| Paint Color.white ]
-
-        makeLabel slice ( label, value ) =
-            let
-                ( x, y ) =
-                    Shape.centroid { slice | innerRadius = radius - 40, outerRadius = radius - 40 }
-            in
-            text_
-                [ transform [ Translate x y ]
-                , dy (em 0.35)
-                , textAnchor AnchorMiddle
-                ]
-                [ text label ]
     in
     svg [ viewBox 0 0 w h ]
         [ g [ transform [ Translate (w / 2) (h / 2) ] ]
-            [ g [] <| List.indexedMap makeSlice pieData
-            , g [] <| List.map2 makeLabel pieData model
+            [ g [] <| List.indexedMap pieSlice pieData
+            , g [] <| List.map2 pieLabel pieData model
             ]
         ]
 

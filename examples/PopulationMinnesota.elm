@@ -1,7 +1,10 @@
 module PopulationMinnesota exposing (main)
-{-|
+
+{-| Shows a vertically stacked bar chart.
+
 @category Advanced
- -}
+
+-}
 
 import Axis
 import Color exposing (Color)
