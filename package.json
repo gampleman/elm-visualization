@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/gampleman/elm-visualization#readme",
   "devDependencies": {
-    "elm-example-publisher": "1.0.0"
+    "elm-example-publisher": "1.1.0"
   },
   "dependencies": {
     "elm": "0.19.1-5",

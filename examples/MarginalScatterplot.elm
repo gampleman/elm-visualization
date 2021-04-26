@@ -10,7 +10,7 @@ It demonstrates the following techniques:
   - Building custom axes using marginal histograms
 
 @category Advanced
-
+@minify false
 -}
 
 import Array
