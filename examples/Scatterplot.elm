@@ -1,23 +1,18 @@
-module ScatterChart exposing (main)
+module Scatterplot exposing (main)
 
-{-| This module shows how to build a scatter chart with hover interaction using some of
-the primitives provided in this library.
+{-| This module shows how to build a very basic scatterplot.
 
 @category Basics
 
 -}
 
 import Axis
-import Html
-import Html.Attributes as HA
 import List
 import Scale exposing (ContinuousScale)
-import Set
-import String
 import TypedSvg exposing (circle, defs, g, linearGradient, stop, style, svg)
-import TypedSvg.Attributes exposing (class, cx, cy, fill, id, offset, opacity, r, stopColor, stroke, textAnchor, transform, viewBox)
-import TypedSvg.Attributes.InPx exposing (height, strokeWidth, width, x, y)
-import TypedSvg.Core exposing (Svg, foreignObject, text)
+import TypedSvg.Attributes exposing (class, fill, id, offset, opacity, stopColor, stroke, transform, viewBox)
+import TypedSvg.Attributes.InPx exposing (cx, cy, r, strokeWidth)
+import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), CoordinateSystem(..), Length(..), Opacity(..), Paint(..), Transform(..), px)
 
 
@@ -36,39 +31,24 @@ padding =
     30
 
 
-xMax : Float
-xMax =
-    w - 2 * padding
-
-
 xScale : ContinuousScale Float
 xScale =
-    Scale.linear ( 0, xMax ) ( 0, 5 )
-
-
-yMax : Float
-yMax =
-    h - 2 * padding
+    Scale.linear ( 0, w - 2 * padding ) ( 0, 4.5 )
 
 
 yScale : ContinuousScale Float
 yScale =
-    Scale.linear ( yMax, 0 ) ( 0, 6 )
+    Scale.linear ( h - 2 * padding, 0 ) ( 0, 6 )
 
 
 xAxis : Svg msg
 xAxis =
-    Axis.bottom [ Axis.tickCount 5 ] xScale
+    Axis.bottom [] xScale
 
 
 yAxis : Svg msg
 yAxis =
     Axis.left [ Axis.tickCount 5 ] yScale
-
-
-transformCoords : ( Float, Float ) -> ( Float, Float )
-transformCoords ( x, y ) =
-    ( Scale.convert xScale x, Scale.convert yScale y )
 
 
 circles : List ( Float, Float ) -> List (Svg msg)
@@ -78,15 +58,11 @@ circles model =
 
 pointCircle : ( Float, Float ) -> Svg msg
 pointCircle ( dataX, dataY ) =
-    let
-        ( renderX, renderY ) =
-            transformCoords ( dataX, dataY )
-    in
     g [ class [ "data-point" ] ]
         [ circle
-            [ cx (px renderX)
-            , cy (px renderY)
-            , r (px 3)
+            [ cx (Scale.convert xScale dataX)
+            , cy (Scale.convert yScale dataY)
+            , r 3
             , fill <| Reference "linGradientRed"
             , strokeWidth 0
             , stroke <| PaintNone
@@ -137,72 +113,12 @@ view model =
             [ yAxis ]
         , g [ transform [ Translate padding padding ], class [ "series" ] ]
             (circles model)
-        , g [ transform [ Translate padding padding ], class [ "hover-overlay" ] ]
-            (pointsHoverOverlay model)
         ]
 
 
 main : Svg msg
 main =
     view dataPoints
-
-
-pointsHoverOverlay : List ( Float, Float ) -> List (Svg msg)
-pointsHoverOverlay pointList =
-    let
-        uniquePoints =
-            pointList
-                |> Set.fromList
-                |> Set.toList
-    in
-    List.map
-        pointTupToHoverCircle
-        uniquePoints
-
-
-pointTupToHoverCircle : ( Float, Float ) -> Svg msg
-pointTupToHoverCircle ( origX, origY ) =
-    let
-        ( renderX, renderY ) =
-            transformCoords ( origX, origY )
-    in
-    g [ class [ "points-overlay" ] ]
-        [ circle
-            [ cx (px renderX)
-            , cy (px renderY)
-            , r (px 4)
-            , fill <| Reference "linGradientRed"
-            , strokeWidth 0
-            , stroke <| PaintNone
-            ]
-            []
-        , hoverTooltip ( origX, origY ) ( renderX, renderY )
-        ]
-
-
-hoverTooltip : ( Float, Float ) -> ( Float, Float ) -> Svg msg
-hoverTooltip ( origX, origY ) ( renderX, renderY ) =
-    foreignObject
-        [ x renderX
-        , y renderY
-        , width 40
-        , height 40
-        ]
-        [ Html.div
-            [ HA.style "position" "absolute"
-            , HA.style "top" "1px"
-            , HA.style "left" "1px"
-            , HA.style "line-height" "55%"
-            , HA.style "font-size" "8px"
-            , HA.style "font-family" "Impact, Charcoal, sans-serif"
-            , HA.style "background-image" "linear-gradient(315deg, rgba(217, 217, 217, 0.7) 0%, rgba(246, 242, 242, 0.7) 72%)"
-            , HA.style "color" "#444444"
-            , HA.style "border-radius" "0px 7px 7px 7px"
-            ]
-            [ Html.p [ HA.style "margin-top" "8px" ] [ text <| "x " ++ String.fromFloat origX ]
-            , Html.p [ HA.style "margin-bottom" "8px" ] [ text <| "y " ++ String.fromFloat origY ]
-            ]
-        ]
 
 
 dataPoints : List ( Float, Float )
