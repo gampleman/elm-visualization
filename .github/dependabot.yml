@@ -1,0 +1,18 @@
+version: 2
+updates:
+- package-ecosystem: elm
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  reviewers:
+  - gampleman
+  ignore:
+  - dependency-name: folkertdev/one-true-path-experiment
+    versions:
+    - 6.0.0
+- package-ecosystem: elm
+  directory: "/examples"
+  schedule:
+    interval: monthly
+  open-pull-requests-limit: 10
