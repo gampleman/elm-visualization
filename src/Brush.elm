@@ -19,7 +19,7 @@ type TwoDimensional
 
 
 type alias Extent =
-    { n : Float, s : Float, w : Float, e : Float }
+    { top : Float, bottom : Float, left : Float, right : Float }
 
 
 type Brush dimension
@@ -126,17 +126,17 @@ events element (Brush { drag, keysEnabled }) tagger =
             []
 
 
-initX : { n : Float, s : Float, w : Float, e : Float } -> Brush OneDimensional
+initX : Extent -> Brush OneDimensional
 initX =
     init True False
 
 
-initY : { n : Float, s : Float, w : Float, e : Float } -> Brush OneDimensional
+initY : Extent -> Brush OneDimensional
 initY =
     init False True
 
 
-initXY : { n : Float, s : Float, w : Float, e : Float } -> Brush TwoDimensional
+initXY : Extent -> Brush TwoDimensional
 initXY =
     init True True
 
@@ -149,19 +149,37 @@ init x y extent =
 selection1d : Brush OneDimensional -> Maybe ( Float, Float )
 selection1d (Brush { selection, x }) =
     Maybe.map
-        (\{ n, w, s, e } ->
+        (\{ top, left, bottom, right } ->
             if x then
-                ( min e w, max e w )
+                ( min right left, max right left )
 
             else
-                ( min n s, max n s )
+                ( min top bottom, max top bottom )
         )
         selection
 
 
-selection2d : Brush TwoDimensional -> Maybe { n : Float, s : Float, w : Float, e : Float }
+selection2d : Brush TwoDimensional -> Maybe Extent
 selection2d (Brush { selection }) =
     selection
+
+
+type TransitionOption
+    = Instantly
+
+
+instantly : TransitionOption
+instantly =
+    Instantly
+
+
+setSelection1d : TransitionOption -> ( Float, Float ) -> Brush OneDimensional -> Brush OneDimensional
+setSelection1d _ ( a, b ) (Brush model) =
+    if model.x then
+        Brush { model | selection = Just { left = min a b, right = max a b, top = model.extent.top, bottom = model.extent.bottom } }
+
+    else
+        Brush { model | selection = Just { left = model.extent.left, right = model.extent.right, top = min a b, bottom = max a b } }
 
 
 {-| These encode how different elements behave with regards to different actions.
@@ -270,19 +288,19 @@ hasMoved model =
                             let
                                 xModSelection =
                                     if toXSign model.x element == Just -1 then
-                                        { initialSelection | w = initialSelection.w + clamp (extent.w - initialSelection.w) (extent.e - initialSelection.w) dx }
+                                        { initialSelection | left = initialSelection.left + clamp (extent.left - initialSelection.left) (extent.right - initialSelection.left) dx }
 
                                     else if toXSign model.x element == Just 1 then
-                                        { initialSelection | e = initialSelection.e + clamp (extent.w - initialSelection.e) (extent.e - initialSelection.e) dx }
+                                        { initialSelection | right = initialSelection.right + clamp (extent.left - initialSelection.right) (extent.right - initialSelection.right) dx }
 
                                     else
                                         initialSelection
                             in
                             if toYSign model.y element == Just -1 then
-                                { xModSelection | n = initialSelection.n + clamp (extent.n - initialSelection.n) (extent.s - initialSelection.n) dy }
+                                { xModSelection | top = initialSelection.top + clamp (extent.top - initialSelection.top) (extent.bottom - initialSelection.top) dy }
 
                             else if toYSign model.y element == Just 1 then
-                                { xModSelection | s = initialSelection.s + clamp (extent.n - initialSelection.s) (extent.s - initialSelection.s) dy }
+                                { xModSelection | bottom = initialSelection.bottom + clamp (extent.top - initialSelection.bottom) (extent.bottom - initialSelection.bottom) dy }
 
                             else
                                 xModSelection
@@ -306,53 +324,53 @@ hasMoved model =
                                             0
                             in
                             { initialSelection
-                                | w = clamp extent.w extent.e (initialSelection.w - deltaX)
-                                , e = clamp extent.w extent.e (initialSelection.e + deltaX)
-                                , n = clamp extent.n extent.s (initialSelection.n - deltaY)
-                                , s = clamp extent.n extent.s (initialSelection.s + deltaY)
+                                | left = clamp extent.left extent.right (initialSelection.left - deltaX)
+                                , right = clamp extent.left extent.right (initialSelection.right + deltaX)
+                                , top = clamp extent.top extent.bottom (initialSelection.top - deltaY)
+                                , bottom = clamp extent.top extent.bottom (initialSelection.bottom + deltaY)
                             }
 
                         _ ->
                             let
                                 deltaX =
                                     if model.x then
-                                        clamp (extent.w - drag.initialSelection.w) (extent.e - drag.initialSelection.e) dx
+                                        clamp (extent.left - drag.initialSelection.left) (extent.right - drag.initialSelection.right) dx
 
                                     else
                                         0
 
                                 deltaY =
                                     if model.y then
-                                        clamp (extent.n - initialSelection.n) (extent.s - initialSelection.s) dy
+                                        clamp (extent.top - initialSelection.top) (extent.bottom - initialSelection.bottom) dy
 
                                     else
                                         0
                             in
-                            { w = initialSelection.w + deltaX
-                            , e = initialSelection.e + deltaX
-                            , s = initialSelection.s + deltaY
-                            , n = initialSelection.n + deltaY
+                            { left = initialSelection.left + deltaX
+                            , right = initialSelection.right + deltaX
+                            , bottom = initialSelection.bottom + deltaY
+                            , top = initialSelection.top + deltaY
                             }
 
                 normalize sel =
-                    { n = min sel.n sel.s
-                    , s = max sel.n sel.s
-                    , w = min sel.w sel.e
-                    , e = max sel.w sel.e
+                    { top = min sel.top sel.bottom
+                    , bottom = max sel.top sel.bottom
+                    , left = min sel.left sel.right
+                    , right = max sel.left sel.right
                     }
             in
             { model
                 | selection =
                     Just
-                        (case Debug.log "lock" drag.lock of
+                        (case drag.lock of
                             NoLock ->
                                 normalize newSelection
 
                             LockX ->
-                                normalize { newSelection | w = selection.w, e = selection.e }
+                                normalize { newSelection | left = selection.left, right = selection.right }
 
                             LockY ->
-                                normalize { newSelection | n = selection.n, s = selection.s }
+                                normalize { newSelection | top = selection.top, bottom = selection.bottom }
                         )
             }
 
@@ -371,27 +389,27 @@ update msg (Brush model) =
 
                     selection =
                         if element == OverlayElement then
-                            { n =
+                            { top =
                                 if not model.y then
-                                    model.extent.n
+                                    model.extent.top
 
                                 else
                                     py
-                            , w =
+                            , left =
                                 if not model.x then
-                                    model.extent.w
+                                    model.extent.left
 
                                 else
                                     px
-                            , s =
+                            , bottom =
                                 if not model.y then
-                                    model.extent.s
+                                    model.extent.bottom
 
                                 else
                                     py
-                            , e =
+                            , right =
                                 if not model.x then
-                                    model.extent.e
+                                    model.extent.right
 
                                 else
                                     px
@@ -444,7 +462,7 @@ update msg (Brush model) =
                     , selection =
                         Maybe.andThen
                             (\selection ->
-                                if selection.n == selection.s || selection.e == selection.w then
+                                if selection.top == selection.bottom || selection.right == selection.left then
                                     Nothing
 
                                 else
@@ -454,7 +472,7 @@ update msg (Brush model) =
                 }
 
             ShiftDown ->
-                { model | shifting = Debug.log "shifting" (model.x && model.y) }
+                { model | shifting = model.x && model.y }
 
             ShiftUp ->
                 hasMoved { model | shifting = False, drag = Maybe.map (\drag -> { drag | lock = NoLock }) model.drag }
@@ -488,10 +506,10 @@ update msg (Brush model) =
                                             { drag
                                                 | mode = Center
                                                 , initialSelection =
-                                                    { n = withSign (toYSign model.y) .n (\sign n -> n + dy * sign)
-                                                    , s = withSign (toYSign model.y) .s (\sign s -> s - dy * sign)
-                                                    , e = withSign (toXSign model.x) .e (\sign e -> e - dx * sign)
-                                                    , w = withSign (toXSign model.x) .w (\sign w -> w + dx * sign)
+                                                    { top = withSign (toYSign model.y) .top (\sign n -> n + dy * sign)
+                                                    , bottom = withSign (toYSign model.y) .bottom (\sign s -> s - dy * sign)
+                                                    , right = withSign (toXSign model.x) .right (\sign e -> e - dx * sign)
+                                                    , left = withSign (toXSign model.x) .left (\sign w -> w + dx * sign)
                                                     }
                                             }
                                 }
@@ -526,10 +544,10 @@ update msg (Brush model) =
                                             { drag
                                                 | mode = Handle
                                                 , initialSelection =
-                                                    { n = resetWithSign (toYSign model.y) (>) .n
-                                                    , s = resetWithSign (toYSign model.y) (<) .s
-                                                    , e = resetWithSign (toXSign model.x) (<) .e
-                                                    , w = resetWithSign (toXSign model.x) (>) .w
+                                                    { top = resetWithSign (toYSign model.y) (>) .top
+                                                    , bottom = resetWithSign (toYSign model.y) (<) .bottom
+                                                    , right = resetWithSign (toXSign model.x) (<) .right
+                                                    , left = resetWithSign (toXSign model.x) (>) .left
                                                     }
                                             }
                                 }
@@ -655,12 +673,12 @@ view attrs tagger (Brush model) =
         handleSizeHalf =
             handleSize / 2
 
-        rect tipe attributes { n, w, e, s } =
+        rect tipe attributes { top, left, right, bottom } =
             Svg.rect
-                ((Attr.x (String.fromFloat w)
-                    :: Attr.y (String.fromFloat n)
-                    :: Attr.width (String.fromFloat (e - w))
-                    :: Attr.height (String.fromFloat (s - n))
+                ((Attr.x (String.fromFloat left)
+                    :: Attr.y (String.fromFloat top)
+                    :: Attr.width (String.fromFloat (right - left))
+                    :: Attr.height (String.fromFloat (bottom - top))
                     :: attributes
                  )
                     ++ events tipe (Brush model) tagger
@@ -687,17 +705,17 @@ view attrs tagger (Brush model) =
                             :: (if model.x then
                                     [ rect (HandleElement EHandle)
                                         [ Attr.cursor "ew-resize" ]
-                                        { n = selection.n - handleSizeHalf
-                                        , s = selection.s + handleSizeHalf
-                                        , e = selection.e + handleSizeHalf
-                                        , w = selection.e - handleSizeHalf
+                                        { top = selection.top - handleSizeHalf
+                                        , bottom = selection.bottom + handleSizeHalf
+                                        , right = selection.right + handleSizeHalf
+                                        , left = selection.right - handleSizeHalf
                                         }
                                     , rect (HandleElement WHandle)
                                         [ Attr.cursor "ew-resize" ]
-                                        { n = selection.n - handleSizeHalf
-                                        , s = selection.s + handleSizeHalf
-                                        , e = selection.w + handleSizeHalf
-                                        , w = selection.w - handleSizeHalf
+                                        { top = selection.top - handleSizeHalf
+                                        , bottom = selection.bottom + handleSizeHalf
+                                        , right = selection.left + handleSizeHalf
+                                        , left = selection.left - handleSizeHalf
                                         }
                                     ]
 
@@ -707,17 +725,17 @@ view attrs tagger (Brush model) =
                             ++ (if model.y then
                                     [ rect (HandleElement NHandle)
                                         [ Attr.cursor "ns-resize" ]
-                                        { n = selection.n - handleSizeHalf
-                                        , s = selection.n + handleSizeHalf
-                                        , e = selection.e + handleSizeHalf
-                                        , w = selection.w - handleSizeHalf
+                                        { top = selection.top - handleSizeHalf
+                                        , bottom = selection.top + handleSizeHalf
+                                        , right = selection.right + handleSizeHalf
+                                        , left = selection.left - handleSizeHalf
                                         }
                                     , rect (HandleElement SHandle)
                                         [ Attr.cursor "ns-resize" ]
-                                        { n = selection.s - handleSizeHalf
-                                        , s = selection.s + handleSizeHalf
-                                        , e = selection.e + handleSizeHalf
-                                        , w = selection.w - handleSizeHalf
+                                        { top = selection.bottom - handleSizeHalf
+                                        , bottom = selection.bottom + handleSizeHalf
+                                        , right = selection.right + handleSizeHalf
+                                        , left = selection.left - handleSizeHalf
                                         }
                                     ]
 
@@ -725,10 +743,10 @@ view attrs tagger (Brush model) =
                                     []
                                )
                             ++ (if model.x && model.y then
-                                    [ handle NWHandle selection.w selection.n
-                                    , handle NEHandle selection.e selection.n
-                                    , handle SWHandle selection.w selection.s
-                                    , handle SEHandle selection.e selection.s
+                                    [ handle NWHandle selection.left selection.top
+                                    , handle NEHandle selection.right selection.top
+                                    , handle SWHandle selection.left selection.bottom
+                                    , handle SEHandle selection.right selection.bottom
                                     ]
 
                                 else

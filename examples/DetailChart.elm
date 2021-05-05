@@ -7,9 +7,12 @@ import Axis
 import Browser
 import Browser.Events
 import Brush exposing (Brush, OnBrush, OneDimensional)
+import Circle3d exposing (at_)
 import Color
+import DateFormat
 import Events
 import Json.Decode as D exposing (Decoder)
+import LTTB
 import Path
 import Random
 import Scale
@@ -67,14 +70,51 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ZoomMsg zoomMsg ->
+            let
+                zoom =
+                    Zoom.update zoomMsg model.zoom
+
+                { scale, translate } =
+                    Zoom.asRecord zoom
+
+                bounds =
+                    ( (padding - translate.x) / scale
+                    , (w - padding - translate.x) / scale
+                    )
+            in
             ( { model
-                | zoom = Zoom.update zoomMsg model.zoom
+                | zoom = zoom
+                , brush = Brush.setSelection1d Brush.instantly bounds model.brush
               }
             , Cmd.none
             )
 
         BrushMsg brushMsg ->
-            ( { model | brush = Brush.update brushMsg model.brush }, Cmd.none )
+            let
+                brush =
+                    Brush.update brushMsg model.brush
+
+                ( brushStart, brushEnd ) =
+                    Brush.selection1d brush
+                        |> Maybe.withDefault ( padding, width - padding )
+
+                delta =
+                    brushEnd - brushStart
+
+                width =
+                    w - 2 * padding
+
+                zoomTransform =
+                    { scale = width / delta
+                    , translate = { x = padding - brushStart * (width / delta), y = 0 }
+                    }
+            in
+            ( { model
+                | brush = brush
+                , zoom = Zoom.setTransform Zoom.instantly zoomTransform model.zoom
+              }
+            , Cmd.none
+            )
 
 
 detailChart ( min, max ) model =
@@ -91,19 +131,13 @@ detailChart ( min, max ) model =
             Scale.time Time.utc ( padding, w - padding ) ( min, max )
 
         line =
-            List.filterMap
-                (\( x, y ) ->
-                    let
-                        x_ =
-                            Time.posixToMillis x
-                    in
-                    if x_ + 35000 >= Time.posixToMillis min && x_ - 35000 <= Time.posixToMillis max then
-                        Just (Just ( Scale.convert actualXScale x, Scale.convert yScale y ))
-
-                    else
-                        Nothing
-                )
-                model.data
+            model.data
+                |> List.filter
+                    (\( x, _ ) ->
+                        Time.posixToMillis x + 35000 >= Time.posixToMillis min && Time.posixToMillis x - 35000 <= Time.posixToMillis max
+                    )
+                |> downsample
+                |> List.map (\( x, y ) -> Just ( Scale.convert actualXScale x, Scale.convert yScale y ))
                 |> Shape.line Shape.monotoneInXCurve
     in
     g []
@@ -117,7 +151,7 @@ detailChart ( min, max ) model =
 overviewChart xScale ( min, max ) model =
     let
         yScale =
-            model.data
+            model.overviewData
                 |> List.map Tuple.second
                 |> List.maximum
                 |> Maybe.withDefault 0
@@ -129,7 +163,7 @@ overviewChart xScale ( min, max ) model =
                 (\( x, y ) ->
                     Just ( Scale.convert xScale x, Scale.convert yScale y )
                 )
-                model.data
+                model.overviewData
                 |> Shape.line Shape.monotoneInXCurve
     in
     g []
@@ -140,61 +174,11 @@ overviewChart xScale ( min, max ) model =
         ]
 
 
-brushView : ( ( Float, Float ), ( Float, Float ) ) -> ( Float, Float ) -> Svg Msg
-brushView ( ( left, top ), ( right, bottom ) ) ( min, max ) =
-    let
-        handleSizeHalf =
-            3
-    in
-    g [ fill PaintNone, pointerEvents "all" ]
-        [ rect
-            [ x left
-            , y top
-            , width (right - left)
-            , height (bottom - top)
-            , cursor CursorCrosshair
-            , pointerEvents "all"
-            ]
-            []
-        , rect
-            [ x min
-            , y top
-            , width (max - min)
-            , height (bottom - top)
-            , cursor CursorMove
-            , pointerEvents "all"
-            , fill (Paint (Color.rgb 0.43 0.43 0.43))
-            , fillOpacity (Opacity 0.3)
-            , stroke (Paint Color.white)
-            , shapeRendering RenderCrispEdges
-            ]
-            []
-        , rect
-            [ x (min - handleSizeHalf)
-            , y (top - handleSizeHalf)
-            , width (handleSizeHalf * 2)
-            , height (bottom - top + handleSizeHalf * 2)
-            , cursor (Cursor "ew-resize")
-            , pointerEvents "all"
-            ]
-            []
-        , rect
-            [ x max
-            , y (top - handleSizeHalf)
-            , width (handleSizeHalf * 2)
-            , height (bottom - top + handleSizeHalf * 2)
-            , cursor (Cursor "ew-resize")
-            , pointerEvents "all"
-            ]
-            []
-        ]
-
-
 view : Model -> Svg Msg
 view model =
     let
-        zoom =
-            Zoom.asRecord model.zoom
+        bounds =
+            Brush.selection1d model.brush |> Maybe.withDefault ( padding, w - padding )
 
         xScale =
             model.data
@@ -202,18 +186,16 @@ view model =
                 |> Statistics.extentBy Time.posixToMillis
                 |> Maybe.withDefault ( Time.millisToPosix 0, Time.millisToPosix 0 )
                 |> Scale.time Time.utc ( padding, w - padding )
-
-        bounds =
-            ( Scale.invert xScale (padding - zoom.translate.x / zoom.scale), Scale.invert xScale ((w - padding - zoom.translate.x) / zoom.scale) )
     in
     svg [ viewBox 0 0 w h, width w, height h ]
-        [ detailChart bounds model
-        , overviewChart xScale (Brush.selection1d model.brush |> Maybe.withDefault ( padding, w - padding )) model
+        [ detailChart (Tuple.mapBoth (Scale.invert xScale) (Scale.invert xScale) bounds) model
+        , overviewChart xScale bounds model
         ]
 
 
 type alias Model =
     { data : List ( Time.Posix, Float )
+    , overviewData : List ( Time.Posix, Float )
     , zoom : Zoom
     , brush : Brush OneDimensional
     }
@@ -224,28 +206,31 @@ type Msg
     | BrushMsg OnBrush
 
 
-
--- | Wheeled Float ( Float, Float )
--- | GestureStarted
--- | Gestured Float ( Float, Float )
--- | TouchStarted (List Touch)
--- | TouchStartedExpired
--- | TouchMoved (List Touch)
--- | TouchEnded (List Touch)
--- | Tick Float
-
-
 init : () -> ( Model, Cmd Msg )
 init () =
-    ( { data = Random.step timeseriesGenerator (Random.initialSeed 4354554) |> Tuple.first
+    let
+        data =
+            Random.step timeseriesGenerator (Random.initialSeed 4354554) |> Tuple.first
+    in
+    ( { data = data
+      , overviewData = downsample data
       , zoom =
             Zoom.init { width = w - padding, height = h }
-                |> Zoom.scaleExtent 1 10000
-                |> Zoom.translateExtent ( ( 0, 0 ), ( w - padding, h ) )
-      , brush = Brush.initX { n = h - overviewChartHeight, s = h - padding, w = padding, e = w - padding }
+                |> Zoom.scaleExtent 1 22
+                |> Zoom.translateExtent ( ( 0, 0 ), ( w, h - overviewChartHeight ) )
+      , brush = Brush.initX { top = h - overviewChartHeight, bottom = h - padding, left = padding, right = w - padding }
       }
     , Cmd.none
     )
+
+
+downsample data =
+    LTTB.downsample
+        { data = data
+        , threshold = floor w
+        , xGetter = Tuple.first >> Time.posixToMillis >> toFloat
+        , yGetter = Tuple.second
+        }
 
 
 timeseriesGenerator : Random.Generator (List ( Time.Posix, Float ))

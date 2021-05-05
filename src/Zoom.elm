@@ -3,6 +3,7 @@ module Zoom exposing
     , OnZoom, update, subscriptions
     , transform, asRecord
     , events, onDoubleClick, onWheel, onDrag, onGesture, onTouch
+    , TransitionOption, animatedAround, instantly, setTransform
     )
 
 {-| This module implements a convenient abstraction for panning and zooming:
@@ -211,7 +212,7 @@ init { width, height } =
         }
 
 
-{-| Allows you to set a boundary where a user will be able to pan to. The format is `((top, left), (bottom, right))`.
+{-| Allows you to set a boundary where a user will be able to pan to. The format is `((left, top), (right, bottom))`.
 
 Typically you will want to set this to `((0, 0), (width, height))`, however you can restrict it however you like. For example maps typically only restrict vertical movement, but not horizontal movement.
 
@@ -799,3 +800,36 @@ easingInOutCubic t =
 
     else
         1 - 0.5 * (-2 * t + 2) ^ 3
+
+
+
+---
+
+
+type TransitionOption
+    = Instantly
+    | WithAnimation ( Float, Float )
+
+
+instantly : TransitionOption
+instantly =
+    Instantly
+
+
+animatedAround : ( Float, Float ) -> TransitionOption
+animatedAround =
+    WithAnimation
+
+
+setTransform : TransitionOption -> { scale : Float, translate : { x : Float, y : Float } } -> Zoom -> Zoom
+setTransform transition trfm (Zoom model) =
+    let
+        internalTransform =
+            { k = trfm.scale, x = trfm.translate.x, y = trfm.translate.y }
+    in
+    case transition of
+        WithAnimation point ->
+            schedule internalTransform point (Zoom model)
+
+        Instantly ->
+            Zoom { model | transform = internalTransform, transition = Nothing }
