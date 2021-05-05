@@ -82,7 +82,7 @@ type Msg
 
 init : () -> ( Model, Cmd Msg )
 init () =
-    ( { brush = Brush.initXY { n = padding, s = h - padding, w = padding, e = w - padding }
+    ( { brush = Brush.initXY { top = padding, bottom = h - padding, left = padding, right = w - padding }
       }
     , Cmd.none
     )

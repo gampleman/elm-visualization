@@ -176,10 +176,47 @@ instantly =
 setSelection1d : TransitionOption -> ( Float, Float ) -> Brush OneDimensional -> Brush OneDimensional
 setSelection1d _ ( a, b ) (Brush model) =
     if model.x then
-        Brush { model | selection = Just { left = min a b, right = max a b, top = model.extent.top, bottom = model.extent.bottom } }
+        Brush
+            { model
+                | selection =
+                    Just
+                        { left = clamp model.extent.left a b
+                        , right = clamp a b model.extent.right
+                        , top = model.extent.top
+                        , bottom = model.extent.bottom
+                        }
+            }
 
     else
-        Brush { model | selection = Just { left = model.extent.left, right = model.extent.right, top = min a b, bottom = max a b } }
+        Brush
+            { model
+                | selection =
+                    Just
+                        { left = model.extent.left
+                        , right = model.extent.right
+                        , top = clamp model.extent.top a b
+                        , bottom = clamp a b model.extent.bottom
+                        }
+            }
+
+
+setSelection2d : TransitionOption -> Extent -> Brush TwoDimensional -> Brush TwoDimensional
+setSelection2d _ sel (Brush model) =
+    Brush
+        { model
+            | selection =
+                Just
+                    { left = max sel.left model.extent.left
+                    , right = min sel.left model.extent.left
+                    , top = max model.extent.top sel.top
+                    , bottom = min model.extent.bottom sel.bottom
+                    }
+        }
+
+
+clearSelection : Brush dim -> Brush dim
+clearSelection (Brush model) =
+    Brush { model | selection = Nothing }
 
 
 {-| These encode how different elements behave with regards to different actions.
