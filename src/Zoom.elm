@@ -1,9 +1,9 @@
 module Zoom exposing
     ( Zoom, init, scaleExtent, translateExtent
     , OnZoom, update, subscriptions
+    , setTransform, TransitionOption, instantly, animatedAround
     , transform, asRecord
     , events, onDoubleClick, onWheel, onDrag, onGesture, onTouch
-    , TransitionOption, animatedAround, instantly, setTransform
     )
 
 {-| This module implements a convenient abstraction for panning and zooming:
@@ -78,6 +78,11 @@ Finally, set up your view:
 ## Updating the zoom
 
 @docs OnZoom, update, subscriptions
+
+
+## Manipulating the zoom transform programmatically
+
+@docs setTransform, TransitionOption, instantly, animatedAround
 
 
 ## View
@@ -806,21 +811,28 @@ easingInOutCubic t =
 ---
 
 
+{-| -}
 type TransitionOption
     = Instantly
     | WithAnimation ( Float, Float )
 
 
+{-| Changes the zoom transform instantly.
+-}
 instantly : TransitionOption
 instantly =
     Instantly
 
 
+{-| Animates the zoom transform minimizing movement around the specified point.
+-}
 animatedAround : ( Float, Float ) -> TransitionOption
 animatedAround =
     WithAnimation
 
 
+{-| Change the zoom transform programmatically.
+-}
 setTransform : TransitionOption -> { scale : Float, translate : { x : Float, y : Float } } -> Zoom -> Zoom
 setTransform transition trfm (Zoom model) =
     let

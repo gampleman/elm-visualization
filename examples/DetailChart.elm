@@ -1,6 +1,9 @@
 module DetailChart exposing (..)
 
-{-| @category Advanced
+{-| Implements the Focus + Context pattern, where the user can zoom in on a place of interest while still seeing the overview.
+
+@category Advanced
+
 -}
 
 import Axis
@@ -15,7 +18,7 @@ import Json.Decode as D exposing (Decoder)
 import LTTB
 import Path
 import Random
-import Scale
+import Scale exposing (ContinuousScale)
 import Shape
 import Statistics
 import Svg.Events exposing (custom)
@@ -117,6 +120,7 @@ update msg model =
             )
 
 
+detailChart : ( Time.Posix, Time.Posix ) -> Model -> Svg Msg
 detailChart ( min, max ) model =
     let
         yScale =
@@ -148,7 +152,8 @@ detailChart ( min, max ) model =
         ]
 
 
-overviewChart xScale ( min, max ) model =
+overviewChart : ContinuousScale Time.Posix -> Model -> Svg Msg
+overviewChart xScale model =
     let
         yScale =
             model.overviewData
@@ -189,7 +194,7 @@ view model =
     in
     svg [ viewBox 0 0 w h, width w, height h ]
         [ detailChart (Tuple.mapBoth (Scale.invert xScale) (Scale.invert xScale) bounds) model
-        , overviewChart xScale bounds model
+        , overviewChart xScale model
         ]
 
 
@@ -224,6 +229,7 @@ init () =
     )
 
 
+downsample : List ( Time.Posix, Float ) -> List ( Time.Posix, Float )
 downsample data =
     LTTB.downsample
         { data = data

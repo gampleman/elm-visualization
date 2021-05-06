@@ -1,27 +1,77 @@
-module Brush exposing (..)
+module Brush exposing
+    ( Brush, OneDimensional, TwoDimensional
+    , initX, initY, initXY
+    , selection1d, selection2d
+    , OnBrush, update, subscriptions
+    , setSelection1d, setSelection2d, clearSelection, TransitionOption, instantly
+    , view, Attribute
+    )
+
+{-| Brushing is the interactive specification a one- or two-dimensional selected region using a pointing gesture, such as by clicking and dragging the mouse. Brushing is often used to select discrete elements, such as dots in a scatterplot or files on a desktop. It can also be used to zoom-in to a region of interest, or to select continuous regions for cross-filtering data.
+
+This module implements brushing for mouse events using SVG. Click and drag on the brush selection to translate the selection. Click and drag on one of the selection handles to move the corresponding edge (or edges) of the selection. Click and drag on the invisible overlay to define a new brush selection, or click anywhere within the brushable region while holding down the META (⌘) key. Holding down the ALT (⌥) key while moving the brush causes it to reposition around its center.
+
+@docs Brush, OneDimensional, TwoDimensional
+
+
+## Configuring the Brush behavior
+
+Initializing the brush always requires you to specify in local coordinates the rectangular region where the brush will be active.
+
+@docs initX, initY, initXY
+
+
+## Querying the brush state
+
+@docs selection1d, selection2d
+
+
+## Updating the Brush
+
+@docs OnBrush, update, subscriptions
+
+
+## Manipulating the Selection
+
+@docs setSelection1d, setSelection2d, clearSelection, TransitionOption, instantly
+
+
+## View
+
+@docs view, Attribute
+
+-}
 
 import Browser.Events
 import Events
-import Html exposing (th)
-import Json.Decode as D exposing (Decoder)
+import Json.Decode as D
 import Svg exposing (Svg)
-import Svg.Attributes as Attr exposing (pointerEvents)
+import Svg.Attributes as Attr
 import Svg.Events exposing (custom)
 import Zoom.Matrix as Matrix exposing (Matrix2x3)
 
 
+{-| -}
 type OneDimensional
     = OneDimensional Never
 
 
+{-| -}
 type TwoDimensional
     = TwoDimensional Never
 
 
+{-| Defines a rectangular
+-}
 type alias Extent =
     { top : Float, bottom : Float, left : Float, right : Float }
 
 
+{-| Encapsulates all the data we need to maintain the state of the brush. The dimension type variable can either be `OneDimensional` or `TwoDimensional`. This allows us to share a lot of the implementation details as well as implement generic UI customizations over brushes regardless of their dimensionality.
+
+You will typically want to store this in your model.
+
+-}
 type Brush dimension
     = Brush
         { drag :
@@ -56,6 +106,11 @@ type Mode
     | Center
 
 
+{-| This is the Msg type that this module uses for communicating between the update and the view.
+
+Note that when handling these messages, it is also extremely likely that the brush selection has somehow changed, so you can also use that place in your update function to react to that.
+
+-}
 type OnBrush
     = MouseDown Mode Bool Element ( Float, Float ) (Maybe Matrix2x3)
     | MouseMove ( Float, Float )
@@ -126,16 +181,22 @@ events element (Brush { drag, keysEnabled }) tagger =
             []
 
 
+{-| Initializes a brush that allows brusing in the X axis.
+-}
 initX : Extent -> Brush OneDimensional
 initX =
     init True False
 
 
+{-| Initializes a brush that allows brusing in the Y axis.
+-}
 initY : Extent -> Brush OneDimensional
 initY =
     init False True
 
 
+{-| Initializes a two dimensional brush.
+-}
 initXY : Extent -> Brush TwoDimensional
 initXY =
     init True True
@@ -146,6 +207,8 @@ init x y extent =
     Brush { drag = Nothing, keysEnabled = True, shifting = False, x = x, y = y, selection = Nothing, extent = extent }
 
 
+{-| Exposes the selection for a single dimensional brush, where the first number should always be less than the second.
+-}
 selection1d : Brush OneDimensional -> Maybe ( Float, Float )
 selection1d (Brush { selection, x }) =
     Maybe.map
@@ -159,20 +222,27 @@ selection1d (Brush { selection, x }) =
         selection
 
 
+{-| Exposes the selection for a two dimensional brush.
+-}
 selection2d : Brush TwoDimensional -> Maybe Extent
 selection2d (Brush { selection }) =
     selection
 
 
+{-| -}
 type TransitionOption
     = Instantly
 
 
+{-| Perfom the update to the brush instantly, rather than with an animation (animations are not supported yet.)
+-}
 instantly : TransitionOption
 instantly =
     Instantly
 
 
+{-| Programatically set the selection of the Brush.
+-}
 setSelection1d : TransitionOption -> ( Float, Float ) -> Brush OneDimensional -> Brush OneDimensional
 setSelection1d _ ( a, b ) (Brush model) =
     if model.x then
@@ -200,6 +270,8 @@ setSelection1d _ ( a, b ) (Brush model) =
             }
 
 
+{-| Programatically set the selection of the Brush (in two dimensions).
+-}
 setSelection2d : TransitionOption -> Extent -> Brush TwoDimensional -> Brush TwoDimensional
 setSelection2d _ sel (Brush model) =
     Brush
@@ -214,6 +286,13 @@ setSelection2d _ sel (Brush model) =
         }
 
 
+{-| Clears the selection programmatically.
+
+     brush
+       |> Brush.clearSelection
+       |> Brush.selection1d --> Nothing
+
+-}
 clearSelection : Brush dim -> Brush dim
 clearSelection (Brush model) =
     Brush { model | selection = Nothing }
@@ -415,6 +494,8 @@ hasMoved model =
             model
 
 
+{-| Call this in your update function to make the brush work!
+-}
 update : OnBrush -> Brush dim -> Brush dim
 update msg (Brush model) =
     Brush <|
@@ -596,6 +677,8 @@ update msg (Brush model) =
                         model
 
 
+{-| Don't forget the subscriptions, otherwise drag gestures won't work!
+-}
 subscriptions : Brush dim -> (OnBrush -> msg) -> Sub msg
 subscriptions (Brush brush) tagger =
     Sub.batch
@@ -660,6 +743,7 @@ subscriptions (Brush brush) tagger =
 --- View
 
 
+{-| -}
 type Attribute
     = Attribute
 
@@ -698,6 +782,7 @@ elementToCursor element =
             "nwse-resize"
 
 
+{-| -}
 view : List Attribute -> (OnBrush -> msg) -> Brush dim -> Svg msg
 view attrs tagger (Brush model) =
     let
