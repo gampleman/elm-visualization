@@ -57,7 +57,6 @@ import Json.Decode as D
 import Svg exposing (Svg)
 import Svg.Attributes as Attr
 import Svg.Events exposing (custom)
-import Zoom.Matrix as Matrix exposing (Matrix2x3)
 
 
 {-| -}
@@ -85,8 +84,7 @@ type Brush dimension
     = Brush
         { drag :
             Maybe
-                { matrix : Maybe Matrix2x3
-                , origin : ( Float, Float )
+                { origin : ( Float, Float )
                 , current : ( Float, Float )
                 , mode : Mode
                 , lock : Lock
@@ -121,7 +119,7 @@ Note that when handling these messages, it is also extremely likely that the bru
 
 -}
 type OnBrush
-    = MouseDown Mode Bool Element ( Float, Float ) (Maybe Matrix2x3)
+    = MouseDown Mode Bool Element ( Float, Float )
     | MouseMove ( Float, Float )
     | MouseUp
     | ShiftDown
@@ -149,45 +147,92 @@ type Handle
 
 events : Element -> Brush dim -> (OnBrush -> msg) -> List (Svg.Attribute msg)
 events element (Brush { drag, keysEnabled }) tagger =
-    case drag of
-        Nothing ->
-            [ custom "mousedown"
-                (D.map6
-                    (\x y matrix meta alt shift ->
+    [ custom "touchstart"
+        (D.andThen
+            (\touches ->
+                case touches of
+                    { position } :: _ ->
                         let
-                            el =
-                                if keysEnabled && meta then
-                                    OverlayElement
-
-                                else
-                                    element
-
                             mode =
-                                if el == SelectionElement then
+                                if element == SelectionElement then
                                     Drag
-
-                                else if keysEnabled && alt then
-                                    Center
 
                                 else
                                     Handle
                         in
-                        { message = tagger (MouseDown mode (keysEnabled && shift) element ( x, y ) matrix)
-                        , stopPropagation = True
-                        , preventDefault = False
-                        }
-                    )
-                    (D.field "clientX" D.float)
-                    (D.field "clientY" D.float)
-                    Events.decodeSVGTransformMatrix
-                    (D.field "metaKey" D.bool)
-                    (D.field "altKey" D.bool)
-                    (D.field "shiftKey" D.bool)
-                )
-            ]
+                        D.succeed
+                            { message = tagger (MouseDown mode False element position)
+                            , stopPropagation = True
+                            , preventDefault = False
+                            }
 
-        Just _ ->
-            []
+                    [] ->
+                        D.fail ""
+            )
+            Events.decodeTouches
+        )
+    , custom "touchmove"
+        (D.andThen
+            (\touches ->
+                case touches of
+                    { position } :: _ ->
+                        D.succeed
+                            { message = tagger (MouseMove position)
+                            , stopPropagation = True
+                            , preventDefault = True
+                            }
+
+                    [] ->
+                        D.fail ""
+            )
+            Events.decodeTouches
+        )
+    , custom "touchend"
+        (D.succeed
+            { message = tagger MouseUp
+            , stopPropagation = True
+            , preventDefault = True
+            }
+        )
+    ]
+        ++ (case drag of
+                Nothing ->
+                    [ custom "mousedown"
+                        (D.map4
+                            (\pos meta alt shift ->
+                                let
+                                    el =
+                                        if keysEnabled && meta then
+                                            OverlayElement
+
+                                        else
+                                            element
+
+                                    mode =
+                                        if el == SelectionElement then
+                                            Drag
+
+                                        else if keysEnabled && alt then
+                                            Center
+
+                                        else
+                                            Handle
+                                in
+                                { message = tagger (MouseDown mode (keysEnabled && shift) element pos)
+                                , stopPropagation = True
+                                , preventDefault = False
+                                }
+                            )
+                            Events.decodeMousePosition
+                            (D.field "metaKey" D.bool)
+                            (D.field "altKey" D.bool)
+                            (D.field "shiftKey" D.bool)
+                        )
+                    ]
+
+                Just _ ->
+                    []
+           )
 
 
 {-| Initializes a brush that allows brusing in the X axis.
@@ -397,7 +442,7 @@ hasMoved model =
         Just drag ->
             let
                 position =
-                    Events.normalizePointerPosition drag.current drag.matrix
+                    drag.current
 
                 dx =
                     Tuple.first position - Tuple.first drag.origin
@@ -516,11 +561,8 @@ update : OnBrush -> Brush dim -> Brush dim
 update msg (Brush model) =
     Brush <|
         case msg of
-            MouseDown mode shifting element position matrix ->
+            MouseDown mode shifting element ( px, py ) ->
                 let
-                    ( px, py ) =
-                        Events.normalizePointerPosition position matrix
-
                     selection =
                         if element == OverlayElement then
                             { top =
@@ -555,8 +597,7 @@ update msg (Brush model) =
                 { model
                     | drag =
                         Just
-                            { matrix = matrix
-                            , current = ( px, py )
+                            { current = ( px, py )
                             , origin = ( px, py )
                             , mode = mode
                             , lock = NoLock
@@ -617,7 +658,7 @@ update msg (Brush model) =
                         if drag.mode == Handle then
                             let
                                 position =
-                                    Events.normalizePointerPosition drag.current drag.matrix
+                                    drag.current
 
                                 dx =
                                     Tuple.first position - Tuple.first drag.origin
@@ -702,12 +743,9 @@ subscriptions (Brush brush) tagger =
             Just _ ->
                 Sub.batch
                     [ Browser.Events.onMouseMove
-                        (D.map2
-                            (\x y ->
-                                tagger (MouseMove ( x, y ))
-                            )
-                            (D.field "clientX" D.float)
-                            (D.field "clientY" D.float)
+                        (D.map
+                            (MouseMove >> tagger)
+                            Events.decodeMousePosition
                         )
                     , Browser.Events.onMouseUp (D.succeed (tagger MouseUp))
                     , Browser.Events.onKeyDown
