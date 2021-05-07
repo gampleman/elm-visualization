@@ -1,6 +1,6 @@
 module Brush exposing
     ( Brush, OneDimensional, TwoDimensional
-    , initX, initY, initXY
+    , initX, initY, initXY, Extent
     , selection1d, selection2d
     , OnBrush, update, subscriptions
     , setSelection1d, setSelection2d, clearSelection, TransitionOption, instantly
@@ -19,7 +19,7 @@ This module implements brushing for mouse events using SVG. Click and drag on th
 
 Initializing the brush always requires you to specify in local coordinates the rectangular region where the brush will be active.
 
-@docs initX, initY, initXY
+@docs initX, initY, initXY, Extent
 
 
 ## Querying the brush state
@@ -70,7 +70,7 @@ type TwoDimensional
     = TwoDimensional Never
 
 
-{-| Defines a rectangular
+{-| Defines a rectangular region.
 -}
 type alias Extent =
     { top : Float, bottom : Float, left : Float, right : Float }
