@@ -1,6 +1,6 @@
 module Brush exposing
     ( Brush, OneDimensional, TwoDimensional
-    , initX, initY, initXY, Extent
+    , initX, initY, initXY, Extent, keyboardModifiersEnabled
     , selection1d, selection2d
     , OnBrush, update, subscriptions
     , setSelection1d, setSelection2d, clearSelection, TransitionOption, instantly
@@ -19,7 +19,7 @@ This module implements brushing for mouse events using SVG. Click and drag on th
 
 Initializing the brush always requires you to specify in local coordinates the rectangular region where the brush will be active.
 
-@docs initX, initY, initXY, Extent
+@docs initX, initY, initXY, Extent, keyboardModifiersEnabled
 
 
 ## Querying the brush state
@@ -214,6 +214,13 @@ initXY =
 init : Bool -> Bool -> Extent -> Brush dimension
 init x y extent =
     Brush { drag = Nothing, keysEnabled = True, shifting = False, x = x, y = y, selection = Nothing, extent = extent }
+
+
+{-| By default the brush will use the meta/alt and shift keys to change behavior. You can disable this with this function.
+-}
+keyboardModifiersEnabled : Bool -> Brush dimension -> Brush dimension
+keyboardModifiersEnabled enabled (Brush model) =
+    Brush { model | keysEnabled = enabled }
 
 
 {-| Exposes the selection for a single dimensional brush, where the first number should always be less than the second.
