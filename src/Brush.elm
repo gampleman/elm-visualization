@@ -45,8 +45,6 @@ The handle customization functions take a suggested extent for where you should 
 This is basically the line/point they represent extended by `handleSize / 2` in each direction.
 However, you do not need to abide by these dimensions exactly, you can render much larger or smaller objects there.
 
-The second argument is a suggested cursor, which you may want to place in the `cursor` attribute.
-
 @docs bottomHandle, leftHandle, rightHandle, topHandle, topLeftHandle, topRightHandle, bottomLeftHandle, bottomRightHandle
 
 -}
@@ -802,15 +800,15 @@ may appear to also consume it. However, this is not the case, the functions take
 -}
 type Attribute msg
     = HandleSize Float
-    | LeftHandle (Extent -> String -> List (Svg.Attribute msg) -> Svg msg)
-    | RightHandle (Extent -> String -> List (Svg.Attribute msg) -> Svg msg)
-    | TopHandle (Extent -> String -> List (Svg.Attribute msg) -> Svg msg)
-    | BottomHandle (Extent -> String -> List (Svg.Attribute msg) -> Svg msg)
-    | TopLeftHandle (Extent -> String -> List (Svg.Attribute msg) -> Svg msg)
-    | TopRightHandle (Extent -> String -> List (Svg.Attribute msg) -> Svg msg)
-    | BottomLeftHandle (Extent -> String -> List (Svg.Attribute msg) -> Svg msg)
-    | BottomRightHandle (Extent -> String -> List (Svg.Attribute msg) -> Svg msg)
-    | SelectedArea (Extent -> String -> List (Svg.Attribute msg) -> Svg msg)
+    | LeftHandle (Extent -> List (Svg.Attribute msg) -> Svg msg)
+    | RightHandle (Extent -> List (Svg.Attribute msg) -> Svg msg)
+    | TopHandle (Extent -> List (Svg.Attribute msg) -> Svg msg)
+    | BottomHandle (Extent -> List (Svg.Attribute msg) -> Svg msg)
+    | TopLeftHandle (Extent -> List (Svg.Attribute msg) -> Svg msg)
+    | TopRightHandle (Extent -> List (Svg.Attribute msg) -> Svg msg)
+    | BottomLeftHandle (Extent -> List (Svg.Attribute msg) -> Svg msg)
+    | BottomRightHandle (Extent -> List (Svg.Attribute msg) -> Svg msg)
+    | SelectedArea (Extent -> List (Svg.Attribute msg) -> Svg msg)
 
 
 elementToCursor : Element -> String
@@ -856,69 +854,68 @@ handleSize =
 
 {-| Customise how to render the left handle.
 -}
-leftHandle : (Extent -> String -> List (Svg.Attribute msg) -> Svg msg) -> Attribute msg
+leftHandle : (Extent -> List (Svg.Attribute msg) -> Svg msg) -> Attribute msg
 leftHandle =
     LeftHandle
 
 
 {-| Customise how to render the right handle.
 -}
-rightHandle : (Extent -> String -> List (Svg.Attribute msg) -> Svg msg) -> Attribute msg
+rightHandle : (Extent -> List (Svg.Attribute msg) -> Svg msg) -> Attribute msg
 rightHandle =
     RightHandle
 
 
 {-| Customise how to render the top handle.
 -}
-topHandle : (Extent -> String -> List (Svg.Attribute msg) -> Svg msg) -> Attribute msg
+topHandle : (Extent -> List (Svg.Attribute msg) -> Svg msg) -> Attribute msg
 topHandle =
     TopHandle
 
 
 {-| Customise how to render the bottom handle.
 -}
-bottomHandle : (Extent -> String -> List (Svg.Attribute msg) -> Svg msg) -> Attribute msg
+bottomHandle : (Extent -> List (Svg.Attribute msg) -> Svg msg) -> Attribute msg
 bottomHandle =
     BottomHandle
 
 
 {-| Customise how to render the top left handle. Only applies to a 2D brush.
 -}
-topLeftHandle : (Extent -> String -> List (Svg.Attribute msg) -> Svg msg) -> Attribute msg
+topLeftHandle : (Extent -> List (Svg.Attribute msg) -> Svg msg) -> Attribute msg
 topLeftHandle =
     TopLeftHandle
 
 
 {-| Customise how to render the top right handle. Only applies to a 2D brush.
 -}
-topRightHandle : (Extent -> String -> List (Svg.Attribute msg) -> Svg msg) -> Attribute msg
+topRightHandle : (Extent -> List (Svg.Attribute msg) -> Svg msg) -> Attribute msg
 topRightHandle =
     TopRightHandle
 
 
 {-| Customise how to render the bottom left handle. Only applies to a 2D brush.
 -}
-bottomLeftHandle : (Extent -> String -> List (Svg.Attribute msg) -> Svg msg) -> Attribute msg
+bottomLeftHandle : (Extent -> List (Svg.Attribute msg) -> Svg msg) -> Attribute msg
 bottomLeftHandle =
     BottomLeftHandle
 
 
 {-| Customise how to render the bottom right handle. Only applies to a 2D brush.
 -}
-bottomRightHandle : (Extent -> String -> List (Svg.Attribute msg) -> Svg msg) -> Attribute msg
+bottomRightHandle : (Extent -> List (Svg.Attribute msg) -> Svg msg) -> Attribute msg
 bottomRightHandle =
     BottomRightHandle
 
 
 {-| Customize rendering for the rectangular region that is the selection.
 
-The first argument is the actual coordinates of the selection, the second is the suggested cursor ("move"),
-and finally the event handlers.
+The first argument is the actual coordinates of the selection, the second are the event handlers.
 
 The default version renderes a `<rect fill="#777" fill-opacity="0.3" stroke="white" shape-rendering="crispEdges">`.
 
 -}
-selectedArea : (Extent -> String -> List (Svg.Attribute msg) -> Svg msg) -> Attribute msg
+selectedArea : (Extent -> List (Svg.Attribute msg) -> Svg msg) -> Attribute msg
 selectedArea =
     SelectedArea
 
@@ -982,26 +979,24 @@ view attrs tagger (Brush model) =
                 }
                 attrs
 
-        defaultHandleImpl : Extent -> String -> List (Svg.Attribute msg) -> Svg msg
-        defaultHandleImpl { top, left, right, bottom } cursor attributes =
+        defaultHandleImpl : Extent -> List (Svg.Attribute msg) -> Svg msg
+        defaultHandleImpl { top, left, right, bottom } attributes =
             Svg.rect
                 (Attr.x (String.fromFloat left)
                     :: Attr.y (String.fromFloat top)
                     :: Attr.width (String.fromFloat (right - left))
                     :: Attr.height (String.fromFloat (bottom - top))
-                    :: Attr.cursor cursor
                     :: Attr.fill "none"
                     :: attributes
                 )
                 []
 
-        defaultSelectedAreaImpl { top, left, right, bottom } cursor attributes =
+        defaultSelectedAreaImpl { top, left, right, bottom } attributes =
             Svg.rect
                 (Attr.x (String.fromFloat left)
                     :: Attr.y (String.fromFloat top)
                     :: Attr.width (String.fromFloat (right - left))
                     :: Attr.height (String.fromFloat (bottom - top))
-                    :: Attr.cursor cursor
                     :: Attr.fill "#777"
                     :: Attr.fillOpacity "0.3"
                     :: Attr.stroke "white"
@@ -1033,14 +1028,16 @@ view attrs tagger (Brush model) =
                 , top = y - handleSizeHalf
                 , bottom = y + handleSizeHalf
                 }
-                (elementToCursor (HandleElement tipe))
-                (events (HandleElement tipe) (Brush model) tagger)
+                (buildEvents (HandleElement tipe))
+
+        buildEvents elem =
+            Attr.cursor (elementToCursor elem) :: events elem (Brush model) tagger
     in
     Svg.g [ Maybe.map (always (Attr.pointerEvents "none")) model.drag |> Maybe.withDefault (Attr.pointerEvents "all") ]
         (defaultOverlayImpl model.extent (Maybe.map (.element >> elementToCursor) model.drag |> Maybe.withDefault "crosshair") (events OverlayElement (Brush model) tagger)
             :: (case model.selection of
                     Just selection ->
-                        opts.selection selection "move" (events SelectionElement (Brush model) tagger)
+                        opts.selection selection (buildEvents SelectionElement)
                             :: (if model.x then
                                     [ opts.rightHandle
                                         { top = selection.top - handleSizeHalf
@@ -1048,16 +1045,14 @@ view attrs tagger (Brush model) =
                                         , right = selection.right + handleSizeHalf
                                         , left = selection.right - handleSizeHalf
                                         }
-                                        "ew-resize"
-                                        (events (HandleElement EHandle) (Brush model) tagger)
+                                        (buildEvents (HandleElement EHandle))
                                     , opts.leftHandle
                                         { top = selection.top - handleSizeHalf
                                         , bottom = selection.bottom + handleSizeHalf
                                         , right = selection.left + handleSizeHalf
                                         , left = selection.left - handleSizeHalf
                                         }
-                                        "ew-resize"
-                                        (events (HandleElement WHandle) (Brush model) tagger)
+                                        (buildEvents (HandleElement WHandle))
                                     ]
 
                                 else
@@ -1070,16 +1065,14 @@ view attrs tagger (Brush model) =
                                         , right = selection.right + handleSizeHalf
                                         , left = selection.left - handleSizeHalf
                                         }
-                                        "ns-resize"
-                                        (events (HandleElement NHandle) (Brush model) tagger)
+                                        (buildEvents (HandleElement NHandle))
                                     , opts.bottomHandle
                                         { top = selection.bottom - handleSizeHalf
                                         , bottom = selection.bottom + handleSizeHalf
                                         , right = selection.right + handleSizeHalf
                                         , left = selection.left - handleSizeHalf
                                         }
-                                        "ns-resize"
-                                        (events (HandleElement SHandle) (Brush model) tagger)
+                                        (buildEvents (HandleElement SHandle))
                                     ]
 
                                 else
