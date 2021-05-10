@@ -8,9 +8,9 @@ module Brush exposing
     , bottomHandle, leftHandle, rightHandle, topHandle, topLeftHandle, topRightHandle, bottomLeftHandle, bottomRightHandle
     )
 
-{-| Brushing is the interactive specification a one- or two-dimensional selected region using a pointing gesture, such as by clicking and dragging the mouse. Brushing is often used to select discrete elements, such as dots in a scatterplot or files on a desktop. It can also be used to zoom-in to a region of interest, or to select continuous regions for cross-filtering data.
+{-| Brushing is the interactive specification of a one- or two-dimensional selected region using a pointing gesture, such as by clicking and dragging the mouse. Brushing is often used to select discrete elements, such as dots in a scatterplot or files on a desktop. It can also be used to zoom-in to a region of interest, or to select continuous regions for cross-filtering data.
 
-This module implements brushing for mouse events using SVG. Click and drag on the brush selection to translate the selection. Click and drag on one of the selection handles to move the corresponding edge (or edges) of the selection. Click and drag on the invisible overlay to define a new brush selection, or click anywhere within the brushable region while holding down the META (⌘) key. Holding down the ALT (⌥) key while moving the brush causes it to reposition around its center.
+This module implements brushing for mouse events using SVG. Click and drag on the brush selection to translate the selection. Click and drag on one of the selection handles to move the corresponding edge (or edges) of the selection. Click and drag on the invisible overlay to define a new brush selection, or click anywhere within the brushable region while holding down the META (⌘) key. Holding down the ALT (⌥) key while moving the brush causes it to reposition around its center. Holding SHIFT (⇧) locks the dragging to a single dimension.
 
 @docs Brush, OneDimensional, TwoDimensional
 
@@ -218,7 +218,7 @@ events element (Brush { drag, keysEnabled }) tagger =
                                         else
                                             Handle
                                 in
-                                { message = tagger (MouseDown mode (keysEnabled && shift) element pos)
+                                { message = tagger (MouseDown mode (keysEnabled && shift) el pos)
                                 , stopPropagation = True
                                 , preventDefault = False
                                 }
@@ -235,14 +235,14 @@ events element (Brush { drag, keysEnabled }) tagger =
            )
 
 
-{-| Initializes a brush that allows brusing in the X axis.
+{-| Initializes a brush that allows brushing in the X axis.
 -}
 initX : Extent -> Brush OneDimensional
 initX =
     init True False
 
 
-{-| Initializes a brush that allows brusing in the Y axis.
+{-| Initializes a brush that allows brushing in the Y axis.
 -}
 initY : Extent -> Brush OneDimensional
 initY =
