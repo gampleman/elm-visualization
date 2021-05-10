@@ -1,6 +1,7 @@
 module Zoom exposing
     ( Zoom, init, scaleExtent, translateExtent
     , OnZoom, update, subscriptions
+    , setTransform, TransitionOption, instantly, animatedAround
     , transform, asRecord
     , events, onDoubleClick, onWheel, onDrag, onGesture, onTouch
     )
@@ -79,6 +80,11 @@ Finally, set up your view:
 @docs OnZoom, update, subscriptions
 
 
+## Manipulating the zoom transform programmatically
+
+@docs setTransform, TransitionOption, instantly, animatedAround
+
+
 ## View
 
 @docs transform, asRecord
@@ -91,6 +97,7 @@ Finally, set up your view:
 -}
 
 import Browser.Events
+import Events exposing (Touch)
 import Html.Attributes exposing (style)
 import Json.Decode as D exposing (Decoder)
 import Svg exposing (Attribute)
@@ -129,14 +136,6 @@ type TouchState
 asRecord : Zoom -> { scale : Float, translate : { x : Float, y : Float } }
 asRecord (Zoom zoom) =
     { scale = zoom.transform.k, translate = { x = zoom.transform.x, y = zoom.transform.y } }
-
-
-type alias Rect =
-    { x : Float
-    , y : Float
-    , width : Float
-    , height : Float
-    }
 
 
 {-| This is the Msg type used. You will want to pass these to `Zoom.update`.
@@ -184,12 +183,6 @@ type OnZoom
     | Tick Float
 
 
-type alias Touch =
-    { position : ( Float, Float )
-    , identifier : Int
-    }
-
-
 type alias TrackedTouch =
     { position : ( Float, Float )
     , previous : ( Float, Float )
@@ -224,7 +217,7 @@ init { width, height } =
         }
 
 
-{-| Allows you to set a boundary where a user will be able to pan to. The format is `((top, left), (bottom, right))`.
+{-| Allows you to set a boundary where a user will be able to pan to. The format is `((left, top), (right, bottom))`.
 
 Typically you will want to set this to `((0, 0), (width, height))`, however you can restrict it however you like. For example maps typically only restrict vertical movement, but not horizontal movement.
 
@@ -282,7 +275,7 @@ onDoubleClick _ tagger =
                 }
             )
             (D.field "shiftKey" D.bool)
-            decodeMousePosition
+            Events.decodeMousePosition
         )
 
 
@@ -315,7 +308,7 @@ onWheel _ tagger =
             )
             (D.field "deltaY" D.float)
             (D.field "deltaMode" D.int)
-            decodeMousePosition
+            Events.decodeMousePosition
         )
 
 
@@ -335,7 +328,7 @@ onDrag (Zoom { drag }) tagger =
                     )
                     (D.field "clientX" D.float)
                     (D.field "clientY" D.float)
-                    decodeSVGTransformMatrix
+                    Events.decodeSVGTransformMatrix
                 )
             ]
 
@@ -364,7 +357,7 @@ onGesture _ tagger =
                 }
             )
             (D.field "scale" D.float)
-            decodeMousePosition
+            Events.decodeMousePosition
         )
     ]
 
@@ -389,7 +382,7 @@ onTouch (Zoom zoom) tagger =
                         , preventDefault = False
                         }
             )
-            decodeTouches
+            Events.decodeTouches
         )
     , custom "touchmove"
         (D.map
@@ -399,7 +392,7 @@ onTouch (Zoom zoom) tagger =
                 , preventDefault = True
                 }
             )
-            decodeTouches
+            Events.decodeTouches
         )
     , custom "touchend"
         (D.map
@@ -409,7 +402,7 @@ onTouch (Zoom zoom) tagger =
                 , preventDefault = False
                 }
             )
-            decodeTouches
+            Events.decodeTouches
         )
     , custom "touchcancel"
         (D.map
@@ -419,91 +412,11 @@ onTouch (Zoom zoom) tagger =
                 , preventDefault = False
                 }
             )
-            decodeTouches
+            Events.decodeTouches
         )
     , style "touch-action" "none"
     , style "-webkit-tap-highlight-color" "rgba(0,0,0,0)"
     ]
-
-
-normalizePointerPosition : ( Float, Float ) -> Maybe Matrix2x3 -> ( Float, Float )
-normalizePointerPosition position maybeMatrix =
-    case maybeMatrix of
-        Just matrix ->
-            Matrix.transform position matrix
-
-        Nothing ->
-            position
-
-
-decodeMousePosition : Decoder ( Float, Float )
-decodeMousePosition =
-    D.map3
-        (\maybeMatrix x y ->
-            normalizePointerPosition ( x, y ) maybeMatrix
-        )
-        decodeSVGTransformMatrix
-        (D.oneOf [ D.field "offsetX" D.float, D.field "clientX" D.float ])
-        (D.oneOf [ D.field "offsetY" D.float, D.field "clientY" D.float ])
-
-
-decodeSVGTransformMatrix : Decoder (Maybe Matrix2x3)
-decodeSVGTransformMatrix =
-    D.oneOf
-        [ D.map3
-            (\viewBox width height ->
-                Just ( ( viewBox.width / width, 0, 0 ), ( 0, viewBox.height / height, 0 ) )
-            )
-            (D.at [ "currentTarget", "viewBox", "baseVal" ] decodeRect)
-            (D.at [ "currentTarget", "width", "baseVal", "value" ] D.float)
-            (D.at [ "currentTarget", "height", "baseVal", "value" ] D.float)
-        , D.succeed Nothing
-        ]
-
-
-
-{- FFS we need this shenigan to decode these bizzaro datastructures -}
-
-
-listLike : Decoder a -> Decoder (List a)
-listLike itemDecoder =
-    let
-        decodeN n =
-            List.range 0 (n - 1)
-                |> List.map decodeOne
-                |> List.foldr (D.map2 (::)) (D.succeed [])
-
-        decodeOne n =
-            D.field (String.fromInt n) itemDecoder
-    in
-    D.field "length" D.int
-        |> D.andThen decodeN
-
-
-decodeTouches : Decoder (List Touch)
-decodeTouches =
-    D.andThen
-        (\maybeMatrix ->
-            D.map3
-                (\x y identifier ->
-                    { position = normalizePointerPosition ( x, y ) maybeMatrix, identifier = identifier }
-                )
-                (D.field "clientX" D.float)
-                (D.field "clientY" D.float)
-                (D.field "identifier" D.int)
-                |> listLike
-                |> D.field "changedTouches"
-        )
-        decodeSVGTransformMatrix
-
-
-decodeRect : Decoder Rect
-decodeRect =
-    D.map4 Rect
-        (D.field "x" D.float)
-        (D.field "y" D.float)
-        (D.field "width" D.float)
-        (D.field "height" D.float)
 
 
 {-| A convenience for setting up the `tranform` attribute for **SVG** elements.
@@ -624,7 +537,7 @@ update msg (Zoom model) =
         MouseDown position matrix ->
             Zoom
                 { model
-                    | drag = Just { matrix = matrix, current = Transform.invert (normalizePointerPosition position matrix) model.transform }
+                    | drag = Just { matrix = matrix, current = Transform.invert (Events.normalizePointerPosition position matrix) model.transform }
                     , transition = Nothing
                 }
 
@@ -633,7 +546,7 @@ update msg (Zoom model) =
                 Just drag ->
                     let
                         position =
-                            normalizePointerPosition position_ drag.matrix
+                            Events.normalizePointerPosition position_ drag.matrix
 
                         trasform_ =
                             translate position drag.current model.transform
@@ -892,3 +805,43 @@ easingInOutCubic t =
 
     else
         1 - 0.5 * (-2 * t + 2) ^ 3
+
+
+
+---
+
+
+{-| -}
+type TransitionOption
+    = Instantly
+    | WithAnimation ( Float, Float )
+
+
+{-| Changes the zoom transform instantly.
+-}
+instantly : TransitionOption
+instantly =
+    Instantly
+
+
+{-| Animates the zoom transform minimizing movement around the specified point.
+-}
+animatedAround : ( Float, Float ) -> TransitionOption
+animatedAround =
+    WithAnimation
+
+
+{-| Change the zoom transform programmatically.
+-}
+setTransform : TransitionOption -> { scale : Float, translate : { x : Float, y : Float } } -> Zoom -> Zoom
+setTransform transition trfm (Zoom model) =
+    let
+        internalTransform =
+            { k = trfm.scale, x = trfm.translate.x, y = trfm.translate.y }
+    in
+    case transition of
+        WithAnimation point ->
+            schedule internalTransform point (Zoom model)
+
+        Instantly ->
+            Zoom { model | transform = internalTransform, transition = Nothing }

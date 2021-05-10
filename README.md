@@ -27,7 +27,7 @@ However, there are other packages that you will likely need to produce a visuali
 - [elm-community/typed-svg](https://package.elm-lang.org/packages/elm-community/typed-svg/latest) for rendering
 - [folkertdev/one-true-path-experiment](https://package.elm-lang.org/packages/folkertdev/one-true-path-experiment/latest) for the `Path` type
 
-You can use [this Ellie](https://ellie-app.com/8592jsvBL2ka1) to run the examples, since it has all the dependencies already installed into it.
+You can use [this Ellie](https://ellie-app.com/d6JBvDHFhRBa1) to run the examples, since it has all the dependencies already installed into it.
 
 ## What's included?
 
@@ -63,6 +63,10 @@ Build complex animations using Interpolation.
 ### [Histogram](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Histogram)
 
 Compute histograms of data.
+
+### [Brush](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Brush)
+
+Interactively select subregions of a dataset.
 
 ### [Zoom](http://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Zoom)
 
