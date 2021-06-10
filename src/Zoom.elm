@@ -52,7 +52,7 @@ Then handle update:
         case msg of
             ZoomMsg zoomMsg ->
                 ( { model
-                    | zoom = Zoom.update zoomMsg zoom.model
+                    | zoom = Zoom.update zoomMsg model.zoom
                   }
                 , Cmd.none
                 )
