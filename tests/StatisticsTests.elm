@@ -2,7 +2,7 @@ module StatisticsTests exposing (range, tickStep)
 
 import Expect exposing (FloatingPointTolerance(..))
 import Fuzz exposing (..)
-import Helper exposing (expectAll, expectAny)
+import Helper exposing (assert, expectAll, expectAny)
 import Statistics
 import Test exposing (..)
 
@@ -20,7 +20,7 @@ tickStep =
                 expectAny
                     [ Statistics.tickStep start stop count
                         |> Expect.within tolerance -(Statistics.tickStep stop start count)
-                    , Expect.true "was not NaN" <| isNaN <| Statistics.tickStep start stop count
+                    , assert "was not NaN" <| isNaN <| Statistics.tickStep start stop count
                     ]
         , test "returns approximately count + 1 tickStep when start < stop" <|
             \() ->

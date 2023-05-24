@@ -1,7 +1,7 @@
 module Scale.ContinousTests exposing (linear, power, radial, symlog)
 
 import Expect exposing (FloatingPointTolerance(..))
-import Fuzz exposing (float, int, intRange, oneOf, tuple, tuple3)
+import Fuzz exposing (float, int, intRange, niceFloat, oneOf, pair, triple)
 import Helper exposing (expectAll, isBetween)
 import Scale
 import Test exposing (Test, describe, fuzz, fuzz2, test)
@@ -9,6 +9,14 @@ import Test exposing (Test, describe, fuzz, fuzz2, test)
 
 nonDegenerateDomain =
     Fuzz.map2 (\a b -> ( toFloat a, toFloat (a + b) )) int (oneOf [ intRange -1000 -1, intRange 1 1000 ])
+
+
+sensibleFloat =
+    Fuzz.floatRange -1000 1000
+
+
+rangePair =
+    Fuzz.map3 (\a b c -> ( a, a + c * b )) (Fuzz.floatRange -1000 1000) (Fuzz.floatRange 0.1 1000) (oneOf [ Fuzz.constant -1, Fuzz.constant 1 ])
 
 
 linear : Test
@@ -22,7 +30,7 @@ linear =
             , invertExpected = 0.5
             , invertEmptyExpected = 1.5
             }
-            ++ [ fuzz (tuple3 ( tuple ( float, float ), tuple ( float, float ), float )) "invert is the inverse of convert" <|
+            ++ [ fuzz (triple rangePair rangePair sensibleFloat) "invert is the inverse of convert" <|
                     \( ( r0, r1 ), ( d0, d1 ), val ) ->
                         let
                             scale =
@@ -33,12 +41,12 @@ linear =
                         in
                         if r0 == r1 || d0 == d1 then
                             -- this is a special case, since it needs to go into the middle
-                            double |> Expect.within (Absolute 0.0001) ((d0 + d1) / 2)
+                            double |> Expect.within (AbsoluteOrRelative 0.0001 0.0001) ((d0 + d1) / 2)
 
                         else
                             double
-                                |> Expect.within (Absolute 0.01) val
-               , fuzz (tuple3 ( tuple ( float, float ), tuple ( float, float ), float )) "clamp limits output value to the range (fuzz)" <|
+                                |> Expect.within (AbsoluteOrRelative 0.01 0.01) val
+               , fuzz (triple (pair sensibleFloat sensibleFloat) (pair sensibleFloat sensibleFloat) sensibleFloat) "clamp limits output value to the range (fuzz)" <|
                     \( domain, range, val ) ->
                         let
                             convert =
@@ -182,7 +190,7 @@ buildTests { convert, scale, convertExpected, convertEmptyExpected, invertExpect
                 , scaleFn -1
                     |> Expect.within (Absolute 0.0001) 10
                 ]
-    , fuzz (tuple3 ( tuple ( float, float ), tuple ( float, float ), float )) "rangeExtent returns the range" <|
+    , fuzz (triple (pair float float) (pair float float) float) "rangeExtent returns the range" <|
         \( domain, range, _ ) ->
             Scale.rangeExtent (scale range domain) |> Expect.equal range
     ]

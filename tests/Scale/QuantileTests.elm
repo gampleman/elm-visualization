@@ -1,7 +1,7 @@
 module Scale.QuantileTests exposing (all)
 
 import Expect
-import Fuzz exposing (Fuzzer, list, tuple)
+import Fuzz exposing (Fuzzer, list, pair)
 import Scale
 import Test exposing (Test, describe, fuzz, test)
 
@@ -23,7 +23,7 @@ datum =
 
 randomRange : Fuzzer ( Data, List Data )
 randomRange =
-    tuple ( datum, list datum )
+    pair datum (list datum)
 
 
 all : Test

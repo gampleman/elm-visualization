@@ -3,7 +3,7 @@ module Color.LabTests exposing (suite)
 import Color exposing (Color)
 import Color.Lab as Lab
 import Expect exposing (Expectation, FloatingPointTolerance(..))
-import Fuzz exposing (Fuzzer, floatRange, intRange, tuple3)
+import Fuzz exposing (Fuzzer, floatRange, intRange, triple)
 import Test exposing (Test, describe, fuzz, fuzz2, test)
 
 
@@ -36,7 +36,7 @@ suite : Test
 suite =
     describe "Color"
         [ describe "Color lab"
-            [ fuzz2 (tuple3 ( floatRange 0 100, floatRange -160 160, floatRange -160 160 )) unit "can represent Lab colors (fromLab)" <|
+            [ fuzz2 (triple (floatRange 0 100) (floatRange -160 160) (floatRange -160 160)) unit "can represent Lab colors (fromLab)" <|
                 \( l, a, b ) alpha ->
                     Lab.fromLab { l = l, a = a, b = b, alpha = alpha }
                         |> Lab.toLab
@@ -69,22 +69,32 @@ suite =
 
 expectHclEqual : { a | hue : Float, chroma : Float, luminance : Float, alpha : d } -> { b | hue : Float, chroma : Float, luminance : Float, alpha : d } -> Expectation
 expectHclEqual expected actual =
-    Expect.true (Debug.toString expected ++ "\n    ╷\n    │ expectHclEqual\n    ╵\n" ++ Debug.toString actual) <|
+    if
         areHclCoordsEqual actual.hue expected.hue
             && areHclCoordsEqual actual.chroma expected.chroma
             && areHclCoordsEqual actual.luminance expected.luminance
             && expected.alpha
             == actual.alpha
+    then
+        Expect.pass
+
+    else
+        Expect.fail (Debug.toString expected ++ "\n    ╷\n    │ expectHclEqual\n    ╵\n" ++ Debug.toString actual)
 
 
 expectRgbEqual : { a | red : Float, green : Float, blue : Float, alpha : d } -> { b | red : Float, green : Float, blue : Float, alpha : d } -> Expectation
 expectRgbEqual expected actual =
-    Expect.true (Debug.toString expected ++ "\n    ╷\n    │ expectRgbEqual\n    ╵\n" ++ Debug.toString actual) <|
+    if
         areRgbCoordsEqual actual.red expected.red
             && areRgbCoordsEqual actual.green expected.green
             && areRgbCoordsEqual actual.blue expected.blue
             && expected.alpha
             == actual.alpha
+    then
+        Expect.pass
+
+    else
+        Expect.fail (Debug.toString expected ++ "\n    ╷\n    │ expectRgbEqual\n    ╵\n" ++ Debug.toString actual)
 
 
 areHclCoordsEqual : Float -> Float -> Bool

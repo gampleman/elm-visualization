@@ -1,7 +1,7 @@
 module Scale.BandTests exposing (band)
 
 import Expect
-import Helper exposing (expectAll)
+import Helper exposing (assert, expectAll)
 import Scale exposing (defaultBandConfig)
 import Test exposing (Test, describe, test)
 
@@ -30,7 +30,7 @@ band =
                 expectAll
                     [ Scale.convert scale "baz"
                         |> isNaN
-                        >> Expect.true "isNan"
+                        >> assert "isNan"
                     ]
         , test "range values can be descending" <|
             \() ->

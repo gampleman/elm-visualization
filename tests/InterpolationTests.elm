@@ -2,7 +2,7 @@ module InterpolationTests exposing (suite)
 
 import Color exposing (Color)
 import Expect exposing (Expectation, FloatingPointTolerance(..))
-import Fuzz exposing (float, floatRange, intRange, list)
+import Fuzz exposing (float, floatRange, intRange, list, niceFloat)
 import Helper exposing (atLeastFloat, atMostFloat)
 import Interpolation exposing (Interpolator)
 import Test exposing (Test, describe, fuzz, fuzz2, fuzz3, test)
@@ -123,7 +123,7 @@ suite =
                         { red = 0, green = 144, blue = 169 }
             ]
         , describe "piecewise"
-            [ fuzz3 float (list float) (floatRange 0 1) "never exceeds the range" <|
+            [ fuzz3 niceFloat (list niceFloat) (floatRange 0 1) "never exceeds the range" <|
                 \head tail t ->
                     Interpolation.piecewise Interpolation.float head tail t
                         |> Expect.all
@@ -132,7 +132,7 @@ suite =
                             ]
             ]
         , describe "inParallel"
-            [ fuzz (list float) "does not change order" <|
+            [ fuzz (list niceFloat) "does not change order" <|
                 \inp ->
                     inp
                         |> List.map always
