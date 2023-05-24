@@ -1,7 +1,7 @@
 module Scale.LogTests exposing (clampTest, convertTest, rangeExtentTest, tickFormatTest, ticksTest)
 
 import Expect exposing (FloatingPointTolerance(..))
-import Fuzz exposing (float, floatRange, tuple, tuple3)
+import Fuzz exposing (float, floatRange, pair, triple)
 import Helper exposing (isBetween)
 import Scale
 import Test exposing (Test, describe, fuzz, test)
@@ -49,9 +49,13 @@ normalizeDomain ( mn, mx ) =
         ( wiggeIfZero mn, abs (wiggeIfZero mx) )
 
 
+rangePair =
+    Fuzz.map3 (\a b c -> ( a, a + c * b )) (Fuzz.floatRange -1000 1000) (Fuzz.floatRange 0.1 1000) (Fuzz.oneOf [ Fuzz.constant -1, Fuzz.constant 1 ])
+
+
 clampTest : Test
 clampTest =
-    fuzz (tuple3 ( tuple ( float, float ), tuple ( float, float ), tuple ( floatRange 1 20, float ) )) "clamp limits output value to the range" <|
+    fuzz (triple rangePair rangePair (pair (floatRange 1 20) Fuzz.niceFloat)) "clamp limits output value to the range" <|
         \( domain, range, ( base, val ) ) ->
             let
                 convert =
@@ -66,7 +70,7 @@ clampTest =
 
 rangeExtentTest : Test
 rangeExtentTest =
-    fuzz (tuple3 ( tuple ( float, float ), tuple ( float, float ), tuple ( float, float ) )) "rangeExtent returns the range" <|
+    fuzz (triple (pair float float) (pair float float) (pair float float)) "rangeExtent returns the range" <|
         \( domain, range, ( base, _ ) ) ->
             Scale.rangeExtent (Scale.log base range domain) |> Expect.equal range
 

@@ -28,10 +28,18 @@ bisectRight =
                         Array.slice bisection (Array.length sorted) sorted |> Array.toList
 
                     allSmaller i =
-                        Expect.true ("Expected " ++ String.fromInt i ++ " to be smaller than " ++ Debug.toString after) <| List.all ((<) item) after
+                        if List.all ((<) item) after then
+                            Expect.pass
+
+                        else
+                            Expect.fail ("Expected " ++ String.fromInt i ++ " to be smaller than " ++ Debug.toString after)
 
                     allGreater i =
-                        Expect.true ("Expected " ++ String.fromInt i ++ " to be greater than " ++ Debug.toString before) <| List.all ((>=) item) before
+                        if List.all ((>=) item) before then
+                            Expect.pass
+
+                        else
+                            Expect.fail ("Expected " ++ String.fromInt i ++ " to be greater than " ++ Debug.toString before)
                 in
                 Expect.all [ allGreater, allSmaller ] item
         ]

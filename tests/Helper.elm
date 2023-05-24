@@ -1,4 +1,4 @@
-module Helper exposing (atLeastFloat, atMostFloat, expectAll, expectAny, expectMember, isAbout, isBetween, pathEqual, precision)
+module Helper exposing (assert, atLeastFloat, atMostFloat, expectAll, expectAny, expectMember, isAbout, isBetween, pathEqual, precision)
 
 import Expect exposing (Expectation, FloatingPointTolerance(..))
 import Path exposing (Path)
@@ -127,7 +127,7 @@ expectAny expectations =
             List.filterMap Test.Runner.getFailureReason expectations
     in
     if List.length failuires == List.length expectations then
-        Expect.fail <| (++) "Expected at least one of the following to pass:\n" <| String.join "\n" <| List.map (.reason >> Test.Runner.Failure.format "") failuires
+        Expect.fail <| (++) "Expected at least one of the following to pass:\n" <| String.join "\n" <| List.map (.reason >> Debug.toString) failuires
 
     else
         Expect.pass
@@ -135,4 +135,17 @@ expectAny expectations =
 
 expectMember : List a -> a -> Expectation
 expectMember list item =
-    Expect.true "expectMember" <| List.member item list
+    if List.member item list then
+        Expect.pass
+
+    else
+        Expect.fail ("Expected " ++ Debug.toString item ++ " to be a member of " ++ Debug.toString list)
+
+
+assert : String -> Bool -> Expectation
+assert str bool =
+    if bool then
+        Expect.pass
+
+    else
+        Expect.fail str
