@@ -64,7 +64,7 @@ Finally, set up your view:
         svg
             (A.width width
                 :: A.height height
-                :: Zoom.tranfrom model.zoom
+                :: Zoom.transform model.zoom
                 :: Zoom.events model.zoom ZoomMsg
             )
             [ myChildrenElements ]
