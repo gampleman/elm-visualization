@@ -12,6 +12,7 @@ module Shape exposing
     , StackConfig, StackResult, stack
     , stackOffsetNone, stackOffsetDiverging, stackOffsetExpand, stackOffsetSilhouette, stackOffsetWiggle
     , sortByInsideOut
+    , bumpXCurve, bumpYCurve
     )
 
 {-| Visualizations typically consist of discrete graphical marks, such as symbols,
@@ -91,6 +92,7 @@ The order of the layers. Normal list functions can be used, for instance
 
 import Curve
 import Path exposing (Path)
+import Shape.Bump as Bump
 import Shape.Generators
 import Shape.Pie
 import Shape.Stack
@@ -496,6 +498,16 @@ with the second derivative of the spline set to zero at the endpoints.
 naturalCurve : List ( Float, Float ) -> SubPath
 naturalCurve =
     Curve.natural
+
+
+bumpXCurve : List ( Float, Float ) -> SubPath
+bumpXCurve =
+    Bump.bumpXCurve
+
+
+bumpYCurve : List ( Float, Float ) -> SubPath
+bumpYCurve =
+    Bump.bumpYCurve
 
 
 {-| Produces a piecewise constant function (a step function) consisting of alternating horizontal and vertical lines.

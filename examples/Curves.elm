@@ -16,6 +16,8 @@ module Curves exposing (main)
 @screenshot monotoneinx
 @screenshot step
 @screenshot natural
+@screenshot bumpx
+@screenshot bumpy
 
 @category Reference
 
@@ -181,6 +183,8 @@ main =
     , ( "MonotoneInX", basic "monotoneInXCurve" Shape.monotoneInXCurve )
     , ( "Step", parametrized "stepCurve" Shape.stepCurve )
     , ( "Natural", basic "naturalCurve" Shape.naturalCurve )
+    , ( "BumpX", basic "bumpXCurve" Shape.bumpXCurve )
+    , ( "BumpY", basic "bumpYCurve" Shape.bumpYCurve )
     ]
         |> Example.tabbed "Curve type:"
         |> Example.application view
