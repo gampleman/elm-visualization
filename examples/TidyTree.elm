@@ -22,7 +22,7 @@ tree =
         , Hierarchy (3, 10, 10) [ Hierarchy (10, 50, 50) [] ]
     ]
 
-layedOut = Hierarchy.Tidy.layout { width = (\(_, w, _) -> w), height = (\(_, _, h) -> h), layered = True, parentChildMargin = 10, peerMargin = 10 } tree
+layedOut = Hierarchy.Tidy.layout { width = (\(_, w, _) -> w), height = (\(_, _, h) -> h), layered = False, parentChildMargin = 10, peerMargin = 10 } tree
 
 main = 
     svg [ viewBox -200 0 400 300] [

@@ -1,6 +1,7 @@
 module Hierarchy exposing (..)
 
 import Dict exposing (Dict)
+import Set exposing (Set)
 
 
 type Hierarchy a
@@ -23,6 +24,16 @@ node (Hierarchy a _) =
 
 toList (Hierarchy n children) =
     n :: List.concatMap toList children
+
+
+leaves : Hierarchy a -> List a
+leaves (Hierarchy n children) =
+    case children of
+        [] ->
+            [ n ]
+
+        _ ->
+            List.concatMap leaves children
 
 
 map : (a -> b) -> Hierarchy a -> Hierarchy b
@@ -59,6 +70,45 @@ mapWithContextBottomUp fn tree =
 type StratifyError
     = MultipleRoots
     | NoRoot
+
+
+stratifyWithPath : { path : a -> ( comparable, List comparable ), createMissingNode : ( comparable, List comparable ) -> a } -> List a -> Result StratifyError (Hierarchy a)
+stratifyWithPath { path, createMissingNode } nodes =
+    List.map (\item -> ( path item, item )) nodes
+        |> List.sortBy (Tuple.first >> Tuple.second >> List.length)
+        |> List.foldl
+            (\( ( root, rest ), item ) ( seenSoFar, nodes_ ) ->
+                let
+                    wrapNode id parentId n =
+                        { id = id, parentId = parentId, node = n }
+
+                    createParentNodes revPath newNodes =
+                        case revPath of
+                            [] ->
+                                newNodes
+
+                            x :: xs ->
+                                if Set.member x seenSoFar then
+                                    createParentNodes xs newNodes
+
+                                else
+                                    createParentNodes xs (wrapNode x (List.head xs) (createMissingNode ( root, List.tail (List.reverse revPath) |> Maybe.withDefault [] )) :: newNodes)
+
+                    reversedPath =
+                        (root :: rest) |> List.reverse
+
+                    current =
+                        wrapNode (reversedPath |> List.head |> Maybe.withDefault root) (reversedPath |> List.tail |> Maybe.andThen List.head) item
+
+                    nodesToCreate =
+                        createParentNodes (reversedPath |> List.tail |> Maybe.withDefault []) [ current ]
+                in
+                ( List.foldl (\i -> Set.insert i.id) seenSoFar nodesToCreate, nodesToCreate :: nodes_ )
+            )
+            ( Set.empty, [] )
+        |> Tuple.second
+        |> List.concat
+        |> stratify { id = .id, parentId = .parentId, transform = .node }
 
 
 stratify : { id : a -> comparable, parentId : a -> Maybe comparable, transform : a -> b } -> List a -> Result StratifyError (Hierarchy b)
