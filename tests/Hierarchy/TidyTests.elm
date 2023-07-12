@@ -2,8 +2,8 @@ module Hierarchy.TidyTests exposing (suite)
 
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer)
-import Hierarchy exposing (Hierarchy(..))
 import Hierarchy.Tidy
+import Hierarchy.Tree as Tree exposing (Tree(..))
 import LineSegment2d exposing (LineSegment2d)
 import Point2d exposing (Point2d)
 import Test exposing (Test)
@@ -35,12 +35,12 @@ suite =
         ]
 
 
-fuzzHierarchy : Int -> Int -> Fuzzer (Hierarchy ( Int, Float, Float ))
+fuzzHierarchy : Int -> Int -> Fuzzer (Tree ( Int, Float, Float ))
 fuzzHierarchy depth branch =
     if depth > 0 then
         Fuzz.map4
             (\label width height children ->
-                Hierarchy ( label, width, height ) children
+                Tree.tree ( label, width, height ) children
             )
             Fuzz.int
             (Fuzz.floatRange 1 10)
@@ -50,7 +50,7 @@ fuzzHierarchy depth branch =
     else
         Fuzz.map3
             (\label width height ->
-                Hierarchy ( label, width, height ) []
+                Tree.singleton ( label, width, height )
             )
             Fuzz.int
             (Fuzz.floatRange 1 10)
@@ -58,7 +58,7 @@ fuzzHierarchy depth branch =
 
 
 type alias FinishedLayout =
-    Hierarchy { height : Float, value : ( Int, Float, Float ), width : Float, x : Float, y : Float, relativeX : Float, modifierToSubtree : Float }
+    Tree { height : Float, value : ( Int, Float, Float ), width : Float, x : Float, y : Float }
 
 
 expectNoOverlapNodes : FinishedLayout -> Expectation
@@ -84,7 +84,7 @@ expectNoOverlapNodes lay =
                 + self.height
                 > other.y
     in
-    checkAll intersects (\head intersect -> "Expected nodes in \n\n" ++ formatTree lay ++ "\n\nnot to intersect, but found an interesction betweeen \n" ++ Debug.toString head ++ "\n and \n" ++ Debug.toString intersect) (Hierarchy.toList lay)
+    checkAll intersects (\head intersect -> "Expected nodes in \n\n" ++ formatTree lay ++ "\n\nnot to intersect, but found an interesction betweeen \n" ++ Debug.toString head ++ "\n and \n" ++ Debug.toString intersect) (Tree.flatten lay)
 
 
 checkAll : (a -> a -> Bool) -> (a -> a -> String) -> List a -> Expectation
@@ -117,7 +117,7 @@ checkAll test error lst =
 
 expectNoCrossedLinks : FinishedLayout -> Expectation
 expectNoCrossedLinks lay =
-    Hierarchy.Tidy.links lay
+    Tree.links lay
         |> List.map (\( from, to ) -> LineSegment2d.from (Point2d.pixels from.x (from.y + from.height)) (Point2d.pixels to.x to.y))
         |> checkAll (\line1 line2 -> LineSegment2d.intersectionPoint line1 line2 /= Nothing && not (connected line1 line2)) (\line1 line2 -> "Expected lines in \n\n" ++ formatTree lay ++ "\n\nnot to intersect, but found an interesction betweeen \n" ++ Debug.toString line1 ++ "\n and \n" ++ Debug.toString line2 ++ "\n -- " ++ Debug.toString (LineSegment2d.intersectionPoint line1 line2))
 
@@ -129,39 +129,45 @@ connected a b =
 
 expectAllChildrenToHaveSameY : FinishedLayout -> Expectation
 expectAllChildrenToHaveSameY tree =
-    let
-        go (Hierarchy _ children) =
-            case children of
-                [] ->
-                    True
+    case
+        Tree.findBfs
+            (\t ->
+                case Tree.children t of
+                    [] ->
+                        False
 
-                ((Hierarchy head _) as headNode) :: tail ->
-                    go headNode && List.all (\((Hierarchy node _) as child) -> node.y == head.y && go child) tail
-    in
-    if go tree then
-        Expect.pass
+                    headNode :: tail ->
+                        List.any (\child -> (Tree.label child).y /= (Tree.label headNode).y) tail
+            )
+            tree
+    of
+        Nothing ->
+            Expect.pass
 
-    else
-        Expect.fail ("Expected all nodes in " ++ formatTree tree ++ " to have the same Y coordinate")
+        Just subTree ->
+            Expect.fail ("Expected all nodes in " ++ formatTree tree ++ " to have the same Y coordinate.\nBut the children of this subtree have differing y coordinates: " ++ formatTree subTree)
 
 
 expectNodesToBeOrdered : FinishedLayout -> Expectation
 expectNodesToBeOrdered tree =
-    let
-        go (Hierarchy _ children) =
-            case children of
-                [] ->
-                    True
+    case
+        Tree.findBfs
+            (\t ->
+                case Tree.children t of
+                    [] ->
+                        False
 
-                ((Hierarchy head _) as headNode) :: tail ->
-                    List.foldl (\((Hierarchy node _) as child) ( prevX, goodSoFar ) -> ( node.x, goodSoFar && node.x > prevX && go child )) ( head.x, go headNode ) tail
-                        |> Tuple.second
-    in
-    if go tree then
-        Expect.pass
+                    headNode :: tail ->
+                        List.foldl (\child ( prevX, badSoFar ) -> ( (Tree.label child).x, badSoFar || (Tree.label child).x <= prevX )) ( (Tree.label headNode).x, False ) tail
+                            |> Tuple.second
+            )
+            tree
+    of
+        Nothing ->
+            Expect.pass
 
-    else
-        Expect.fail ("Expected all nodes in " ++ formatTree tree ++ " to be ordered")
+        Just subtree ->
+            Expect.fail ("Expected all nodes in " ++ formatTree tree ++ " to be ordered. But the child nodes of " ++ formatTree subtree ++ "are out of order.")
 
 
 
@@ -175,8 +181,8 @@ doLayout =
 formatTree : FinishedLayout -> String
 formatTree =
     let
-        go indent (Hierarchy node children) =
-            String.join "\n" ((String.repeat (indent * 2) " " ++ Debug.toString node) :: List.map (go (indent + 1)) children)
+        go indent tree =
+            String.join "\n" ((String.repeat (indent * 2) " " ++ Debug.toString (Tree.label tree)) :: List.map (go (indent + 1)) (Tree.children tree))
     in
     go 0
 
@@ -185,7 +191,7 @@ test1 =
     -- Test.only <|
     Test.test "Rule 1" <|
         \() ->
-            Hierarchy ( 0, 1, 1 ) [ Hierarchy ( 0, 1, 1 ) [], Hierarchy ( 0, 1, 1 ) [ Hierarchy ( 0, 1, 1 ) [] ], Hierarchy ( 0, 1, 1 ) [] ]
+            Tree.tree ( 0, 1, 1 ) [ Tree.singleton ( 0, 1, 1 ), Tree.tree ( 0, 1, 1 ) [ Tree.singleton ( 0, 1, 1 ) ], Tree.singleton ( 0, 1, 1 ) ]
                 |> doLayout
                 |> expectNoOverlapNodes
 
@@ -194,13 +200,13 @@ test2 =
     -- Test.only <|
     Test.test "Rule 2" <|
         \() ->
-            Hierarchy ( 0, 8, 7 )
-                [ Hierarchy ( 1, 3, 9 )
-                    [ Hierarchy ( 10, 3, 8 ) []
-                    , Hierarchy ( 10, 5, 5 ) []
-                    , Hierarchy ( 10, 6, 8 ) []
+            Tree.tree ( 0, 8, 7 )
+                [ Tree.tree ( 1, 3, 9 )
+                    [ Tree.singleton ( 10, 3, 8 )
+                    , Tree.singleton ( 10, 5, 5 )
+                    , Tree.singleton ( 10, 6, 8 )
                     ]
-                , Hierarchy ( 3, 1, 1 ) []
+                , Tree.singleton ( 3, 1, 1 )
                 ]
                 |> doLayout
                 |> expectNoOverlapNodes
@@ -210,6 +216,6 @@ test3 =
     -- Test.only <|
     Test.test "Rule 1 case 3:" <|
         \() ->
-            Hierarchy ( 0, 1, 1 ) [ Hierarchy ( 0, 1, 1 ) [ Hierarchy ( 0, 1, 10 ) [ Hierarchy ( 0, 1, 1 ) [], Hierarchy ( 0, 1, 1 ) [] ], Hierarchy ( 0, 1, 1 ) [ Hierarchy ( 0, 1, 1 ) [] ], Hierarchy ( 0, 1, 10 ) [ Hierarchy ( 0, 10, 1 ) [] ] ] ]
+            Tree.tree ( 0, 1, 1 ) [ Tree.tree ( 0, 1, 1 ) [ Tree.tree ( 0, 1, 10 ) [ Tree.singleton ( 0, 1, 1 ), Tree.singleton ( 0, 1, 1 ) ], Tree.tree ( 0, 1, 1 ) [ Tree.singleton ( 0, 1, 1 ) ], Tree.tree ( 0, 1, 10 ) [ Tree.singleton ( 0, 10, 1 ) ] ] ]
                 |> doLayout
                 |> expectNoOverlapNodes

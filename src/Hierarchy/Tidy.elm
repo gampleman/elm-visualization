@@ -1,4 +1,4 @@
-module Hierarchy.Tidy exposing (..)
+module Hierarchy.Tidy exposing (layout)
 
 {-| Based on <https://github.com/zxch3n/tidy/blob/master/rust/crates/tidy-tree/src/layout/tidy_layout.rs>.
 
@@ -8,54 +8,63 @@ For a description, see <https://www.zxch3n.com/tidy/tidy/>.
 
 import Array exposing (Array)
 import Dict exposing (Dict)
-import Hierarchy exposing (Hierarchy(..))
+import Hierarchy.Tree as Tree exposing (Tree(..))
 
 
 
 --- Debug
+-- debugTree : String -> TidyLayout a -> TidyLayout a
+-- debugTree prefix ((TidyLayout { tree }) as lay) =
+--     let
+--         go indent (Tree node children) =
+--             case derefTidyData lay node.id of
+--                 Just tidy ->
+--                     String.join "\n" ((String.repeat (indent * 2) " " ++ Debug.toString tidy) :: List.map (go (indent + 1)) children)
+--                 Nothing ->
+--                     ""
+--         _ =
+--             Debug.log (prefix ++ ": \n" ++ go 0 tree) ()
+--     in
+--     lay
+--
+-- logLayoutProperty : String -> Int -> (TidyData -> a) -> TidyLayout b -> TidyLayout b
+-- logLayoutProperty label id getter lay =
+--     let
+--         _ =
+--             case derefTidyData lay id of
+--                 Just d ->
+--                     Debug.log label (getter d)
+--                 Nothing ->
+--                     Debug.todo (label ++ "property not found")
+--     in
+--     lay
 
 
-debugTree : String -> TidyLayout a -> TidyLayout a
-debugTree prefix ((TidyLayout { tree }) as lay) =
-    let
-        go indent (Hierarchy node children) =
-            case derefTidyData lay node.id of
-                Just tidy ->
-                    String.join "\n" ((String.repeat (indent * 2) " " ++ Debug.toString tidy) :: List.map (go (indent + 1)) children)
-
-                Nothing ->
-                    ""
-
-        _ =
-            Debug.log (prefix ++ ": \n" ++ go 0 tree) ()
-    in
-    lay
+type alias Id =
+    Int
 
 
-type TidyLayout a
-    = TidyLayout
-        { tree : Hierarchy Node
-        , origingal : Hierarchy a
-        , mutable : Dict Int TidyData
-        }
+
+-- This code uses a flat array to represent the tree data, where each node has an ID
+-- which is also it's index into this array.
+-- The reason for this is that this is not really just a tree, but a graph, where different
+-- nodes need access to other nodes in the hierarchy, plus we need to be able to both
+-- read and write reasonably efficiently while traversing the datastructure.
 
 
-type alias Node =
-    { id : Int
-    , width : Float
-    , height : Float
-    }
+type alias TidyLayout a =
+    Array (TidyData a)
 
 
-type alias TidyData =
-    { threadLeft : Int
-    , threadRight : Int
+type alias TidyData a =
+    { threadLeft : Id
+    , threadRight : Id
     , -- this.extreme_left == this.thread_left.extreme_left ||
       -- this.extreme_left == this.children[0].extreme_left
-      extremeLeft : Int
+      extremeLeft : Id
     , -- this.extreme_right == this.thread_right.extreme_right ||
       -- this.extreme_right == this.children[-1].extreme_right
-      extremeRight : Int
+      extremeRight : Id
     , -- Cached change of x position.
       shiftAcceleration : Float
     , -- Cached change of x position
@@ -80,15 +89,16 @@ type alias TidyData =
     -- copied for speed
     , width : Float
     , height : Float
-    , children : Array Int
-    , id : Int
+    , children : Array Id
+    , id : Id
+    , value : a
     }
 
 
-traverseWithParent : ({ parent : Maybe { node : Node, tidy : TidyData }, node : Node, tidy : TidyData } -> TidyData) -> TidyLayout a -> TidyLayout a
-traverseWithParent fn ((TidyLayout { tree }) as l) =
+traverseWithParent : ({ parent : Maybe (TidyData a), node : TidyData a } -> TidyData a) -> TidyLayout a -> TidyLayout a
+traverseWithParent fn l =
     let
-        help maybeParent (Hierarchy val children) lay =
+        help maybeParent val lay =
             let
                 newL =
                     updateTidyData
@@ -98,126 +108,118 @@ traverseWithParent fn ((TidyLayout { tree }) as l) =
                                     Maybe.andThen
                                         (\parent ->
                                             derefTidyData lay parent.id
-                                                |> Maybe.map (\d -> { node = parent, tidy = d })
+                                         -- |> Maybe.map (\d -> { node = parent, tidy = d })
                                         )
                                         maybeParent
-                                , node = val
-                                , tidy = tidy
+                                , node = tidy
                                 }
                         )
                         val.id
                         lay
             in
-            List.foldl (help (Just val)) newL children
+            List.foldl (help (Just val)) newL (derefChildren l val)
     in
-    help Nothing tree l
-
-
-traverseBFSWithDepth : (Int -> a -> Node -> TidyData -> ( a, TidyData )) -> a -> TidyLayout b -> TidyLayout b
-traverseBFSWithDepth fn init (TidyLayout ({ tree, mutable } as lay)) =
-    let
-        collect depth (Hierarchy val children) =
-            List.map (\(Hierarchy node _) -> ( depth, node )) children ++ List.concatMap (collect (depth + 1)) children
-
-        initial =
-            case tree of
-                Hierarchy v _ ->
-                    ( 0, v )
-
-        ( newMutable, _ ) =
-            List.foldl
-                (\( depth, node ) ( l, accu ) ->
-                    case Debug.log "processing" (Dict.get node.id l) of
-                        Just td ->
-                            let
-                                ( newAccu, newL ) =
-                                    fn depth (Debug.log "accu" accu) node td
-                            in
-                            ( Dict.insert node.id newL l, newAccu )
-
-                        Nothing ->
-                            ( l, accu )
-                )
-                ( mutable, init )
-                (Debug.log "depth list" (initial :: collect 1 tree))
-    in
-    TidyLayout { lay | mutable = newMutable }
-
-
-initialize : (a -> Float) -> (a -> Float) -> Hierarchy a -> TidyLayout a
-initialize width height tree =
-    let
-        go idx (Hierarchy a c) dict =
-            let
-                ( newChildren, subDict, maxIndex ) =
-                    List.foldr
-                        (\item ( newList, accum, startIndex ) ->
-                            let
-                                ( newItem, newAccum, index ) =
-                                    go startIndex item accum
-                            in
-                            ( newItem :: newList, newAccum, index )
-                        )
-                        ( [], dict, idx )
-                        c
-
-                width_ =
-                    width a
-
-                height_ =
-                    height a
-            in
-            ( Hierarchy { id = maxIndex, width = width_, height = height_ } newChildren
-            , Dict.insert
-                maxIndex
-                { threadLeft = -1
-                , threadRight = -1
-                , extremeLeft = -1
-                , extremeRight = -1
-                , shiftAcceleration = 0
-                , shiftChange = 0
-                , modifierToSubtree = 0
-                , modifierThreadLeft = 0
-                , modifierThreadRight = 0
-                , modifierExtremeLeft = 0
-                , modifierExtremeRight = 0
-                , x = 0
-                , y = 0
-                , relativeX = 0
-                , relativeY = 0
-                , width = width_
-                , height = height_
-                , children = Array.fromList (List.map (\(Hierarchy { id } _) -> id) newChildren)
-                , id = maxIndex
-                }
-                subDict
-            , maxIndex + 1
-            )
-
-        ( newTree, mutable, _ ) =
-            go 0 tree Dict.empty
-    in
-    TidyLayout { tree = newTree, mutable = mutable, origingal = tree }
-
-
-derefTidyData : TidyLayout a -> Int -> Maybe TidyData
-derefTidyData (TidyLayout l) id =
-    Dict.get id l.mutable
-
-
-derefTidyDataFromNode : Hierarchy Node -> TidyLayout a -> Maybe TidyData
-derefTidyDataFromNode (Hierarchy { id } _) lay =
-    derefTidyData lay id
-
-
-updateTidyData : (TidyData -> TidyData) -> Int -> TidyLayout a -> TidyLayout a
-updateTidyData fn id (TidyLayout l) =
-    case Dict.get id l.mutable of
-        Just td ->
-            TidyLayout { l | mutable = Dict.insert id (fn td) l.mutable }
+    case derefTidyData l 0 of
+        Just root ->
+            help Nothing root l
 
         Nothing ->
-            TidyLayout l
+            l
+
+
+traverseBFSWithDepth : (Int -> a -> TidyData b -> ( a, TidyData b )) -> a -> TidyLayout b -> TidyLayout b
+traverseBFSWithDepth fn init lay =
+    let
+        help accu front back l =
+            case front of
+                [] ->
+                    case back of
+                        [] ->
+                            l
+
+                        _ ->
+                            help accu (List.reverse back) [] l
+
+                ( depth, x ) :: xs ->
+                    case derefTidyData l x of
+                        Just node ->
+                            let
+                                ( newAccu, newNode ) =
+                                    fn depth accu node
+                            in
+                            help newAccu xs (List.map (Tuple.pair (depth + 1)) (List.reverse (Array.toList newNode.children)) ++ back) (Array.set x newNode l)
+
+                        Nothing ->
+                            help accu xs back l
+    in
+    help init [ ( 0, 0 ) ] [] lay
+
+
+initialize : (a -> Float) -> (a -> Float) -> Tree a -> TidyLayout a
+initialize width height tree =
+    Tree.mapAccumulateWithContextBottomUp
+        (\lst { node, children } ->
+            ( { threadLeft = -1
+              , threadRight = -1
+              , extremeLeft = -1
+              , extremeRight = -1
+              , shiftAcceleration = 0
+              , shiftChange = 0
+              , modifierToSubtree = 0
+              , modifierThreadLeft = 0
+              , modifierThreadRight = 0
+              , modifierExtremeLeft = 0
+              , modifierExtremeRight = 0
+              , x = 0
+              , y = 0
+              , relativeX = 0
+              , relativeY = 0
+              , width = width (Tuple.second node)
+              , height = height (Tuple.second node)
+
+              -- TODO: there is an interesting optimization possible here:
+              -- TODO: if the IDs were assigned in a BFS sort of way, then
+              -- TODO: each nodes children's ids would be consecutive integers
+              -- TODO: and could be runlength encoded (i.e. startIndex + length)
+              -- TODO: which would make this datastructure static in memory size
+              -- TODO: and potentially faster to traverse...
+              , children = Array.fromList (List.map Tree.label children)
+              , id = Tuple.first node
+              , value = Tuple.second node
+              }
+                :: lst
+            , Tuple.first node
+            )
+        )
+        []
+        (Tree.indexedMap Tuple.pair tree)
+        |> Tuple.first
+        -- TODO: If the IDs were assigned in the same order as the subsequent map,
+        -- TODO: then the sort here would be unnecessary
+        |> List.sortBy .id
+        |> Array.fromList
+
+
+derefTidyData : TidyLayout a -> Int -> Maybe (TidyData a)
+derefTidyData l id =
+    Array.get id l
+
+
+updateTidyData : (TidyData a -> TidyData a) -> Int -> TidyLayout a -> TidyLayout a
+updateTidyData fn id l =
+    case Array.get id l of
+        Just td ->
+            Array.set id (fn td) l
+
+        Nothing ->
+            l
+
+
+derefChildren : TidyLayout a -> TidyData a -> List (TidyData a)
+derefChildren l node =
+    node.children
+        |> Array.toList
+        |> List.filterMap (derefTidyData l)
 
 
 derefBottom : Int -> TidyLayout a -> Float
@@ -227,40 +229,43 @@ derefBottom id l =
         |> Maybe.withDefault 0
 
 
-setExtreme : Hierarchy Node -> TidyLayout a -> TidyLayout a
-setExtreme (Hierarchy a children) tidyLayout =
+firstChild : Id -> TidyLayout a -> Maybe (TidyData a)
+firstChild idx lay =
+    derefTidyData lay idx
+        |> Maybe.andThen
+            (\td ->
+                Array.get 0 td.children
+            )
+        |> Maybe.andThen (derefTidyData lay)
+
+
+lastChild : Id -> TidyLayout a -> Maybe (TidyData a)
+lastChild idx lay =
+    derefTidyData lay idx
+        |> Maybe.andThen
+            (\td ->
+                Array.get (Array.length td.children - 1) td.children
+            )
+        |> Maybe.andThen (derefTidyData lay)
+
+
+setExtreme : Id -> TidyLayout a -> TidyLayout a
+setExtreme id tidyLayout =
     updateTidyData
         (\tidy ->
             case
                 Maybe.map2 Tuple.pair
-                    (children |> List.head |> Maybe.andThen (\n -> derefTidyDataFromNode n tidyLayout))
-                    (children |> List.reverse |> List.head |> Maybe.andThen (\n -> derefTidyDataFromNode n tidyLayout))
+                    (firstChild id tidyLayout)
+                    (lastChild id tidyLayout)
             of
                 Nothing ->
-                    { tidy | extremeLeft = a.id, extremeRight = a.id, modifierExtremeLeft = 0, modifierExtremeRight = 0 }
+                    { tidy | extremeLeft = tidy.id, extremeRight = tidy.id, modifierExtremeLeft = 0, modifierExtremeRight = 0 }
 
                 Just ( first, last ) ->
                     { tidy | extremeLeft = first.extremeLeft, extremeRight = last.extremeRight, modifierExtremeLeft = first.modifierToSubtree + first.modifierExtremeLeft, modifierExtremeRight = last.modifierToSubtree + last.modifierExtremeRight }
         )
-        a.id
+        id
         tidyLayout
-
-
-
--- type alias Node a =
---     { id : Int
---     , width : Float
---     , height : Float
---     , x : Float
---     , y : Float
---     , -- node x position relative to its parent
---       relativeX : Float
---     , -- node y position relative to its parent
---       relativeY : Float
---     -- , bbox : { width : Float, height : Float }
---     , tidy : Maybe TidyData
---     , datum : a
---     }
 
 
 type alias YList =
@@ -269,10 +274,6 @@ type alias YList =
 
 moveSubtree : Int -> Maybe { y : Float, id : Int, index : Int } -> Int -> Float -> TidyLayout a -> TidyLayout a
 moveSubtree currentIndex fromMaybe currentId dist lay =
-    let
-        _ =
-            Debug.log "moveSubtree" ( ( currentId, currentIndex ), fromMaybe, dist )
-    in
     case fromMaybe of
         Just from ->
             if from.index /= currentIndex - 1 then
@@ -314,8 +315,8 @@ moveSubtree currentIndex fromMaybe currentId dist lay =
 
 
 refToMaybe : Int -> TidyLayout a -> Maybe Int
-refToMaybe ref (TidyLayout { mutable }) =
-    if Dict.member ref mutable then
+refToMaybe ref lay =
+    if ref >= 0 && ref < Array.length lay then
         Just ref
 
     else
@@ -409,11 +410,11 @@ separate peerMargin childIndex nodeId lay_ ylist_ =
             derefTidyData lay_ nodeId |> Maybe.map .children
 
         go leftContour rightContour lay yList =
-            case ( (Debug.log "leftContour" leftContour).node, (Debug.log "rightContour" rightContour).node ) of
+            case ( leftContour.node, rightContour.node ) of
                 ( Just left, Just right ) ->
                     let
                         yList2 =
-                            if Debug.log "leftBottom" (derefBottom left lay) > Debug.log "yBottom" (yList |> List.head |> Maybe.map .y |> Maybe.withDefault 0) then
+                            if derefBottom left lay > (yList |> List.head |> Maybe.map .y |> Maybe.withDefault 0) then
                                 List.tail yList |> Maybe.withDefault []
 
                             else
@@ -422,18 +423,11 @@ separate peerMargin childIndex nodeId lay_ ylist_ =
                         dist =
                             (derefTidyData lay left |> Maybe.map (\{ relativeX, width } -> leftContour.modifierSum + relativeX + width / 2) |> Maybe.withDefault 0) - (derefTidyData lay right |> Maybe.map (\{ relativeX, width } -> rightContour.modifierSum + relativeX - width / 2) |> Maybe.withDefault 0) + peerMargin
 
-                        _ =
-                            Debug.log "left.right, right.left, peerMargin"
-                                ( derefTidyData lay left |> Maybe.map (\{ relativeX, width } -> leftContour.modifierSum + relativeX + width / 2) |> Maybe.withDefault 0
-                                , derefTidyData lay right |> Maybe.map (\{ relativeX, width } -> rightContour.modifierSum + relativeX - width / 2) |> Maybe.withDefault 0
-                                , peerMargin
-                                )
-
                         ( rightContour1, lay1 ) =
-                            if Debug.log "dist in go/separate" dist > 0 then
+                            if dist > 0 then
                                 -- left and right are too close. move right part with distance of dist
                                 ( { rightContour | modifierSum = rightContour.modifierSum + dist }
-                                , moveSubtree childIndex (yList2 |> Debug.log "yList2" |> List.head) (nodeChildren |> Maybe.andThen (Array.get childIndex) |> Maybe.withDefault -1) dist lay
+                                , moveSubtree childIndex (yList2 |> List.head) (nodeChildren |> Maybe.andThen (Array.get childIndex) |> Maybe.withDefault -1) dist lay
                                 )
 
                             else
@@ -446,24 +440,12 @@ separate peerMargin childIndex nodeId lay_ ylist_ =
                             derefBottom right lay1
                     in
                     if leftBottom < rightBottom then
-                        let
-                            _ =
-                                Debug.log "Going left" ()
-                        in
                         go (contourNext lay1 leftContour) rightContour1 lay1 yList2
 
                     else if leftBottom > rightBottom then
-                        let
-                            _ =
-                                Debug.log "Going right" ()
-                        in
                         go leftContour (contourNext lay1 rightContour1) lay1 yList2
 
                     else
-                        let
-                            _ =
-                                Debug.log "Going both" ()
-                        in
                         go (contourNext lay1 leftContour) (contourNext lay1 rightContour1) lay1 yList2
 
                 ( Nothing, Just right ) ->
@@ -490,13 +472,9 @@ positionRoot nodeId lay =
     case derefTidyData lay nodeId |> Maybe.map .children |> Maybe.andThen (\c -> Maybe.map2 Tuple.pair (Array.get 0 c |> Maybe.andThen (derefTidyData lay)) (Array.get (Array.length c - 1) c |> Maybe.andThen (derefTidyData lay))) of
         Just ( first, last ) ->
             let
-                _ =
-                    Debug.log "(first, last)" ( first, last )
-
                 relativeX =
                     (first.relativeX + first.modifierToSubtree + last.relativeX + last.modifierToSubtree)
                         / 2
-                        |> Debug.log "positionRoot"
             in
             lay
                 |> updateTidyData
@@ -509,13 +487,13 @@ positionRoot nodeId lay =
             lay
 
 
-addChildSpacing : List (Hierarchy Node) -> TidyLayout a -> TidyLayout a
+addChildSpacing : Array Id -> TidyLayout a -> TidyLayout a
 addChildSpacing children layout_ =
-    List.foldl
-        (\(Hierarchy node _) ( lay, speed, delta ) ->
+    Array.foldl
+        (\idx ( lay, speed, delta ) ->
             let
                 ( childShiftAcceleration, shiftChange ) =
-                    derefTidyData lay node.id
+                    derefTidyData lay idx
                         |> Maybe.map (\c -> ( c.shiftAcceleration, c.shiftChange ))
                         |> Maybe.withDefault ( 0, 0 )
             in
@@ -527,7 +505,7 @@ addChildSpacing children layout_ =
                         , shiftChange = 0
                     }
                 )
-                node.id
+                idx
                 lay
             , speed + childShiftAcceleration
             , delta + speed + childShiftAcceleration + shiftChange
@@ -538,33 +516,22 @@ addChildSpacing children layout_ =
         |> (\( a, _, _ ) -> a)
 
 
-logLayoutProperty : String -> Int -> (TidyData -> a) -> TidyLayout b -> TidyLayout b
-logLayoutProperty label id getter lay =
-    let
-        _ =
-            case derefTidyData lay id of
-                Just d ->
-                    Debug.log label (getter d)
-
-                Nothing ->
-                    Debug.todo (label ++ "property not found")
-    in
-    lay
-
-
 layout :
     { width : a -> Float, height : a -> Float, layered : Bool, parentChildMargin : Float, peerMargin : Float }
-    -> Hierarchy a
-    -> Hierarchy { height : Float, value : a, width : Float, x : Float, y : Float, relativeX : Float, modifierToSubtree : Float }
+    -> Tree a
+    -> Tree { height : Float, value : a, width : Float, x : Float, y : Float }
 layout getters tree =
     let
+        defaultValue =
+            Tree.label tree
+
         init =
             initialize getters.width getters.height
 
         setYRecursive =
             if getters.layered then
                 traverseBFSWithDepth
-                    (\depth depths _ tidy ->
+                    (\depth depths tidy ->
                         case Dict.get (depth - 1) depths of
                             Just prevMax ->
                                 ( Dict.insert depth (max (Dict.get depth depths |> Maybe.withDefault 0) (prevMax + tidy.height + getters.parentChildMargin)) depths, { tidy | y = prevMax } )
@@ -576,98 +543,97 @@ layout getters tree =
 
             else
                 traverseWithParent
-                    (\{ parent, tidy } ->
-                        -- TODO: Deal with layered
-                        { tidy
+                    (\{ parent, node } ->
+                        { node
                             | y =
                                 parent
-                                    |> Maybe.map (\parents -> parents.node.height + parents.tidy.y + getters.parentChildMargin)
+                                    |> Maybe.map (\parents -> parents.height + parents.y + getters.parentChildMargin)
                                     |> Maybe.withDefault 0
                         }
                     )
 
-        runWalk fn ((TidyLayout x) as lay) =
-            fn x.tree lay
+        runWalk fn lay =
+            fn 0 lay
 
-        firstWalk ((Hierarchy nodeVal children) as node) lay =
-            case Debug.log "firstWalk" children of
-                [] ->
-                    setExtreme node lay
+        firstWalk idx lay =
+            case derefTidyData lay idx of
+                Nothing ->
+                    lay
 
-                ((Hierarchy firstChild _) as firstChildNode) :: rest ->
-                    let
-                        lay1 =
-                            firstWalk firstChildNode lay
+                Just node ->
+                    case Array.toList node.children of
+                        [] ->
+                            setExtreme idx lay
 
-                        yListInitDatum =
-                            derefTidyDataFromNode firstChildNode lay1
-                                |> Maybe.map
-                                    (\{ extremeRight } ->
-                                        derefBottom (Debug.log "extremeRight" extremeRight) lay1
-                                    )
-                                |> Debug.log "yListInitDatum"
-                                |> Maybe.withDefault 0
+                        firstChildId :: rest ->
+                            let
+                                lay1 =
+                                    firstWalk firstChildId lay
+                            in
+                            case derefTidyData lay1 firstChildId of
+                                Nothing ->
+                                    lay1
 
-                        yListInit =
-                            [ { y = yListInitDatum, index = 0, id = firstChild.id } ]
-
-                        res =
-                            List.foldl
-                                (\((Hierarchy { id } _) as childNode) { yList, layN, index } ->
+                                Just firstChildData ->
                                     let
-                                        lay2 =
-                                            firstWalk (Debug.log "running firstWalk loop" childNode) layN
+                                        yListInitDatum =
+                                            derefBottom firstChildData.extremeRight lay1
 
-                                        maxY =
-                                            derefTidyDataFromNode childNode lay2
-                                                |> Maybe.map
-                                                    (\{ extremeLeft } ->
-                                                        derefBottom extremeLeft lay2
-                                                    )
-                                                |> Maybe.withDefault 0
+                                        yListInit =
+                                            [ { y = yListInitDatum, index = 0, id = firstChildId } ]
 
-                                        ( lay3, yList1 ) =
-                                            separate getters.peerMargin index nodeVal.id lay2 (Debug.log "input yList" yList)
+                                        res =
+                                            List.foldl
+                                                (\id { yList, layN, index } ->
+                                                    let
+                                                        lay2 =
+                                                            firstWalk id layN
 
-                                        update lst =
-                                            case lst of
-                                                [] ->
-                                                    [ { index = index, y = maxY, id = id } ]
+                                                        maxY =
+                                                            derefTidyData lay2 id
+                                                                |> Maybe.map
+                                                                    (\{ extremeLeft } ->
+                                                                        derefBottom extremeLeft lay2
+                                                                    )
+                                                                |> Maybe.withDefault 0
 
-                                                head :: tail ->
-                                                    if head.y <= maxY then
-                                                        update tail
+                                                        ( lay3, yList1 ) =
+                                                            separate getters.peerMargin index idx lay2 yList
 
-                                                    else
-                                                        { index = index, y = maxY, id = id } :: tail
+                                                        update lst =
+                                                            case lst of
+                                                                [] ->
+                                                                    [ { index = index, y = maxY, id = id } ]
+
+                                                                head :: tail ->
+                                                                    if head.y <= maxY then
+                                                                        update tail
+
+                                                                    else
+                                                                        { index = index, y = maxY, id = id } :: tail
+                                                    in
+                                                    { yList = update yList1, layN = lay3, index = index + 1 }
+                                                )
+                                                { yList = yListInit, layN = lay1, index = 1 }
+                                                rest
                                     in
-                                    { yList = update yList1, layN = lay3, index = index + 1 }
-                                )
-                                { yList = yListInit, layN = lay1, index = 1 }
-                                rest
-                    in
-                    res.layN
-                        |> positionRoot nodeVal.id
-                        |> setExtreme node
+                                    res.layN
+                                        |> positionRoot idx
+                                        |> setExtreme idx
 
-        secondWalk modSum (Hierarchy val valChildren) ((Hierarchy nodeVal children) as node) lay =
-            case derefTidyData lay nodeVal.id of
-                Just { width, height, y, modifierToSubtree, relativeX } ->
-                    List.map2 (\a b -> secondWalk (modSum + modifierToSubtree) a b (addChildSpacing children lay)) valChildren children
-                        |> Hierarchy { width = width, height = height, y = y, x = relativeX + modSum + modifierToSubtree, value = val, relativeX = relativeX, modifierToSubtree = modifierToSubtree }
+        secondWalk modSum idx lay =
+            case derefTidyData lay idx of
+                Just { width, height, y, modifierToSubtree, relativeX, value, children } ->
+                    Array.map (\a -> secondWalk (modSum + modifierToSubtree) a (addChildSpacing children lay)) children
+                        |> Array.toList
+                        |> Tree.tree { width = width, height = height, y = y, x = relativeX + modSum + modifierToSubtree, value = value }
 
                 Nothing ->
-                    Debug.todo ""
+                    -- can't happen
+                    Tree.singleton { width = 0 / 0, height = 0 / 0, x = 0 / 0, y = 0 / 0, value = defaultValue }
     in
     tree
         |> init
         |> setYRecursive
-        |> debugTree "setYRecursive"
         |> runWalk firstWalk
-        |> debugTree "firstWalk"
-        |> runWalk (secondWalk 0 tree)
-
-
-links : Hierarchy { height : Float, value : a, width : Float, x : Float, y : Float, relativeX : Float, modifierToSubtree : Float } -> List ( { height : Float, value : a, width : Float, x : Float, y : Float, relativeX : Float, modifierToSubtree : Float }, { height : Float, value : a, width : Float, x : Float, y : Float, relativeX : Float, modifierToSubtree : Float } )
-links (Hierarchy node children) =
-    List.concatMap (\((Hierarchy child _) as childNode) -> ( node, child ) :: links childNode) children
+        |> runWalk (secondWalk 0)

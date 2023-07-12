@@ -1,6 +1,6 @@
 module Hierarchy.Treemap exposing (..)
 
-import Hierarchy exposing (Hierarchy(..))
+import Hierarchy.Tree as Tree exposing (Tree(..))
 
 
 type alias BBox =
@@ -21,11 +21,11 @@ layout :
     , value : a -> Float
     , dimensions : ( Float, Float )
     }
-    -> Hierarchy a
-    -> Hierarchy { x : Float, y : Float, width : Float, height : Float, value : Float, node : a }
+    -> Tree a
+    -> Tree { x : Float, y : Float, width : Float, height : Float, value : Float, node : a }
 layout opts =
     let
-        go depth p parentBBox (Hierarchy node children) =
+        go depth p parentBBox tree =
             let
                 bbox0 =
                     { x0 = parentBBox.x0 + p
@@ -47,6 +47,9 @@ layout opts =
 
                     else
                         bbox1
+
+                node =
+                    Tree.label tree
 
                 childPadding =
                     opts.paddingInner node
@@ -76,9 +79,9 @@ layout opts =
                     opts.value node
 
                 childrenBBoxes =
-                    opts.tile depth childBBox2 (opts.value node) (List.map (\(Hierarchy child _) -> opts.value child) children)
+                    opts.tile depth childBBox2 (opts.value node) (List.map (\child -> opts.value (Tree.label child)) (Tree.children tree))
             in
-            Hierarchy
+            Tree.tree
                 { x = bbox2.x0
                 , y = bbox2.y0
                 , width = bbox2.x1 - bbox2.x0
@@ -86,7 +89,7 @@ layout opts =
                 , value = value
                 , node = node
                 }
-                (List.map2 (go (depth + 1) childPadding) childrenBBoxes children)
+                (List.map2 (go (depth + 1) childPadding) childrenBBoxes (Tree.children tree))
     in
     go 0 0 { x0 = 0, y0 = 0, x1 = Tuple.first opts.dimensions, y1 = Tuple.second opts.dimensions }
 

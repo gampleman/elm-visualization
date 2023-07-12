@@ -1,70 +1,14 @@
 module Hierarchy exposing (..)
 
 import Dict exposing (Dict)
+import Hierarchy.Tidy
+import Hierarchy.Tree as Tree exposing (Tree)
+import Hierarchy.Treemap
 import Set exposing (Set)
-
-
-type Hierarchy a
-    = Hierarchy a (List (Hierarchy a))
-
-
-hierarchy : (data -> a) -> (data -> List data) -> data -> Hierarchy a
-hierarchy accessor children data =
-    Hierarchy (accessor data) (List.map (hierarchy accessor children) (children data))
 
 
 
 -- TODO: Tail recursive
-
-
-node : Hierarchy a -> a
-node (Hierarchy a _) =
-    a
-
-
-toList (Hierarchy n children) =
-    n :: List.concatMap toList children
-
-
-leaves : Hierarchy a -> List a
-leaves (Hierarchy n children) =
-    case children of
-        [] ->
-            [ n ]
-
-        _ ->
-            List.concatMap leaves children
-
-
-map : (a -> b) -> Hierarchy a -> Hierarchy b
-map fn (Hierarchy val children) =
-    Hierarchy (fn val) (List.map (map fn) children)
-
-
-mapWithContextTopDown : ({ ancestors : List b, node : a, children : List (Hierarchy a) } -> b) -> Hierarchy a -> Hierarchy b
-mapWithContextTopDown fn tree =
-    let
-        help parents (Hierarchy val children) =
-            let
-                processed =
-                    fn { ancestors = parents, children = children, node = val }
-            in
-            Hierarchy processed (List.map (help (processed :: parents)) children)
-    in
-    help [] tree
-
-
-mapWithContextBottomUp : ({ ancestors : List a, node : a, children : List (Hierarchy b) } -> b) -> Hierarchy a -> Hierarchy b
-mapWithContextBottomUp fn tree =
-    let
-        help parents (Hierarchy val children) =
-            let
-                processed =
-                    List.map (help (val :: parents)) children
-            in
-            Hierarchy (fn { ancestors = parents, node = val, children = processed }) processed
-    in
-    help [] tree
 
 
 type StratifyError
@@ -72,7 +16,7 @@ type StratifyError
     | NoRoot
 
 
-stratifyWithPath : { path : a -> ( comparable, List comparable ), createMissingNode : ( comparable, List comparable ) -> a } -> List a -> Result StratifyError (Hierarchy a)
+stratifyWithPath : { path : a -> ( comparable, List comparable ), createMissingNode : ( comparable, List comparable ) -> a } -> List a -> Result StratifyError (Tree a)
 stratifyWithPath { path, createMissingNode } nodes =
     List.map (\item -> ( path item, item )) nodes
         |> List.sortBy (Tuple.first >> Tuple.second >> List.length)
@@ -111,7 +55,7 @@ stratifyWithPath { path, createMissingNode } nodes =
         |> stratify { id = .id, parentId = .parentId, transform = .node }
 
 
-stratify : { id : a -> comparable, parentId : a -> Maybe comparable, transform : a -> b } -> List a -> Result StratifyError (Hierarchy b)
+stratify : { id : a -> comparable, parentId : a -> Maybe comparable, transform : a -> b } -> List a -> Result StratifyError (Tree b)
 stratify { id, parentId, transform } nodes =
     List.foldl
         (\item ->
@@ -157,7 +101,7 @@ stratify { id, parentId, transform } nodes =
 
 
 stratifyHelp parentBag ( itemId, item ) =
-    Hierarchy item (Dict.get itemId parentBag |> Maybe.withDefault [] |> List.map (stratifyHelp parentBag))
+    Tree.tree item (Dict.get itemId parentBag |> Maybe.withDefault [] |> List.map (stratifyHelp parentBag))
 
 
 
