@@ -157,43 +157,42 @@ traverseBFSWithDepth fn init lay =
 
 initialize : (a -> Float) -> (a -> Float) -> Tree a -> TidyLayout a
 initialize width height tree =
-    Tree.mapAccumulateWithContextBottomUp
-        (\lst { node, children } ->
-            ( { threadLeft = -1
-              , threadRight = -1
-              , extremeLeft = -1
-              , extremeRight = -1
-              , shiftAcceleration = 0
-              , shiftChange = 0
-              , modifierToSubtree = 0
-              , modifierThreadLeft = 0
-              , modifierThreadRight = 0
-              , modifierExtremeLeft = 0
-              , modifierExtremeRight = 0
-              , x = 0
-              , y = 0
-              , relativeX = 0
-              , relativeY = 0
-              , width = width (Tuple.second node)
-              , height = height (Tuple.second node)
+    Tree.depthFirstFold
+        (\lst _ node children ->
+            Tree.Continue
+                ({ threadLeft = -1
+                 , threadRight = -1
+                 , extremeLeft = -1
+                 , extremeRight = -1
+                 , shiftAcceleration = 0
+                 , shiftChange = 0
+                 , modifierToSubtree = 0
+                 , modifierThreadLeft = 0
+                 , modifierThreadRight = 0
+                 , modifierExtremeLeft = 0
+                 , modifierExtremeRight = 0
+                 , x = 0
+                 , y = 0
+                 , relativeX = 0
+                 , relativeY = 0
+                 , width = width (Tuple.second node)
+                 , height = height (Tuple.second node)
 
-              -- TODO: there is an interesting optimization possible here:
-              -- TODO: if the IDs were assigned in a BFS sort of way, then
-              -- TODO: each nodes children's ids would be consecutive integers
-              -- TODO: and could be runlength encoded (i.e. startIndex + length)
-              -- TODO: which would make this datastructure static in memory size
-              -- TODO: and potentially faster to traverse...
-              , children = Array.fromList (List.map Tree.label children)
-              , id = Tuple.first node
-              , value = Tuple.second node
-              }
-                :: lst
-            , Tuple.first node
-            )
+                 -- TODO: there is an interesting optimization possible here:
+                 -- TODO: if the IDs were assigned in a BFS sort of way, then
+                 -- TODO: each nodes children's ids would be consecutive integers
+                 -- TODO: and could be runlength encoded (i.e. startIndex + length)
+                 -- TODO: which would make this datastructure static in memory size
+                 -- TODO: and potentially faster to traverse...
+                 , children = Array.fromList (List.map (Tree.label >> Tuple.first) children)
+                 , id = Tuple.first node
+                 , value = Tuple.second node
+                 }
+                    :: lst
+                )
         )
         []
         (Tree.indexedMap Tuple.pair tree)
-        |> Tuple.first
         -- TODO: If the IDs were assigned in the same order as the subsequent map,
         -- TODO: then the sort here would be unnecessary
         |> List.sortBy .id

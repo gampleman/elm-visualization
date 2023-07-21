@@ -1,12 +1,14 @@
 module Hierarchy.Tree exposing
-    ( Tree, singleton, tree, label, children
-    , mapLabel, replaceLabel, mapChildren, replaceChildren, prependChild, appendChild
-    , count, depth
+    ( Tree(..), singleton, tree, label, children
+    , updateLabel, replaceLabel, updateChildren, replaceChildren, prependChild, appendChild
+    , length, depth
     , foldl, foldr
-    , flatten, leaves, links
-    , map, indexedMap, mapAccumulate, map2, indexedMap2, mapAccumulate2, andMap, mapWithContextBottomUp, mapAccumulateWithContextBottomUp, mapWithContextTopDown, mapAccumulateWithContextTopDown
-    , findBfs
-    , sortWith, unfold, restructure
+    , toList, leaves, links
+    , map, indexedMap, mapAccumulate, map2, indexedMap2, mapAccumulate2, andMap
+    , find
+    , unfold, stratify, StratifyError(..), stratifyWithPath
+    , sortWith, restructure
+    , Step(..), breadthFirstFold, depthFirstFold, depthFirstTraversal
     )
 
 {-| A multiway tree or rosetree is a labeled tree where each node can have zero,
@@ -40,12 +42,12 @@ children of their own, and so on.
 
 # Modification
 
-@docs mapLabel, replaceLabel, mapChildren, replaceChildren, prependChild, appendChild
+@docs updateLabel, replaceLabel, updateChildren, replaceChildren, prependChild, appendChild
 
 
 # Describing a tree
 
-@docs count, depth
+@docs length, depth
 
 
 # Folds
@@ -55,28 +57,96 @@ children of their own, and so on.
 
 # Converting to lists
 
-@docs flatten, leaves, links
+@docs toList, leaves, links
 
 
 # Mapping and traversing
 
-@docs map, indexedMap, mapAccumulate, map2, indexedMap2, mapAccumulate2, andMap, mapWithContextBottomUp, mapAccumulateWithContextBottomUp, mapWithContextTopDown, mapAccumulateWithContextTopDown
+@docs map, indexedMap, mapAccumulate, map2, indexedMap2, mapAccumulate2, andMap
 
 
 # Search
 
-@docs findBfs
+@docs find
+
+
+# Creating trees from other data
+
+@docs unfold, stratify, StratifyError, stratifyWithPath
 
 
 # Fancy stuff
 
-@docs sortWith, unfold, restructure
+@docs sortWith, restructure
+
+
+# Advanced: Generic traversals
+
+These functions have highly complex type signatures, but they abstract very
+generic ways of working with trees and in fact nearly all the other functions
+in this library are built using them. In general it is better to prefer the simpler
+interfaces, but there are situations that may not be covered by other functions
+in this library, where these more powerful functions can come in handy.
+
+Note that all the callbacks passed receive four arguments:
+
+  - the `state` variable that is accumulated throughout the whole computation
+  - a list of `ancestors`, that is all the labels that lie above the current node
+  - the current `label` of the node being processed
+  - its `children`
+
+I like to call these `\s a l c`, since "salc" is nice and pronouncable and quite
+easy to remember.
+
+@docs Step, breadthFirstFold, depthFirstFold, depthFirstTraversal
+
+You may want to read the source of this module for inspiration on how to use these
+functions.
 
 -}
+
+import Dict
+import Set
 
 
 {-| Represents a multiway tree. Each node in the tree holds a piece of
 information (the `label`) and a list of children, each of which is a tree.
+
+**Note:** The constructors here are exposed as this can be sometimes easier
+to program than having to use the functions provided and can be an easy way
+to unblock yourself to build tree processing algorithms.
+
+However the naive way of building tree algorithms is _not_ stack safe and
+can cause crashes for large tree inputs.
+
+For instance, a `map` function can trivially be defined as:
+
+    map : (a -> b) -> Tree a -> Tree b
+    map fn (Tree l c) =
+        Tree (fn l) (List.map (map fn) c)
+
+However, running this definition on a large tree can easily throw a
+`Uncaught RangeError: Maximum call stack size exceeded`.
+
+Instead, it is often better to look at this libraries generic traversal
+functions, which can provide a stack safe implementation without too
+much overhead:
+
+    map : (a -> b) -> Tree a -> Tree b
+    map fn t =
+        Tree.depthFirstTraversal
+            -- pass through state, apply fn to label, pass through children
+            (\s a l c -> ( s, fn l, c ))
+            -- pass through state, reassemble tree
+            (\s a l c -> ( s, Tree.tree l c ))
+            -- we don't really care about state
+            ()
+            t
+            -- discard state
+            |> Tuple.second
+
+With this in mind, it's certainly OK to unblock yourself with the simpler version!
+
 -}
 type Tree a
     = Tree a (List (Tree a))
@@ -112,7 +182,7 @@ singleton v =
             , singleton 5
             ]
         ]
-        |> count
+        |> length
     --> 6
 
 -}
@@ -136,12 +206,12 @@ label (Tree v _) =
 {-| Execute a function on the label of this tree.
 
     tree "hello" [ singleton "world", singleton "etc" ]
-        |> mapLabel String.toUpper
+        |> updateLabel String.toUpper
     --> tree "HELLO" [ singleton "world", singleton "etc" ]
 
 -}
-mapLabel : (a -> a) -> Tree a -> Tree a
-mapLabel f (Tree v cs) =
+updateLabel : (a -> a) -> Tree a -> Tree a
+updateLabel f (Tree v cs) =
     Tree (f v) cs
 
 
@@ -181,7 +251,7 @@ children (Tree _ c) =
         , tree "upper2" [ singleton "lower2"]
         , singleton "upper3"
         ]
-        |> mapChildren (List.map (mapLabel String.toUpper))
+        |> updateChildren (List.map (updateLabel String.toUpper))
     --> tree "lower1"
     -->     [ singleton "UPPER1"
     -->     , tree "UPPER2" [ singleton "lower2"]
@@ -189,8 +259,8 @@ children (Tree _ c) =
     -->     ]
 
 -}
-mapChildren : (List (Tree a) -> List (Tree a)) -> Tree a -> Tree a
-mapChildren f (Tree v cs) =
+updateChildren : (List (Tree a) -> List (Tree a)) -> Tree a -> Tree a
+updateChildren f (Tree v cs) =
     Tree v (f cs)
 
 
@@ -234,16 +304,16 @@ appendChild c (Tree v cs) =
 {-| Count the labels in a tree.
 
     singleton "foo"
-        |> count
+        |> length
     --> 1
 
     tree "foo" [ singleton "bar", singleton "baz" ]
-        |> count
+        |> length
     --> 3
 
 -}
-count : Tree a -> Int
-count t =
+length : Tree a -> Int
+length t =
     foldl (\_ x -> x + 1) 0 t
 
 
@@ -264,7 +334,7 @@ count t =
 -}
 foldl : (a -> b -> b) -> b -> Tree a -> b
 foldl f acc t =
-    foldlHelp f acc [ t ] []
+    depthFirstFold (\s _ l _ -> Continue (f l s)) acc t
 
 
 {-| Fold over all the labels in a tree, right to left, depth first.
@@ -286,54 +356,42 @@ foldr f acc t =
     List.foldl f acc <| foldl (::) [] t
 
 
-foldlHelp : (a -> b -> b) -> b -> List (Tree a) -> List (List (Tree a)) -> b
-foldlHelp f acc trees nextSets =
-    case trees of
-        [] ->
-            case nextSets of
-                set :: sets ->
-                    foldlHelp f acc set sets
-
-                [] ->
-                    acc
-
-        (Tree d []) :: rest ->
-            foldlHelp f (f d acc) rest nextSets
-
-        (Tree d xs) :: rest ->
-            foldlHelp f (f d acc) xs (rest :: nextSets)
-
-
 {-| Flattens the tree into a list. This is equivalent to `foldr (::) []`
 -}
-flatten : Tree a -> List a
-flatten t =
+toList : Tree a -> List a
+toList t =
     foldr (::) [] t
 
 
 {-| Returns the nodes that have no children.
+
+    tree 1
+        [ singleton 2
+        , tree 3
+            [ singleton 4
+            , tree 5
+                [ singleton 6]
+            ]
+        , singleton 7
+        ]
+        |> leaves
+    --> [ 2, 7, 4, 6 ]
+
 -}
 leaves : Tree a -> List a
 leaves t =
-    leavesHelp [] [ t ] []
-
-
-leavesHelp : List a -> List (Tree a) -> List (List (Tree a)) -> List a
-leavesHelp soFar trees nextSets =
-    case trees of
-        [] ->
-            case nextSets of
-                set :: sets ->
-                    leavesHelp soFar set sets
-
+    breadthFirstFold
+        (\s _ l c ->
+            case c of
                 [] ->
-                    soFar
+                    Continue (l :: s)
 
-        (Tree d []) :: rest ->
-            leavesHelp (d :: soFar) rest nextSets
-
-        (Tree _ xs) :: rest ->
-            leavesHelp soFar rest (xs :: nextSets)
+                _ ->
+                    Continue s
+        )
+        []
+        t
+        |> List.reverse
 
 
 {-| Returns pairs representing parent-child relationships in the tree.
@@ -345,35 +403,29 @@ the child. Useful for visualising trees.
         [ singleton 2
         , tree 3
             [ singleton 4
-            , singleton 5
+            , tree 5
+                [ singleton 6]
             ]
-        , singleton 6
+        , singleton 7
         ]
         |> links
-    --> [ ( 1, 2 ), ( 1, 3 ), ( 1, 6 ), ( 3, 4 ), ( 3, 5 ) ]
+    --> [ ( 1, 2 ), ( 1, 3 ), ( 1, 7 ), ( 3, 4 ), ( 3, 5 ), ( 5, 6 ) ]
 
 -}
 links : Tree a -> List ( a, a )
-links (Tree l cr) =
-    linksHelp l [] cr []
+links t =
+    breadthFirstFold
+        (\s a l _ ->
+            case a of
+                parent :: _ ->
+                    Continue (( parent, l ) :: s)
 
-
-linksHelp : a -> List ( a, a ) -> List (Tree a) -> List ( a, List (Tree a) ) -> List ( a, a )
-linksHelp parent soFar trees nextSets =
-    case trees of
-        [] ->
-            case nextSets of
-                ( newParent, set ) :: sets ->
-                    linksHelp newParent soFar set sets
-
-                [] ->
-                    List.reverse soFar
-
-        (Tree d []) :: rest ->
-            linksHelp parent (( parent, d ) :: soFar) rest nextSets
-
-        (Tree d xs) :: rest ->
-            linksHelp parent (( parent, d ) :: soFar) rest (( d, xs ) :: nextSets)
+                _ ->
+                    Continue s
+        )
+        []
+        t
+        |> List.reverse
 
 
 {-| Create a tree from a seed.
@@ -404,58 +456,275 @@ has the number of children mentioned in the label, recursively.
 -}
 unfold : (b -> ( a, List b )) -> b -> Tree a
 unfold f seed =
-    let
-        ( v, next ) =
-            f seed
-    in
-    unfoldHelp f { todo = next, label = v, done = [] } []
-
-
-unfoldHelp :
-    (b -> ( a, List b ))
-    -> UnfoldAcc a b
-    -> List (UnfoldAcc a b)
-    -> Tree a
-unfoldHelp f acc stack =
-    case acc.todo of
-        [] ->
+    depthFirstTraversal
+        (\s _ l _ ->
             let
-                node =
-                    Tree acc.label (List.reverse acc.done)
+                ( l_, c ) =
+                    f l
             in
-            case stack of
-                [] ->
-                    node
-
-                top :: rest ->
-                    unfoldHelp f
-                        { top | done = node :: top.done }
-                        rest
-
-        x :: xs ->
-            case f x of
-                ( label_, [] ) ->
-                    unfoldHelp f
-                        { acc
-                            | todo = xs
-                            , done = singleton label_ :: acc.done
-                        }
-                        stack
-
-                ( label_, todo ) ->
-                    unfoldHelp f
-                        { todo = todo
-                        , label = label_
-                        , done = []
-                        }
-                        ({ acc | todo = xs } :: stack)
+            ( s, l_, List.map singleton c )
+        )
+        defaultBottomUp
+        ()
+        (singleton seed)
+        |> Tuple.second
 
 
-type alias UnfoldAcc a b =
-    { todo : List b
-    , done : List (Tree a)
-    , label : a
-    }
+{-| `stratify` tries to convert the entire
+dataset into a tree. If that cannot be achieved, it returns the
+following errors:
+
+**`MultipleRoots a a`** is returned when there is more than one node
+where `.parentId` returns `Nothing`. The error contains the first
+two nodes that had such property.
+
+    [ ( "root1", Nothing )
+    , ( "root2", Nothing)
+    ]
+    |> stratify { id = Tuple.first, parentId = Tuple.second, transform = Tuple.first }
+    --> Err (MultipleRoots "root1" "root2")
+
+**`NoRoot`** is returned when there is no node where `.parentId` returns
+`Nothing` (or an empty list is passed)
+
+    [ ( "leaf1", Just "root" )
+    , ( "leaf2", Just "root" )
+    ]
+    |> stratify { id = Tuple.first, parentId = Tuple.second, transform = Tuple.first }
+    --> Err NoRoot
+
+**`NodeItsOwnParent a`** happens when `.id` is the same as `.parentId` for a node:
+
+    [ ("loop", Just "loop") ]
+    |> stratify { id = Tuple.first, parentId = Tuple.second, transform = Tuple.first }
+    --> Err (NodeItsOwnParent "loop")
+
+**`DuplicatedId a`** happens when there are two (or more) elements that return the same
+`.id`.
+
+     [ ( "root", Nothing )
+    , ( "xxx", Just "root" )
+    , ( "xxx", Just "root" )
+    ]
+    |> stratify { id = Tuple.first, parentId = Tuple.second, transform = Tuple.first }
+    --> Err (DuplicateId "xxx")
+
+**`DisconnectedNodes (Tree a)`** happens when not all input items connect to the tree
+(i.e. there are "orphan" items). This is an error where a tree was constructed, but
+this error signals that some of the data is missing in the resulting tree.
+
+    [ ( "root", Nothing )
+    , ( "leaf1", Just "root" )
+    , ( "leaf2", Just "root" )
+    , ( "orphan", Just "nobody" )
+    ]
+    |> stratify { id = Tuple.first, parentId = Tuple.second, transform = Tuple.first }
+    --> Err (DisconnectedNodes (
+    -->    tree "root"
+    -->        [ singleton "leaf1", singleton "leaf2" ]
+    --> ))
+
+-}
+type StratifyError a
+    = MultipleRoots a a
+    | NoRoot
+    | NodeItsOwnParent a
+    | DuplicateId a
+    | DisconnectedNodes (Tree a)
+
+
+{-| The other way tree data is sometimes represented in flat formats
+is that each item stores a path to the root. Common examples are filesystems
+where we see file paths such as "foo/bar/baz.txt" or DNS "my.domain.com".
+
+This function will recreate the tree based on these paths:
+
+    [ "Tree"
+    , "Tree/Zipper"
+    , "Tree/Diff/Internal"
+    , "Tests"
+    ]
+    |> stratifyWithPath
+        { path = String.split "/"
+        , createMissingNode = String.join "/"
+        }
+    --> Ok (tree ""
+    -->       [ tree "Tree"
+    -->           [ singleton "Tree/Zipper"
+    -->           , tree "Tree/Diff"
+    -->               [ singleton "Tree/Diff/Internal"
+    -->               ]
+    -->           ]
+    -->       , singleton "Tests"
+    -->       ]
+    -->   )
+
+Because `stratifyWithPath` creates missing nodes in the hierarchy,
+it will succeed with most input data. The only way to make it fail
+is if there are items with duplicate paths. In that case the `Err`
+contains the path that was duplicated.
+
+    [ [ "foo" ] , [ "foo" ] ]
+        |> stratifyWithPath { path = identity, createMissingNode = identity }
+    --> Err [ "foo" ]
+
+The root of the tree is always represented by the empty list.
+
+-}
+stratifyWithPath : { path : a -> List comparable, createMissingNode : List comparable -> a } -> List a -> Result (List comparable) (Tree a)
+stratifyWithPath { path, createMissingNode } nodes =
+    List.map (\item -> ( List.reverse (path item), item )) nodes
+        |> List.sortBy (Tuple.first >> List.length)
+        |> List.foldl
+            (\( reversedPath, item ) ( seenSoFar, nodes_ ) ->
+                let
+                    wrapNode revPath n =
+                        case revPath of
+                            [] ->
+                                { id = [], parentId = Nothing, node = n }
+
+                            _ :: xs ->
+                                { id = revPath
+                                , parentId = Just xs
+                                , node = n
+                                }
+
+                    createParentNodes revPath newNodes =
+                        case revPath of
+                            [] ->
+                                if Set.member [] seenSoFar then
+                                    newNodes
+
+                                else
+                                    wrapNode revPath (createMissingNode []) :: newNodes
+
+                            _ :: xs ->
+                                if Set.member revPath seenSoFar then
+                                    createParentNodes xs newNodes
+
+                                else
+                                    createParentNodes xs (wrapNode revPath (createMissingNode (List.reverse revPath)) :: newNodes)
+
+                    current =
+                        wrapNode reversedPath item
+
+                    nodesToCreate =
+                        case reversedPath of
+                            [] ->
+                                [ current ]
+
+                            _ :: xs ->
+                                createParentNodes xs [ current ]
+                in
+                ( List.foldl (\i -> Set.insert i.id) seenSoFar nodesToCreate, nodesToCreate :: nodes_ )
+            )
+            ( Set.empty, [] )
+        |> Tuple.second
+        |> List.concat
+        |> List.reverse
+        |> (\n ->
+                if List.isEmpty n then
+                    [ { id = [], parentId = Nothing, node = createMissingNode [] } ]
+
+                else
+                    n
+           )
+        |> stratify { id = .id, parentId = .parentId, transform = .node }
+        |> Result.mapError
+            (\e ->
+                case e of
+                    DuplicateId n ->
+                        path n
+
+                    _ ->
+                        -- can't happen
+                        []
+            )
+
+
+{-| It is fairly common for tree data to be stored flattened (for instance
+in database tables or CSV files) into lists. A common way this is done is
+for each node in the tree to store the ID of its parent.
+
+Stratify helps you recover the tree structure from data stored like this.
+
+    [ ( "root", Nothing )
+    , ( "leaf1", Just "root" )
+    , ( "branch", Just "root" )
+    , ( "leaf2", Just "branch" )
+    , ( "leaf3", Just "branch" )
+    ]
+    |> stratify { id = Tuple.first, parentId = Tuple.second, transform = Tuple.first }
+    --> Ok (tree "root"
+    -->     [ singleton "leaf1"
+    -->     , tree "branch"
+    -->         [ singleton "leaf2"
+    -->         , singleton "leaf3"
+    -->         ]
+    -->     ]
+    --> )
+
+-}
+stratify : { id : a -> comparable, parentId : a -> Maybe comparable, transform : a -> b } -> List a -> Result (StratifyError b) (Tree b)
+stratify { id, parentId, transform } nodes =
+    List.foldr
+        (\item ->
+            Result.andThen
+                (\( maybeRoot, parentBag, seenIds ) ->
+                    let
+                        nodeId =
+                            id item
+
+                        node_ =
+                            transform item
+                    in
+                    if Set.member nodeId seenIds then
+                        Err (DuplicateId node_)
+
+                    else
+                        case parentId item of
+                            Nothing ->
+                                case maybeRoot of
+                                    Nothing ->
+                                        Ok ( Just ( nodeId, node_ ), parentBag, Set.insert nodeId seenIds )
+
+                                    Just ( _, prevRoot ) ->
+                                        Err (MultipleRoots node_ prevRoot)
+
+                            Just actualNodeParentId ->
+                                if actualNodeParentId == nodeId then
+                                    Err (NodeItsOwnParent node_)
+
+                                else
+                                    Ok ( maybeRoot, Dict.update actualNodeParentId (\items -> Just (( nodeId, node_ ) :: Maybe.withDefault [] items)) parentBag, Set.insert nodeId seenIds )
+                )
+        )
+        (Ok ( Nothing, Dict.empty, Set.empty ))
+        nodes
+        |> Result.andThen
+            (\( maybeRoot, parentBag, _ ) ->
+                case maybeRoot of
+                    Just root ->
+                        let
+                            completed =
+                                unfold
+                                    (\( itemId, item ) ->
+                                        ( item
+                                        , Dict.get itemId parentBag
+                                            |> Maybe.withDefault []
+                                        )
+                                    )
+                                    root
+                        in
+                        if length completed == List.length nodes then
+                            Ok completed
+
+                        else
+                            Err (DisconnectedNodes completed)
+
+                    Nothing ->
+                        Err NoRoot
+            )
 
 
 {-| Run a function on every label in the tree.
@@ -520,72 +789,18 @@ indexedMap f t =
 
 -}
 mapAccumulate : (s -> a -> ( s, b )) -> s -> Tree a -> ( s, Tree b )
-mapAccumulate f s (Tree d cs) =
-    let
-        ( s_, d_ ) =
-            f s d
-    in
-    mapAccumulateHelp f
-        s_
-        { todo = cs
-        , done = []
-        , label = d_
-        }
-        []
-
-
-mapAccumulateHelp :
-    (s -> a -> ( s, b ))
-    -> s
-    -> MapAcc a b
-    -> List (MapAcc a b)
-    -> ( s, Tree b )
-mapAccumulateHelp f state acc stack =
-    case acc.todo of
-        [] ->
+mapAccumulate f state t =
+    depthFirstTraversal
+        (\s _ l c ->
             let
-                node =
-                    Tree acc.label (List.reverse acc.done)
+                ( s_, l_ ) =
+                    f s l
             in
-            case stack of
-                [] ->
-                    ( state, node )
-
-                top :: rest ->
-                    mapAccumulateHelp f state { top | done = node :: top.done } rest
-
-        (Tree d []) :: rest ->
-            let
-                ( state_, label_ ) =
-                    f state d
-            in
-            mapAccumulateHelp f
-                state_
-                { acc
-                    | todo = rest
-                    , done = Tree label_ [] :: acc.done
-                }
-                stack
-
-        (Tree d cs) :: rest ->
-            let
-                ( state_, label_ ) =
-                    f state d
-            in
-            mapAccumulateHelp f
-                state_
-                { todo = cs
-                , done = []
-                , label = label_
-                }
-                ({ acc | todo = rest } :: stack)
-
-
-type alias MapAcc a b =
-    { todo : List (Tree a)
-    , done : List (Tree b)
-    , label : b
-    }
+            ( s_, l_, c )
+        )
+        defaultBottomUp
+        state
+        t
 
 
 {-| Map over 2 trees. Much like `List.map2`, the result will be truncated to the shorter result.
@@ -631,9 +846,9 @@ indexedMap2 f left right =
 matching labels in the tree of values, truncating branches to match the common
 shape of the trees.
 -}
-andMap : Tree (a -> b) -> Tree a -> Tree b
+andMap : Tree a -> Tree (a -> b) -> Tree b
 andMap =
-    map2 (<|)
+    map2 (|>)
 
 
 {-| Allows mapping over 2 trees while also accumulating a value.
@@ -742,181 +957,17 @@ type alias Map2Acc a b c =
 -}
 depth : Tree a -> Int
 depth t =
-    Tuple.first (mapAccumulateWithContextTopDown (\s ctx -> ( max s (List.length ctx.ancestors), () )) 0 t)
-
-
-{-| Maps the tree, but gives the mapping function access to the context of the tree.
-
-This is quite useful when using a tree to model hierarchical relationships, as the
-position of the nodes of the tree is often as significant to operations on the tree as
-are the values contained.
-
-This is a pre-order traversal of the tree, meaning that the tree is transformed from the
-root to the leaves, giving you access to untransformed children and transformed parent nodes.
-
--}
-mapWithContextTopDown : ({ ancestors : List b, node : a, children : List (Tree a) } -> b) -> Tree a -> Tree b
-mapWithContextTopDown f t =
-    mapAccumulateWithContextTopDown (\_ e -> ( (), f e )) () t
-        |> Tuple.second
-
-
-{-| Maps the tree, but gives the mapping function access to the context of the tree.
-
-This is a post-order traversal of the tree, meaning that the tree is transformed from the
-leaves to the root, giving you access to transformed children and untransformed parent nodes.
-
--}
-mapWithContextBottomUp : ({ ancestors : List a, node : a, children : List (Tree b) } -> b) -> Tree a -> Tree b
-mapWithContextBottomUp f t =
-    mapAccumulateWithContextBottomUp (\_ e -> ( (), f e )) () t
-        |> Tuple.second
-
-
-{-| Like `mapWithContextTopDown`, but with an accumulator argument.
--}
-mapAccumulateWithContextTopDown : (s -> { ancestors : List b, node : a, children : List (Tree a) } -> ( s, b )) -> s -> Tree a -> ( s, Tree b )
-mapAccumulateWithContextTopDown f s (Tree d cs) =
-    let
-        ( s_, d_ ) =
-            f s { ancestors = [], node = d, children = cs }
-    in
-    mapAccumulateWithContextTopDownHelp f
-        s_
-        { todo = cs
-        , done = []
-        , label = d_
-        , parents = [ d_ ]
-        }
-        []
-
-
-mapAccumulateWithContextTopDownHelp :
-    (s -> { ancestors : List b, node : a, children : List (Tree a) } -> ( s, b ))
-    -> s
-    -> MapAccCtxTopDown a b
-    -> List (MapAccCtxTopDown a b)
-    -> ( s, Tree b )
-mapAccumulateWithContextTopDownHelp f state acc stack =
-    case acc.todo of
-        [] ->
-            let
-                node =
-                    Tree acc.label (List.reverse acc.done)
-            in
-            case stack of
+    depthFirstFold
+        (\s a _ c ->
+            case c of
                 [] ->
-                    ( state, node )
+                    Continue (max s (List.length a))
 
-                top :: rest ->
-                    mapAccumulateWithContextTopDownHelp f state { top | done = node :: top.done } rest
-
-        (Tree d []) :: rest ->
-            let
-                ( state_, label_ ) =
-                    f state { children = [], node = d, ancestors = acc.parents }
-            in
-            mapAccumulateWithContextTopDownHelp f
-                state_
-                { acc
-                    | todo = rest
-                    , done = Tree label_ [] :: acc.done
-                }
-                stack
-
-        (Tree d cs) :: rest ->
-            let
-                ( state_, label_ ) =
-                    f state { children = cs, node = d, ancestors = acc.parents }
-            in
-            mapAccumulateWithContextTopDownHelp f
-                state_
-                { todo = cs
-                , done = []
-                , label = label_
-                , parents = label_ :: acc.parents
-                }
-                ({ acc | todo = rest } :: stack)
-
-
-type alias MapAccCtxTopDown a b =
-    { todo : List (Tree a)
-    , done : List (Tree b)
-    , parents : List b
-    , label : b
-    }
-
-
-{-| Like `mapWithContextBottomUp`, but with an accumulator argument.
--}
-mapAccumulateWithContextBottomUp : (s -> { ancestors : List a, node : a, children : List (Tree b) } -> ( s, b )) -> s -> Tree a -> ( s, Tree b )
-mapAccumulateWithContextBottomUp f s (Tree d cs) =
-    mapAccumulateWithContextBottomUpHelp f
-        s
-        { todo = cs
-        , done = []
-        , label = d
-        , parents = [ d ]
-        }
-        []
-
-
-mapAccumulateWithContextBottomUpHelp :
-    (s -> { ancestors : List a, node : a, children : List (Tree b) } -> ( s, b ))
-    -> s
-    -> MapAccCtxBottomUp a b
-    -> List (MapAccCtxBottomUp a b)
-    -> ( s, Tree b )
-mapAccumulateWithContextBottomUpHelp f state acc stack =
-    case acc.todo of
-        [] ->
-            let
-                children_ =
-                    List.reverse acc.done
-
-                ( state_, label_ ) =
-                    f state { children = children_, node = acc.label, ancestors = acc.parents }
-
-                node =
-                    Tree label_ children_
-            in
-            case stack of
-                [] ->
-                    ( state_, node )
-
-                top :: rest ->
-                    mapAccumulateWithContextBottomUpHelp f state_ { top | done = node :: top.done } rest
-
-        (Tree d []) :: rest ->
-            let
-                ( state_, label_ ) =
-                    f state { children = [], node = d, ancestors = acc.parents }
-            in
-            mapAccumulateWithContextBottomUpHelp f
-                state_
-                { acc
-                    | todo = rest
-                    , done = Tree label_ [] :: acc.done
-                }
-                stack
-
-        (Tree d cs) :: rest ->
-            mapAccumulateWithContextBottomUpHelp f
-                state
-                { todo = cs
-                , done = []
-                , label = d
-                , parents = d :: acc.parents
-                }
-                ({ acc | todo = rest } :: stack)
-
-
-type alias MapAccCtxBottomUp a b =
-    { todo : List (Tree a)
-    , done : List (Tree b)
-    , parents : List a
-    , label : a
-    }
+                _ ->
+                    Continue s
+        )
+        0
+        t
 
 
 {-| Sorts all children of each node based on the comparator function (the function recieves a list of ancestors).
@@ -941,50 +992,9 @@ type alias MapAccCtxBottomUp a b =
 
 -}
 sortWith : (List a -> Tree a -> Tree a -> Order) -> Tree a -> Tree a
-sortWith compareFn (Tree d cs) =
-    sortWithHelp compareFn
-        { todo = cs
-        , done = []
-        , label = d
-        , parents = [ d ]
-        }
-        []
-
-
-sortWithHelp : (List a -> Tree a -> Tree a -> Order) -> MapAccCtxBottomUp a a -> List (MapAccCtxBottomUp a a) -> Tree a
-sortWithHelp compareFn acc stack =
-    case acc.todo of
-        [] ->
-            let
-                children_ =
-                    List.sortWith (compareFn acc.parents) acc.done
-
-                node =
-                    Tree acc.label children_
-            in
-            case stack of
-                [] ->
-                    node
-
-                top :: rest ->
-                    sortWithHelp compareFn { top | done = node :: top.done } rest
-
-        (Tree d []) :: rest ->
-            sortWithHelp compareFn
-                { acc
-                    | todo = rest
-                    , done = Tree d [] :: acc.done
-                }
-                stack
-
-        (Tree d cs) :: rest ->
-            sortWithHelp compareFn
-                { todo = cs
-                , done = []
-                , label = d
-                , parents = d :: acc.parents
-                }
-                ({ acc | todo = rest } :: stack)
+sortWith compareFn t =
+    depthFirstTraversal defaultTopDown (\s a l c -> ( s, tree l (List.sortWith (compareFn a) c) )) () t
+        |> Tuple.second
 
 
 {-| Finds a subtree whose label matches the predicate.
@@ -999,49 +1009,22 @@ Searches the tree in a breadth-first manner.
         , singleton 2
         , singleton 6
         ]
-        |> findBfs (\a -> label a == 3)
+        |> find (\a -> label a == 3)
     --> Just (tree 3 [ singleton 5, singleton 4 ])
 
 -}
-findBfs : (Tree a -> Bool) -> Tree a -> Maybe (Tree a)
-findBfs predicate t =
-    findBfsHelp predicate (Fifo [ t ] [])
-
-
-findBfsHelp : (Tree a -> Bool) -> Queue (Tree a) -> Maybe (Tree a)
-findBfsHelp predicate queue =
-    case removeQueue queue of
-        ( Just t, rest ) ->
-            if predicate t then
-                Just t
+find : (Tree a -> Bool) -> Tree a -> Maybe (Tree a)
+find predicate t =
+    breadthFirstFold
+        (\s _ l c ->
+            if predicate (tree l c) then
+                Stop (Just (tree l c))
 
             else
-                findBfsHelp predicate (insertQueue t rest)
-
-        ( Nothing, _ ) ->
-            Nothing
-
-
-type Queue a
-    = Fifo (List a) (List a)
-
-
-insertQueue : Tree a -> Queue (Tree a) -> Queue (Tree a)
-insertQueue (Tree _ cs) (Fifo front back) =
-    Fifo front (List.reverse cs ++ back)
-
-
-removeQueue : Queue a -> ( Maybe a, Queue a )
-removeQueue fifo =
-    case fifo of
-        Fifo [] [] ->
-            ( Nothing, fifo )
-
-        Fifo [] back ->
-            removeQueue <| Fifo (List.reverse back) []
-
-        Fifo (next :: rest) back ->
-            ( Just next, Fifo rest back )
+                Continue s
+        )
+        Nothing
+        t
 
 
 {-| Restructure a `Tree` into another type of structure.
@@ -1117,63 +1100,223 @@ Or perhaps you have your own tree datastructure and you want to convert to it:
 
 -}
 restructure : (a -> b) -> (b -> List c -> c) -> Tree a -> c
-restructure convertLabel convertTree (Tree l c) =
-    restructureHelp convertLabel
+restructure convertLabel convertTree t =
+    depthFirstTraversal (\s _ l c -> ( s, convertLabel l, c )) (\s _ l c -> ( s, convertTree l c )) () t
+        |> Tuple.second
+
+
+{-| The first callback to this function is used when going down the tree, effectively guiding and transforming it.
+The second callback is used to reconstruct the tree when going back up.
+
+This is similar like `restructure`, except this function:
+
+  - has an accumulator argument
+  - the first function can also change the children, not just the label (this allows us to implement `unfold` in terms of this function for instance)
+
+-}
+depthFirstTraversal :
+    (s -> List b -> a -> List (Tree a) -> ( s, b, List (Tree a) ))
+    -> (s -> List b -> b -> List c -> ( s, c ))
+    -> s
+    -> Tree a
+    -> ( s, c )
+depthFirstTraversal convertLabel convertTree s (Tree l c) =
+    let
+        ( state_, label_, children_ ) =
+            convertLabel s [] l c
+    in
+    depthFirstTraversalHelp convertLabel
         convertTree
-        { todo = c
-        , label = convertLabel l
+        state_
+        { todo = children_
+        , label = label_
         , done = []
         }
         []
 
 
-restructureHelp :
-    (a -> b)
-    -> (b -> List c -> c)
-    -> ReAcc a b c
-    -> List (ReAcc a b c)
-    -> c
-restructureHelp fLabel fTree acc stack =
-    case acc.todo of
-        [] ->
-            let
-                node =
-                    fTree acc.label (List.reverse acc.done)
-            in
-            case stack of
-                [] ->
-                    node
-
-                top :: rest ->
-                    restructureHelp
-                        fLabel
-                        fTree
-                        { top | done = node :: top.done }
-                        rest
-
-        (Tree l []) :: rest ->
-            restructureHelp
-                fLabel
-                fTree
-                { acc
-                    | todo = rest
-                    , done = fTree (fLabel l) [] :: acc.done
-                }
-                stack
-
-        (Tree l cs) :: rest ->
-            restructureHelp
-                fLabel
-                fTree
-                { todo = cs
-                , done = []
-                , label = fLabel l
-                }
-                ({ acc | todo = rest } :: stack)
-
-
-type alias ReAcc a b c =
+type alias Acc a b c =
     { todo : List (Tree a)
     , done : List c
     , label : b
     }
+
+
+defaultTopDown : s -> List a -> a -> List (Tree a) -> ( s, a, List (Tree a) )
+defaultTopDown s _ l c =
+    ( s, l, c )
+
+
+defaultBottomUp : s -> List b -> b -> List (Tree b) -> ( s, Tree b )
+defaultBottomUp s _ l c =
+    ( s, tree l c )
+
+
+depthFirstTraversalHelp :
+    (s -> List b -> a -> List (Tree a) -> ( s, b, List (Tree a) ))
+    -> (s -> List b -> b -> List c -> ( s, c ))
+    -> s
+    -> Acc a b c
+    -> List (Acc a b c)
+    -> ( s, c )
+depthFirstTraversalHelp fLabel fTree state acc stack =
+    case acc.todo of
+        [] ->
+            let
+                ( state_, node ) =
+                    fTree state (List.map .label stack) acc.label (List.reverse acc.done)
+            in
+            case stack of
+                [] ->
+                    ( state_, node )
+
+                top :: rest ->
+                    depthFirstTraversalHelp
+                        fLabel
+                        fTree
+                        state_
+                        { top | done = node :: top.done }
+                        rest
+
+        (Tree l chs) :: rest ->
+            let
+                ancestors =
+                    acc.label :: List.map .label stack
+
+                ( state0, label_, children_ ) =
+                    fLabel state ancestors l chs
+            in
+            case children_ of
+                [] ->
+                    let
+                        ( state_, newTree ) =
+                            fTree state0 ancestors label_ []
+                    in
+                    depthFirstTraversalHelp
+                        fLabel
+                        fTree
+                        state_
+                        { acc
+                            | todo = rest
+                            , done = newTree :: acc.done
+                        }
+                        stack
+
+                cs ->
+                    depthFirstTraversalHelp
+                        fLabel
+                        fTree
+                        state0
+                        { todo = cs
+                        , done = []
+                        , label = label_
+                        }
+                        ({ acc | todo = rest } :: stack)
+
+
+{-| Controls if the fold should continue traversing the tree, or should abort immediately.
+-}
+type Step a
+    = Continue a
+    | Stop a
+
+
+{-| Traverses the tree by "levels".
+
+     tree 1
+        [ tree 3
+            [ singleton 5
+            , singleton 4
+            ]
+        , singleton 2
+        , singleton 6
+        ]
+    |> breadthFirstFold (\s a l c -> Continue (l :: s)) []
+    --> [4, 5, 6, 2, 3, 1]
+
+(The list is reversed here due to how `::` works)
+
+-}
+breadthFirstFold :
+    (s -> List a -> a -> List (Tree a) -> Step s)
+    -> s
+    -> Tree a
+    -> s
+breadthFirstFold f acc t =
+    breadthFirstFoldHelp f acc [] [ t ] []
+
+
+breadthFirstFoldHelp : (s -> List a -> a -> List (Tree a) -> Step s) -> s -> List a -> List (Tree a) -> List ( List a, List (Tree a) ) -> s
+breadthFirstFoldHelp f acc parents trees nextSets =
+    case trees of
+        [] ->
+            case nextSets of
+                ( p, set ) :: sets ->
+                    breadthFirstFoldHelp f acc p set sets
+
+                [] ->
+                    acc
+
+        (Tree d ch) :: rest ->
+            case f acc parents d ch of
+                Continue a ->
+                    case ch of
+                        [] ->
+                            breadthFirstFoldHelp f a parents rest nextSets
+
+                        xs ->
+                            breadthFirstFoldHelp f a parents rest (( d :: parents, xs ) :: nextSets)
+
+                Stop a ->
+                    a
+
+
+{-| Traverses the tree by by going down as far as possible before trying
+out any siblings.
+
+     tree 1
+        [ tree 3
+            [ singleton 5
+            , singleton 4
+            ]
+        , singleton 2
+        , singleton 6
+        ]
+    |> depthFirstFold (\s a l c -> Continue (l :: s)) []
+    --> [6, 2, 4, 5, 3, 1]
+
+(The list is reversed here due to how `::` works)
+
+-}
+depthFirstFold :
+    (s -> List a -> a -> List (Tree a) -> Step s)
+    -> s
+    -> Tree a
+    -> s
+depthFirstFold f acc t =
+    depthFirstFoldHelp f acc [] [ t ] []
+
+
+depthFirstFoldHelp : (s -> List a -> a -> List (Tree a) -> Step s) -> s -> List a -> List (Tree a) -> List ( List a, List (Tree a) ) -> s
+depthFirstFoldHelp f acc parents trees nextSets =
+    case trees of
+        [] ->
+            case nextSets of
+                ( p, set ) :: sets ->
+                    depthFirstFoldHelp f acc p set sets
+
+                [] ->
+                    acc
+
+        (Tree d ch) :: rest ->
+            case f acc parents d ch of
+                Continue a ->
+                    case ch of
+                        [] ->
+                            depthFirstFoldHelp f a parents rest nextSets
+
+                        xs ->
+                            depthFirstFoldHelp f a (d :: parents) xs (( parents, rest ) :: nextSets)
+
+                Stop a ->
+                    a

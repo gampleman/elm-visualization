@@ -4,6 +4,7 @@ import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer)
 import Hierarchy.Tidy
 import Hierarchy.Tree as Tree exposing (Tree(..))
+import HierarchyTests exposing (fuzzTree)
 import LineSegment2d exposing (LineSegment2d)
 import Point2d exposing (Point2d)
 import Test exposing (Test)
@@ -12,49 +13,45 @@ import Test.Html.Query exposing (children)
 
 suite =
     Test.describe "Aesthetic rules for trees:"
-        [ Test.fuzz (fuzzHierarchy 3 3) "Rule 1: No nodes should overlap" <|
+        [ Test.fuzz fuzzHierarchy "Rule 1: No nodes should overlap" <|
             \tree ->
                 tree
                     |> doLayout
                     |> expectNoOverlapNodes
-        , Test.fuzz (fuzzHierarchy 3 3) "Rule 2: No lines should cross" <|
+        , Test.fuzz fuzzHierarchy "Rule 2: No lines should cross" <|
             \tree ->
                 tree
                     |> doLayout
                     |> expectNoCrossedLinks
-        , Test.fuzz (fuzzHierarchy 3 3) "Rule 3: A node's children should stay on the same line" <|
+        , Test.fuzz fuzzHierarchy "Rule 3: A node's children should stay on the same line" <|
             \tree ->
                 tree
                     |> doLayout
                     |> expectAllChildrenToHaveSameY
-        , Test.fuzz (fuzzHierarchy 3 3) "Rule 6: Nodes are ordered. Drawings of nodes should have the same order" <|
+        , Test.fuzz fuzzHierarchy "Rule 6: Nodes are ordered. Drawings of nodes should have the same order" <|
             \tree ->
                 tree
                     |> doLayout
                     |> expectNodesToBeOrdered
+
+        -- sanity checks
+        , test1
+        , test2
+        , test3
         ]
 
 
-fuzzHierarchy : Int -> Int -> Fuzzer (Tree ( Int, Float, Float ))
-fuzzHierarchy depth branch =
-    if depth > 0 then
-        Fuzz.map4
-            (\label width height children ->
-                Tree.tree ( label, width, height ) children
-            )
-            Fuzz.int
-            (Fuzz.floatRange 1 10)
-            (Fuzz.floatRange 1 10)
-            (Fuzz.listOfLengthBetween 0 branch (fuzzHierarchy (depth - 1) branch))
-
-    else
-        Fuzz.map3
+fuzzHierarchy : Fuzzer (Tree ( Int, Float, Float ))
+fuzzHierarchy =
+    fuzzTree
+        (Fuzz.map3
             (\label width height ->
-                Tree.singleton ( label, width, height )
+                ( label, width, height )
             )
             Fuzz.int
             (Fuzz.floatRange 1 10)
             (Fuzz.floatRange 1 10)
+        )
 
 
 type alias FinishedLayout =
@@ -84,7 +81,7 @@ expectNoOverlapNodes lay =
                 + self.height
                 > other.y
     in
-    checkAll intersects (\head intersect -> "Expected nodes in \n\n" ++ formatTree lay ++ "\n\nnot to intersect, but found an interesction betweeen \n" ++ Debug.toString head ++ "\n and \n" ++ Debug.toString intersect) (Tree.flatten lay)
+    checkAll intersects (\head intersect -> "Expected nodes in \n\n" ++ formatTree lay ++ "\n\nnot to intersect, but found an interesction betweeen \n" ++ Debug.toString head ++ "\n and \n" ++ Debug.toString intersect) (Tree.toList lay)
 
 
 checkAll : (a -> a -> Bool) -> (a -> a -> String) -> List a -> Expectation
@@ -130,7 +127,7 @@ connected a b =
 expectAllChildrenToHaveSameY : FinishedLayout -> Expectation
 expectAllChildrenToHaveSameY tree =
     case
-        Tree.findBfs
+        Tree.find
             (\t ->
                 case Tree.children t of
                     [] ->
@@ -151,7 +148,7 @@ expectAllChildrenToHaveSameY tree =
 expectNodesToBeOrdered : FinishedLayout -> Expectation
 expectNodesToBeOrdered tree =
     case
-        Tree.findBfs
+        Tree.find
             (\t ->
                 case Tree.children t of
                     [] ->
@@ -187,8 +184,8 @@ formatTree =
     go 0
 
 
+test1 : Test
 test1 =
-    -- Test.only <|
     Test.test "Rule 1" <|
         \() ->
             Tree.tree ( 0, 1, 1 ) [ Tree.singleton ( 0, 1, 1 ), Tree.tree ( 0, 1, 1 ) [ Tree.singleton ( 0, 1, 1 ) ], Tree.singleton ( 0, 1, 1 ) ]
@@ -196,8 +193,8 @@ test1 =
                 |> expectNoOverlapNodes
 
 
+test2 : Test
 test2 =
-    -- Test.only <|
     Test.test "Rule 2" <|
         \() ->
             Tree.tree ( 0, 8, 7 )
@@ -212,8 +209,8 @@ test2 =
                 |> expectNoOverlapNodes
 
 
+test3 : Test
 test3 =
-    -- Test.only <|
     Test.test "Rule 1 case 3:" <|
         \() ->
             Tree.tree ( 0, 1, 1 ) [ Tree.tree ( 0, 1, 1 ) [ Tree.tree ( 0, 1, 10 ) [ Tree.singleton ( 0, 1, 1 ), Tree.singleton ( 0, 1, 1 ) ], Tree.tree ( 0, 1, 1 ) [ Tree.singleton ( 0, 1, 1 ) ], Tree.tree ( 0, 1, 10 ) [ Tree.singleton ( 0, 10, 1 ) ] ] ]
