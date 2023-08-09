@@ -2,6 +2,7 @@ module Hierarchy.TidyTests exposing (suite)
 
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer)
+import Hierarchy
 import Hierarchy.Tidy
 import Hierarchy.Tree as Tree exposing (Tree(..))
 import HierarchyTests exposing (fuzzTree)
@@ -55,7 +56,7 @@ fuzzHierarchy =
 
 
 type alias FinishedLayout =
-    Tree { height : Float, value : ( Int, Float, Float ), width : Float, x : Float, y : Float }
+    Tree { height : Float, node : ( Int, Float, Float ), width : Float, x : Float, y : Float }
 
 
 expectNoOverlapNodes : FinishedLayout -> Expectation
@@ -63,17 +64,11 @@ expectNoOverlapNodes lay =
     let
         intersects self other =
             self.x
-                - self.width
-                / 2
                 < other.x
                 + other.width
-                / 2
                 && self.x
                 + self.width
-                / 2
                 > other.x
-                - other.width
-                / 2
                 && self.y
                 < other.y
                 + other.height
@@ -172,7 +167,7 @@ expectNodesToBeOrdered tree =
 
 
 doLayout =
-    Hierarchy.Tidy.layout { width = \( _, w, _ ) -> w, height = \( _, _, h ) -> h, layered = False, parentChildMargin = 1, peerMargin = 1 }
+    Hierarchy.tidy [ Hierarchy.nodeSize (\( _, w, h ) -> ( w, h )), Hierarchy.parentChildMargin 1, Hierarchy.peerMargin 1 ]
 
 
 formatTree : FinishedLayout -> String

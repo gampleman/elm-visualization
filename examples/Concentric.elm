@@ -3,6 +3,7 @@ module Concentric exposing (main)
 {-| Having fun with arcs and animations.
 
 @category Art
+
 -}
 
 import Browser

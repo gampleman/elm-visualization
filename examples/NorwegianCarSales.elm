@@ -118,7 +118,6 @@ fromCalendarDate year month day =
     Time.Extra.partsToPosix Time.utc (Parts year month day 0 0 0 0)
 
 
-
 view : StackResult String -> Svg msg
 view ({ values, labels, extent } as model) =
     let
@@ -233,6 +232,7 @@ map2WithOrders fn aOrd bOrd aList bList =
     List.map2 (\( _, a ) ( _, b ) -> fn a b)
         (List.sortBy Tuple.first (List.map2 Tuple.pair aOrd aList))
         (List.sortBy Tuple.first (List.map2 Tuple.pair bOrd bList))
+
 
 main : Example.Program (StackResult String)
 main =

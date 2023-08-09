@@ -4,10 +4,11 @@ module Hierarchy.Tree exposing
     , length, depth
     , foldl, foldr
     , toList, leaves, links
-    , map, indexedMap, mapAccumulate, map2, indexedMap2, mapAccumulate2, andMap
+    , map, indexedMap, mapAccumulate, map2, indexedMap2, mapAccumulate2, andMap, sumUp
     , find
+    , sortBy, sortWith
     , unfold, stratify, StratifyError(..), stratifyWithPath
-    , sortWith, restructure
+    , restructure
     , Step(..), breadthFirstFold, depthFirstFold, depthFirstTraversal
     )
 
@@ -62,7 +63,7 @@ children of their own, and so on.
 
 # Mapping and traversing
 
-@docs map, indexedMap, mapAccumulate, map2, indexedMap2, mapAccumulate2, andMap
+@docs map, indexedMap, mapAccumulate, map2, indexedMap2, mapAccumulate2, andMap, sumUp
 
 
 # Search
@@ -70,14 +71,19 @@ children of their own, and so on.
 @docs find
 
 
+# Sorting
+
+@docs sortBy, sortWith
+
+
 # Creating trees from other data
 
 @docs unfold, stratify, StratifyError, stratifyWithPath
 
 
-# Fancy stuff
+# Creating other data from trees
 
-@docs sortWith, restructure
+@docs restructure
 
 
 # Advanced: Generic traversals
@@ -568,7 +574,10 @@ contains the path that was duplicated.
         |> stratifyWithPath { path = identity, createMissingNode = identity }
     --> Err [ "foo" ]
 
-The root of the tree is always represented by the empty list.
+The root of the tree is always represented by the empty list. However,
+if the empty list has only one child, than the result will have that
+node as the root. This can avoid a problem of creating a superflous wrapper
+node.
 
 -}
 stratifyWithPath : { path : a -> List comparable, createMissingNode : List comparable -> a } -> List a -> Result (List comparable) (Tree a)
@@ -639,6 +648,15 @@ stratifyWithPath { path, createMissingNode } nodes =
                     _ ->
                         -- can't happen
                         []
+            )
+        |> Result.map
+            (\t ->
+                case children t of
+                    [ x ] ->
+                        x
+
+                    _ ->
+                        t
             )
 
 
@@ -949,6 +967,74 @@ type alias Map2Acc a b c =
     }
 
 
+{-| Oftentimes trees that represent some hierarchical organization only
+have real values at the leaves of the tree, but synthetic values are
+valuable to derive at other levels. For instance in a tree representing
+a filesystem of a software project, only files have lines of code,
+directories don't. But to visualize and understand the project it makes
+sense to assign to each directory the total lines contained in all
+the files inside it.
+
+    tree 0
+        [ singleton 32
+        , tree 0
+            [ singleton 221
+            , singleton 44
+            ]
+        ]
+    |> sumUp identity (always List.sum)
+    --> tree 297
+    -->     [ singleton 32
+    -->     , tree 265
+    -->         [ singleton 221
+    -->         , singleton 44
+    -->         ]
+    -->     ]
+
+The first argument can be used to transform leaf nodes. For instance
+a more typically Elm representation would look like this:
+
+    tree Nothing
+        [ singleton (Just 32)
+        , tree Nothing
+            [ singleton (Just 221)
+            , singleton (Just 44)
+            ]
+        , tree (Just 111)
+            [ singleton Nothing
+            ]
+        ]
+    |> sumUp (Maybe.withDefault 0) (\l c -> Maybe.withDefault (List.sum c) l)
+    --> tree 408
+    -->     [ singleton 32
+    -->     , tree 265
+    -->         [ singleton 221
+    -->         , singleton 44
+    -->         ]
+    -->     , tree 111
+    -->        [ singleton 0
+    -->        ]
+    -->     ]
+
+-}
+sumUp : (a -> b) -> (a -> List b -> b) -> Tree a -> Tree b
+sumUp leaf branch t =
+    depthFirstTraversal defaultTopDown
+        (\s _ l c ->
+            ( s
+            , case c of
+                [] ->
+                    singleton (leaf l)
+
+                _ ->
+                    tree (branch l (List.map label c)) c
+            )
+        )
+        ()
+        t
+        |> Tuple.second
+
+
 {-| Counts the number of levels in a tree (where the root is 0).
 
     depth (tree 2 [ tree 1 [tree 0 []]])
@@ -995,6 +1081,13 @@ sortWith : (List a -> Tree a -> Tree a -> Order) -> Tree a -> Tree a
 sortWith compareFn t =
     depthFirstTraversal defaultTopDown (\s a l c -> ( s, tree l (List.sortWith (compareFn a) c) )) () t
         |> Tuple.second
+
+
+{-| Sorts all children of each node based on the accessor function.
+-}
+sortBy : (Tree a -> comparable) -> Tree a -> Tree a
+sortBy fn t =
+    sortWith (\_ a b -> compare (fn a) (fn b)) t
 
 
 {-| Finds a subtree whose label matches the predicate.

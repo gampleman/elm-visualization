@@ -6,7 +6,7 @@ import SubPath exposing (SubPath)
 
 bumpXCurve : List ( Float, Float ) -> SubPath
 bumpXCurve points =
-    case Debug.log "points" points of
+    case points of
         [] ->
             SubPath.empty
 
@@ -26,7 +26,6 @@ bumpXCurve points =
                     |> List.reverse
                     |> cubicCurveTo
                 ]
-                |> Debug.log "result"
 
 
 bumpYCurve : List ( Float, Float ) -> SubPath

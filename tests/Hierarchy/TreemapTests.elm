@@ -2,8 +2,8 @@ module Hierarchy.TreemapTests exposing (..)
 
 import Expect
 import Fuzz
+import Hierarchy
 import Hierarchy.Tree as Tree
-import Hierarchy.Treemap
 import HierarchyTests exposing (fuzzTree)
 import Html exposing (output)
 import Test exposing (Test)
@@ -18,7 +18,8 @@ fuzzSettings =
             , paddingTop = pt
             , paddingBottom = pb
             , tile = t
-            , dimensions = ( w, h )
+            , width = w
+            , height = h
             }
         )
         (Fuzz.floatAtLeast 0)
@@ -74,28 +75,23 @@ suite =
                 let
                     layout =
                         t
-                            |> Hierarchy.Treemap.layout
-                                { paddingInner = always 0
-                                , paddingLeft = always 0
-                                , paddingRight = always 0
-                                , paddingTop = always 0
-                                , paddingBottom = always 0
-                                , tile =
+                            |> Hierarchy.treemap
+                                [ Hierarchy.tile <|
                                     case set.tile of
                                         Squarify ->
-                                            Hierarchy.Treemap.squarify
+                                            Hierarchy.squarify
 
                                         SlideDice ->
-                                            Hierarchy.Treemap.sliceDice
+                                            Hierarchy.sliceDice
 
                                         Slice ->
-                                            Hierarchy.Treemap.slice
+                                            Hierarchy.slice
 
                                         Dice ->
-                                            Hierarchy.Treemap.dice
-                                , value = toFloat
-                                , dimensions = set.dimensions
-                                }
+                                            Hierarchy.dice
+                                , Hierarchy.size set.width set.height
+                                ]
+                                toFloat
                             |> Tree.map (\l -> l.width * l.height)
 
                     total =
@@ -119,16 +115,7 @@ suite =
         , Test.test "simple tree" <|
             \() ->
                 simple
-                    |> Hierarchy.Treemap.layout
-                        { paddingInner = always 0
-                        , paddingLeft = always 0
-                        , paddingRight = always 0
-                        , paddingTop = always 0
-                        , paddingBottom = always 0
-                        , tile = Hierarchy.Treemap.squarify
-                        , value = identity
-                        , dimensions = ( 6, 4 )
-                        }
+                    |> Hierarchy.treemap [ Hierarchy.size 6 4 ] identity
                     |> Tree.toList
                     |> List.map toCoords
                     |> Expect.equal
@@ -141,19 +128,26 @@ suite =
                         , { x0 = 3.0, x1 = 5.4, y0 = 3.17, y1 = 4.0 }
                         , { x0 = 5.4, x1 = 6.0, y0 = 2.33, y1 = 4.0 }
                         ]
+        , Test.test "simple tree observes inner padding" <|
+            \() ->
+                simple
+                    |> Hierarchy.treemap [ Hierarchy.paddingInner (always 0.5), Hierarchy.size 6 4 ] identity
+                    |> Tree.toList
+                    |> List.map toCoords
+                    |> Expect.equal
+                        [ { x0 = 0.0, x1 = 6.0, y0 = 0.0, y1 = 4.0 }
+                        , { x0 = 0.0, x1 = 2.75, y0 = 0.0, y1 = 1.75 }
+                        , { x0 = 0.0, x1 = 2.75, y0 = 2.25, y1 = 4.0 }
+                        , { x0 = 3.25, x1 = 4.61, y0 = 0.0, y1 = 2.13 }
+                        , { x0 = 5.11, x1 = 6.0, y0 = 0.0, y1 = 2.13 }
+                        , { x0 = 3.25, x1 = 5.35, y0 = 2.63, y1 = 3.06 }
+                        , { x0 = 3.25, x1 = 5.35, y0 = 3.56, y1 = 4.0 }
+                        , { x0 = 5.85, x1 = 6.0, y0 = 2.63, y1 = 4.0 }
+                        ]
         , Test.test "simple tree with slice" <|
             \() ->
                 simple
-                    |> Hierarchy.Treemap.layout
-                        { paddingInner = always 0
-                        , paddingLeft = always 0
-                        , paddingRight = always 0
-                        , paddingTop = always 0
-                        , paddingBottom = always 0
-                        , tile = Hierarchy.Treemap.slice
-                        , value = identity
-                        , dimensions = ( 6, 4 )
-                        }
+                    |> Hierarchy.treemap [ Hierarchy.tile Hierarchy.slice, Hierarchy.size 6 4 ] identity
                     |> Tree.toList
                     |> List.map toCoords
                     |> Expect.equal

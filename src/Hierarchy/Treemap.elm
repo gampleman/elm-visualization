@@ -20,7 +20,7 @@ layout :
     , paddingBottom : a -> Float
     , tile : Int -> BBox -> Float -> List Float -> List BBox
     , value : a -> Float
-    , dimensions : ( Float, Float )
+    , size : ( Float, Float )
     }
     -> Tree a
     -> Tree { x : Float, y : Float, width : Float, height : Float, value : Float, node : a }
@@ -30,8 +30,8 @@ layout opts =
             { bbox =
                 { x0 = 0
                 , y0 = 0
-                , x1 = Tuple.first opts.dimensions
-                , y1 = Tuple.second opts.dimensions
+                , x1 = Tuple.first opts.size
+                , y1 = Tuple.second opts.size
                 }
             , value = opts.value node
             , node = node
@@ -68,13 +68,13 @@ layout opts =
                         l.node
 
                     childPadding =
-                        opts.paddingInner node
+                        opts.paddingInner node / 2
 
                     childBBox0 =
                         { x0 = bbox2.x0 + opts.paddingLeft node - childPadding
                         , y0 = bbox2.y0 + opts.paddingTop node - childPadding
-                        , x1 = bbox2.x1 - opts.paddingRight node - childPadding
-                        , y1 = bbox2.y1 - opts.paddingBottom node - childPadding
+                        , x1 = bbox2.x1 - (opts.paddingRight node - childPadding)
+                        , y1 = bbox2.y1 - (opts.paddingBottom node - childPadding)
                         }
 
                     childBBox1 =

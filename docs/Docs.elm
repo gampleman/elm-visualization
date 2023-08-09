@@ -10,7 +10,7 @@ import Html.Attributes
 import Html.Styled exposing (Attribute, Html, a, aside, code, div, h1, h2, h3, header, iframe, img, li, main_, nav, p, section, source, span, styled, text, ul)
 import Html.Styled.Attributes as A exposing (alt, class, css, href, rel, src, type_)
 import Json.Decode as Decode
-import Markdown
+import MyMarkdown
 
 
 projectName : String
@@ -21,6 +21,10 @@ projectName =
 authorName : String
 authorName =
     "gampleman"
+
+baseUrl : String 
+baseUrl =
+    "https://elm-visualization.netlify.app/"
 
 
 type alias Example =
@@ -76,7 +80,18 @@ indexView examples =
 showView : Example -> List Example -> Document
 showView example examples =
     { title = projectName ++ " " ++ example.basename ++ " Example"
-    , meta = [ ( "viewport", "width=device-width, initial-scale=1.0" ) ]
+    , meta = [ ( "viewport", "width=device-width, initial-scale=1.0" )
+    , ("twitter:card", "summary_large_image")
+    , ("twitter:description", String.left 200 (MyMarkdown.strip example.description))
+    , ("og:description", String.left 200 (MyMarkdown.strip example.description))
+    , ("twitter:title", displayName example ++ " " ++ projectName ++ " example"  ) 
+    , ("og:title", displayName example ++ " – " ++ projectName  )
+    , ("twitter:image", baseUrl ++ example.basename ++ "/preview@3x.png")
+    , ("og:image", baseUrl ++ example.basename ++ "/preview@3x.png")
+     , ("twitter:image:alt", "A rendering of the chart")
+    , ("og:image:akt", "A rendering of the chart")
+
+    ]
     , body =
         [ Html.Styled.toUnstyled <|
             div
@@ -134,13 +149,7 @@ humanize =
 -}
 markdown : String -> Html a
 markdown =
-    Markdown.toHtmlWith
-        { githubFlavored = Just { tables = True, breaks = False }
-        , defaultHighlighting = Nothing
-        , sanitize = False
-        , smartypants = True
-        }
-        []
+    MyMarkdown.render
         >> Html.Styled.fromUnstyled
 
 
@@ -385,8 +394,8 @@ headerView currentExample =
                                 ]
                             ]
                             [ -- You may want to include some project links here:
-                              a [ css [ marginRight (px 20), linkStyle ], href ("https://package.elm-lang.org/packages/" ++ authorName ++ "/" ++ projectName ++ "/latest/") ] [ text "Docs" ]
-                            , a [ css [ marginRight (px 20), linkStyle ], href ("https://github.com/" ++ authorName ++ "/" ++ projectName) ] [ text "GitHub" ]
+                              a [ css [ marginRight (px 20), linkStyle, color (hex "#fff")], href ("https://package.elm-lang.org/packages/" ++ authorName ++ "/" ++ projectName ++ "/latest/") ] [ text "Docs" ]
+                            , a [ css [ marginRight (px 20), linkStyle, color (hex "#fff") ], href ("https://github.com/" ++ authorName ++ "/" ++ projectName) ] [ text "GitHub" ]
                             ]
                         ]
                )
@@ -399,7 +408,7 @@ mainView examples =
         categorizedExample =
             byCategory examples
     in
-    main_ [ css [ marginBottom (px 40) ] ] <|
+    main_ [ css [ paddingBottom (px 80) ] ] <|
         List.map
             (\( category, description ) ->
                 section []
@@ -433,6 +442,7 @@ mainView examples =
                                 , padding zero
                                 ]
                             ]
+                    , div [ css [  property "clear" "both" ]] []
                     ]
             )
             categories

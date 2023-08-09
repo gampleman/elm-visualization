@@ -155,10 +155,14 @@ traverseBFSWithDepth fn init lay =
     help init [ ( 0, 0 ) ] [] lay
 
 
-initialize : (a -> Float) -> (a -> Float) -> Tree a -> TidyLayout a
-initialize width height tree =
+initialize : (a -> ( Float, Float )) -> Tree a -> TidyLayout a
+initialize nodeSize tree =
     Tree.depthFirstFold
         (\lst _ node children ->
+            let
+                ( w, h ) =
+                    nodeSize (Tuple.second node)
+            in
             Tree.Continue
                 ({ threadLeft = -1
                  , threadRight = -1
@@ -175,8 +179,8 @@ initialize width height tree =
                  , y = 0
                  , relativeX = 0
                  , relativeY = 0
-                 , width = width (Tuple.second node)
-                 , height = height (Tuple.second node)
+                 , width = w
+                 , height = h
 
                  -- TODO: there is an interesting optimization possible here:
                  -- TODO: if the IDs were assigned in a BFS sort of way, then
@@ -516,16 +520,20 @@ addChildSpacing children layout_ =
 
 
 layout :
-    { width : a -> Float, height : a -> Float, layered : Bool, parentChildMargin : Float, peerMargin : Float }
+    { nodeSize : a -> ( Float, Float )
+    , layered : Bool
+    , parentChildMargin : Float
+    , peerMargin : Float
+    }
     -> Tree a
-    -> Tree { height : Float, value : a, width : Float, x : Float, y : Float }
+    -> Tree { height : Float, node : a, width : Float, x : Float, y : Float }
 layout getters tree =
     let
         defaultValue =
             Tree.label tree
 
         init =
-            initialize getters.width getters.height
+            initialize getters.nodeSize
 
         setYRecursive =
             if getters.layered then
@@ -625,11 +633,11 @@ layout getters tree =
                 Just { width, height, y, modifierToSubtree, relativeX, value, children } ->
                     Array.map (\a -> secondWalk (modSum + modifierToSubtree) a (addChildSpacing children lay)) children
                         |> Array.toList
-                        |> Tree.tree { width = width, height = height, y = y, x = relativeX + modSum + modifierToSubtree, value = value }
+                        |> Tree.tree { width = width, height = height, y = y, x = relativeX + modSum + modifierToSubtree - width / 2, node = value }
 
                 Nothing ->
                     -- can't happen
-                    Tree.singleton { width = 0 / 0, height = 0 / 0, x = 0 / 0, y = 0 / 0, value = defaultValue }
+                    Tree.singleton { width = 0 / 0, height = 0 / 0, x = 0 / 0, y = 0 / 0, node = defaultValue }
     in
     tree
         |> init
