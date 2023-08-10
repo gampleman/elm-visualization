@@ -30,6 +30,7 @@ h : Float
 h =
     504
 
+
 padding : Float
 padding =
     30
@@ -73,8 +74,11 @@ layedOut =
                 }
             )
 
-maxBBoxes : { x : Float, y : Float, width : Float, height : Float } ->
- { x : Float, y : Float, width : Float, height : Float } -> { x : Float, y : Float, width : Float, height : Float }
+
+maxBBoxes :
+    { x : Float, y : Float, width : Float, height : Float }
+    -> { x : Float, y : Float, width : Float, height : Float }
+    -> { x : Float, y : Float, width : Float, height : Float }
 maxBBoxes a b =
     let
         x =
@@ -88,8 +92,6 @@ maxBBoxes a b =
     , width = max (a.x + a.width) (b.x + b.width) - x
     , height = max (a.y + a.height) (b.y + b.height) - y
     }
-
-
 
 
 type alias Datum =
@@ -106,7 +108,8 @@ type Msg
     = ZoomMsg Zoom.OnZoom
     | Click Datum
 
-main : Program ()  Zoom Msg
+
+main : Program () Zoom Msg
 main =
     Browser.element
         { init =
@@ -136,7 +139,7 @@ performZoom t =
             ( t.x + t.width / 2, t.y + t.height / 2 )
 
         xScale =
-            (w - 2 * padding) / (Debug.log "bbox" t.bbox).width
+            (w - 2 * padding) / t.bbox.width
 
         yScale =
             (h - 2 * padding) / t.bbox.height
@@ -157,7 +160,8 @@ performZoom t =
             else
                 { x = padding + tx, y = h / 2 - scale * t.bbox.height / 2 + ty }
     in
-    Zoom.setTransform (Zoom.animatedAround p) (Debug.log "z" { scale = scale, translate = translate })
+    Zoom.setTransform (Zoom.animatedAround p) { scale = scale, translate = translate }
+
 
 view : Zoom -> Svg Msg
 view zoom =
@@ -281,6 +285,7 @@ label item =
 type Kind
     = File
     | Directory
+
 
 tree : Tree { name : String, kind : Kind, size : Float }
 tree =

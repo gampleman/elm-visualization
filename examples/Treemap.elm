@@ -17,13 +17,16 @@ import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (ClipPath(..), Paint(..), Transform(..), em)
 
+
 w : Float
 w =
     990
 
+
 h : Float
 h =
     440
+
 
 colorScale : OrdinalScale String Color
 colorScale =
@@ -37,7 +40,7 @@ type TilingMethod
     | Dice
 
 
-tilingMethods : List (String, TilingMethod)
+tilingMethods : List ( String, TilingMethod )
 tilingMethods =
     [ ( "squarify", Squarify )
     , ( "sliceDice", SliceDice )
@@ -51,6 +54,7 @@ main =
     tilingMethods
         |> Example.tabbed "Layout: "
         |> Example.application view
+
 
 view : TilingMethod -> Html msg
 view tilingMethod =
@@ -75,6 +79,7 @@ toAttr tm =
 
         Dice ->
             Hierarchy.tile Hierarchy.dice
+
 
 treemap : TilingMethod -> List (Svg msg)
 treemap tilingMethod =
@@ -118,6 +123,7 @@ treemap tilingMethod =
                     ]
             )
 
+
 tree : Tree { name : String, size : Float }
 tree =
     Tree.stratifyWithPath
@@ -130,6 +136,7 @@ tree =
             (\node children ->
                 { node | size = List.sum (List.map .size children) }
             )
+
 
 data : List { name : String, size : Float }
 data =
