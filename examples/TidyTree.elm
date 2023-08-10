@@ -1,102 +1,288 @@
 module TidyTree exposing (main)
 
-{-| @category Basics
+{-| @category Advanced
 -}
 
+import Browser
 import Color
+import Curve
 import Hierarchy
 import Hierarchy.Tidy
-import Hierarchy.Tree as Tree
+import Hierarchy.Tree as Tree exposing (Tree)
+import List.Extra
 import Path
 import Shape
 import TypedSvg exposing (g, rect, svg)
-import TypedSvg.Attributes exposing (class, dy, fill, stroke, textAnchor, transform, viewBox)
+import TypedSvg.Attributes exposing (class, dy, fill, href, id, pointerEvents, stroke, style, textAnchor, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (fontSize, height, width, x, y)
 import TypedSvg.Core exposing (Svg)
-import TypedSvg.Types exposing (AnchorAlignment(..), Paint(..), Transform(..), em)
+import TypedSvg.Events
+import TypedSvg.Types exposing (AnchorAlignment(..), ClipPath(..), Paint(..), Transform(..), em)
+import Zoom exposing (Zoom)
 
 
+w : Float
 w =
     990
 
 
+h : Float
 h =
-    440
+    504
 
-
+padding : Float
 padding =
     30
 
 
-
--- tree =
---     Tree.tree ( 0, (80, 70) )
---         [ Tree.tree ( 1, (30, 90) )
---             [ Tree.tree ( 10, (30, 80) ) []
---             , Tree.tree ( 10, (50, 50) ) []
---             , Tree.tree ( 10, (60, 80) ) []
---             ]
---         , Tree.tree ( 3, (10, 10) ) [ Tree.tree ( 10, (50, 50) ) [] ]
---         ]
-
-
-phi =
-    (1 + sqrt 5) / 2
-
-
-tupleSwap ( a, b ) =
-    ( b, a )
-
-
+layedOut : Tree Datum
 layedOut =
     Hierarchy.tidy
-        [ Hierarchy.nodeSize (\{ size } -> ( sqrt size * phi, sqrt size / phi ))
+        [ Hierarchy.nodeSize
+            (\{ kind, size } ->
+                case kind of
+                    File ->
+                        ( sqrt size / 1.1, sqrt size * 1.1 )
+
+                    Directory ->
+                        ( sqrt size * 1.05, sqrt size / 1.05 )
+            )
         , Hierarchy.parentChildMargin 900
         , Hierarchy.peerMargin 60
         , Hierarchy.size (w - padding * 2) (h - padding * 2)
-
-        --, Hierarchy.layered
         , Hierarchy.preserveAspectRatio
         ]
         tree
+        |> Tree.sumUp
+            (\n ->
+                { x = n.x
+                , y = n.y
+                , width = n.width
+                , height = n.height
+                , node = n.node
+                , bbox = { x = n.x, y = n.y, width = n.width, height = n.height }
+                }
+            )
+            (\n c ->
+                { x = n.x
+                , y = n.y
+                , width = n.width
+                , height = n.height
+                , node = n.node
+                , bbox = List.foldl (\item t -> maxBBoxes item.bbox t) { x = n.x, y = n.y, width = n.width, height = n.height } c
+                }
+            )
+
+maxBBoxes : { x : Float, y : Float, width : Float, height : Float } ->
+ { x : Float, y : Float, width : Float, height : Float } -> { x : Float, y : Float, width : Float, height : Float }
+maxBBoxes a b =
+    let
+        x =
+            min a.x b.x
+
+        y =
+            min a.y b.y
+    in
+    { x = x
+    , y = y
+    , width = max (a.x + a.width) (b.x + b.width) - x
+    , height = max (a.y + a.height) (b.y + b.height) - y
+    }
 
 
 
---|> Tree.map transpose
+
+type alias Datum =
+    { x : Float
+    , y : Float
+    , width : Float
+    , height : Float
+    , node : { size : Float, name : String, kind : Kind }
+    , bbox : { x : Float, y : Float, width : Float, height : Float }
+    }
 
 
-transpose x =
-    { x | width = x.height, height = x.width, x = x.y, y = x.x }
+type Msg
+    = ZoomMsg Zoom.OnZoom
+    | Click Datum
 
-
+main : Program ()  Zoom Msg
 main =
+    Browser.element
+        { init =
+            \() ->
+                ( Zoom.init { width = w, height = h }
+                    |> Zoom.scaleExtent 1 100
+                    |> Zoom.translateExtent ( ( 0, 0 ), ( w, h ) )
+                , Cmd.none
+                )
+        , update =
+            \msg model ->
+                case msg of
+                    ZoomMsg m ->
+                        ( Zoom.update m model, Cmd.none )
+
+                    Click t ->
+                        ( performZoom t model, Cmd.none )
+        , subscriptions = \model -> Zoom.subscriptions model ZoomMsg
+        , view = view
+        }
+
+
+performZoom : Datum -> Zoom -> Zoom
+performZoom t =
+    let
+        p =
+            ( t.x + t.width / 2, t.y + t.height / 2 )
+
+        xScale =
+            (w - 2 * padding) / (Debug.log "bbox" t.bbox).width
+
+        yScale =
+            (h - 2 * padding) / t.bbox.height
+
+        scale =
+            min xScale yScale
+
+        tx =
+            (padding + t.bbox.x) * -scale
+
+        ty =
+            (padding + t.bbox.y) * -scale
+
+        translate =
+            if xScale > yScale then
+                { x = w / 2 - scale * t.bbox.width / 2 + tx, y = padding + ty }
+
+            else
+                { x = padding + tx, y = h / 2 - scale * t.bbox.height / 2 + ty }
+    in
+    Zoom.setTransform (Zoom.animatedAround p) (Debug.log "z" { scale = scale, translate = translate })
+
+view : Zoom -> Svg Msg
+view zoom =
     svg [ viewBox 0 0 w h ]
-        [ g [ transform [ Translate padding padding ] ]
-            [ layedOut
-                |> Tree.toList
-                |> List.concatMap
-                    (\item ->
-                        [ --rect [ x item.x, y item.y, width item.width, height item.height, fill PaintNone, stroke (Paint Color.black) ] [ ]
-                          --,
-                          TypedSvg.text_
-                            [ x (item.x + item.width / 2)
-                            , y (item.y + item.height / 2)
-                            , dy (em 0.3)
-                            , textAnchor AnchorMiddle
-                            , fontSize (item.node.size / 40000)
-                            ]
-                            [ TypedSvg.Core.text (String.split "." item.node.name |> List.reverse |> List.head |> Maybe.withDefault "") ]
-                        ]
-                    )
-                |> g []
-            , layedOut
-                |> Tree.links
-                |> List.map (\( from, to ) -> Shape.bumpYCurve [ ( from.x + from.width / 2, from.y + from.height ), ( to.x + to.width / 2, to.y ) ])
-                |> (\p -> Path.element p [ fill PaintNone, stroke (Paint (Color.rgb 0.3 0.3 0.3)) ])
+        [ rect
+            (width w
+                :: height h
+                :: fill (Paint (Color.rgba 0 0 0 0))
+                :: Zoom.events zoom ZoomMsg
+            )
+            []
+        , g [ Zoom.transform zoom ]
+            [ g [ transform [ Translate padding padding ] ]
+                [ layedOut
+                    |> Tree.links
+                    |> List.map (\( from, to ) -> Shape.bumpYCurve [ ( from.x + from.width / 2, from.y + from.height ), ( to.x + to.width / 2, to.y + to.height * 0.1 ) ])
+                    |> (\p -> Path.element p [ fill PaintNone, stroke (Paint (Color.rgb 0.3 0.3 0.3)), style "vector-effect: non-scaling-stroke", pointerEvents "none" ])
+                , layedOut
+                    |> Tree.toList
+                    |> List.map label
+                    |> g []
+                ]
             ]
         ]
 
 
+label : Datum -> Svg Msg
+label item =
+    case item.node.kind of
+        File ->
+            let
+                corner =
+                    min item.width item.height * 0.2
+            in
+            g [ transform [ Translate item.x item.y ] ]
+                [ Path.element
+                    [ Curve.linearClosed
+                        [ ( 0, item.height )
+                        , ( 0, 0 )
+                        , ( item.width - corner, 0 )
+                        , ( item.width, corner )
+                        , ( item.width, item.height )
+                        ]
+                    , Curve.linear
+                        [ ( item.width - corner, 0 )
+                        , ( item.width - corner, corner )
+                        , ( item.width, corner )
+                        ]
+                    ]
+                    [ fill (Paint (Color.rgb 1 1 0.8))
+                    , stroke (Paint Color.black)
+                    , style "vector-effect: non-scaling-stroke"
+                    , id ("path-" ++ item.node.name)
+                    ]
+                , TypedSvg.title [] [ TypedSvg.Core.text (item.node.name ++ " - " ++ String.fromFloat item.node.size ++ " loc") ]
+                , TypedSvg.clipPath [ id ("clip-" ++ item.node.name) ]
+                    [ TypedSvg.use [ href ("#path-" ++ item.node.name) ] []
+                    ]
+                , item.node.name
+                    |> String.split "."
+                    |> List.reverse
+                    |> List.head
+                    |> Maybe.withDefault item.node.name
+                    |> String.foldl
+                        (\c ( word, soFar ) ->
+                            if Char.isUpper c then
+                                ( [ c ]
+                                , case word of
+                                    [] ->
+                                        soFar
+
+                                    _ ->
+                                        String.fromList (List.reverse word) :: soFar
+                                )
+
+                            else
+                                ( c :: word, soFar )
+                        )
+                        ( [], [] )
+                    |> (\( word, soFar ) -> String.fromList (List.reverse word) :: soFar)
+                    |> List.reverse
+                    |> List.indexedMap (\i st -> TypedSvg.tspan [ x (item.width * 0.05), TypedSvg.Attributes.y (em (2 + toFloat i * 0.9)) ] [ TypedSvg.Core.text st ])
+                    |> TypedSvg.text_
+                        [ fontSize (sqrt item.node.size / 130)
+                        , pointerEvents "none"
+                        , TypedSvg.Attributes.clipPath (ClipPathFunc ("url(#clip-" ++ item.node.name ++ ")"))
+                        ]
+                ]
+
+        Directory ->
+            g []
+                [ Path.element
+                    [ Curve.linearClosed
+                        [ ( item.x, item.y + item.height )
+                        , ( item.x, item.y + item.height * 0.1 )
+                        , ( item.x + item.width * 0.05, item.y )
+                        , ( item.x + item.width * 0.4, item.y )
+                        , ( item.x + item.width * 0.45, item.y + item.height * 0.1 )
+                        , ( item.x + item.width, item.y + item.height * 0.1 )
+                        , ( item.x + item.width, item.y + item.height )
+                        ]
+                    ]
+                    [ fill (Paint (Color.rgb 0.8 0.9 1))
+                    , stroke (Paint Color.black)
+                    , style "vector-effect: non-scaling-stroke"
+                    , TypedSvg.Events.onClick (Click item)
+                    ]
+                , TypedSvg.title [] [ TypedSvg.Core.text (item.node.name ++ " - " ++ String.fromFloat item.node.size ++ " loc") ]
+                , TypedSvg.text_
+                    [ textAnchor AnchorMiddle
+                    , fontSize (sqrt item.node.size / 110)
+                    , pointerEvents "none"
+                    , x (item.x + item.width / 2)
+                    , y (item.y + item.height / 2)
+                    , dy (em 0.3)
+                    ]
+                    [ TypedSvg.Core.text (String.split "." item.node.name |> List.Extra.last |> Maybe.withDefault "") ]
+                ]
+
+
+type Kind
+    = File
+    | Directory
+
+tree : Tree { name : String, kind : Kind, size : Float }
 tree =
     Tree.stratifyWithPath
         { path = \item -> String.split "." item.name
@@ -104,16 +290,14 @@ tree =
         }
         data
         |> Result.withDefault (Tree.singleton { name = "flare", size = 0 })
-        |> Tree.children
-        |> List.head
-        |> Maybe.withDefault (Tree.singleton { name = "flare", size = 0 })
-        |> Tree.sumUp identity
+        |> Tree.sumUp (\n -> { name = n.name, size = n.size, kind = File })
             (\node children ->
-                { node | size = List.sum (List.map .size children) }
+                { name = node.name, size = List.sum (List.map .size children), kind = Directory }
             )
         |> Tree.sortBy (Tree.label >> .name)
 
 
+data : List { name : String, size : Float }
 data =
     [ { name = "flare.analytics.cluster.AgglomerativeCluster", size = 3938 }
     , { name = "flare.analytics.cluster.CommunityStructure", size = 3812 }

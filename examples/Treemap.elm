@@ -3,13 +3,13 @@ module Treemap exposing (main)
 {-| @category Basics
 -}
 
-import Color
+import Color exposing (Color)
 import Example
 import Hierarchy
 import Hierarchy.Tree as Tree exposing (Tree(..))
-import Html
+import Html exposing (Html)
 import List.Extra
-import Scale
+import Scale exposing (OrdinalScale)
 import Scale.Color
 import TypedSvg exposing (g, rect, svg)
 import TypedSvg.Attributes exposing (class, fill, href, id, stroke, transform, viewBox)
@@ -17,15 +17,15 @@ import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (ClipPath(..), Paint(..), Transform(..), em)
 
-
+w : Float
 w =
     990
 
-
+h : Float
 h =
     440
 
-
+colorScale : OrdinalScale String Color
 colorScale =
     Scale.ordinal Scale.Color.tableau10 (tree |> Tree.children |> List.map (Tree.label >> .name))
 
@@ -37,6 +37,7 @@ type TilingMethod
     | Dice
 
 
+tilingMethods : List (String, TilingMethod)
 tilingMethods =
     [ ( "squarify", Squarify )
     , ( "sliceDice", SliceDice )
@@ -51,7 +52,7 @@ main =
         |> Example.tabbed "Layout: "
         |> Example.application view
 
-
+view : TilingMethod -> Html msg
 view tilingMethod =
     Html.div []
         [ ---legend ,
@@ -75,7 +76,7 @@ toAttr tm =
         Dice ->
             Hierarchy.tile Hierarchy.dice
 
-
+treemap : TilingMethod -> List (Svg msg)
 treemap tilingMethod =
     tree
         |> Tree.sortWith (\_ a b -> compare (Tree.label b).size (Tree.label a).size)
@@ -117,7 +118,7 @@ treemap tilingMethod =
                     ]
             )
 
-
+tree : Tree { name : String, size : Float }
 tree =
     Tree.stratifyWithPath
         { path = \item -> String.split "." item.name
@@ -130,7 +131,7 @@ tree =
                 { node | size = List.sum (List.map .size children) }
             )
 
-
+data : List { name : String, size : Float }
 data =
     [ { name = "flare", size = 0 }
     , { name = "flare.analytics", size = 0 }

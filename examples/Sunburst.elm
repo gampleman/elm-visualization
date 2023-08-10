@@ -1,7 +1,7 @@
 module Sunburst exposing (main)
 
 {-| We can use Hierarchy to visualize data that is not naturally in a tree like format.
-In this example the data is a list of sequences of page visits users have made on 
+In this example the data is a list of sequences of page visits users have made on
 a website and looks like this:
 
     account-account-account-account-account-account,22781
@@ -10,8 +10,8 @@ a website and looks like this:
     ...
 
 We turn this into a tree-like data structure by making the parent of each item
-its prefix (so the parent of `account-account-account-account-account-home` is 
-`account-account-account-account-account`), then aggregating the counts up the 
+its prefix (so the parent of `account-account-account-account-account-home` is
+`account-account-account-account-account`), then aggregating the counts up the
 tree.
 
 To make this visualization performant and sensible, the sequences are limited
@@ -20,7 +20,7 @@ an `other` category. We distinguish truncated and complete sequences by adding
 the `end` token to a complete sequence (the `end` can be understood as the user
 leaving the website).
 
-For serious deployment, a server could provide additional data combined with 
+For serious deployment, a server could provide additional data combined with
 zooming in on subsets interactively.
 
 Based on work by Kerry Roden (under Apache 2 License).
@@ -28,6 +28,7 @@ Based on work by Kerry Roden (under Apache 2 License).
 @requires data/visit-sequences.csv
 @category Advanced
 @delay 1
+
 -}
 
 import Axis
@@ -35,6 +36,7 @@ import Browser
 import Browser.Events
 import Color exposing (Color)
 import Csv.Decode as Csv
+import Curve
 import DateFormat
 import Dict exposing (Dict)
 import Example
@@ -51,19 +53,21 @@ import Scale.Color
 import Set
 import Shape
 import Statistics
+import Svg.Lazy
 import Time
 import Transition exposing (Transition)
 import TypedSvg exposing (g, rect, svg, text_, tspan)
 import TypedSvg.Attributes exposing (class, dy, fill, fillOpacity, fontWeight, stroke, style, textAnchor, transform, viewBox)
-import TypedSvg.Attributes.InPx exposing (height, width, x, y,  strokeWidth, rx)
+import TypedSvg.Attributes.InPx exposing (height, rx, strokeWidth, width, x, y)
 import TypedSvg.Core exposing (Attribute, Svg, text)
-import TypedSvg.Types exposing (AnchorAlignment(..), FontWeight(..), Opacity(..), Paint(..), Transform(..), em)
 import TypedSvg.Events
-import Svg.Lazy
-import Curve
+import TypedSvg.Types exposing (AnchorAlignment(..), FontWeight(..), Opacity(..), Paint(..), Transform(..), em)
+
 
 
 -- Constants
+
+
 w : Float
 w =
     990
@@ -73,33 +77,54 @@ h : Float
 h =
     504
 
+
 radius : Float
 radius =
     min w h / 2
 
+
 spacing : Float
-spacing = 50
+spacing =
+    50
+
 
 breadCrumbHeight : Float
-breadCrumbHeight = 40
+breadCrumbHeight =
+    40
+
 
 breadCrumbWidth : Float
-breadCrumbWidth = 140
+breadCrumbWidth =
+    140
+
 
 arrowProtrusion : Float
-arrowProtrusion = 10
+arrowProtrusion =
+    10
+
+
 
 -- Types
 
-type alias Datum = { sequence : List String, category : String, visits : Int }
 
-type alias Data = Tree Datum
-
-type alias LayedOutDatum = { x : Float, y : Float, width : Float, height : Float, value : Float, node : Datum }
+type alias Datum =
+    { sequence : List String, category : String, visits : Int }
 
 
-type alias LoadedModel ={ layout : List LayedOutDatum
-    , hovered : Maybe { sequence : List String, percentage : Float }, total : Float }
+type alias Data =
+    Tree Datum
+
+
+type alias LayedOutDatum =
+    { x : Float, y : Float, width : Float, height : Float, value : Float, node : Datum }
+
+
+type alias LoadedModel =
+    { layout : List LayedOutDatum
+    , hovered : Maybe { sequence : List String, percentage : Float }
+    , total : Float
+    }
+
 
 type Model
     = Loading
@@ -112,7 +137,8 @@ type Msg
     | Hover (Maybe { sequence : List String, percentage : Float })
 
 
--- Data loading and processing 
+
+-- Data loading and processing
 
 
 init : () -> ( Model, Cmd Msg )
@@ -148,7 +174,7 @@ expectCsv tagger =
                     >> Tree.sortWith (\_ a b -> compare (Tree.label b).visits (Tree.label a).visits)
                 )
             >> tagger
-        ) 
+        )
 
 
 decoder : Csv.Decoder { sequence : List String, visits : Int }
@@ -165,38 +191,47 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
         ( ReceivedData (Ok rawData), _ ) ->
-            ( Loaded { layout = rawData
-                |> Hierarchy.partition [ Hierarchy.size (2 * pi) (radius * radius) ] (.visits >> toFloat)
-                |> Tree.toList
-                |> List.tail
-                |> Maybe.withDefault []
-                |> List.filter (\d -> d.width > 0.001), total = toFloat (Tree.label rawData).visits, hovered = Nothing}
+            ( Loaded
+                { layout =
+                    rawData
+                        |> Hierarchy.partition [ Hierarchy.size (2 * pi) (radius * radius) ] (.visits >> toFloat)
+                        |> Tree.toList
+                        |> List.tail
+                        |> Maybe.withDefault []
+                        |> List.filter (\d -> d.width > 0.001)
+                , total = toFloat (Tree.label rawData).visits
+                , hovered = Nothing
+                }
             , Cmd.none
             )
 
         ( ReceivedData (Err e), _ ) ->
-            ( Error ( e), Cmd.none )
+            ( Error e, Cmd.none )
 
         ( Hover hover, Loaded mod ) ->
-            (Loaded { mod | hovered = hover}, Cmd.none)
+            ( Loaded { mod | hovered = hover }, Cmd.none )
+
         _ ->
             ( model, Cmd.none )
 
 
+
 -- Visualization
+
 
 colorScale : OrdinalScale String Color
 colorScale =
     Scale.ordinal (Color.rgb 0.5 0.5 0.5 :: Scale.Color.tableau10) [ "end", "home", "product", "search", "account", "other" ]
+
 
 view : Model -> Html Msg
 view model =
     case model of
         Loaded data ->
             svg [ viewBox 0 0 w h ]
-                    [ sunburst data 
-                    , breadcrumbs data ]
-                
+                [ sunburst data
+                , breadcrumbs data
+                ]
 
         Loading ->
             Example.loading []
@@ -206,38 +241,60 @@ view model =
 
 
 arrow : Path
-arrow = 
-    [ Curve.linearClosed [ (0,0), (breadCrumbWidth, 0), (breadCrumbWidth, breadCrumbHeight), (breadCrumbWidth / 2, breadCrumbHeight + arrowProtrusion), (0, breadCrumbHeight) ] ]
+arrow =
+    [ Curve.linearClosed [ ( 0, 0 ), ( breadCrumbWidth, 0 ), ( breadCrumbWidth, breadCrumbHeight ), ( breadCrumbWidth / 2, breadCrumbHeight + arrowProtrusion ), ( 0, breadCrumbHeight ) ] ]
+
 
 breadcrumbs : LoadedModel -> Svg msg
 breadcrumbs model =
     case model.hovered of
         Just { sequence, percentage } ->
             sequence
-            |> List.indexedMap (\i el ->
-                g [ transform [ Translate (radius * 2 + spacing) (toFloat i * breadCrumbHeight)  ]] [ 
-                    if el == "end" then 
-                     rect [ width breadCrumbWidth, height (breadCrumbHeight + arrowProtrusion), fill (Paint (Scale.convert colorScale el |> Maybe.withDefault Color.black)), rx 3
-                    , stroke (Paint Color.white) , strokeWidth 3] []
-                    else
-                    Path.element arrow [fill (Paint (Scale.convert colorScale el |> Maybe.withDefault Color.black))
-                    , stroke (Paint Color.white) , strokeWidth 3] 
-                , text_ [ x (breadCrumbWidth  /2), y (breadCrumbHeight), textAnchor AnchorMiddle, 
-                fill (Paint Color.white),  dy (em -0.3), TypedSvg.Attributes.InPx.fontSize 14, TypedSvg.Attributes.fontFamily [ "sans-serif" ]  ] [ text el]
-                ]
-            )
-             |> List.append  [text_ [ x (radius * 2 + spacing + breadCrumbWidth  /2), y (toFloat (List.length sequence + 1) * breadCrumbHeight), textAnchor AnchorMiddle,  dy (em -0.6), TypedSvg.Attributes.InPx.fontSize 14, TypedSvg.Attributes.fontFamily [ "sans-serif" ]  ] [ text (format percentage)]]
-            |> List.reverse
-            |> g []
+                |> List.indexedMap
+                    (\i el ->
+                        g [ transform [ Translate (radius * 2 + spacing) (toFloat i * breadCrumbHeight) ] ]
+                            [ if el == "end" then
+                                rect
+                                    [ width breadCrumbWidth
+                                    , height (breadCrumbHeight + arrowProtrusion)
+                                    , fill (Paint (Scale.convert colorScale el |> Maybe.withDefault Color.black))
+                                    , rx 3
+                                    , stroke (Paint Color.white)
+                                    , strokeWidth 3
+                                    ]
+                                    []
+
+                              else
+                                Path.element arrow
+                                    [ fill (Paint (Scale.convert colorScale el |> Maybe.withDefault Color.black))
+                                    , stroke (Paint Color.white)
+                                    , strokeWidth 3
+                                    ]
+                            , text_
+                                [ x (breadCrumbWidth / 2)
+                                , y breadCrumbHeight
+                                , textAnchor AnchorMiddle
+                                , fill (Paint Color.white)
+                                , dy (em -0.3)
+                                , TypedSvg.Attributes.InPx.fontSize 14
+                                , TypedSvg.Attributes.fontFamily [ "sans-serif" ]
+                                ]
+                                [ text el ]
+                            ]
+                    )
+                |> List.append [ text_ [ x (radius * 2 + spacing + breadCrumbWidth / 2), y (toFloat (List.length sequence + 1) * breadCrumbHeight), textAnchor AnchorMiddle, dy (em -0.6), TypedSvg.Attributes.InPx.fontSize 14, TypedSvg.Attributes.fontFamily [ "sans-serif" ] ] [ text (format percentage) ] ]
+                |> List.reverse
+                |> g []
 
         Nothing ->
             text ""
+
 
 sunburst : LoadedModel -> Svg Msg
 sunburst model =
     let
         hovered =
-            case  model.hovered of
+            case model.hovered of
                 Just { sequence } ->
                     List.Extra.inits sequence
                         |> Set.fromList
@@ -247,21 +304,21 @@ sunburst model =
 
         opacity seq =
             TypedSvg.Attributes.fillOpacity
-               (Opacity (if
-                    case model.hovered of
-                        Just _ ->
-                            Set.member seq hovered
+                (Opacity
+                    (if
+                        case model.hovered of
+                            Just _ ->
+                                Set.member seq hovered
 
-                        Nothing ->
-                            True
-                 then
-                    0.8
+                            Nothing ->
+                                True
+                     then
+                        0.8
 
-                 else
-                    0.3
-                ))
-
-      
+                     else
+                        0.3
+                    )
+                )
     in
     g [ transform [ Translate radius radius ] ]
         [ g []
@@ -275,28 +332,40 @@ sunburst model =
                     )
             )
         , Svg.Lazy.lazy2 mouseInteractionArcs model.layout model.total
-        , case model.hovered of 
-            Just {percentage, sequence} ->
-                g [textAnchor AnchorMiddle,  TypedSvg.Attributes.fontFamily [ "sans-serif" ], fill (Paint (Color.rgb 0.5 0.5 0.5)) ] [
-                    text_ [ TypedSvg.Attributes.InPx.fontSize 28, y -8] [ text (format percentage)],
-                    text_ [ TypedSvg.Attributes.InPx.fontSize 10, y 10 ] [ text "of visits begin with this sequence"]
-                ]
+        , case model.hovered of
+            Just { percentage, sequence } ->
+                g [ textAnchor AnchorMiddle, TypedSvg.Attributes.fontFamily [ "sans-serif" ], fill (Paint (Color.rgb 0.5 0.5 0.5)) ]
+                    [ text_ [ TypedSvg.Attributes.InPx.fontSize 28, y -8 ] [ text (format percentage) ]
+                    , text_ [ TypedSvg.Attributes.InPx.fontSize 10, y 10 ]
+                        [ text
+                            (if List.Extra.last sequence == Just "end" then
+                                "of visits complete this sequence"
+
+                             else
+                                "of visits begin with this sequence"
+                            )
+                        ]
+                    ]
+
             Nothing ->
                 text ""
         ]
 
+
 mouseInteractionArcs : List LayedOutDatum -> Float -> Svg Msg
 mouseInteractionArcs segments total =
-    g [ TypedSvg.Attributes.pointerEvents "all", TypedSvg.Events.onMouseLeave (Hover Nothing)]
-            (segments
-                |> List.map
-                    (\item ->
-                        Path.element (mouseArc item)
-                            [ fill (PaintNone )
-                            , TypedSvg.Events.onMouseEnter (Hover (Just { sequence = item.node.sequence, percentage = 100 * item.value / total}))
-                            ]
-                    )
-            )
+    g [ TypedSvg.Attributes.pointerEvents "all", TypedSvg.Events.onMouseLeave (Hover Nothing) ]
+        (segments
+            |> List.map
+                (\item ->
+                    Path.element (mouseArc item)
+                        [ fill PaintNone
+                        , TypedSvg.Events.onMouseEnter (Hover (Just { sequence = item.node.sequence, percentage = 100 * item.value / total }))
+                        ]
+                )
+        )
+
+
 arc : LayedOutDatum -> Path
 arc s =
     Shape.arc
@@ -308,6 +377,7 @@ arc s =
         , padAngle = 1 / radius
         , padRadius = radius
         }
+
 
 mouseArc : LayedOutDatum -> Path
 mouseArc s =
@@ -322,10 +392,10 @@ mouseArc s =
         }
 
 
-format : Float -> String 
+format : Float -> String
 format f =
-    String.left  5 (String.fromFloat f) ++ "%"
-    
+    String.left 5 (String.fromFloat f) ++ "%"
+
 
 main : Program () Model Msg
 main =
