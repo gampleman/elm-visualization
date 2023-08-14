@@ -91,7 +91,20 @@ treemap tilingMethod =
             (\item ->
                 g [ transform [ Translate item.x item.y ] ]
                     [ TypedSvg.title [] [ text (item.node.name ++ " " ++ String.fromFloat item.node.size) ]
-                    , rect [ width item.width, height item.height, fill (item.node.name |> String.split "." |> List.take 2 |> String.join "." |> Scale.convert colorScale |> Maybe.withDefault Color.white |> Paint), id ("rect-" ++ item.node.name) ]
+                    , rect
+                        [ width item.width
+                        , height item.height
+                        , fill
+                            (item.node.name
+                                |> String.split "."
+                                |> List.take 2
+                                |> String.join "."
+                                |> Scale.convert colorScale
+                                |> Maybe.withDefault Color.white
+                                |> Paint
+                            )
+                        , id ("rect-" ++ item.node.name)
+                        ]
                         []
                     , TypedSvg.clipPath [ id ("clip-" ++ item.node.name) ] [ TypedSvg.use [ href ("#rect-" ++ item.node.name) ] [] ]
                     , item.node.name
@@ -118,8 +131,19 @@ treemap tilingMethod =
                         |> (\( word, soFar ) -> String.fromList (List.reverse word) :: soFar)
                         |> List.append [ String.fromFloat item.node.size ]
                         |> List.reverse
-                        |> List.indexedMap (\i st -> TypedSvg.tspan [ x 3, TypedSvg.Attributes.y (em (1.1 + toFloat i * 0.9)) ] [ text st ])
-                        |> TypedSvg.text_ [ TypedSvg.Attributes.InPx.fontSize 10, TypedSvg.Attributes.fontFamily [ "sans-serif" ], TypedSvg.Attributes.clipPath (ClipPathFunc ("url(#clip-" ++ item.node.name ++ ")")) ]
+                        |> List.indexedMap
+                            (\i st ->
+                                TypedSvg.tspan
+                                    [ x 3
+                                    , TypedSvg.Attributes.y (em (1.1 + toFloat i * 0.9))
+                                    ]
+                                    [ text st ]
+                            )
+                        |> TypedSvg.text_
+                            [ TypedSvg.Attributes.InPx.fontSize 10
+                            , TypedSvg.Attributes.fontFamily [ "sans-serif" ]
+                            , TypedSvg.Attributes.clipPath (ClipPathFunc ("url(#clip-" ++ item.node.name ++ ")"))
+                            ]
                     ]
             )
 

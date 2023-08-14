@@ -1,6 +1,11 @@
 module TidyTree exposing (main)
 
-{-| @category Advanced
+{-| Lays out a tree diagram using the Tidy algorithm. We scale the icons for the nodes proportionally to a quantitative dimension.
+
+Since the Tree is quite dense and complex, we add a zoom behavior to allow the use to explore the leaf nodes more easily. Clicking on a non-lead node zooms the tree to its subtree.
+
+@category Advanced
+
 -}
 
 import Browser
@@ -51,7 +56,6 @@ layedOut =
         , Hierarchy.parentChildMargin 900
         , Hierarchy.peerMargin 60
         , Hierarchy.size (w - padding * 2) (h - padding * 2)
-        , Hierarchy.preserveAspectRatio
         ]
         tree
         |> Tree.sumUp
@@ -177,8 +181,21 @@ view zoom =
             [ g [ transform [ Translate padding padding ] ]
                 [ layedOut
                     |> Tree.links
-                    |> List.map (\( from, to ) -> Shape.bumpYCurve [ ( from.x + from.width / 2, from.y + from.height ), ( to.x + to.width / 2, to.y + to.height * 0.1 ) ])
-                    |> (\p -> Path.element p [ fill PaintNone, stroke (Paint (Color.rgb 0.3 0.3 0.3)), style "vector-effect: non-scaling-stroke", pointerEvents "none" ])
+                    |> List.map
+                        (\( from, to ) ->
+                            Shape.bumpYCurve
+                                [ ( from.x + from.width / 2, from.y + from.height )
+                                , ( to.x + to.width / 2, to.y + to.height * 0.1 )
+                                ]
+                        )
+                    |> (\p ->
+                            Path.element p
+                                [ fill PaintNone
+                                , stroke (Paint (Color.rgb 0.3 0.3 0.3))
+                                , style "vector-effect: non-scaling-stroke"
+                                , pointerEvents "none"
+                                ]
+                       )
                 , layedOut
                     |> Tree.toList
                     |> List.map label
@@ -243,7 +260,14 @@ label item =
                         ( [], [] )
                     |> (\( word, soFar ) -> String.fromList (List.reverse word) :: soFar)
                     |> List.reverse
-                    |> List.indexedMap (\i st -> TypedSvg.tspan [ x (item.width * 0.05), TypedSvg.Attributes.y (em (2 + toFloat i * 0.9)) ] [ TypedSvg.Core.text st ])
+                    |> List.indexedMap
+                        (\i st ->
+                            TypedSvg.tspan
+                                [ x (item.width * 0.05)
+                                , TypedSvg.Attributes.y (em (2 + toFloat i * 0.9))
+                                ]
+                                [ TypedSvg.Core.text st ]
+                        )
                     |> TypedSvg.text_
                         [ fontSize (sqrt item.node.size / 130)
                         , pointerEvents "none"

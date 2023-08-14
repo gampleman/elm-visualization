@@ -170,7 +170,13 @@ expectCsv tagger =
                     (\node children ->
                         { node | visits = List.sum (List.map .visits children) }
                     )
-                    >> Tree.map (\d -> { sequence = d.sequence, visits = d.visits, category = List.Extra.last d.sequence |> Maybe.withDefault "end" })
+                    >> Tree.map
+                        (\d ->
+                            { sequence = d.sequence
+                            , visits = d.visits
+                            , category = List.Extra.last d.sequence |> Maybe.withDefault "end"
+                            }
+                        )
                     >> Tree.sortWith (\_ a b -> compare (Tree.label b).visits (Tree.label a).visits)
                 )
             >> tagger
@@ -282,7 +288,17 @@ breadcrumbs model =
                                 [ text el ]
                             ]
                     )
-                |> List.append [ text_ [ x (radius * 2 + spacing + breadCrumbWidth / 2), y (toFloat (List.length sequence + 1) * breadCrumbHeight), textAnchor AnchorMiddle, dy (em -0.6), TypedSvg.Attributes.InPx.fontSize 14, TypedSvg.Attributes.fontFamily [ "sans-serif" ] ] [ text (format percentage) ] ]
+                |> List.append
+                    [ text_
+                        [ x (radius * 2 + spacing + breadCrumbWidth / 2)
+                        , y (toFloat (List.length sequence + 1) * breadCrumbHeight)
+                        , textAnchor AnchorMiddle
+                        , dy (em -0.6)
+                        , TypedSvg.Attributes.InPx.fontSize 14
+                        , TypedSvg.Attributes.fontFamily [ "sans-serif" ]
+                        ]
+                        [ text (format percentage) ]
+                    ]
                 |> List.reverse
                 |> g []
 
@@ -360,7 +376,14 @@ mouseInteractionArcs segments total =
                 (\item ->
                     Path.element (mouseArc item)
                         [ fill PaintNone
-                        , TypedSvg.Events.onMouseEnter (Hover (Just { sequence = item.node.sequence, percentage = 100 * item.value / total }))
+                        , TypedSvg.Events.onMouseEnter
+                            (Hover
+                                (Just
+                                    { sequence = item.node.sequence
+                                    , percentage = 100 * item.value / total
+                                    }
+                                )
+                            )
                         ]
                 )
         )

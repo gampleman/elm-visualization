@@ -4,6 +4,7 @@ module Shape exposing
     , line, lineRadial, area, areaRadial
     , linearCurve
     , basisCurve, basisCurveClosed, basisCurveOpen
+    , bumpXCurve, bumpYCurve
     , bundleCurve
     , cardinalCurve, cardinalCurveClosed, cardinalCurveOpen
     , catmullRomCurve, catmullRomCurveClosed, catmullRomCurveOpen
@@ -12,7 +13,6 @@ module Shape exposing
     , StackConfig, StackResult, stack
     , stackOffsetNone, stackOffsetDiverging, stackOffsetExpand, stackOffsetSilhouette, stackOffsetWiggle
     , sortByInsideOut
-    , bumpXCurve, bumpYCurve
     )
 
 {-| Visualizations typically consist of discrete graphical marks, such as symbols,
@@ -49,6 +49,7 @@ into a continuous shape: i.e., how to interpolate between the points. A variety 
 
 @docs linearCurve
 @docs basisCurve, basisCurveClosed, basisCurveOpen
+@docs bumpXCurve, bumpYCurve
 @docs bundleCurve
 @docs cardinalCurve, cardinalCurveClosed, cardinalCurveOpen
 @docs catmullRomCurve, catmullRomCurveClosed, catmullRomCurveOpen
@@ -500,11 +501,21 @@ naturalCurve =
     Curve.natural
 
 
+{-| Produces a Bézier curve between each pair of points, with horizontal tangents at each point.
+
+[![bumpX curve illustration](https://elm-visualization.netlify.com/Curves/bumpx@2x.png)](https://elm-visualization.netlify.com/Curves/#bumpx)
+
+-}
 bumpXCurve : List ( Float, Float ) -> SubPath
 bumpXCurve =
     Bump.bumpXCurve
 
 
+{-| Produces a Bézier curve between each pair of points, with vertical tangents at each point.
+
+[![bumpX curve illustration](https://elm-visualization.netlify.com/Curves/bumpy@2x.png)](https://elm-visualization.netlify.com/Curves/#bumpy)
+
+-}
 bumpYCurve : List ( Float, Float ) -> SubPath
 bumpYCurve =
     Bump.bumpYCurve
