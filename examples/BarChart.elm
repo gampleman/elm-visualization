@@ -13,7 +13,7 @@ module BarChart exposing (main)
 
 import Axis
 import DateFormat
-import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
+import Scale exposing (BandScale, ContinuousScale, defaultBandConfig)
 import Time
 import TypedSvg exposing (g, rect, style, svg, text_)
 import TypedSvg.Attributes exposing (class, textAnchor, transform, viewBox)

@@ -17,16 +17,6 @@ import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Paint(..))
 
 
-w : Float
-w =
-    990
-
-
-h : Float
-h =
-    504
-
-
 color : Int -> Color
 color =
     Scale.convert (Scale.sequential Scale.Color.viridisInterpolator ( 0, 360 )) << toFloat
