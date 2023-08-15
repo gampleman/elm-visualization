@@ -248,7 +248,7 @@ bottom =
     element verticalAttrs 1 "0.71em" "middle"
 
 
-element { x, y, x1, x2, y1, y2, translate, horizontal } k displacement textAnchorPosition =
+element { x, y, x2, y1, y2, translate, horizontal } k displacement textAnchorPosition =
     \attrs scale ->
         let
             opts =

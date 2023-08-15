@@ -1,4 +1,4 @@
-module Force.QuadTree exposing (Config, QuadTree(..), Quadrant(..), UserCoords, empty, fromList, getAggregate, insertBy, performAggregate, quadrant, singleton, size, toList)
+module Force.QuadTree exposing (Config, QuadTree(..), Quadrant(..), UserCoords, fromList, performAggregate)
 
 {-| A quadtree that can store an aggregate in the nodes.
 Intended for use in n-body simulation, specifically Barnes-Hut
@@ -14,7 +14,7 @@ import Units.Quantity as Quantity
 
 
 type UserCoords
-    = UserCoords
+    = UserCoords Never
 
 
 type QuadTree aggregate item
@@ -53,23 +53,6 @@ singleton toPoint vertex =
         , children = ( vertex, [] )
         , aggregate = ()
         }
-
-
-size : QuadTree aggregate vertex -> Int
-size qtree =
-    case qtree of
-        Empty ->
-            0
-
-        Leaf leaf ->
-            let
-                ( _, rest ) =
-                    leaf.children
-            in
-            1 + List.length rest
-
-        Node node ->
-            size node.nw + size node.ne + size node.se + size node.sw
 
 
 insertBy : (vertex -> Point2d Pixels UserCoords) -> vertex -> QuadTree () vertex -> QuadTree () vertex
@@ -250,23 +233,6 @@ quadrant boundingBox point =
 fromList : (vertex -> Point2d Pixels UserCoords) -> List vertex -> QuadTree () vertex
 fromList toPoint =
     List.foldl (insertBy toPoint) empty
-
-
-toList : QuadTree x a -> List a
-toList qtree =
-    case qtree of
-        Empty ->
-            []
-
-        Leaf leaf ->
-            let
-                ( first, rest ) =
-                    leaf.children
-            in
-            first :: rest
-
-        Node node ->
-            toList node.nw ++ toList node.ne ++ toList node.se ++ toList node.sw
 
 
 performAggregate : Config aggregate vertex -> QuadTree x vertex -> QuadTree aggregate vertex

@@ -142,7 +142,6 @@ These functions take Scales and do something with them. Check the docs of each s
 -}
 
 import Array exposing (Array)
-import Color exposing (Color)
 import Scale.Band as Band
 import Scale.Continuous as Continuous
 import Scale.Diverging as Diverging

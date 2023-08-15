@@ -2,10 +2,10 @@ module BarChart exposing (main)
 
 {-| This module shows how to build a simple bar chart.
 
-1. It starts by setting out the basic variables to define a drawing area.
-2. Then it creates scales that encode the x and y dimensions of the bars.
-3. Based on these it sets up axes.
-4. Finally it assembles everything into a chart.
+1.  It starts by setting out the basic variables to define a drawing area.
+2.  Then it creates scales that encode the x and y dimensions of the bars.
+3.  Based on these it sets up axes.
+4.  Finally it assembles everything into a chart.
 
 @category Basics
 
@@ -13,7 +13,7 @@ module BarChart exposing (main)
 
 import Axis
 import DateFormat
-import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
+import Scale exposing (BandScale, ContinuousScale, defaultBandConfig)
 import Time
 import TypedSvg exposing (g, rect, style, svg, text_)
 import TypedSvg.Attributes exposing (class, textAnchor, transform, viewBox)

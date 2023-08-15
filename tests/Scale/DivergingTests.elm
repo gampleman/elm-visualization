@@ -1,7 +1,7 @@
 module Scale.DivergingTests exposing (diverging, divergingLog)
 
 import Expect exposing (FloatingPointTolerance(..))
-import Fuzz exposing (float)
+import Fuzz
 import Scale
 import Test exposing (Test, describe, fuzz, test)
 

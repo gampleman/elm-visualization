@@ -21,16 +21,15 @@ import Http
 import Interpolation exposing (Interpolator)
 import Iso8601
 import List.Extra
-import Scale exposing (ContinuousScale, OrdinalScale, Scale, defaultBandConfig)
+import Scale exposing (ContinuousScale, OrdinalScale)
 import Scale.Color
 import Set
-import Statistics
 import Time
 import Transition exposing (Transition)
 import TypedSvg exposing (g, rect, svg, text_, tspan)
-import TypedSvg.Attributes exposing (class, dy, fill, fillOpacity, fontWeight, stroke, style, textAnchor, transform, viewBox)
+import TypedSvg.Attributes exposing (dy, fill, fillOpacity, fontWeight, style, textAnchor, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
-import TypedSvg.Core exposing (Attribute, Svg, text)
+import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), FontWeight(..), Opacity(..), Paint(..), Transform(..), em)
 
 

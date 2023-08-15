@@ -1,4 +1,4 @@
-module DetailChart exposing (..)
+module DetailChart exposing (Model, Msg(..), main)
 
 {-| Implements the Focus + Context pattern, where the user can zoom in on a place of interest while still seeing the overview.
 
@@ -8,26 +8,20 @@ module DetailChart exposing (..)
 
 import Axis
 import Browser
-import Browser.Events
 import Brush exposing (Brush, OnBrush, OneDimensional)
-import Circle3d exposing (at_)
 import Color
-import DateFormat
-import Events
-import Json.Decode as D exposing (Decoder)
 import LTTB
 import Path
 import Random
 import Scale exposing (ContinuousScale)
 import Shape
 import Statistics
-import Svg.Events exposing (custom)
 import Time
 import TypedSvg exposing (g, rect, svg)
-import TypedSvg.Attributes exposing (cursor, fill, fillOpacity, opacity, pointerEvents, shapeRendering, stroke, transform, viewBox)
-import TypedSvg.Attributes.InPx exposing (height, width, x, y)
-import TypedSvg.Core exposing (Attribute, Svg)
-import TypedSvg.Types exposing (Cursor(..), Opacity(..), Paint(..), ShapeRendering(..), Transform(..))
+import TypedSvg.Attributes exposing (fill, opacity, stroke, transform, viewBox)
+import TypedSvg.Attributes.InPx exposing (height, width)
+import TypedSvg.Core exposing (Svg)
+import TypedSvg.Types exposing (Opacity(..), Paint(..), Transform(..))
 import Zoom exposing (OnZoom, Zoom)
 
 

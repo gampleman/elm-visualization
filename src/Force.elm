@@ -150,7 +150,7 @@ applyForce alpha force entities =
                                         |> Dict.update target (Maybe.map (\sn -> { sn | vx = sn.vx - x * l * bias, vy = sn.vy - y * l * bias }))
                                         |> Dict.update source (Maybe.map (\tn -> { tn | vx = tn.vx + x * l * (1 - bias), vy = tn.vy + y * l * (1 - bias) }))
 
-                                otherwise ->
+                                _ ->
                                     ents
                         )
                         entitiesList

@@ -23,7 +23,6 @@ module Curves exposing (main)
 
 import Color exposing (Color)
 import Example
-import Html exposing (a, div, p)
 import Path exposing (Path)
 import Scale exposing (ContinuousScale)
 import Scale.Color
@@ -112,7 +111,7 @@ type alias Curve =
 
 
 drawCurve : ( String, Path, Color ) -> Svg msg
-drawCurve ( name, path, color ) =
+drawCurve ( _, path, color ) =
     Path.element path [ stroke (Paint color), fill PaintNone, strokeWidth 2 ]
 
 

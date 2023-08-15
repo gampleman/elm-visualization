@@ -12,10 +12,6 @@ type Data
     | C
 
 
-convert val scale =
-    Scale.convert scale val
-
-
 datum : Fuzzer Data
 datum =
     Fuzz.oneOf [ Fuzz.constant A, Fuzz.constant B, Fuzz.constant C ]

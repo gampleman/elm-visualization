@@ -3,6 +3,7 @@ module Concentric exposing (main)
 {-| Having fun with arcs and animations.
 
 @category Art
+
 -}
 
 import Browser
@@ -13,14 +14,11 @@ import Random
 import Scale exposing (defaultBandConfig)
 import Scale.Color
 import Shape exposing (defaultPieConfig)
-import Time
-import TypedSvg exposing (defs, filter, g, rect, style, svg, text_)
-import TypedSvg.Attributes exposing (class, fill, id, textAnchor, transform, viewBox)
-import TypedSvg.Attributes.InPx exposing (height, width, x, y)
-import TypedSvg.Core exposing (Svg, attribute, text)
-import TypedSvg.Filters as Fe
-import TypedSvg.Filters.Attributes as Fa
-import TypedSvg.Types as T exposing (AnchorAlignment(..), Filter(..), FloodColor(..), InValue(..), Paint(..), Transform(..), TurbulenceType(..))
+import TypedSvg exposing (g, rect, svg)
+import TypedSvg.Attributes exposing (fill, transform, viewBox)
+import TypedSvg.Attributes.InPx exposing (height, width)
+import TypedSvg.Core exposing (Svg, text)
+import TypedSvg.Types exposing (Paint(..), Transform(..))
 
 
 type alias Model =
@@ -156,5 +154,5 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Browser.Events.onAnimationFrameDelta (round >> Tick)

@@ -34,11 +34,11 @@ import Scale exposing (ContinuousScale)
 import Shape
 import Statistics
 import Time
-import TypedSvg exposing (defs, g, linearGradient, stop, svg, text_)
-import TypedSvg.Attributes exposing (class, dy, fill, fontFamily, id, offset, stopColor, stroke, textAnchor, transform, viewBox, x1, x2, y1, y2)
-import TypedSvg.Attributes.InPx exposing (fontSize, height, strokeWidth, width, x, y)
+import TypedSvg exposing (defs, g, linearGradient, stop, svg)
+import TypedSvg.Attributes exposing (fill, fontFamily, id, offset, stopColor, stroke, textAnchor, transform, viewBox, x1, x2, y1, y2)
+import TypedSvg.Attributes.InPx exposing (fontSize, height, width)
 import TypedSvg.Core exposing (Svg, text)
-import TypedSvg.Types exposing (AnchorAlignment(..), Paint(..), Transform(..), em, percent)
+import TypedSvg.Types exposing (AnchorAlignment(..), Paint(..), Transform(..), percent)
 import Url.Builder
 
 
@@ -119,7 +119,7 @@ getData page start end granularity =
                 , timestamp end
                 ]
                 []
-        , expect = Http.expectJson GotData (decoder start end)
+        , expect = Http.expectJson GotData decoder
         }
 
 
@@ -142,13 +142,13 @@ timestampDecoder =
                     Ok t ->
                         Decode.succeed t
 
-                    Err e ->
+                    Err _ ->
                         Decode.fail "Couldn't parse time"
             )
 
 
-decoder : Time.Posix -> Time.Posix -> Decoder Data
-decoder start end =
+decoder : Decoder Data
+decoder =
     Decode.field "items"
         (Decode.list
             (Decode.map2 Tuple.pair (Decode.field "timestamp" timestampDecoder) (Decode.field "views" Decode.float))

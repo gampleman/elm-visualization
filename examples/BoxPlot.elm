@@ -21,7 +21,7 @@ import TypedSvg exposing (circle, defs, g, line, linearGradient, rect, stop, svg
 import TypedSvg.Attributes exposing (class, fill, id, offset, opacity, stopColor, stroke, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, strokeWidth, width, x, x1, x2, y, y1, y2)
 import TypedSvg.Core exposing (Svg)
-import TypedSvg.Types exposing (AnchorAlignment(..), Length(..), Opacity(..), Paint(..), Transform(..))
+import TypedSvg.Types exposing (Length(..), Opacity(..), Paint(..), Transform(..))
 
 
 w : Float

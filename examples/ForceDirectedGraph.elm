@@ -11,13 +11,10 @@ based on their co-occurence in a scene. Try dragging the nodes!
 import Browser
 import Browser.Events
 import Color
-import Force exposing (State)
-import Graph exposing (Edge, Graph, Node, NodeContext, NodeId)
-import Html
-import Html.Events exposing (on)
+import Force
+import Graph exposing (Edge, Graph, NodeContext, NodeId)
 import Html.Events.Extra.Mouse as Mouse
 import Json.Decode as Decode
-import Time
 import TypedSvg exposing (circle, g, line, svg, title)
 import TypedSvg.Attributes exposing (class, fill, stroke, viewBox)
 import TypedSvg.Attributes.InPx exposing (cx, cy, r, strokeWidth, x1, x2, y1, y2)
@@ -39,7 +36,7 @@ type Msg
     = DragStart NodeId ( Float, Float )
     | DragAt ( Float, Float )
     | DragEnd ( Float, Float )
-    | Tick Time.Posix
+    | Tick
 
 
 type alias Model =
@@ -114,9 +111,9 @@ updateGraphWithList =
 
 
 update : Msg -> Model -> Model
-update msg ({ drag, graph, simulation } as model) =
+update msg { drag, graph, simulation } =
     case msg of
-        Tick t ->
+        Tick ->
             let
                 ( newState, list ) =
                     Force.tick simulation <| List.map .label <| Graph.nodes graph
@@ -148,7 +145,7 @@ update msg ({ drag, graph, simulation } as model) =
 
         DragEnd xy ->
             case drag of
-                Just { start, index } ->
+                Just { index } ->
                     Model Nothing
                         (Graph.update index (Maybe.map (updateNode xy)) graph)
                         simulation
@@ -167,13 +164,13 @@ subscriptions model =
                 Sub.none
 
             else
-                Browser.Events.onAnimationFrame Tick
+                Browser.Events.onAnimationFrame (always Tick)
 
         Just _ ->
             Sub.batch
                 [ Browser.Events.onMouseMove (Decode.map (.clientPos >> DragAt) Mouse.eventDecoder)
                 , Browser.Events.onMouseUp (Decode.map (.clientPos >> DragEnd) Mouse.eventDecoder)
-                , Browser.Events.onAnimationFrame Tick
+                , Browser.Events.onAnimationFrame (always Tick)
                 ]
 
 

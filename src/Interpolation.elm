@@ -35,7 +35,7 @@ so that you can build interpolators for your own custom datatypes.
 -}
 
 import Array
-import Color exposing (Color, toRgba)
+import Color exposing (Color)
 import Color.Lab as Lab
 import Dict exposing (Dict)
 
@@ -358,7 +358,7 @@ hue from to =
     in
     float from
         (if d > 0.5 || d < -0.5 then
-            from + (d - 1 * toFloat (round d))
+            from + (d - toFloat (round d))
 
          else
             to
@@ -511,8 +511,8 @@ list config from to =
             in
             result ++ (interpolator :: add)
 
-        cantHappen a =
-            cantHappen a
+        cantHappen () =
+            cantHappen ()
 
         resultingInterpolator =
             Dict.foldl folder [] fromIds

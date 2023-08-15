@@ -6,7 +6,7 @@ module StackedBarChart exposing (main)
 import Axis
 import Color exposing (Color)
 import List.Extra as List
-import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
+import Scale exposing (BandScale, ContinuousScale, defaultBandConfig)
 import Scale.Color
 import Shape exposing (StackConfig, StackResult)
 import TypedSvg exposing (g, rect, svg)
@@ -110,7 +110,7 @@ column xScale ( year, values ) =
 
 
 view : StackResult String -> Svg msg
-view { values, labels, extent } =
+view { values, extent } =
     let
         -- transpose back to get the values per year
         yearValues =

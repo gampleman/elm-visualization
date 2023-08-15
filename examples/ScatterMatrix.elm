@@ -10,27 +10,19 @@ Also try dragging on the scatterplots - this shows using brushing to highlight i
 
 import Axis
 import Browser
-import Browser.Events
 import Brush exposing (Brush, OnBrush, TwoDimensional)
 import Color exposing (Color)
 import Dict exposing (Dict)
-import Events
-import Json.Decode as D exposing (Decoder)
-import Path
 import Random
 import Scale exposing (ContinuousScale, OrdinalScale)
 import Scale.Color
 import Set exposing (Set)
-import Shape
 import Statistics
-import Svg.Events exposing (custom)
-import Time
-import TypedSvg exposing (circle, g, rect, svg, text_)
-import TypedSvg.Attributes exposing (cursor, fill, fillOpacity, fontFamily, opacity, pointerEvents, shapeRendering, stroke, strokeOpacity, textAnchor, transform, viewBox)
+import TypedSvg exposing (circle, g, svg, text_)
+import TypedSvg.Attributes exposing (fill, fontFamily, stroke, strokeOpacity, textAnchor, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (cx, cy, fontSize, height, r, strokeWidth, width, x, y)
-import TypedSvg.Core exposing (Attribute, Svg, text)
-import TypedSvg.Types exposing (AnchorAlignment(..), Cursor(..), Opacity(..), Paint(..), ShapeRendering(..), Transform(..))
-import Zoom exposing (OnZoom, Zoom)
+import TypedSvg.Core exposing (Svg, text)
+import TypedSvg.Types exposing (AnchorAlignment(..), Opacity(..), Paint(..), Transform(..))
 
 
 w : Float
@@ -46,11 +38,6 @@ h =
 padding : Float
 padding =
     40
-
-
-spacing : Float
-spacing =
-    20
 
 
 type alias Car =

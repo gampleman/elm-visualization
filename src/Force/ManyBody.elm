@@ -1,4 +1,4 @@
-module Force.ManyBody exposing (AggregateVertex, Vertex, applyForce, config, constructSuperPoint, manyBody, wrapper)
+module Force.ManyBody exposing (AggregateVertex, Vertex, wrapper)
 
 import BoundingBox2d exposing (BoundingBox2d)
 import Dict exposing (Dict)

@@ -7,7 +7,7 @@ module BackgroundGraph exposing (main)
 -}
 
 import Color exposing (Color)
-import Force exposing (State)
+import Force
 import Graph exposing (Edge, Graph, Node, NodeContext, NodeId)
 import IntDict
 import List exposing (range)
@@ -48,7 +48,7 @@ init =
     let
         graph =
             Graph.mapContexts
-                (\({ node, incoming, outgoing } as ctx) ->
+                (\{ node, incoming, outgoing } ->
                     { incoming = incoming
                     , outgoing = outgoing
                     , node =

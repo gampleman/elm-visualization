@@ -11,16 +11,14 @@ module NorwegianCarSales exposing (main)
 
 import Axis
 import Color exposing (Color)
-import Dict exposing (Dict)
 import Example
-import Html exposing (div, text)
-import Html.Attributes
+import Html exposing (text)
 import Interpolation
 import List.Extra as List
 import Path exposing (Path)
-import Scale exposing (ContinuousScale, OrdinalScale, Scale)
+import Scale exposing (ContinuousScale, OrdinalScale)
 import Scale.Color
-import Shape exposing (StackConfig, StackResult)
+import Shape exposing (StackResult)
 import Time exposing (Month(..))
 import Time.Extra exposing (Parts)
 import TypedSvg exposing (g, svg, text_)
@@ -118,9 +116,8 @@ fromCalendarDate year month day =
     Time.Extra.partsToPosix Time.utc (Parts year month day 0 0 0 0)
 
 
-
 view : StackResult String -> Svg msg
-view ({ values, labels, extent } as model) =
+view { values, labels, extent } =
     let
         labelsWidth =
             50
@@ -147,10 +144,6 @@ view ({ values, labels, extent } as model) =
             -- to get the ticks to show up correctly, the upper bound needs to be Jan 2 (Jan 1 does not work).
             Scale.time Time.utc ( 0, w - padding * 2 - labelsWidth ) ( fromCalendarDate 2007 Jan 1, fromCalendarDate 2017 Jan 2 )
                 |> Axis.bottom [ Axis.tickCount 1 ]
-
-        yAxis : Svg msg
-        yAxis =
-            Axis.left [] yScale
 
         paths =
             List.map2 (renderStream ( xScale, yScale )) (colors labels) values
@@ -233,6 +226,7 @@ map2WithOrders fn aOrd bOrd aList bList =
     List.map2 (\( _, a ) ( _, b ) -> fn a b)
         (List.sortBy Tuple.first (List.map2 Tuple.pair aOrd aList))
         (List.sortBy Tuple.first (List.map2 Tuple.pair bOrd bList))
+
 
 main : Example.Program (StackResult String)
 main =

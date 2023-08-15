@@ -1,43 +1,101 @@
 name: CI
 
-on:
-  push:
-  pull_request:
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on: [push, pull_request]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  main:
+  test:
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js 15
-        uses: actions/setup-node@v1
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v3
+
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v3
+      with:
+        node-version: lts/*
+
+    # Re-use node_modules between runs until package-lock.json changes.
+    - name: Cache node_modules
+      id: internal-cache-node_modules
+      uses: actions/cache@v3
+      with:
+        path: node_modules
+        key: internal-node_modules-ubuntu-latest.x-${{ hashFiles('package-lock.json') }}
+
+    # Re-use ~/.elm between runs until elm.json, elm-tooling.json or
+    # review/elm.json changes. The Elm compiler saves downloaded Elm packages
+    # to ~/.elm, and elm-tooling saves downloaded tool executables there.
+    - name: Cache ~/.elm
+      uses: actions/cache@v3
+      with:
+        path: ~/.elm
+        key: elm-${{ hashFiles('elm.json', 'review/elm.json') }}
+
+    - name: Install npm dependencies
+      if: steps.cache-node_modules.outputs.cache-hit != 'true'
+     
+      run: npm ci --omit dev
+
+    - name: Run tests
+      run: npm test
+
+  publish:
+    if: github.ref == 'refs/heads/master' # run only on master
+    needs: [test] # make sure all your other jobs succeed before trying to publish
+
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3
         with:
-          node-version: 15
+          node-version: lts/*
+
       # Re-use node_modules between runs until package-lock.json changes.
       - name: Cache node_modules
-        id: cache-node_modules
-        uses: actions/cache@v2
+        id: internal-cache-node_modules
+        uses: actions/cache@v3
         with:
           path: node_modules
-          key: node_modules-${{ hashFiles('package-lock.json') }}
+          key: internal-node_modules-ubuntu-latest.x-${{ hashFiles('package-lock.json') }}
 
-      # Re-use ~/.elm between runs until elm.json, elm-tooling.json or
+      # Re-use ~/.elm between runs until elm.json or
       # review/elm.json changes. The Elm compiler saves downloaded Elm packages
       # to ~/.elm, and elm-tooling saves downloaded tool executables there.
       - name: Cache ~/.elm
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.elm
-          key: elm-${{ hashFiles('elm.json') }}
+          key: elm-${{ hashFiles('elm.json', 'review/elm.json') }}
 
-      # Install npm packages, unless we restored them from cache.
-      # Since `npm ci` removes the node_modules folder before running it’s
-      # important to skip this step if cache was restored.
-      - name: npm ci
+      - name: Install npm dependencies
         if: steps.cache-node_modules.outputs.cache-hit != 'true'
+        env:
+          # If you have a `"postinstall": "elm-tooling install"` script in your
+          # package.json, this turns it into a no-op. We’ll run it in the next
+          # step because of the caching. If elm-tooling.json changes but
+          # package-lock.json does not, the postinstall script needs running
+          # but this step won’t.
+          NO_ELM_TOOLING_INSTALL: 1
         run: npm ci
-      - name: Tests
-        run: npm test
-      - name: elm-format
-        run: npm run validate-format
+
+     
+      # We could optionally enable this?
+      # # Runs a single command using the runners shell
+      # - name: Elm Publish
+      #   uses: dillonkearns/elm-publish-action@v1
+      #   with:
+      #     # Token provided by GitHub
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     path-to-elm: ./node_modules/.bin/elm

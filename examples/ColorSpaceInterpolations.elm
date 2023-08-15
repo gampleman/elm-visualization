@@ -1,4 +1,4 @@
-module ColorSpaceInterpolations exposing (main)
+module ColorSpaceInterpolations exposing (Model, main)
 
 {-| This module shows how to build some simple colour space palettes.
 
@@ -6,14 +6,11 @@ module ColorSpaceInterpolations exposing (main)
 
 -}
 
-import Color exposing (Color, rgb255)
+import Color exposing (Color)
 import Example
-import Hex
 import Html exposing (Html, div)
-import Html.Attributes exposing (class, for, href, id, selected, style, type_, value)
-import Html.Events exposing (onInput)
+import Html.Attributes exposing (href, style)
 import Interpolation exposing (Interpolator)
-import Scale exposing (QuantizeScale)
 
 
 type alias Model =
