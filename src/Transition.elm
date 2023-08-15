@@ -429,14 +429,15 @@ easeBack s =
             let
                 t =
                     time * 2
-
-                tp =
-                    t - 2
             in
             (if t < 1 then
                 t * t * ((s + 1) * t - s)
 
              else
+                let
+                    tp =
+                        t - 2
+                in
                 tp * tp * ((s + 1) * tp + s) + 2
             )
                 / 2

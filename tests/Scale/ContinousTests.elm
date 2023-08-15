@@ -1,7 +1,7 @@
 module Scale.ContinousTests exposing (linear, power, radial, symlog)
 
 import Expect exposing (FloatingPointTolerance(..))
-import Fuzz exposing (float, int, intRange, niceFloat, oneOf, pair, triple)
+import Fuzz exposing (float, int, intRange, oneOf, pair, triple)
 import Helper exposing (expectAll, isBetween)
 import Scale
 import Test exposing (Test, describe, fuzz, fuzz2, test)

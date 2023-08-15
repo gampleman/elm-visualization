@@ -1,6 +1,6 @@
 module ZoomTest exposing (interpolateTest)
 
-import Expect exposing (FloatingPointTolerance(..))
+import Expect
 import Test exposing (Test, test)
 import Zoom.Interpolation exposing (interpolate)
 

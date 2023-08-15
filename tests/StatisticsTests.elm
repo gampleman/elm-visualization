@@ -1,10 +1,10 @@
 module StatisticsTests exposing (range, tickStep)
 
 import Expect exposing (FloatingPointTolerance(..))
-import Fuzz exposing (..)
+import Fuzz exposing (float, int, intRange)
 import Helper exposing (assert, expectAll, expectAny)
 import Statistics
-import Test exposing (..)
+import Test exposing (Test, describe, fuzz2, fuzz3, test)
 
 
 tolerance : FloatingPointTolerance

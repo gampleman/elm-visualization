@@ -61,7 +61,7 @@ range start stop step =
 
         helper i list =
             if i >= 0 then
-                helper (i - 1) <| start + step * toFloat i :: list
+                helper (i - 1) (start + step * toFloat i :: list)
 
             else
                 list

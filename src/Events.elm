@@ -1,4 +1,4 @@
-module Events exposing (..)
+module Events exposing (Rect, Touch, decodeMousePosition, decodeSVGTransformMatrix, decodeTouches, normalizePointerPosition)
 
 import Json.Decode as D exposing (Decoder)
 import Zoom.Matrix as Matrix exposing (Matrix2x3)

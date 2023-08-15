@@ -57,14 +57,14 @@ clampTest : Test
 clampTest =
     fuzz (triple rangePair rangePair (pair (floatRange 1 20) Fuzz.niceFloat)) "clamp limits output value to the range" <|
         \( domain, range, ( base, val ) ) ->
-            let
-                convert =
-                    Scale.convert (Scale.clamp (Scale.log base range (normalizeDomain domain))) val
-            in
             if empty domain || empty range then
                 Expect.pass
 
             else
+                let
+                    convert =
+                        Scale.convert (Scale.clamp (Scale.log base range (normalizeDomain domain))) val
+                in
                 convert |> isBetween range
 
 

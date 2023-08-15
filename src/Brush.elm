@@ -106,7 +106,6 @@ type Lock
 
 type Mode
     = Drag
-    | Space
     | Handle
     | Center
 
@@ -736,59 +735,57 @@ update msg (Brush model) =
 -}
 subscriptions : Brush dim -> (OnBrush -> msg) -> Sub msg
 subscriptions (Brush brush) tagger =
-    Sub.batch
-        [ case brush.drag of
-            Just _ ->
-                Sub.batch
-                    [ Browser.Events.onMouseMove
-                        (D.map
-                            (MouseMove >> tagger)
-                            Events.decodeMousePosition
-                        )
-                    , Browser.Events.onMouseUp (D.succeed (tagger MouseUp))
-                    , Browser.Events.onKeyDown
-                        (D.andThen
-                            (\key ->
-                                case key of
-                                    "Shift" ->
-                                        if brush.x && brush.y then
-                                            D.succeed (tagger ShiftDown)
+    case brush.drag of
+        Just _ ->
+            Sub.batch
+                [ Browser.Events.onMouseMove
+                    (D.map
+                        (MouseMove >> tagger)
+                        Events.decodeMousePosition
+                    )
+                , Browser.Events.onMouseUp (D.succeed (tagger MouseUp))
+                , Browser.Events.onKeyDown
+                    (D.andThen
+                        (\key ->
+                            case key of
+                                "Shift" ->
+                                    if brush.x && brush.y then
+                                        D.succeed (tagger ShiftDown)
 
-                                        else
-                                            D.fail ""
-
-                                    "Alt" ->
-                                        D.succeed (tagger AltDown)
-
-                                    -- "Space" ->
-                                    --     D.succeed (tagger SpaceDown)
-                                    _ ->
+                                    else
                                         D.fail ""
-                            )
-                            (D.field "key" D.string)
+
+                                "Alt" ->
+                                    D.succeed (tagger AltDown)
+
+                                -- "Space" ->
+                                --     D.succeed (tagger SpaceDown)
+                                _ ->
+                                    D.fail ""
                         )
-                    , Browser.Events.onKeyUp
-                        (D.andThen
-                            (\key ->
-                                case key of
-                                    "Shift" ->
-                                        D.succeed (tagger ShiftUp)
+                        (D.field "key" D.string)
+                    )
+                , Browser.Events.onKeyUp
+                    (D.andThen
+                        (\key ->
+                            case key of
+                                "Shift" ->
+                                    D.succeed (tagger ShiftUp)
 
-                                    "Alt" ->
-                                        D.succeed (tagger AltUp)
+                                "Alt" ->
+                                    D.succeed (tagger AltUp)
 
-                                    -- "Space" ->
-                                    --     D.succeed (tagger SpaceDown)
-                                    _ ->
-                                        D.fail ""
-                            )
-                            (D.field "key" D.string)
+                                -- "Space" ->
+                                --     D.succeed (tagger SpaceDown)
+                                _ ->
+                                    D.fail ""
                         )
-                    ]
+                        (D.field "key" D.string)
+                    )
+                ]
 
-            Nothing ->
-                Sub.none
-        ]
+        Nothing ->
+            Sub.none
 
 
 

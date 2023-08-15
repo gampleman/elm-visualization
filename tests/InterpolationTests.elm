@@ -2,7 +2,7 @@ module InterpolationTests exposing (suite)
 
 import Color exposing (Color)
 import Expect exposing (Expectation, FloatingPointTolerance(..))
-import Fuzz exposing (float, floatRange, intRange, list, niceFloat)
+import Fuzz exposing (floatRange, intRange, list, niceFloat)
 import Helper exposing (atLeastFloat, atMostFloat)
 import Interpolation exposing (Interpolator)
 import Test exposing (Test, describe, fuzz, fuzz2, fuzz3, test)

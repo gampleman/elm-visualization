@@ -1,7 +1,5 @@
 module Scale.Ordinal exposing (convert)
 
-import Dict exposing (Dict)
-
 
 convert : List a -> List b -> a -> Maybe b
 convert domain range val =
@@ -9,7 +7,7 @@ convert domain range val =
         [] ->
             Nothing
 
-        otherwise ->
+        _ ->
             convertHelp domain range [] val
 
 
@@ -19,7 +17,7 @@ convertHelp d r used needle =
         ( [], _ ) ->
             Nothing
 
-        ( x :: xs, [] ) ->
+        ( _ :: _, [] ) ->
             convertHelp d (List.reverse used) [] needle
 
         ( x :: xs, y :: ys ) ->

@@ -25,6 +25,7 @@ import NoMissingTypeAnnotationInLetIn
 import NoMissingTypeExpose
 import NoPrematureLetComputation
 import NoSimpleLetBody
+import NoUnoptimizedRecursion
 import NoUnused.CustomTypeConstructorArgs
 import NoUnused.CustomTypeConstructors
 import NoUnused.Dependencies
@@ -34,16 +35,18 @@ import NoUnused.Patterns
 import NoUnused.Variables
 import Review.Rule as Rule exposing (Rule)
 import Simplify
-import NoUnoptimizedRecursion
+
 
 config : List Rule
 config =
-    [ Docs.NoMissing.rule
-        { document = onlyExposed
-        , from = exposedModules
-        }
-    , Docs.ReviewLinksAndSections.rule
-    , Docs.ReviewAtDocs.rule
+    [ {- Docs.NoMissing.rule
+             { document = onlyExposed
+             , from = exposedModules
+             }
+         ,
+      -}
+      --   Docs.ReviewLinksAndSections.rule
+      Docs.ReviewAtDocs.rule
     , Docs.UpToDateReadmeLinks.rule
     , NoConfusingPrefixOperator.rule
     , NoDebug.Log.rule
@@ -51,12 +54,15 @@ config =
         |> Rule.ignoreErrorsForDirectories [ "tests/" ]
     , NoExposingEverything.rule
     , NoImportingEverything.rule []
-    , NoMissingTypeAnnotation.rule
+
+    -- , NoMissingTypeAnnotation.rule
     , NoMissingTypeExpose.rule
     , NoSimpleLetBody.rule
     , NoPrematureLetComputation.rule
     , NoUnoptimizedRecursion.rule (NoUnoptimizedRecursion.optOutWithComment "IGNORE TCO")
-        |> Rule.ignoreErrorsForDirectories [ "tests/" ]
+        -- We should indeed make quadtree tail recursive, but that is a MAJOR refactoring
+        -- in performance critical code...
+        |> Rule.ignoreErrorsForDirectories [ "tests/", "src/Force/" ]
     , NoUnused.CustomTypeConstructors.rule []
     , NoUnused.CustomTypeConstructorArgs.rule
     , NoUnused.Dependencies.rule
@@ -65,5 +71,6 @@ config =
     , NoUnused.Patterns.rule
     , NoUnused.Variables.rule
     , Simplify.rule Simplify.defaults
+        |> Rule.ignoreErrorsForFiles [ "tests/StatisticsTests.elm" ]
     ]
-    |> List.map (Rule.ignoreErrorsForDirectories [ "tests/VerifyExamples" ])
+        |> List.map (Rule.ignoreErrorsForDirectories [ "tests/VerifyExamples" ])

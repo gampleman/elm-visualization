@@ -1,4 +1,4 @@
-module Shape.StackTests exposing (offset, series3x3, series4x4)
+module Shape.StackTests exposing (offset)
 
 import Expect
 import Shape

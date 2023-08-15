@@ -25,7 +25,7 @@ convert : ( Float, Float ) -> ( a, List a ) -> Float -> a
 convert domain ( head, tail ) val =
     let
         last h t =
-            case tail of
+            case t of
                 [] ->
                     h
 
@@ -82,14 +82,14 @@ invertExtent ( mi, ma ) ( head, tail ) val =
                             [] ->
                                 Nothing
 
-                            d :: ds ->
+                            _ :: ds ->
                                 helper ds xs
     in
     helper (mi :: domain ++ [ ma ]) (head :: tail)
 
 
 ticks : ( Float, Float ) -> ( a, List a ) -> Int -> List Float
-ticks ( start, end ) domain count =
+ticks ( start, end ) _ count =
     Statistics.ticks start end count
 
 
