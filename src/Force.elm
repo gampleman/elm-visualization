@@ -32,6 +32,7 @@ The x- and y-positioning forces push nodes towards a desired position along the 
 
 import Dict exposing (Dict)
 import Force.Collision as Collision
+import Force.Jiggle exposing (jiggle)
 import Force.ManyBody as ManyBody
 
 
@@ -135,10 +136,10 @@ applyForce alpha force entities =
                                 ( Just sourceNode, Just targetNode ) ->
                                     let
                                         x =
-                                            targetNode.x + targetNode.vx - sourceNode.x - sourceNode.vx
+                                            jiggle (targetNode.x + targetNode.vx - sourceNode.x - sourceNode.vx)
 
                                         y =
-                                            targetNode.y + targetNode.vy - sourceNode.y - sourceNode.vy
+                                            jiggle (targetNode.y + targetNode.vy - sourceNode.y - sourceNode.vy)
 
                                         d =
                                             sqrt (x ^ 2 + y ^ 2)
@@ -193,10 +194,10 @@ applyForce alpha force entities =
                         Just { strength, x, y, radius } ->
                             let
                                 dx =
-                                    ent.x - x
+                                    jiggle (ent.x - x)
 
                                 dy =
-                                    ent.y - y
+                                    jiggle (ent.y - y)
 
                                 r =
                                     sqrt (dx ^ 2 + dy ^ 2)
