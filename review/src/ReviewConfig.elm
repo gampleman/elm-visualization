@@ -63,6 +63,7 @@ config =
         -- We should indeed make quadtree tail recursive, but that is a MAJOR refactoring
         -- in performance critical code...
         |> Rule.ignoreErrorsForDirectories [ "tests/", "src/Force/" ]
+        |> Rule.ignoreErrorsForFiles [ "src/Hierarchy/Tidy.elm" ]
     , NoUnused.CustomTypeConstructors.rule []
     , NoUnused.CustomTypeConstructorArgs.rule
 

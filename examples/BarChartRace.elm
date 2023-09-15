@@ -11,7 +11,6 @@ import Axis
 import Browser
 import Browser.Events
 import Color
-import Csv
 import Csv.Decode as Csv
 import DateFormat
 import Dict exposing (Dict)
@@ -79,7 +78,7 @@ type Model
 
 
 type Msg
-    = RecievedData (Result Http.Error (List RawBrand))
+    = ReceivedData (Result Http.Error (List RawBrand))
     | Tick Int
 
 
@@ -112,31 +111,20 @@ init () =
     ( Loading
     , Http.get
         { url = "data/category-brands.csv"
-        , expect = expectCsv RecievedData decoder
+        , expect = expectCsv ReceivedData decoder
         }
     )
 
 
-expectCsv : (Result Http.Error (List a) -> msg) -> Csv.Decoder (a -> a) a -> Http.Expect msg
+expectCsv : (Result Http.Error (List a) -> msg) -> Csv.Decoder a -> Http.Expect msg
 expectCsv tagger decode =
     Http.expectString
-        (\result ->
-            tagger
-                (case result of
-                    Ok data ->
-                        case Csv.parse data |> Csv.decodeCsv decode of
-                            Ok decoded ->
-                                Ok decoded
-
-                            Err (Csv.CsvErrors ers) ->
-                                Err (Http.BadBody (String.join ", " ers))
-
-                            Err (Csv.DecodeErrors ers) ->
-                                Err (Http.BadBody (String.join ", " (List.map (\( rec, err ) -> "Record #" ++ String.fromInt rec ++ ": " ++ err) ers)))
-
-                    Err r ->
-                        Err r
-                )
+        (Result.andThen
+            (\data ->
+                Csv.decodeCsv Csv.FieldNamesFromFirstRow decode data
+                    |> Result.mapError (Csv.errorToString >> Http.BadBody)
+            )
+            >> tagger
         )
 
 
@@ -144,20 +132,25 @@ type alias RawBrand =
     { name : String, value : Float, category : String, time : Time.Posix }
 
 
-decoder : Csv.Decoder (RawBrand -> a) a
+decoder : Csv.Decoder RawBrand
 decoder =
-    Csv.map RawBrand
-        (Csv.field "name" Ok
-            |> Csv.andMap (Csv.field "value" (String.toFloat >> Result.fromMaybe "no conversion"))
-            |> Csv.andMap (Csv.field "category" Ok)
-            |> Csv.andMap (Csv.field "date" (Iso8601.toTime >> Result.mapError (always "Could not parse date")))
-        )
+    Csv.into RawBrand
+        |> Csv.pipeline (Csv.field "name" Csv.string)
+        |> Csv.pipeline (Csv.field "value" Csv.float)
+        |> Csv.pipeline (Csv.field "category" Csv.string)
+        |> Csv.pipeline (Csv.field "date" dateDecoder)
+
+
+dateDecoder : Csv.Decoder Time.Posix
+dateDecoder =
+    Csv.string
+        |> Csv.andThen (Iso8601.toTime >> Result.mapError (always "Could not parse date") >> Csv.fromResult)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
-        ( RecievedData (Ok rawData), _ ) ->
+        ( ReceivedData (Ok rawData), _ ) ->
             ( Loaded
                 { transition = buildTransition rawData
                 , categories =
@@ -169,7 +162,7 @@ update msg model =
             , Cmd.none
             )
 
-        ( RecievedData (Err e), _ ) ->
+        ( ReceivedData (Err e), _ ) ->
             ( Error e, Cmd.none )
 
         ( Tick ms, Loaded m ) ->
@@ -327,8 +320,6 @@ viewChart categories ( now, data ) =
         yScale =
             Scale.linear ( margin, h - margin ) ( 0, n )
 
-        -- Statistics.range 0 (n + 1) 1
-        --     |> Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.1 } ( margin, margin + barSize * (n + 1 + 0.1) )
         colorScale =
             Scale.ordinal Scale.Color.tableau10 categories
     in
