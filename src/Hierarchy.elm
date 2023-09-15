@@ -117,7 +117,7 @@ size =
     Size
 
 
-{-| [![Layered behavior](https://deploy-preview-142--elm-visualization.netlify.app/LayeredTree/preview@2x.png)](https://deploy-preview-142--elm-visualization.netlify.app/LayeredTree/)
+{-| [![Layered behavior](https://elm-visualization.netlify.com/LayeredTree/preview@2x.png)](https://elm-visualization.netlify.com/LayeredTree/)
 
 Passing this option causes each "layer" (i.e. nodes in the tree that have the same number of ancestor nodes)
 to be layed out with the same y value. This makes the layers much more emphasized (if you are for instance
@@ -232,7 +232,7 @@ none =
 
 {-| Produces a tidy node-link diagram of a tree, based on a linear time algorithm by [van der Ploeg](https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=d45f66231e053590c64c9d901fb7b028dbc5c923).
 
-[![Tidy Tree](https://deploy-preview-142--elm-visualization.netlify.app/TidyTree/preview@2x.png)](https://deploy-preview-142--elm-visualization.netlify.app/TidyTree/)
+[![Tidy Tree](https://elm-visualization.netlify.com/TidyTree/preview@2x.png)](https://elm-visualization.netlify.com/TidyTree/)
 
 -}
 tidy :
@@ -340,7 +340,7 @@ tidy attrs t =
 
 {-| A treemap recursively subdivides area into rectangles according to each node’s associated value. This implementation supports an extensible tiling method.
 
-[![Treemap](https://deploy-preview-142--elm-visualization.netlify.app/Treemap/preview@2x.png)](https://deploy-preview-142--elm-visualization.netlify.app/Treemap/)
+[![Treemap](https://elm-visualization.netlify.com/Treemap/preview@2x.png)](https://elm-visualization.netlify.com/Treemap/)
 
 -}
 treemap :
@@ -479,7 +479,7 @@ squarifyRatio =
 
 {-| The partition layout produces adjacency diagrams: a space-filling variant of a node-link tree diagram. Rather than drawing a link between parent and child in the hierarchy, nodes are drawn as solid areas (either arcs or rectangles), and their placement relative to other nodes reveals their position in the hierarchy. The size of the nodes encodes a quantitative dimension that would be difficult to show in a node-link diagram.
 
-[![Sunburst diagram](https://deploy-preview-142--elm-visualization.netlify.app/Sunburst/preview@2x.png)](https://deploy-preview-142--elm-visualization.netlify.app/Sunburst/)
+[![Sunburst diagram](https://elm-visualization.netlify.com/Sunburst/preview@2x.png)](https://elm-visualization.netlify.com/Sunburst/)
 
 -}
 partition :
