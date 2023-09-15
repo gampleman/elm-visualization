@@ -2,7 +2,7 @@ module Scale.Continuous exposing (convertTransform, invertTransform, linear, nic
 
 import Interpolation
 import Statistics
-import String exposing (join, padRight, split)
+import String
 
 
 
@@ -234,15 +234,19 @@ nice domain count =
     withNormalizedDomain (\dmn -> fixPoint 10 dmn computation) domain
 
 
-exponent x =
-    if x == 0 then
-        0
+exponent num =
+    let
+        helper soFar x =
+            if x == 0 then
+                soFar
 
-    else if x < 1 then
-        1 + exponent (x * 10)
+            else if x < 1 then
+                helper (1 + soFar) (x * 10)
 
-    else
-        0
+            else
+                soFar
+    in
+    helper 0 num
 
 
 precisionFixed step =

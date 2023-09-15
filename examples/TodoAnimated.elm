@@ -11,9 +11,9 @@ module TodoAnimated exposing (main)
 import Browser
 import Browser.Dom as Dom
 import Browser.Events
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Html exposing (Attribute, Html, a, button, div, footer, h1, header, input, label, li, node, p, section, span, strong, text, ul)
+import Html.Attributes exposing (attribute, autofocus, checked, class, classList, for, hidden, href, id, name, placeholder, style, type_, value)
+import Html.Events exposing (keyCode, on, onBlur, onClick, onDoubleClick, onInput)
 import Html.Keyed as Keyed
 import Html.Lazy exposing (lazy, lazy2)
 import Interpolation exposing (Interpolator)

@@ -32,6 +32,7 @@ The x- and y-positioning forces push nodes towards a desired position along the 
 
 import Dict exposing (Dict)
 import Force.Collision as Collision
+import Force.Jiggle exposing (jiggle)
 import Force.ManyBody as ManyBody
 
 
@@ -135,10 +136,10 @@ applyForce alpha force entities =
                                 ( Just sourceNode, Just targetNode ) ->
                                     let
                                         x =
-                                            targetNode.x + targetNode.vx - sourceNode.x - sourceNode.vx
+                                            jiggle (targetNode.x + targetNode.vx - sourceNode.x - sourceNode.vx)
 
                                         y =
-                                            targetNode.y + targetNode.vy - sourceNode.y - sourceNode.vy
+                                            jiggle (targetNode.y + targetNode.vy - sourceNode.y - sourceNode.vy)
 
                                         d =
                                             sqrt (x ^ 2 + y ^ 2)
@@ -150,7 +151,7 @@ applyForce alpha force entities =
                                         |> Dict.update target (Maybe.map (\sn -> { sn | vx = sn.vx - x * l * bias, vy = sn.vy - y * l * bias }))
                                         |> Dict.update source (Maybe.map (\tn -> { tn | vx = tn.vx + x * l * (1 - bias), vy = tn.vy + y * l * (1 - bias) }))
 
-                                otherwise ->
+                                _ ->
                                     ents
                         )
                         entitiesList
@@ -193,10 +194,10 @@ applyForce alpha force entities =
                         Just { strength, x, y, radius } ->
                             let
                                 dx =
-                                    ent.x - x
+                                    jiggle (ent.x - x)
 
                                 dy =
-                                    ent.y - y
+                                    jiggle (ent.y - y)
 
                                 r =
                                     sqrt (dx ^ 2 + dy ^ 2)

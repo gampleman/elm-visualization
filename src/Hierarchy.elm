@@ -69,11 +69,12 @@ easy to understand from the type signature which options are supported.
 
 -}
 type Supported
-    = Supported
+    = Supported Never
 
 
 processAttributes : (Attribute a attr -> b -> b) -> b -> List (Attribute a attr) -> b
 processAttributes assigner =
+    -- IGNORE TCO
     List.foldl
         (\a d ->
             case a of

@@ -1,6 +1,7 @@
 module Scale.Log exposing (scale)
 
 import Interpolation
+import List.Extra
 import Scale.Continuous as Continuous
 import Statistics
 
@@ -63,10 +64,10 @@ ticks base ( domStart, domEnd ) count =
     let
         ( start, end, reverse ) =
             if domStart <= domEnd then
-                ( domStart, domEnd, identity )
+                ( domStart, domEnd, List.reverse )
 
             else
-                ( domEnd, domStart, List.reverse )
+                ( domEnd, domStart, identity )
 
         ( topi, topj ) =
             if start < 0 then
@@ -81,65 +82,65 @@ ticks base ( domStart, domEnd ) count =
         n =
             toFloat count
 
-        positiveHelper i j k =
-            let
-                p =
-                    pows i
-
-                t =
-                    p * k
-            in
+        positiveHelper i j k res =
             if i < j then
                 if k < base then
+                    let
+                        p =
+                            pows i
+
+                        t =
+                            p * k
+                    in
                     if t < start then
-                        positiveHelper i j (k + 1)
+                        positiveHelper i j (k + 1) res
 
                     else if t > end then
-                        positiveHelper (i + 1) j 1
+                        positiveHelper (i + 1) j 1 res
 
                     else
-                        t :: positiveHelper i j (k + 1)
+                        positiveHelper i j (k + 1) (t :: res)
 
                 else
-                    positiveHelper (i + 1) j 1
+                    positiveHelper (i + 1) j 1 res
 
             else
-                []
+                reverse res
 
-        negativeHelper i j k =
-            let
-                p =
-                    pows i
-
-                t =
-                    p * k
-            in
+        negativeHelper i j k res =
             if i < j then
                 if k >= 1 then
+                    let
+                        p =
+                            pows i
+
+                        t =
+                            p * k
+                    in
                     if t < start then
-                        negativeHelper i j (k - 1)
+                        negativeHelper i j (k - 1) res
 
                     else if t > end then
-                        negativeHelper (i + 1) j (base - 1)
+                        negativeHelper (i + 1) j (base - 1) res
 
                     else
-                        t :: negativeHelper i j (k - 1)
+                        negativeHelper i j (k - 1) (t :: res)
 
                 else
-                    negativeHelper (i + 1) j (base - 1)
+                    negativeHelper (i + 1) j (base - 1) res
 
             else
-                []
+                reverse res
     in
     if toFloat (round base) == base && topj - topi < n then
         if start > 0 then
-            reverse <| positiveHelper (toFloat (round topi - 1)) (toFloat (round topj + 1)) 1
+            positiveHelper (toFloat (round topi - 1)) (toFloat (round topj + 1)) 1 []
 
         else
-            reverse <| negativeHelper (toFloat (round topi - 1)) (toFloat (round topj + 1)) (base - 1)
+            negativeHelper (toFloat (round topi - 1)) (toFloat (round topj + 1)) (base - 1) []
 
     else
-        reverse <| List.map (\a -> pows a) <| Statistics.ticks topi topj <| round (min (topj - topi) n)
+        reverse <| List.Extra.reverseMap (\a -> pows a) <| Statistics.ticks topi topj <| round (min (topj - topi) n)
 
 
 tickFormat : Float -> ( Float, Float ) -> Int -> Float -> String
@@ -222,7 +223,7 @@ formatExponential num =
                 ( [ '0' ], x :: xs ) ->
                     helper (level - 1) [ x ] xs
 
-                ( [ dig ], dec ) ->
+                ( [ dig ], _ ) ->
                     String.cons dig "e"
                         ++ (if level >= 0 then
                                 "+"

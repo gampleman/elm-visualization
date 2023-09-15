@@ -10,9 +10,8 @@ import Array exposing (Array)
 import Color exposing (Color)
 import Path exposing (Path)
 import Shape exposing (Arc, defaultPieConfig)
-import TypedSvg exposing (circle, g, svg)
+import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes exposing (fill, stroke, transform, viewBox)
-import TypedSvg.Attributes.InPx exposing (cx, cy, r)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Paint(..), Transform(..))
 
@@ -115,7 +114,7 @@ annular arcs =
                 , stroke <| Paint Color.white
                 ]
 
-        makeCorners { startAngle, endAngle, outerRadius, innerRadius } =
+        makeCorners { startAngle, endAngle, outerRadius } =
             [ corner startAngle (outerRadius - cornerRadius) 1
             , corner endAngle (outerRadius - cornerRadius) -1
             , corner endAngle (mainRadius - 60 + cornerRadius) -1

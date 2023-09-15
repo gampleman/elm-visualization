@@ -9,11 +9,9 @@ is merely a convenience for positioning labels.
 -}
 
 import Array exposing (Array)
-import Color exposing (Color, fromRgba)
-import LowLevel.Command exposing (arcTo, clockwise, largestArc, moveTo)
+import Color exposing (Color)
 import Path
 import Shape exposing (Arc, defaultPieConfig)
-import SubPath exposing (SubPath)
 import TypedSvg exposing (circle, g, svg)
 import TypedSvg.Attributes exposing (fill, stroke, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (cx, cy, r)
@@ -55,20 +53,6 @@ colors =
 radius : Float
 radius =
     min (w / 2) h / 2 - 10
-
-
-dot : SubPath
-dot =
-    SubPath.with (moveTo ( 5, 5 ))
-        [ arcTo
-            [ { radii = ( 5, 5 )
-              , xAxisRotate = 0
-              , arcFlag = largestArc
-              , direction = clockwise
-              , target = ( 5, 5 )
-              }
-            ]
-        ]
 
 
 circular : List Arc -> Svg msg

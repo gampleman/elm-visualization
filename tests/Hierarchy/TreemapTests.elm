@@ -1,11 +1,10 @@
-module Hierarchy.TreemapTests exposing (..)
+module Hierarchy.TreemapTests exposing (suite)
 
 import Expect
 import Fuzz
 import Hierarchy
 import Hierarchy.Tree as Tree
 import HierarchyTests exposing (fuzzTree)
-import Html exposing (output)
 import Test exposing (Test)
 
 

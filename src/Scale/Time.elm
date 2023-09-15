@@ -116,7 +116,7 @@ findInterval target intervals =
             else
                 findInterval target (( interval_, step_ ) :: xs)
 
-        x :: xs ->
+        x :: _ ->
             x
 
 

@@ -11,11 +11,8 @@ This example demonstrates how one can use the Zoom module for other rendering te
 import Browser
 import Html exposing (Html)
 import Html.Attributes exposing (height, style, width)
-import Json.Decode exposing (Value)
 import Math.Matrix4 as Mat4 exposing (Mat4)
-import Math.Vector2 as Vec2 exposing (Vec2, vec2)
-import Math.Vector3 as Vec3 exposing (Vec3, vec3)
-import Random
+import Math.Vector2 exposing (Vec2, vec2)
 import WebGL exposing (Mesh, Shader)
 import Zoom exposing (Zoom)
 
@@ -78,11 +75,6 @@ zoomToMat4 zoom =
 type alias Vertex =
     { position : Vec2
     }
-
-
-n : Int
-n =
-    2 ^ 19
 
 
 mesh : Mesh Vertex

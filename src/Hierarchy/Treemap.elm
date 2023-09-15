@@ -1,6 +1,6 @@
-module Hierarchy.Treemap exposing (..)
+module Hierarchy.Treemap exposing (BBox, dice, layout, slice, sliceDice, squarify, squarifyRatio)
 
-import Hierarchy.Tree as Tree exposing (Tree(..))
+import Hierarchy.Tree as Tree exposing (Tree)
 import List.Extra
 
 

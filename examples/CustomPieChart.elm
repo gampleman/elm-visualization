@@ -1,4 +1,4 @@
-module CustomPieChart exposing (main)
+module CustomPieChart exposing (ChartConfig, main)
 
 {-| An interactive example showing the effect of various options on pie generators.
 
@@ -9,13 +9,10 @@ module CustomPieChart exposing (main)
 import Array exposing (Array)
 import Color exposing (Color)
 import Example
-import Html exposing (Html, br, div, h2, input, label)
-import Html.Attributes as Attr exposing (step, style, type_, value)
-import Html.Events exposing (onInput)
 import Path
 import Shape exposing (defaultPieConfig)
 import TypedSvg exposing (g, svg, text_)
-import TypedSvg.Attributes exposing (dy, fill, stroke, textAnchor, transform, viewBox)
+import TypedSvg.Attributes exposing (dy, fill, stroke, textAnchor, transform)
 import TypedSvg.Attributes.InPx exposing (height, width)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), Paint(..), Transform(..), em)
@@ -76,7 +73,7 @@ view config =
         makeSlice index datum =
             Path.element (Shape.arc datum) [ fill <| Paint <| Maybe.withDefault Color.black <| Array.get index colors, stroke <| Paint Color.white ]
 
-        makeLabel slice ( label, value ) =
+        makeLabel slice ( label, _ ) =
             let
                 ( x, y ) =
                     Shape.centroid { slice | innerRadius = config.labelPosition, outerRadius = config.labelPosition }

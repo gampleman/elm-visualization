@@ -10,8 +10,17 @@
   },
   "scripts": {
     "build-docs": "elm-example-publisher --ellie --ellie-dep gampleman/elm-visualization@2.3.0 --base-url https://elm-visualization.netlify.com/",
-    "test": "elm-test",
-    "validate-format": "elm-format --validate src/ tests/"
+    "test": "npm-run-all --print-name  --sequential test:make test:format test:examples test:run  test:review test:review:examples",
+    "test:make": "elm make --docs=docs.json",
+    "test:format": "elm-format src/ tests/ examples/ review/ --validate",
+    "test:examples": "elm-verify-examples && elm-format --yes tests/VerifyExamples > /dev/null",
+    "test:run": "elm-test",
+    "test:review": "elm-review",
+    "test:review:examples": "elm-review --elmjson examples/elm.json --config review --ignore-dirs ../tests,../src",
+    "preview-docs": "elm-doc-preview",
+    "elm-bump": "npm-run-all --print-name --sequential test bump-version 'test:review -- --fix-all-without-prompt'",
+    "bump-version": "(yes | elm bump)",
+    "format": "elm-format src/ tests/ examples/ review/ --yes"
   },
   "repository": {
     "type": "git",
@@ -28,8 +37,11 @@
   },
   "dependencies": {
     "elm": "0.19.1-5",
-    "elm-format": "^0.8.5",
-    "elm-test": "0.19.1-revision6",
-    "elm-analyse": "0.16.5"
+    "elm-doc-preview": "^5.0.5",
+    "elm-format": "^0.8.2",
+    "elm-review": "^2.10.2",
+    "elm-test": "0.19.1-revision12",
+    "elm-verify-examples": "^5.2.0",
+    "npm-run-all": "^4.1.5"
   }
 }

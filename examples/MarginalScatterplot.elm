@@ -11,6 +11,7 @@ It demonstrates the following techniques:
 
 @category Advanced
 @minify false
+
 -}
 
 import Array
@@ -32,7 +33,7 @@ import TypedSvg.Attributes exposing (class, fill, opacity, stroke, transform, vi
 import TypedSvg.Attributes.InPx exposing (cx, cy, height, r, strokeWidth, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Events
-import TypedSvg.Types exposing (AnchorAlignment(..), CoordinateSystem(..), Length(..), Opacity(..), Paint(..), Transform(..), px)
+import TypedSvg.Types exposing (Opacity(..), Paint(..), Transform(..))
 import Units.Pixels exposing (Pixels)
 import VoronoiDiagram2d
 
@@ -301,7 +302,7 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.none
 
 

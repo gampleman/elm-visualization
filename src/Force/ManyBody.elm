@@ -1,7 +1,8 @@
-module Force.ManyBody exposing (AggregateVertex, Vertex, applyForce, config, constructSuperPoint, manyBody, wrapper)
+module Force.ManyBody exposing (AggregateVertex, Vertex, wrapper)
 
 import BoundingBox2d exposing (BoundingBox2d)
 import Dict exposing (Dict)
+import Force.Jiggle exposing (jiggle)
 import Force.QuadTree as QuadTree exposing (QuadTree, UserCoords)
 import Point2d exposing (Point2d)
 import Units.Pixels exposing (Pixels)
@@ -141,7 +142,7 @@ applyForce alpha theta qtree vertex =
                     Vector2d.from target.position source.position
 
                 len =
-                    Vector2d.length delta |> Units.Pixels.inPixels
+                    Vector2d.length delta |> Units.Pixels.inPixels |> jiggle
 
                 weight =
                     source.strength * alpha / (len ^ 2)

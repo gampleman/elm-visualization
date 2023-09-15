@@ -9,7 +9,7 @@ module PopulationMinnesota exposing (main)
 import Axis
 import Color exposing (Color)
 import List.Extra as List
-import Scale exposing (BandScale, ContinuousScale, OrdinalScale, QuantizeScale, Scale, defaultBandConfig)
+import Scale exposing (BandScale, ContinuousScale, Scale, defaultBandConfig)
 import Scale.Color
 import Shape exposing (StackConfig, StackResult)
 import Statistics
@@ -107,7 +107,7 @@ column yScale ( year, values ) =
 
 
 view : StackResult Int -> Svg msg
-view { values, labels, extent } =
+view { values, extent } =
     let
         scaledValues =
             values

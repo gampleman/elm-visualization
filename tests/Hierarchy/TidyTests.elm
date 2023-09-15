@@ -3,15 +3,14 @@ module Hierarchy.TidyTests exposing (suite)
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer)
 import Hierarchy
-import Hierarchy.Tidy
-import Hierarchy.Tree as Tree exposing (Tree(..))
+import Hierarchy.Tree as Tree exposing (Tree)
 import HierarchyTests exposing (fuzzTree)
 import LineSegment2d exposing (LineSegment2d)
-import Point2d exposing (Point2d)
+import Point2d
 import Test exposing (Test)
-import Test.Html.Query exposing (children)
 
 
+suite : Test
 suite =
     Test.describe "Aesthetic rules for trees:"
         [ Test.fuzz fuzzHierarchy "Rule 1: No nodes should overlap" <|
@@ -116,7 +115,7 @@ expectNoCrossedLinks lay =
 
 connected : LineSegment2d u c -> LineSegment2d u c -> Bool
 connected a b =
-    LineSegment2d.startPoint a == LineSegment2d.startPoint b || LineSegment2d.startPoint a == LineSegment2d.endPoint b || LineSegment2d.startPoint a == LineSegment2d.endPoint b || LineSegment2d.endPoint a == LineSegment2d.endPoint b
+    LineSegment2d.startPoint a == LineSegment2d.startPoint b || LineSegment2d.startPoint a == LineSegment2d.endPoint b || LineSegment2d.startPoint b == LineSegment2d.endPoint a || LineSegment2d.endPoint a == LineSegment2d.endPoint b
 
 
 expectAllChildrenToHaveSameY : FinishedLayout -> Expectation

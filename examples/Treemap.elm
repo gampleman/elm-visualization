@@ -1,4 +1,4 @@
-module Treemap exposing (main)
+module Treemap exposing (TilingMethod, main)
 
 {-| @category Basics
 -}
@@ -6,14 +6,13 @@ module Treemap exposing (main)
 import Color exposing (Color)
 import Example
 import Hierarchy
-import Hierarchy.Tree as Tree exposing (Tree(..))
+import Hierarchy.Tree as Tree exposing (Tree)
 import Html exposing (Html)
-import List.Extra
 import Scale exposing (OrdinalScale)
 import Scale.Color
 import TypedSvg exposing (g, rect, svg)
-import TypedSvg.Attributes exposing (class, fill, href, id, stroke, transform, viewBox)
-import TypedSvg.Attributes.InPx exposing (height, width, x, y)
+import TypedSvg.Attributes exposing (fill, href, id, transform, viewBox)
+import TypedSvg.Attributes.InPx exposing (height, width, x)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (ClipPath(..), Paint(..), Transform(..), em)
 

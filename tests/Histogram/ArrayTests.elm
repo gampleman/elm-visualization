@@ -28,14 +28,14 @@ bisectRight =
                         Array.slice bisection (Array.length sorted) sorted |> Array.toList
 
                     allSmaller i =
-                        if List.all ((<) item) after then
+                        if List.all (\a -> item < a) after then
                             Expect.pass
 
                         else
                             Expect.fail ("Expected " ++ String.fromInt i ++ " to be smaller than " ++ Debug.toString after)
 
                     allGreater i =
-                        if List.all ((>=) item) before then
+                        if List.all (\a -> item >= a) before then
                             Expect.pass
 
                         else

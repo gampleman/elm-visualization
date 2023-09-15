@@ -61,7 +61,7 @@ range start stop step =
 
         helper i list =
             if i >= 0 then
-                helper (i - 1) <| start + step * toFloat i :: list
+                helper (i - 1) (start + step * toFloat i :: list)
 
             else
                 list
@@ -333,9 +333,9 @@ It also accepts some parameters to tune the behavior of the function:
 
   - `sensitivity`: This is used as a threshold to filter the candidate peaks to select the gloably biggest.
 
-  - `coalesce`: To prevent peaks that span multiple samples, this parameter will coalesce these into a single sample.
+  - `coallesce`: To prevent peaks that span multiple samples, this parameter will coalesce these into a single sample.
 
-    peaks identity { lookaround = 2, sensitivity = 1.4, coalesce = 0 } [ 2, 0, 10, 2, 1 ] --> [ 10 ]
+    peaks identity { lookaround = 2, sensitivity = 1.4, coallesce = 0 } [ 2, 0, 10, 2, 1 ] --> [ 10 ]
 
 Based on work by [Yuri Vishnevsky](https://observablehq.com/@yurivish/peak-detection).
 

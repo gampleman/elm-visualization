@@ -31,37 +31,28 @@ Based on work by Kerry Roden (under Apache 2 License).
 
 -}
 
-import Axis
 import Browser
-import Browser.Events
 import Color exposing (Color)
 import Csv.Decode as Csv
 import Curve
-import DateFormat
-import Dict exposing (Dict)
 import Example
 import Hierarchy
-import Hierarchy.Tree as Tree exposing (Tree(..))
+import Hierarchy.Tree as Tree exposing (Tree)
 import Html exposing (Html)
 import Http
-import Interpolation exposing (Interpolator)
-import Iso8601
 import List.Extra
 import Path exposing (Path)
-import Scale exposing (ContinuousScale, OrdinalScale, Scale, defaultBandConfig)
+import Scale exposing (OrdinalScale)
 import Scale.Color
 import Set
 import Shape
-import Statistics
 import Svg.Lazy
-import Time
-import Transition exposing (Transition)
-import TypedSvg exposing (g, rect, svg, text_, tspan)
-import TypedSvg.Attributes exposing (class, dy, fill, fillOpacity, fontWeight, stroke, style, textAnchor, transform, viewBox)
+import TypedSvg exposing (g, rect, svg, text_)
+import TypedSvg.Attributes exposing (dy, fill, stroke, textAnchor, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, rx, strokeWidth, width, x, y)
-import TypedSvg.Core exposing (Attribute, Svg, text)
+import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Events
-import TypedSvg.Types exposing (AnchorAlignment(..), FontWeight(..), Opacity(..), Paint(..), Transform(..), em)
+import TypedSvg.Types exposing (AnchorAlignment(..), Opacity(..), Paint(..), Transform(..), em)
 
 
 

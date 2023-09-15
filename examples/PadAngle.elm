@@ -24,11 +24,6 @@ h =
     504
 
 
-cornerRadius : Float
-cornerRadius =
-    12
-
-
 rgba255 : Int -> Int -> Int -> Float -> Color
 rgba255 r g b a =
     Color.fromRgba { red = toFloat r / 255, green = toFloat g / 255, blue = toFloat b / 255, alpha = a }

@@ -2,7 +2,6 @@ module Scale.Threshold exposing (scale)
 
 import Array exposing (Array)
 import Histogram.Array exposing (bisectRight)
-import Statistics
 
 
 deinterleave : List ( a, b ) -> List a -> List b -> ( Array a, Array b )

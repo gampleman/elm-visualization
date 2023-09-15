@@ -16,10 +16,9 @@ import Scale exposing (ContinuousScale, OrdinalScale)
 import Scale.Color
 import Shape
 import Statistics
-import Time
 import TypedSvg exposing (g, svg, text_)
 import TypedSvg.Attributes exposing (class, dy, fill, fontFamily, stroke, textAnchor, transform, viewBox)
-import TypedSvg.Attributes.InPx exposing (fontSize, height, strokeWidth, x, y)
+import TypedSvg.Attributes.InPx exposing (fontSize, strokeWidth, x, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), Paint(..), Transform(..), em)
 

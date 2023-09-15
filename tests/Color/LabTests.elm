@@ -3,7 +3,7 @@ module Color.LabTests exposing (suite)
 import Color exposing (Color)
 import Color.Lab as Lab
 import Expect exposing (Expectation, FloatingPointTolerance(..))
-import Fuzz exposing (Fuzzer, floatRange, intRange, triple)
+import Fuzz exposing (Fuzzer, floatRange, triple)
 import Test exposing (Test, describe, fuzz, fuzz2, test)
 
 

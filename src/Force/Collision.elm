@@ -1,11 +1,12 @@
 module Force.Collision exposing (wrapper)
 
 import Array exposing (Array)
-import BoundingBox2d exposing (BoundingBox2d)
+import BoundingBox2d
 import Circle2d exposing (Circle2d)
-import Dict exposing (Dict)
+import Dict
+import Force.Jiggle exposing (jiggleVector)
 import Force.QuadTree as QuadTree exposing (QuadTree, UserCoords)
-import Point2d exposing (Point2d)
+import Point2d
 import Units.Pixels as Pixels exposing (Pixels)
 import Units.Quantity as Quantity exposing (Quantity)
 import Vector2d exposing (Vector2d)
@@ -24,7 +25,7 @@ wrapper strength iters radii points =
         vertices =
             Dict.toList points
                 |> List.filterMap
-                    (\( key, { x, y, vx, vy } as point ) ->
+                    (\( key, { x, y, vx, vy } ) ->
                         Dict.get key radii
                             |> Maybe.map
                                 (\radius ->
@@ -117,6 +118,7 @@ applyForce strength qtree velocities node =
 
                             xy =
                                 Vector2d.from (Circle2d.centerPoint vertex.circle) nodeNextCenterPoint
+                                    |> jiggleVector
 
                             rj =
                                 Circle2d.radius vertex.circle
@@ -160,6 +162,7 @@ applyForce strength qtree velocities node =
                 velocities
 
             else
+                -- IGNORE TCO
                 applyForce strength box.se (applyForce strength box.sw (applyForce strength box.ne (applyForce strength box.nw velocities node) node) node) node
 
 

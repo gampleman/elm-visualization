@@ -11,9 +11,9 @@ Note that the x scale here is linear rather than a band scale, since x axis is n
 
 import Axis
 import Color
-import Histogram exposing (Bin, HistogramGenerator)
+import Histogram exposing (Bin)
 import Random exposing (Generator, Seed)
-import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
+import Scale exposing (ContinuousScale)
 import TypedSvg exposing (g, rect, svg)
 import TypedSvg.Attributes exposing (class, fill, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
@@ -76,8 +76,8 @@ yScaleFromBins bins =
         |> Scale.linear ( h - 2 * padding, 0 )
 
 
-xAxis : List Float -> Svg msg
-xAxis model =
+xAxis : Svg msg
+xAxis =
     Axis.bottom [] xScale
 
 
@@ -106,7 +106,7 @@ view model =
     in
     svg [ viewBox 0 0 w h ]
         [ g [ transform [ Translate (padding - 1) (h - padding) ] ]
-            [ xAxis model ]
+            [ xAxis ]
         , g [ transform [ Translate (padding - 1) padding ] ]
             [ yAxis bins ]
         , g [ transform [ Translate padding padding ], class [ "series" ] ] <|

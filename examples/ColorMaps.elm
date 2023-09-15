@@ -6,12 +6,9 @@ module ColorMaps exposing (main)
 
 -}
 
-import Array
-import Browser
-import Color exposing (Color, rgb255)
-import Html exposing (Html, div)
-import Html.Attributes exposing (class, for, href, id, selected, style, title, type_, value)
-import Html.Events exposing (onInput)
+import Color exposing (Color)
+import Html exposing (Html)
+import Html.Attributes exposing (style, title)
 import Interpolation exposing (Interpolator)
 import Scale.Color
 

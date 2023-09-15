@@ -90,7 +90,7 @@ Finally, set up your view:
 @docs transform, asRecord
 
 
-## Events
+## Handling User Events
 
 @docs events, onDoubleClick, onWheel, onDrag, onGesture, onTouch
 
@@ -99,13 +99,13 @@ Finally, set up your view:
 import Browser.Events
 import Events exposing (Touch)
 import Html.Attributes exposing (style)
-import Json.Decode as D exposing (Decoder)
+import Json.Decode as D
 import Svg exposing (Attribute)
 import Svg.Attributes as A
 import Svg.Events exposing (custom)
 import Time
 import Zoom.Interpolation
-import Zoom.Matrix as Matrix exposing (Matrix2x3)
+import Zoom.Matrix exposing (Matrix2x3)
 import Zoom.Transform as Transform exposing (Transform)
 
 
@@ -811,7 +811,8 @@ easingInOutCubic t =
 ---
 
 
-{-| -}
+{-| Enumerates the ways a zoom transform can be changed.
+-}
 type TransitionOption
     = Instantly
     | WithAnimation ( Float, Float )

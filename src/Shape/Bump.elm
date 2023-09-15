@@ -1,6 +1,6 @@
-module Shape.Bump exposing (bumpRadialCurve, bumpXCurve, bumpYCurve)
+module Shape.Bump exposing (bumpXCurve, bumpYCurve)
 
-import LowLevel.Command exposing (cubicCurveTo, moveTo, quadraticCurveTo)
+import LowLevel.Command exposing (cubicCurveTo, moveTo)
 import SubPath exposing (SubPath)
 
 
@@ -52,34 +52,40 @@ bumpYCurve points =
                 ]
 
 
-pointRadial : Float -> Float -> ( Float, Float )
-pointRadial x y =
-    let
-        x1 =
-            x - pi / 2
-    in
-    ( y * cos x1, y * sin x1 )
+
+{-
+   Do we need this? Can be published later...
 
 
-bumpRadialCurve : List ( Float, Float ) -> SubPath
-bumpRadialCurve points =
-    case points of
-        [] ->
-            SubPath.empty
+   pointRadial : Float -> Float -> ( Float, Float )
+   pointRadial x y =
+       let
+           x1 =
+               x - pi / 2
+       in
+       ( y * cos x1, y * sin x1 )
 
-        ( fx, fy ) :: rest ->
-            SubPath.with (moveTo (pointRadial fx fy))
-                [ List.foldl
-                    (\( x, y ) ( ( x0, y0 ), soFar ) ->
-                        let
-                            y1 =
-                                (y0 + y) / 2
-                        in
-                        ( ( x, y ), ( pointRadial x0 y1, pointRadial x y1, pointRadial x y ) :: soFar )
-                    )
-                    ( ( fx, fy ), [] )
-                    rest
-                    |> Tuple.second
-                    |> List.reverse
-                    |> cubicCurveTo
-                ]
+
+   bumpRadialCurve : List ( Float, Float ) -> SubPath
+   bumpRadialCurve points =
+       case points of
+           [] ->
+               SubPath.empty
+
+           ( fx, fy ) :: rest ->
+               SubPath.with (moveTo (pointRadial fx fy))
+                   [ List.foldl
+                       (\( x, y ) ( ( x0, y0 ), soFar ) ->
+                           let
+                               y1 =
+                                   (y0 + y) / 2
+                           in
+                           ( ( x, y ), ( pointRadial x0 y1, pointRadial x y1, pointRadial x y ) :: soFar )
+                       )
+                       ( ( fx, fy ), [] )
+                       rest
+                       |> Tuple.second
+                       |> List.reverse
+                       |> cubicCurveTo
+                   ]
+-}
