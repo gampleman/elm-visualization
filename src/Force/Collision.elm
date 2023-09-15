@@ -4,6 +4,7 @@ import Array exposing (Array)
 import BoundingBox2d
 import Circle2d exposing (Circle2d)
 import Dict
+import Force.Jiggle exposing (jiggleVector)
 import Force.QuadTree as QuadTree exposing (QuadTree, UserCoords)
 import Point2d
 import Units.Pixels as Pixels exposing (Pixels)
@@ -117,6 +118,7 @@ applyForce strength qtree velocities node =
 
                             xy =
                                 Vector2d.from (Circle2d.centerPoint vertex.circle) nodeNextCenterPoint
+                                    |> jiggleVector
 
                             rj =
                                 Circle2d.radius vertex.circle
