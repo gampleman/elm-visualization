@@ -574,4 +574,14 @@ Since interpolation is abstract, that is not tied to any specific animation prim
 
 To actually turn it into a proper animation you can simply provide a suitable `t` on a timer. To make this easier, elm-visualization provides the `Transition` module. The documentation explains how to hook everything up properly in The Elm Architecture.
 
-Fundamentally it takes together an interpolator, a duration in milliseconds and an easing function.
+Fundamentally it takes together an interpolator, a duration in milliseconds and an easing function and allows you to run this.
+
+One important thing to note here: elm-visualization takes a mostly data centric approach to animation, where it makes it easy to transition either source data or some intermediately derived data, but generally isn't terrible suited to directly animating views (i.e. trees of HTML). This makes it quite powerful for data visualization purposes (no suprises here) as these are usually defined by the data, but not terribly suitable for normal user interface animation (where libraries like [mdgriffith/elm-animator](https://package.elm-lang.org/packages/mdgriffith/elm-animator/latest/) may be more suitable).
+
+## Conclusion
+
+We've gone through a whirlwind tour through some of the most important concepts in elm-visualization. There is plenty more to learn, but this should give you enough understanding to go through some of the [examples](https://elm-visualization.netlify.app) or [docs](https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/).
+
+We haven't covered some important topics (perhaps I'll expand this in the future) like user interactions, where we offer nice abstractions like [`Brush`](https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Brush) and [`Zoom`](https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Zoom).
+
+Finally, if you get stuck, please feel free to ask questions on the Elm slack (#visualization chanel) or on the [discussion board](https://github.com/gampleman/elm-visualization/discussions). Good luck!
