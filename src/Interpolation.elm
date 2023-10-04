@@ -2,9 +2,9 @@ module Interpolation exposing
     ( Interpolator
     , float, int, step, rgb, rgbWithGamma, hsl, hslLong, lab, hcl, hclLong
     , map, map2, map3, map4, map5, piecewise, tuple
-    , inParallel, list, ListCombiner(..), combineParallel
+    , inParallel, staggeredWithParallelism, list, ListCombiner(..), combineParallel
+    , pointAlongPath
     , samples
-    , pointAlongPath, staggeredWithParallelism
     )
 
 {-| This module provides a variety of interpolation methods for blending between two values.
@@ -26,7 +26,12 @@ so that you can build interpolators for your own custom datatypes.
 
 ### Lists
 
-@docs inParallel, list, ListCombiner, combineParallel
+@docs inParallel, staggeredWithParallelism, list, ListCombiner, combineParallel
+
+
+### Advanced
+
+@docs pointAlongPath
 
 
 ## Helpers
@@ -39,7 +44,9 @@ import Array
 import Color exposing (Color)
 import Color.Lab as Lab
 import Dict exposing (Dict)
+import LowLevel.Command
 import Path exposing (Path)
+import Statistics
 import SubPath
 
 
@@ -437,6 +444,74 @@ inParallel =
     List.foldr (map2 (::)) (always [])
 
 
+{-| Combines a bunch of interpolators with a controlled amount of parallelism.
+
+Let's illustrate what we mean by showing an example:
+
+    interpolate : Float -> Interpolator (List Int)
+    interpolate parallelism =
+        List.repeat 5 (Interpolation.int 0 8)
+            |> Interpolation.staggeredWithParallelism parallelism
+
+Now when the parallelism is 1, we will run each interpolator when the previous one concludes:
+
+    Interpolation.samples 11 (interpolate 1)
+    --> [ [ 0, 0, 0, 0, 0 ]
+    --> , [ 4, 0, 0, 0, 0 ]
+    --> , [ 8, 0, 0, 0, 0 ]
+    --> , [ 8, 4, 0, 0, 0 ]
+    --> , [ 8, 8, 0, 0, 0 ]
+    --> , [ 8, 8, 4, 0, 0 ]
+    --> , [ 8, 8, 8, 0, 0 ]
+    --> , [ 8, 8, 8, 4, 0 ]
+    --> , [ 8, 8, 8, 8, 0 ]
+    --> , [ 8, 8, 8, 8, 4 ]
+    --> , [ 8, 8, 8, 8, 8 ]
+    --> ]
+
+If we set it to 2, we will start each interpolator approximately halfway through the previous one:
+
+    Interpolation.samples 11 (interpolate 2)
+    --> [ [ 0, 0, 0, 0, 0 ]
+    --> , [ 2, 0, 0, 0, 0 ]
+    --> , [ 5, 1, 0, 0, 0 ]
+    --> , [ 7, 3, 0, 0, 0 ]
+    --> , [ 8, 6, 2, 0, 0 ]
+    --> , [ 8, 8, 4, 0, 0 ]
+    --> , [ 8, 8, 6, 2, 0 ]
+    --> , [ 8, 8, 8, 5, 1 ]
+    --> , [ 8, 8, 8, 7, 3 ]
+    --> , [ 8, 8, 8, 8, 6 ]
+    --> , [ 8, 8, 8, 8, 8 ]
+    --> ]
+
+If we set it to 1/2, we will wait approximately the time a single interpolator runs after each run doing nothing (slightly more samples so it's easier to see what's going on):
+
+    Interpolation.samples 16 (interpolate 0.5)
+    --> [ [ 0, 0, 0, 0, 0 ]
+    --> , [ 5, 0, 0, 0, 0 ]
+    --> , [ 8, 0, 0, 0, 0 ]
+    --> , [ 8, 0, 0, 0, 0 ]
+    --> , [ 8, 3, 0, 0, 0 ]
+    --> , [ 8, 8, 0, 0, 0 ]
+    --> , [ 8, 8, 0, 0, 0 ]
+    --> , [ 8, 8, 2, 0, 0 ]
+    --> , [ 8, 8, 6, 0, 0 ]
+    --> , [ 8, 8, 8, 0, 0 ]
+    --> , [ 8, 8, 8, 0, 0 ]
+    --> , [ 8, 8, 8, 5, 0 ]
+    --> , [ 8, 8, 8, 8, 0 ]
+    --> , [ 8, 8, 8, 8, 0 ]
+    --> , [ 8, 8, 8, 8, 3 ]
+    --> , [ 8, 8, 8, 8, 8 ]
+    --> ]
+
+If parallelism is equal to the length of the list, than this will behave like `Interpolation.inParallel`.
+
+If thinking about this in terms of parallelism doesn't feel natural, you may appreciate `Transition.stagger` which deals
+with durations and delays instead.
+
+-}
 staggeredWithParallelism : Float -> List (Interpolator a) -> Interpolator (List a)
 staggeredWithParallelism concurrency lst =
     let
@@ -452,8 +527,10 @@ staggeredWithParallelism concurrency lst =
         scale offset_ interp t =
             interp (clamp 0 1 ((t - offset_) / duration))
     in
-    List.foldr (\item ( soFar, off ) -> ( map2 (::) (scale off item) soFar, off + offset )) ( always [], 0 ) lst
+    (List.foldl (\item ( soFar, off ) -> ( map2 (::) (scale off item) soFar, off + offset )) ( always [], 0 ) lst
         |> Tuple.first
+    )
+        >> List.reverse
 
 
 {-| This is an interpolator for lists. It is quite complex and should be used if these conditions hold:
@@ -565,12 +642,57 @@ combineParallel =
     CombineParallel
 
 
-pointAlongPath : Path -> Interpolator (Maybe ( Float, Float ))
+{-| A somewhat elaborate interpolator that gives points along an arbitrary path, where at `t=0` this will give the first point in the path,
+and at `t=1` gives the last. If overshot, will give points along the tangent at these points.
+
+Will give the origin point if the path is empty or invalid (generally you should check somewhere earlier if there is a possibility of that).
+
+Performance note: this function does a fair amount of work when the interpolator is being constructed, so that later when it is called with
+the `t` parameter it can be rather efficient. Therefore it is more efficient to partially apply this with a path in a static context or store
+the partially applied function in a model.
+
+-}
+pointAlongPath : Path -> Interpolator ( Float, Float )
 pointAlongPath path =
     let
-        -- TODO: Estimate tolerance from data
         tolerance =
-            0.1
+            List.foldr
+                (\subPath coords ->
+                    case SubPath.unwrap subPath of
+                        Nothing ->
+                            coords
+
+                        Just { moveto, drawtos } ->
+                            let
+                                (LowLevel.Command.MoveTo coord) =
+                                    moveto
+                            in
+                            coord
+                                :: List.concatMap
+                                    (\drawto ->
+                                        case drawto of
+                                            LowLevel.Command.LineTo lts ->
+                                                lts
+
+                                            LowLevel.Command.CurveTo cts ->
+                                                List.concatMap (\( a, b, c ) -> [ a, b, c ]) cts
+
+                                            LowLevel.Command.QuadraticBezierCurveTo qbcts ->
+                                                List.concatMap (\( a, b ) -> [ a, b ]) qbcts
+
+                                            LowLevel.Command.EllipticalArc eas ->
+                                                List.concatMap (\arc -> [ arc.radii, arc.target ]) eas
+
+                                            LowLevel.Command.ClosePath ->
+                                                []
+                                    )
+                                    drawtos
+                )
+                []
+                path
+                |> Statistics.extent
+                |> Maybe.map (\( ( x0, x1 ), ( y0, y1 ) ) -> max (abs (x0 - x1)) (abs (y0 - y1)) / 100)
+                |> Maybe.withDefault 1
 
         alps =
             List.map
@@ -597,12 +719,13 @@ pointAlongPath path =
                     , \t ->
                         if soFar == 0 || t >= interpStart then
                             SubPath.pointAlong alp (t * totalLength - soFar)
+                                |> Maybe.withDefault ( 0, 0 )
 
                         else
                             fn t
                     )
                 )
-                ( 0, always Nothing )
+                ( 0, always ( 0, 0 ) )
                 alps
     in
     interp

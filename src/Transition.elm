@@ -1,7 +1,8 @@
 module Transition exposing
-    ( Transition, for, easeFor, constant, step, value, isComplete
+    ( Transition, for, easeFor, constant, step, value, isComplete, reverse
+    , repeat, repeatAlternate, repeatIndefinitely, repeatAlternateIndefinitely
+    , stagger
     , Easing, easeLinear, easeCubic, easePolynomialIn, easePolynomialOut, easePolynomial, easeSinusoidalIn, easeSinusoidalOut, easeSinusoidal, easeExponentialIn, easeExponentialOut, easeExponential, easeCircleIn, easeCircleOut, easeCircle, easeElasticIn, easeElasticOut, easeElastic, easeBackIn, easeBackOut, easeBack, easeBounceIn, easeBounceOut, easeBounce
-    , reverse
     )
 
 {-| Transition is a module for writing animations. It does not attempt to be an animation library for every use case,
@@ -86,7 +87,17 @@ Then make your view like normal:
 
 ## Transitions
 
-@docs Transition, for, easeFor, constant, step, value, isComplete
+@docs Transition, for, easeFor, constant, step, value, isComplete, reverse
+
+
+## Repetition
+
+@docs repeat, repeatAlternate, repeatIndefinitely, repeatAlternateIndefinitely
+
+
+## Staggered animation
+
+@docs stagger
 
 
 ## Easing
@@ -225,27 +236,55 @@ reverse (Transition transition) =
 -- Repetition
 
 
+{-| Repeat the transition a number of times.
+-}
 repeat : Int -> Transition a -> Transition a
 repeat n (Transition transition) =
     Transition { transition | repetitions = n, repeatType = FromBeginning }
 
 
+{-| Repeat the transition a set number of times, but run every even run in reverse.
+-}
 repeatAlternate : Int -> Transition a -> Transition a
 repeatAlternate n (Transition transition) =
     Transition { transition | repetitions = n, repeatType = Bounce }
 
 
+{-| Keep running the transition.
+-}
 repeatIndefinitely : Transition a -> Transition a
 repeatIndefinitely =
     repeat (round (1 / 0))
 
 
+{-| Keep running the transition indefinitely, but alternating forward and reverse runs.
+-}
 repeatAlternateIndefinitely : Transition a -> Transition a
 repeatAlternateIndefinitely =
     repeatAlternate (round (1 / 0))
 
 
-{-| -}
+{-| Run a bunch of animations with a duration and easing, but delay each successive animation by the delay amount.
+
+**Tip:** You may find the `List (Interpolator a) -> Transition (List a)` a little inconvenient for organizing staggered animations.
+However, you can create an `List (Interpolator (a -> a))`, where each function touches and interpolates some orthogonal property,
+then `List.foldl (\fn val -> fn val) model.target (Transition.value model.transition)`. This way you can stagger updates to almost any
+datastructure. However, you need to be somewhat careful if there are other ways the datastructure can be changed (like user input) to
+make sure to interupt the animation suitably.
+
+    type Foo =
+        { position: (Float, Float)
+        , color : Color
+        }
+
+    [ \t foo -> { foo | position = interpolatePosition t }
+    , \t foo -> { foo | color = Interpolation.rgb Color.blue Color.red t }
+    ]
+    |> Transition.stagger { durationEach = 200, delay = 100, easing Transition.easingCubic }
+
+Will first start animating the position, then after 100ms start animating the color, for a total duration of 300ms.
+
+-}
 stagger :
     { durationEach : Int
     , delay : Int
