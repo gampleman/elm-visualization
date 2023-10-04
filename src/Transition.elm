@@ -1,5 +1,7 @@
 module Transition exposing
-    ( Transition, for, easeFor, constant, step, value, isComplete
+    ( Transition, for, easeFor, constant, step, value, isComplete, reverse
+    , repeat, repeatAlternate, repeatIndefinitely, repeatAlternateIndefinitely
+    , stagger
     , Easing, easeLinear, easeCubic, easePolynomialIn, easePolynomialOut, easePolynomial, easeSinusoidalIn, easeSinusoidalOut, easeSinusoidal, easeExponentialIn, easeExponentialOut, easeExponential, easeCircleIn, easeCircleOut, easeCircle, easeElasticIn, easeElasticOut, easeElastic, easeBackIn, easeBackOut, easeBack, easeBounceIn, easeBounceOut, easeBounce
     )
 
@@ -85,7 +87,17 @@ Then make your view like normal:
 
 ## Transitions
 
-@docs Transition, for, easeFor, constant, step, value, isComplete
+@docs Transition, for, easeFor, constant, step, value, isComplete, reverse
+
+
+## Repetition
+
+@docs repeat, repeatAlternate, repeatIndefinitely, repeatAlternateIndefinitely
+
+
+## Staggered animation
+
+@docs stagger
 
 
 ## Easing
@@ -100,14 +112,27 @@ import Interpolation exposing (Interpolator)
 {-| A transition is a smooth interpolation between a beginning state and an end state, with a duration and easing.
 -}
 type Transition a
-    = Transition Int Int Easing (Interpolator a)
+    = Transition
+        { soFar : Int
+        , total : Int
+        , repetitions : Int
+        , completed : Int
+        , repeatType : Repeat
+        , easing : Float -> Float
+        , interpolator : Interpolator a
+        }
+
+
+type Repeat
+    = Bounce
+    | FromBeginning
 
 
 {-| A transition that is already complete that will always return the value passed in.
 -}
 constant : a -> Transition a
 constant val =
-    Transition 0 0 easeLinear (always val)
+    easeFor 0 easeLinear (always val)
 
 
 {-| Create a transition that will run _for_ a certain number of miliseconds. You need to provide an interpolation between the start and end states.
@@ -123,21 +148,51 @@ For example to fade something in for 400ms:
 -}
 for : Int -> Interpolator a -> Transition a
 for t =
-    Transition 0 (abs t) easeCubic
+    easeFor t easeCubic
 
 
 {-| This is like `Transition.for`, but allows one to specify a custom Easing function. `Transition.for` defaults to `Transition.easeCubic`.
 -}
 easeFor : Int -> Easing -> Interpolator a -> Transition a
-easeFor t easing =
-    Transition 0 (abs t) easing
+easeFor t (Easing easing) interpolator =
+    Transition
+        { soFar = 0
+        , total = abs t
+        , repetitions = 1
+        , completed = 0
+        , repeatType = FromBeginning
+        , easing = easing
+        , interpolator = interpolator
+        }
 
 
 {-| Updates the internal state forward by the passed number of miliseconds. You would typically do this in your `update` function.
 -}
 step : Int -> Transition a -> Transition a
-step ms (Transition soFar total easeing interp) =
-    Transition (min (soFar + ms) total) total easeing interp
+step ms (Transition transition) =
+    if ms + transition.soFar > transition.total then
+        if transition.repetitions + 1 >= transition.completed then
+            Transition { transition | soFar = transition.total }
+
+        else
+            case transition.repeatType of
+                Bounce ->
+                    Transition
+                        { transition
+                            | soFar = (transition.soFar - ms) - transition.total
+                            , repetitions = transition.repetitions + 1
+                            , interpolator = \t -> transition.interpolator (1 - t)
+                        }
+
+                FromBeginning ->
+                    Transition
+                        { transition
+                            | soFar = (transition.soFar - ms) - transition.total
+                            , repetitions = transition.repetitions + 1
+                        }
+
+    else
+        Transition { transition | soFar = transition.soFar + ms }
 
 
 {-| Returns the "current" value. You would typically call this in the view and render whatever this returns.
@@ -154,28 +209,112 @@ step ms (Transition soFar total easeing interp) =
 
 -}
 value : Transition a -> a
-value (Transition soFar total (Easing easeing) interp) =
-    interp (easeing (toFloat soFar / toFloat total))
+value (Transition { soFar, total, easing, interpolator }) =
+    interpolator (easing (toFloat soFar / toFloat total))
 
 
 {-| Allows you to check if a transition has finished running. This can be used to clean up subscriptions.
 -}
 isComplete : Transition a -> Bool
-isComplete (Transition soFar total _ _) =
-    soFar >= total
+isComplete (Transition t) =
+    t.completed + 1 >= t.repetitions && t.soFar >= t.total
+
+
+{-| Reverses the direction of a transition running it backwards.
+-}
+reverse : Transition a -> Transition a
+reverse (Transition transition) =
+    Transition
+        { transition
+            | soFar = transition.total - transition.soFar
+            , interpolator = \t -> transition.interpolator (1 - t)
+            , completed = transition.repetitions - (transition.completed + 1)
+        }
 
 
 
---
--- stagger :
---     { duration : Int
---     , delay : Int
---     , easing : Easing
---     }
---     -> List (Interpolator a)
---     -> Transition (List a)
--- stagger { duration, delay, easing } interpolations =
---     "not implemeneted yet"
+-- Repetition
+
+
+{-| Repeat the transition a number of times.
+-}
+repeat : Int -> Transition a -> Transition a
+repeat n (Transition transition) =
+    Transition { transition | repetitions = n, repeatType = FromBeginning }
+
+
+{-| Repeat the transition a set number of times, but run every even run in reverse.
+-}
+repeatAlternate : Int -> Transition a -> Transition a
+repeatAlternate n (Transition transition) =
+    Transition { transition | repetitions = n, repeatType = Bounce }
+
+
+{-| Keep running the transition.
+-}
+repeatIndefinitely : Transition a -> Transition a
+repeatIndefinitely =
+    repeat (round (1 / 0))
+
+
+{-| Keep running the transition indefinitely, but alternating forward and reverse runs.
+-}
+repeatAlternateIndefinitely : Transition a -> Transition a
+repeatAlternateIndefinitely =
+    repeatAlternate (round (1 / 0))
+
+
+{-| Run a bunch of animations with a duration and easing, but delay each successive animation by the delay amount.
+
+**Tip:** You may find the `List (Interpolator a) -> Transition (List a)` a little inconvenient for organizing staggered animations.
+However, you can create an `List (Interpolator (a -> a))`, where each function touches and interpolates some orthogonal property,
+then `List.foldl (\fn val -> fn val) model.target (Transition.value model.transition)`. This way you can stagger updates to almost any
+datastructure. However, you need to be somewhat careful if there are other ways the datastructure can be changed (like user input) to
+make sure to interupt the animation suitably.
+
+    type Foo =
+        { position: (Float, Float)
+        , color : Color
+        }
+
+    [ \t foo -> { foo | position = interpolatePosition t }
+    , \t foo -> { foo | color = Interpolation.rgb Color.blue Color.red t }
+    ]
+    |> Transition.stagger { durationEach = 200, delay = 100, easing Transition.easingCubic }
+
+Will first start animating the position, then after 100ms start animating the color, for a total duration of 300ms.
+
+-}
+stagger :
+    { durationEach : Int
+    , delay : Int
+    , easing : Easing
+    }
+    -> List (Interpolator a)
+    -> Transition (List a)
+stagger { durationEach, delay, easing } interpolations =
+    let
+        n =
+            List.length interpolations
+
+        duration =
+            ((n - 1) * delay) + durationEach
+
+        parallelism =
+            toFloat (durationEach * n) / toFloat (delay * n)
+
+        (Easing ease) =
+            easing
+    in
+    Transition
+        { soFar = 0
+        , total = abs duration
+        , repetitions = 1
+        , completed = 0
+        , repeatType = FromBeginning
+        , easing = identity
+        , interpolator = Interpolation.staggeredWithParallelism parallelism (List.map (\interp -> ease >> interp) interpolations)
+        }
 
 
 {-| Easing is a method of distorting time to control apparent motion in animation. It is most commonly used for [slow-in, slow-out](https://en.wikipedia.org/wiki/Twelve_basic_principles_of_animation#Slow_In_and_Slow_Out). By easing time, animated transitions are smoother and exhibit more plausible motion.
