@@ -36,7 +36,7 @@ On a technical note, these examples depend on a [variety of community packages](
 
 ## Data
 
-One of the first tasks you'll need to do is acquire data into your Elm program. Most of the examples simply hardcode the data as program literals, and indeed this can be a simple way to prototype. However, for many usecases you will likely want to load data from external sources. First you need to understand how you want to model and represent the data in your program, then you will need to write appropriate decoders from the wire format this data comes in. JSON is probably the easiest to work with (and the default elm/json package works very well for this), but CSV is also common (ericgj/elm-csv-decode and lovasoa/elm-csv are packages that can help here). If you are not hosting the data on your own server, than [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) might be something you need to look into.
+One of the first tasks you'll need to do is acquire data into your Elm program. Most of the examples simply hardcode the data as program literals, and indeed this can be a simple way to prototype. However, for many usecases you will likely want to load data from external sources. First you need to understand how you want to model and represent the data in your program, then you will need to write appropriate decoders from the wire format this data comes in. JSON is probably the easiest to work with (and the default elm/json package works very well for this), but CSV is also common ([BrianHicks/elm-csv](https://package.elm-lang.org/packages/BrianHicks/elm-csv/latest/) is a package that can help here). If you are not hosting the data on your own server, than [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) might be something you need to look into.
 
 A related task to decoding is cleaning: you need to decide on what to do with missing data, null data, invalid data and data that is out of bounds.
 
@@ -86,118 +86,7 @@ There are many visual variables we can have on the screen. We can encode quantit
 
 In the following bar chart, we encode two abstract dimensions to two visual variables: the _nationality_ dimension is encoded as the bars vertical position, whereas the _count_ is encoded as the horizontal length of the bars.
 
-<!--
-module BarChartExample exposing (main)
-
-import Axis
-import DateFormat
-import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
-import Time
-import TypedSvg exposing (g, rect, style, svg, text_)
-import TypedSvg.Attributes exposing (class, textAnchor, transform, viewBox)
-import TypedSvg.Attributes.InPx exposing (height, width, x, y)
-import TypedSvg.Core exposing (Svg, text)
-import TypedSvg.Types exposing (AnchorAlignment(..), Transform(..))
-
-
-w : Float
-w =
-    900
-
-
-h : Float
-h =
-    250
-
-
-padding : Float
-padding =
-    30
-
-
-people : List { nationality : String, count : Int }
-people =
-    [ { nationality = "🇨🇳", count = 123 }
-    , { nationality = "🇺🇸", count = 95 }
-    , { nationality = "🇬🇧", count = 45 }
-    , { nationality = "🇨🇿", count = 21 }
-    , { nationality = "🇨🇾", count = 4 }
-    ]
-
-
-yScale : BandScale String
-yScale =
-    List.map .nationality people
-        |> Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( 0, h - 2 * padding )
-
-maxCount : Float
-maxCount =
-    people
-        |> List.map .count
-        |> List.maximum
-        |> Maybe.withDefault 0
-        |> toFloat
-
-
-xScale : ContinuousScale Float
-xScale =
-    Scale.linear ( 0, w - 2 * padding) ( 0, maxCount )
-
-
-
-yAxis : Svg msg
-yAxis  =
-    Axis.left [] (Scale.toRenderable identity yScale )
-
-
-xAxis : Svg msg
-xAxis =
-    Axis.top [ Axis.tickCount 5 ] xScale
-
-
-bar :  {nationality : String, count : Int } -> Svg msg
-bar  {nationality, count } =
-    g [ class [ "bar" ] ]
-        [ rect
-            [ x 0
-            , y <| Scale.convert yScale nationality
-            , height <| Scale.bandwidth yScale
-            , width <| Scale.convert xScale (toFloat count)
-            ]
-            []
-       , text_
-            [ x <| Scale.convert xScale (toFloat count) - 5
-
-            , y <| Scale.convert (Scale.toRenderable identity yScale) nationality + 5
-            , textAnchor AnchorEnd
-            ]
-            [ text <| String.fromInt count ]
-        ]
-
-
-view : List { nationality : String, count : Int }-> Svg msg
-view model =
-    svg [ viewBox 0 0 w h ]
-        [ style [] [ text """
-            .bar rect { fill: rgba(118, 214, 78, 0.8); }
-
-          """ ]
-        , g [ transform [ Translate (padding - 1) ( padding) ] ]
-            [ xAxis ]
-        , g [ transform [ Translate (padding - 1) padding ] ]
-            [ yAxis ]
-        , g [ transform [ Translate padding padding ], class [ "series" ] ] <|
-            List.map bar model
-        ]
-
-
-main =
-    view people
--->
-
-<svg viewBox="0 0 900 250">
-    <g transform="translate(29 30)"><g fill="none" font-size="10" font-family="sans-serif" text-anchor="middle"><path class="domain" stroke="#000" d="M0.5,-6V0.5H840.5V-6"></path><g class="tick" transform="translate(0, 0)"><line stroke="#000" y2="-6" x1="0.5" x2="0.5"></line><text fill="#000" y="-9" x="0.5" dy="0em">0</text></g><g class="tick" transform="translate(136.58536585365854, 0)"><line stroke="#000" y2="-6" x1="0.5" x2="0.5"></line><text fill="#000" y="-9" x="0.5" dy="0em">20</text></g><g class="tick" transform="translate(273.1707317073171, 0)"><line stroke="#000" y2="-6" x1="0.5" x2="0.5"></line><text fill="#000" y="-9" x="0.5" dy="0em">40</text></g><g class="tick" transform="translate(409.7560975609756, 0)"><line stroke="#000" y2="-6" x1="0.5" x2="0.5"></line><text fill="#000" y="-9" x="0.5" dy="0em">60</text></g><g class="tick" transform="translate(546.3414634146342, 0)"><line stroke="#000" y2="-6" x1="0.5" x2="0.5"></line><text fill="#000" y="-9" x="0.5" dy="0em">80</text></g><g class="tick" transform="translate(682.9268292682926, 0)"><line stroke="#000" y2="-6" x1="0.5" x2="0.5"></line><text fill="#000" y="-9" x="0.5" dy="0em">100</text></g><g class="tick" transform="translate(819.5121951219512, 0)"><line stroke="#000" y2="-6" x1="0.5" x2="0.5"></line><text fill="#000" y="-9" x="0.5" dy="0em">120</text></g></g></g><g transform="translate(29 30)"><g fill="none" font-size="10" font-family="sans-serif" text-anchor="end"><path class="domain" stroke="#000" d="M-6,0.5H0.5V190.5H-6"></path><g class="tick" transform="translate(0, 22.80188679245283)"><line stroke="#000" x2="-6" y1="0.5" y2="0.5"></line><text fill="#000" x="-9" y="0.5" dy="0.32em">🇨🇳</text></g><g class="tick" transform="translate(0, 58.65094339622641)"><line stroke="#000" x2="-6" y1="0.5" y2="0.5"></line><text fill="#000" x="-9" y="0.5" dy="0.32em">🇺🇸</text></g><g class="tick" transform="translate(0, 94.5)"><line stroke="#000" x2="-6" y1="0.5" y2="0.5"></line><text fill="#000" x="-9" y="0.5" dy="0.32em">🇬🇧</text></g><g class="tick" transform="translate(0, 130.34905660377356)"><line stroke="#000" x2="-6" y1="0.5" y2="0.5"></line><text fill="#000" x="-9" y="0.5" dy="0.32em">🇨🇿</text></g><g class="tick" transform="translate(0, 166.19811320754715)"><line stroke="#000" x2="-6" y1="0.5" y2="0.5"></line><text fill="#000" x="-9" y="0.5" dy="0.32em">🇨🇾</text></g></g></g><g transform="translate(30 30)" class="series"><g class="bar"><rect x="0px" y="7.169811320754718px" height="32.264150943396224px" width="840px"></rect><text x="835px" y="27.80188679245283px" text-anchor="end">123</text></g><g class="bar"><rect x="0px" y="43.0188679245283px" height="32.264150943396224px" width="648.780487804878px"></rect><text x="643.780487804878px" y="63.65094339622641px" text-anchor="end">95</text></g><g class="bar"><rect x="0px" y="78.86792452830188px" height="32.264150943396224px" width="307.3170731707317px"></rect><text x="302.3170731707317px" y="99.5px" text-anchor="end">45</text></g><g class="bar"><rect x="0px" y="114.71698113207546px" height="32.264150943396224px" width="143.41463414634148px"></rect><text x="138.41463414634148px" y="135.34905660377356px" text-anchor="end">21</text></g><g class="bar"><rect x="0px" y="150.56603773584905px" height="32.264150943396224px" width="27.31707317073171px"></rect><text x="22.31707317073171px" y="171.19811320754715px" text-anchor="end">4</text></g></g>
-</svg>
+![Bar chart example](./intro/bar1.svg)
 
 ```elm
 import Scale exposing (ContinuousScale, BandScale)
@@ -256,12 +145,7 @@ bar { nationality, count } =
         ]
 ```
 
-<svg viewBox="0 0 900 30">
-  <g class="bar">
-    <rect x="30px" y="0" height="32.264150943396224px" width="648.780487804878px"></rect>
-    <text x="643.780487804878px" y="30px" text-anchor="end" dx="-5" dy="21">95</text>
-  </g>
-</svg>
+![Bar example](./intro/bar2.svg)
 
 Now we can simply map over the the data applying this function:
 
@@ -274,9 +158,7 @@ view model =
         ]
 ```
 
-<svg viewBox="0 0 900 250">
-   <g transform="translate(30 30)" class="series"><g class="bar"><rect x="0px" y="7.169811320754718px" height="32.264150943396224px" width="840px"></rect><text x="835px" y="27.80188679245283px" text-anchor="end">123</text></g><g class="bar"><rect x="0px" y="43.0188679245283px" height="32.264150943396224px" width="648.780487804878px"></rect><text x="643.780487804878px" y="63.65094339622641px" text-anchor="end">95</text></g><g class="bar"><rect x="0px" y="78.86792452830188px" height="32.264150943396224px" width="307.3170731707317px"></rect><text x="302.3170731707317px" y="99.5px" text-anchor="end">45</text></g><g class="bar"><rect x="0px" y="114.71698113207546px" height="32.264150943396224px" width="143.41463414634148px"></rect><text x="138.41463414634148px" y="135.34905660377356px" text-anchor="end">21</text></g><g class="bar"><rect x="0px" y="150.56603773584905px" height="32.264150943396224px" width="27.31707317073171px"></rect><text x="22.31707317073171px" y="171.19811320754715px" text-anchor="end">4</text></g></g>
-</svg>
+![Bars example](./intro/bar3.svg)
 
 Another useful thing that scales provide is the [Axis](https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Axis) module,
 which provides built in axes, which show the encoding explicetely.
@@ -297,9 +179,7 @@ yAxis  =
 
 (the `Scale.toRenderable` is needed specifically for Band scales so that labels on Axes are nicely centered on the bands)
 
-<svg viewBox="0 0 900 250">
-    <g transform="translate(29 30)"><g fill="none" font-size="10" font-family="sans-serif" text-anchor="middle"><path class="domain" stroke="#000" d="M0.5,-6V0.5H840.5V-6"></path><g class="tick" transform="translate(0, 0)"><line stroke="#000" y2="-6" x1="0.5" x2="0.5"></line><text fill="#000" y="-9" x="0.5" dy="0em">0</text></g><g class="tick" transform="translate(136.58536585365854, 0)"><line stroke="#000" y2="-6" x1="0.5" x2="0.5"></line><text fill="#000" y="-9" x="0.5" dy="0em">20</text></g><g class="tick" transform="translate(273.1707317073171, 0)"><line stroke="#000" y2="-6" x1="0.5" x2="0.5"></line><text fill="#000" y="-9" x="0.5" dy="0em">40</text></g><g class="tick" transform="translate(409.7560975609756, 0)"><line stroke="#000" y2="-6" x1="0.5" x2="0.5"></line><text fill="#000" y="-9" x="0.5" dy="0em">60</text></g><g class="tick" transform="translate(546.3414634146342, 0)"><line stroke="#000" y2="-6" x1="0.5" x2="0.5"></line><text fill="#000" y="-9" x="0.5" dy="0em">80</text></g><g class="tick" transform="translate(682.9268292682926, 0)"><line stroke="#000" y2="-6" x1="0.5" x2="0.5"></line><text fill="#000" y="-9" x="0.5" dy="0em">100</text></g><g class="tick" transform="translate(819.5121951219512, 0)"><line stroke="#000" y2="-6" x1="0.5" x2="0.5"></line><text fill="#000" y="-9" x="0.5" dy="0em">120</text></g></g></g><g transform="translate(29 30)"><g fill="none" font-size="10" font-family="sans-serif" text-anchor="end"><path class="domain" stroke="#000" d="M-6,0.5H0.5V190.5H-6"></path><g class="tick" transform="translate(0, 22.80188679245283)"><line stroke="#000" x2="-6" y1="0.5" y2="0.5"></line><text fill="#000" x="-9" y="0.5" dy="0.32em">🇨🇳</text></g><g class="tick" transform="translate(0, 58.65094339622641)"><line stroke="#000" x2="-6" y1="0.5" y2="0.5"></line><text fill="#000" x="-9" y="0.5" dy="0.32em">🇺🇸</text></g><g class="tick" transform="translate(0, 94.5)"><line stroke="#000" x2="-6" y1="0.5" y2="0.5"></line><text fill="#000" x="-9" y="0.5" dy="0.32em">🇬🇧</text></g><g class="tick" transform="translate(0, 130.34905660377356)"><line stroke="#000" x2="-6" y1="0.5" y2="0.5"></line><text fill="#000" x="-9" y="0.5" dy="0.32em">🇨🇿</text></g><g class="tick" transform="translate(0, 166.19811320754715)"><line stroke="#000" x2="-6" y1="0.5" y2="0.5"></line><text fill="#000" x="-9" y="0.5" dy="0.32em">🇨🇾</text></g></g></g><g transform="translate(30 30)" class="series"><g class="bar"><rect x="0px" y="7.169811320754718px" height="32.264150943396224px" width="840px"></rect><text x="835px" y="27.80188679245283px" text-anchor="end">123</text></g><g class="bar"><rect x="0px" y="43.0188679245283px" height="32.264150943396224px" width="648.780487804878px"></rect><text x="643.780487804878px" y="63.65094339622641px" text-anchor="end">95</text></g><g class="bar"><rect x="0px" y="78.86792452830188px" height="32.264150943396224px" width="307.3170731707317px"></rect><text x="302.3170731707317px" y="99.5px" text-anchor="end">45</text></g><g class="bar"><rect x="0px" y="114.71698113207546px" height="32.264150943396224px" width="143.41463414634148px"></rect><text x="138.41463414634148px" y="135.34905660377356px" text-anchor="end">21</text></g><g class="bar"><rect x="0px" y="150.56603773584905px" height="32.264150943396224px" width="27.31707317073171px"></rect><text x="22.31707317073171px" y="171.19811320754715px" text-anchor="end">4</text></g></g>
-</svg>
+![Bar chart again](./intro/bar1.svg)
 
 So far our scales have been dealing only with position and size. But there's a lot more that scales can do:
 
@@ -338,3 +218,360 @@ bar { nationality, count } =
             [ text <| String.fromInt count ]
         ]
 ```
+
+![Bar chart with colors](./intro/bar4.svg)
+
+Scales are a powerful primitive. You can already use this to build [bar and column charts](https://elm-visualization.netlify.app/barchart/), as well as
+[scatterplots](https://elm-visualization.netlify.app/scatterplot/), [boxplots](https://elm-visualization.netlify.app/boxplot/), and other charts.
+
+## Shapes
+
+Some charts require visual marks that aren't provided out of the box with SVG, or are tedious to program manually.
+
+SVG has a number of simple shapes exposed directly as elements, but virtually all complex shapes are expressed through the `<path>`
+element. The actual path that is rendered is specified through the `d` attribute with a string consisting of a number of commands.
+You can think of these commands as instructing a pen on where and how to move next.
+
+However, in Elm we don't really like stringly-typed data. Hence elm-visualization is designed to be used with the funkily named
+[folkertdev/one-true-path-experiment](https://package.elm-lang.org/packages/folkertdev/one-true-path-experiment/latest/)[^1].
+
+[^1]:
+    It's named that way because at an early Elm conference a bunch of package authors got together and said "wouldn't it be nice
+    if there was a common way to specify paths, rather than everyone making their own?" (At that time elm-visualization had it's own
+    path type, which was removed in v2.) Folkert took it on and decided to jokingly call it the One True Path. However, he wasn't super
+    confident that it would be universally adopted, so he appended the -experiment at the end. Don't worry about that - the package is on
+    its 6th major release and has been stable for years.
+
+A `Path` is then modelled something like this (the actual type is slightly more complicated for performance reasons as well as handling
+some corner cases):
+
+```elm
+type alias Path =
+    List SubPath
+
+type alias SubPath =
+    { moveTo : Point, commands: List DrawTo }
+
+type alias Point =
+    ( Float, Float )
+
+type DrawTo
+    = LineTo Point
+    | CurveTo { target: Point, controlPoint1: Point, controlPoint2: Point }
+    | QuadraticBezierCurveTo { target : Point, controlPoint : Point }
+    | EllipticalArc EllipticalArcArgument
+    | ClosePath
+```
+
+The package contains a bunch of functionality to construct, manipulate, parse and display these as well as a different representation
+more suitable to analysis and other algorithms.
+
+You may want to use the functionality from this package on more advanced projects, but in the meantime you will mostly want the
+`Path.element : Path -> List (Attribute msg) -> Svg msg` function to actually display these paths on screen.
+
+Now imagine you want to visualize a time series some financial data:
+
+```elm
+type alias Price =
+    { date : Time.Posix
+    , close : Float
+    , lower : Float
+    , middle : Float
+    , upper : Float
+    }
+```
+
+We can start by defining some scales:
+
+```elm
+xScale : ContinuousScale Time.Posix
+xScale =
+    data
+        |> Statistics.extent
+        |> Maybe.withDefault (Time.millisToPosix 0, Time.millisToPosix 0)
+        |> Scale.time Time.utc (padding, w - padding)
+
+yScale : ContinuousScale Float
+yScale =
+    data
+        |> List.map .upper
+        |> List.maximum
+        |> Maybe.withDefault 0
+        |> Tuple.pair 0
+        |> Scale.linear (h - padding, padding)
+```
+
+Now we would like to turn these into a nice line. We could do this directly with Path, but elm-visualization has some nice abstractions:
+
+```elm
+line : Path
+line =
+    data
+        |> List.map (\d -> Just (Scale.convert xScale d.date, Scale.convert yScale d.close))
+        |> Shape.line Shape.linearCurve
+
+
+view : Svg msg
+view =
+     svg [ viewBox 0 0 w h ]
+        [ Path.element line [ fill PaintNone, stroke (Paint Color.blue), strokeWidth 1.5, strokeMiterlimit 1 ]
+        , xAxis
+        , yAxis
+        ]
+```
+
+TODO: Pic here
+
+What just happened? `Shape.line` takes two pieces of information to produce a `Path`. The second is a list of points, these are inside a `Maybe`, since `Shape.line` supports drawing discontinuous lines for missing data. The first is a _curve generator_, which is a function that describes how to connect a list of points together. `Shape.linearCurve` is the simplest, as it connects adjacent points with straight lines, but there is a bunch of curve generators provided for you in `Shape` and switching what your line looks like is just a matter of replacing `Shape.linearCurve` with another, like `Shape.naturalCurve` for a more smooth looking line.
+
+(I also skipped the definition of the axes - they're pretty much the same as what we've seen before.)
+
+But perhaps we wanted to render an area chart?
+
+```elm
+area: Path
+area =
+    data
+        |> List.map (\d -> Just
+            ( (Scale.convert xScale d.date, Scale.convert yScale 0)
+            , (Scale.convert xScale d.date, Scale.convert yScale d.close)
+            ))
+        |> Shape.area Shape.linearCurve
+
+
+view : Svg msg
+view =
+     svg [ viewBox 0 0 w h ]
+        [ Path.element area [ fill (Paint Color.blue) ]
+        , xAxis
+        , yAxis
+        ]
+```
+
+TODO: Pic here
+
+You will notice the code here is nearly identical, except `Shape.area` takes a tuple of 2 points - one for the top line, the other for the bottom line. We can exploit that if we want to make a chart where the baseline isn't 0 for instance to show a chart of volatility ([Bollinger Bands](https://en.wikipedia.org/wiki/Bollinger_Bands)), or for stacked charts.
+
+```elm
+area: Path
+area =
+    data
+        |> List.map (\d -> Just
+            ( (Scale.convert xScale d.date, Scale.convert yScale d.lower)
+            , (Scale.convert xScale d.date, Scale.convert yScale d.upper)
+            ))
+        |> Shape.area Shape.linearCurve
+```
+
+TODO: Pic here
+
+Another common shape is what we call an _arc_, or mathematically speaking an [_annulus sector_](<https://en.wikipedia.org/wiki/Annulus_(mathematics)>).
+
+```elm
+arc : Float -> Float  -> Path
+arc startAngle endAngle =
+    Shape.arc
+        { innerRadius = 210
+        , outerRadius = 310
+        , cornerRadius = 0
+        , startAngle = startAngle
+        , endAngle = endAngle
+        , padAngle = 0
+        , padRadius = 0
+        }
+
+n : Float
+n =
+    12
+
+view : Svg msg
+view =
+    Statistics.range 0 n 1
+        |> List.map (\i ->
+           Path.element (arc (i / n * 2 * pi) ((i+1) / n * 2 * pi))
+            [ fill (PaintColor (Scale.Color.interpolateRainbow (i / n)))]
+        )
+        |> svg [ viewBox -320 -320 640 640 ]
+```
+
+TODO: Pic here
+
+Similarly how area is configured by top and bottom x,y positions, arcs are configured by start and end angle, and inner and outer radius. They also support rounded corners and padding.
+
+However, providing these manually is rather than annoying, so elm-visualization provides a more convenient pie generator.
+
+```elm
+import Shape exposing (defaultPieConfig)
+
+view : List { nationality : String, count: Int } -> Svg msg
+view data =
+    data
+    |> List.map (.count >> toFloat)
+    |> Shape.pie { defaultPieConfig | innerRadius = 210
+        , outerRadius = 310
+        , padRadius = 300
+        , padAngle = 2 / 300
+        , cornerRadius = 8
+        }
+    |> List.map2 (\datum arc ->
+        g [] [ Path.element (Shape.arc arc)
+            [ fill (PaintColor Color.blue) ]
+        , TypedSvg.text_ [  Shape.centroid arc |> translate  ]
+            [ TypedSvg.tspan [ x 0, fontSize 24] [ text datum.nationality ]
+            , TypedSvg.tspan [ x 0, fontSize 12, dy (em 1.3)] [text (String.fromInt datum.count)]
+            ]
+        ]
+    ) data
+    |> TypedSvg.svg [ viewBox -320 -320 640 640 ]
+
+translate : (Float, Float) -> Attribute msg
+translate (x, y) =
+    transform [ Translate x y ]
+```
+
+TODO: Pic here
+
+The pie generator produces a list of `Arc` values based on the numeric input, dividing the circle appropriately (and taking the padding into consideration).
+
+## Layout
+
+So far we have been focusing on relatively simple graphics for relatively simple datasets. However, as complexity of data increases, using just position, shape and color becomes increasingly limiting and we need to leverage more complex layouts to highlight relations between data.
+
+Elm-visualization provides a number of layout algorithms that can be leveraged. We've already seen a very simple one in action: the pie layout. Most layouts work in a similar fashion - they accept some configuration, the data, and return a new datastructure that contains the necessary information to actually render the layout on screen - or perhaps use it a starting point for further tweaking.
+
+The workhorse of layout is the Force module, which is a (simplified) physics simulation. Part of the reason is that layout algorithms can be very complex and thinking about them as a physical process makes the process more intuitive.
+
+For instance a common problem is positioning labels over a data graphic. The labels should be positioned close to the marks they are labeling, but if the marks are small, there is a high probability that the labels will overlap, making the graphic an unreadable mess. A simple solution is to model the labels like balls that physically cannot overlap and bounce of each other if they do. Run the simulation for a few iterations, and we end up with labels relatively close to their original position, but shifted slightly to prevent overlap. This is easy to understand and program, much more so than an analytical solution.
+
+TODO: Example?
+
+A more typical usecase of Force is for visualizing node-edge relationships in a graph. It's up to you how to represent your graph data (Force doesn't care), so let's start by using elm-community/graph:
+
+```elm
+graph : Graph String ()
+graph =
+    Graph.fromNodeLabelsAndEdgePairs
+        [ "Myriel"
+        , "Napoleon"
+        , "Mlle.Baptistine"
+        , "Mme.Magloire"
+        , "CountessdeLo"
+        , "Geborand"
+        , "Champtercier"
+        , "Cravatte"
+        , "Count"
+        ]
+        [ ( 1, 0 )
+        , ( 2, 0 )
+        , ( 3, 0 )
+        , ( 3, 2 )
+        , ( 4, 5 )
+        , ( 5, 0 )
+        , ( 6, 0 )
+        , ( 7, 0 )
+        , ( 8, 2 )
+        , ( 8, 4 )
+        ]
+```
+
+The second argument links up nodes by their 0-based indices in the first list.
+
+Next, let's build a quick visualization:
+
+```elm
+main : Svg msg
+main =
+    let
+        links =
+            List.map (\lnk -> ( lnk.from, lnk.to )) <| Graph.edges graph
+
+        simulation =
+            Force.simulation
+                [ Force.links links
+                , Force.manyBody <| List.map .id <| Graph.nodes graph
+                , Force.center (w / 2) (h / 2)
+                ]
+
+        nodes =
+            List.map (\node -> Force.entity node.id node.label) (Graph.nodes graph)
+                |> Force.computeSimulation simulation
+
+        dict =
+            Dict.fromList (List.map (\ent -> ( ent.id, ent )) nodes)
+
+        edges =
+            List.filterMap (\( from, to ) -> Maybe.map2 Tuple.pair (Dict.get from dict) (Dict.get to dict))
+                links
+    in
+    svg [ viewBox 0 0 w h ]
+        [ edges
+            |> List.map
+                (\( source, target ) ->
+                    line
+                        [ strokeWidth 1
+                        , stroke <| Paint <| Color.gray
+                        , x1 source.x
+                        , y1 source.y
+                        , x2 target.x
+                        , y2 target.y
+                        ]
+                        []
+                )
+            |> g []
+        , nodes
+            |> List.map
+                (\node ->
+                    circle
+                        [ r 2.5
+                        , fill <| Paint Color.black
+                        , stroke <| Paint <| Color.black
+                        , strokeWidth 7
+                        , cx node.x
+                        , cy node.y
+                        ]
+                        [ title [] [ text node.value ] ]
+                )
+            |> g []
+        ]
+```
+
+![Force graph](./intro/force.svg)
+
+Let's go over this in a little detail. The most important part here is:
+
+```elm
+simulation =
+    Force.simulation
+        [ Force.links links
+        , Force.manyBody <| List.map .id <| Graph.nodes graph
+        , Force.center (w / 2) (h / 2)
+        ]
+```
+
+This is where we setup the physical simulation. We are composing three kinds of forces here. You can think of the `Force.links` force like setting up a spring between pairs of entities (that's what we call a "thing" that the forces act on), meaning that if they get further apart than the spring length, there is a force pulling them back together; this force gets stronger the further apart the entities get.
+
+The second force is `Force.manyBody`, which can simulate either a repulsive force (like electric charge or magnetism) which is the default, or an attractive force like gravity.
+
+What we're trying to achieve in this example is to find an equilibrium where the forces repelling every entity from each other ballance out with the spring forces pulling them together. The trick is that the `manyBody` force acts between any pair of entities, whereas the links in this example is only between entities that have graph edges between them. The end result we're hoping to achieve is that linked nodes will end up close to each other and all nodes will otherwise be separate enough not to overlap (and make an unreasonable mess).
+
+The final force here is `Force.center`. This isn't a real physical force, but what is does is shift all the entities such that their average position is at the specified location. This helps ensure that our layout is centered on the screen, but otherwise doesn't interfere with the physical simulation.
+
+The other important functions here are `Force.entity`, which is an optional helper that creates the record that `Force` needs to track the physical attributes it works with: `x` and `y` for position, `vx` and `vy` for velocity and `id` for easily telling entities apart. The helper arranges the node in a way that none of the nodes overlap as long as you call each with a distinct numeric id.
+
+Finally we have `Force.computeSimulation`, which actually runs the simulation. The reason that `Force.simulation` doesn't do this, is that we can also run a simulation step by step, either interactively or perhaps we want to run fewer iterations or manually mess with the nodes on each step.
+
+There are a number of other layout algorithms in elm-visualization. The `Hierarchy` module has a bunch of algorithms for laying out tree-like data structures. `Shape` (as we've already seen) has some more helpers for things like stacked area charts and streamgraphs, as well as radial versions of these.
+
+## Animation
+
+Unlike in print, on the web graphics aren't just pictures, they can also become like movies by incorporating motion in them. In general there is a temptation to include animation gratuitously as a form of decoration simply to make graphics more eye-catching. I would generally advise against this, as this can be distracting for many readers. A more powerful use of animation is to comunicate something about the dataset by the motion itself.
+
+The main primitive elm-visualization has for animation is Interpolation. Interpolation describes how a value can go from one state to another state across an abstract amount of time `t`, which is described as a float between `0` and `1`.
+
+The `Interpolation` module provides a bunch of interpolation functions out of the box as well as ways to compose interpolation functions to provide interpolation over more elaborate types.
+
+Since interpolation is abstract, that is not tied to any specific animation primitives like (wall) time or easing, it can be usefully employed in a number of other contexts. We have already seen `Scale.sequential` - this scale is most commonly employed for colors, but it works with _any_ interpolator.
+
+To actually turn it into a proper animation you can simply provide a suitable `t` on a timer. To make this easier, elm-visualization provides the `Transition` module. The documentation explains how to hook everything up properly in The Elm Architecture.
+
+Fundamentally it takes together an interpolator, a duration in milliseconds and an easing function.
