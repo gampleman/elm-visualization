@@ -506,7 +506,7 @@ If we set it to 1/2, we will wait approximately the time a single interpolator r
     --> , [ 8, 8, 8, 8, 8 ]
     --> ]
 
-If parallelism is equal to the length of the list, than this will behave like `Interpolation.inParallel`.
+As parallelism approaches infinity, than this will behave like `Interpolation.inParallel`.
 
 If thinking about this in terms of parallelism doesn't feel natural, you may appreciate `Transition.stagger` which deals
 with durations and delays instead.

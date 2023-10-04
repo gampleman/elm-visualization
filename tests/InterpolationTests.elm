@@ -5,6 +5,7 @@ import Expect exposing (Expectation, FloatingPointTolerance(..))
 import Fuzz exposing (floatRange, intRange, list, niceFloat)
 import Helper exposing (atLeastFloat, atMostFloat)
 import Interpolation exposing (Interpolator)
+import List.Extra
 import Test exposing (Test, describe, fuzz, fuzz2, fuzz3, test)
 
 
@@ -199,6 +200,34 @@ suite =
                     Interpolation.float 0 1
                         |> Interpolation.samples 5
                         |> Expect.equalLists [ 0 / 4, 1 / 4, 2 / 4, 3 / 4, 4 / 4 ]
+            ]
+        , describe "staggeredWithParallelism"
+            [ test "with n->Inf works just like inParallel" <|
+                \() ->
+                    let
+                        lst =
+                            List.repeat 5 (Interpolation.int 0 8)
+                    in
+                    Interpolation.samples 100 (Interpolation.staggeredWithParallelism 100000 lst)
+                        |> Expect.equalLists (Interpolation.samples 100 (Interpolation.inParallel lst))
+            , fuzz2 niceFloat (list niceFloat) "does not change order" <|
+                \parallelism inp ->
+                    inp
+                        |> List.map always
+                        |> Interpolation.staggeredWithParallelism (abs parallelism)
+                        |> (\i ->
+                                i 0.5
+                           )
+                        |> Expect.equal inp
+            , test "with n=1 only ever executes one at a time" <|
+                \() ->
+                    let
+                        lst =
+                            List.repeat 5 (Interpolation.step False [ True, False ])
+                    in
+                    Interpolation.samples 100 (Interpolation.staggeredWithParallelism 1 lst)
+                        |> List.map (\sample -> List.Extra.count identity sample <= 1)
+                        |> Expect.equal (List.repeat 100 True)
             ]
         ]
 
