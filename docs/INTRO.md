@@ -287,9 +287,13 @@ We can start by defining some scales:
 xScale : ContinuousScale Time.Posix
 xScale =
     data
-        |> Statistics.extent
-        |> Maybe.withDefault (Time.millisToPosix 0, Time.millisToPosix 0)
-        |> Scale.time Time.utc (padding, w - padding)
+        |> List.map .date
+        |> Statistics.extentBy Time.posixToMillis
+        |> Maybe.withDefault ( Time.millisToPosix 0, Time.millisToPosix 0 )
+        |> Scale.time Time.utc ( padding, w - padding )
+        |> Scale.nice 10
+
+
 
 yScale : ContinuousScale Float
 yScale =
@@ -299,6 +303,7 @@ yScale =
         |> Maybe.withDefault 0
         |> Tuple.pair 0
         |> Scale.linear (h - padding, padding)
+        |> Scale.nice 10
 ```
 
 Now we would like to turn these into a nice line. We could do this directly with Path, but elm-visualization has some nice abstractions:
@@ -314,13 +319,13 @@ line =
 view : Svg msg
 view =
      svg [ viewBox 0 0 w h ]
-        [ Path.element line [ fill PaintNone, stroke (Paint Color.blue), strokeWidth 1.5, strokeMiterlimit 1 ]
+        [ Path.element line [ fill PaintNone, stroke (Paint Color.blue), strokeWidth 1.5, strokeMiterlimit "1" ]
         , xAxis
         , yAxis
         ]
 ```
 
-TODO: Pic here
+![Line chart](./intro/line1.svg)
 
 What just happened? `Shape.line` takes two pieces of information to produce a `Path`. The second is a list of points, these are inside a `Maybe`, since `Shape.line` supports drawing discontinuous lines for missing data. The first is a _curve generator_, which is a function that describes how to connect a list of points together. `Shape.linearCurve` is the simplest, as it connects adjacent points with straight lines, but there is a bunch of curve generators provided for you in `Shape` and switching what your line looks like is just a matter of replacing `Shape.linearCurve` with another, like `Shape.naturalCurve` for a more smooth looking line.
 
@@ -348,7 +353,7 @@ view =
         ]
 ```
 
-TODO: Pic here
+![Area chart](./intro/line2.svg)
 
 You will notice the code here is nearly identical, except `Shape.area` takes a tuple of 2 points - one for the top line, the other for the bottom line. We can exploit that if we want to make a chart where the baseline isn't 0 for instance to show a chart of volatility ([Bollinger Bands](https://en.wikipedia.org/wiki/Bollinger_Bands)), or for stacked charts.
 
@@ -363,7 +368,7 @@ area =
         |> Shape.area Shape.linearCurve
 ```
 
-TODO: Pic here
+![Confidence interval chart](./intro/line3.svg)
 
 Another common shape is what we call an _arc_, or mathematically speaking an [_annulus sector_](<https://en.wikipedia.org/wiki/Annulus_(mathematics)>).
 
@@ -389,12 +394,12 @@ view =
     Statistics.range 0 n 1
         |> List.map (\i ->
            Path.element (arc (i / n * 2 * pi) ((i+1) / n * 2 * pi))
-            [ fill (PaintColor (Scale.Color.interpolateRainbow (i / n)))]
+            [ fill (Paint (Scale.Color.rainbowInterpolator (i / n)))]
         )
         |> svg [ viewBox -320 -320 640 640 ]
 ```
 
-TODO: Pic here
+![Arc example](./intro/arc1.svg)
 
 Similarly how area is configured by top and bottom x,y positions, arcs are configured by start and end angle, and inner and outer radius. They also support rounded corners and padding.
 
@@ -415,8 +420,8 @@ view data =
         }
     |> List.map2 (\datum arc ->
         g [] [ Path.element (Shape.arc arc)
-            [ fill (PaintColor Color.blue) ]
-        , TypedSvg.text_ [  Shape.centroid arc |> translate  ]
+            [ fill (Paint Color.blue) ]
+        , TypedSvg.text_ [  Shape.centroid arc |> translate, textAnchor AnchorMiddle  ]
             [ TypedSvg.tspan [ x 0, fontSize 24] [ text datum.nationality ]
             , TypedSvg.tspan [ x 0, fontSize 12, dy (em 1.3)] [text (String.fromInt datum.count)]
             ]
@@ -429,7 +434,7 @@ translate (x, y) =
     transform [ Translate x y ]
 ```
 
-TODO: Pic here
+![Pie chart](./intro/arc2.svg)
 
 The pie generator produces a list of `Arc` values based on the numeric input, dividing the circle appropriately (and taking the padding into consideration).
 
@@ -443,7 +448,7 @@ The workhorse of layout is the Force module, which is a (simplified) physics sim
 
 For instance a common problem is positioning labels over a data graphic. The labels should be positioned close to the marks they are labeling, but if the marks are small, there is a high probability that the labels will overlap, making the graphic an unreadable mess. A simple solution is to model the labels like balls that physically cannot overlap and bounce of each other if they do. Run the simulation for a few iterations, and we end up with labels relatively close to their original position, but shifted slightly to prevent overlap. This is easy to understand and program, much more so than an analytical solution.
 
-TODO: Example?
+<!-- TODO: Example? -->
 
 A more typical usecase of Force is for visualizing node-edge relationships in a graph. It's up to you how to represent your graph data (Force doesn't care), so let's start by using elm-community/graph:
 
