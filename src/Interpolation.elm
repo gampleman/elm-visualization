@@ -4,6 +4,7 @@ module Interpolation exposing
     , map, map2, map3, map4, map5, piecewise, tuple
     , inParallel, list, ListCombiner(..), combineParallel
     , samples
+    , pointAlongPath, staggeredWithParallelism
     )
 
 {-| This module provides a variety of interpolation methods for blending between two values.
@@ -38,6 +39,8 @@ import Array
 import Color exposing (Color)
 import Color.Lab as Lab
 import Dict exposing (Dict)
+import Path exposing (Path)
+import SubPath
 
 
 {-| An interpolator is merely a function that takes a float parameter `t` roughly in the range [0..1].
@@ -434,6 +437,25 @@ inParallel =
     List.foldr (map2 (::)) (always [])
 
 
+staggeredWithParallelism : Float -> List (Interpolator a) -> Interpolator (List a)
+staggeredWithParallelism concurrency lst =
+    let
+        n =
+            toFloat (List.length lst)
+
+        duration =
+            (concurrency / n) / (1 + (concurrency - 1) / n)
+
+        offset =
+            (1 / concurrency) * duration
+
+        scale offset_ interp t =
+            interp (clamp 0 1 ((t - offset_) / duration))
+    in
+    List.foldr (\item ( soFar, off ) -> ( map2 (::) (scale off item) soFar, off + offset )) ( always [], 0 ) lst
+        |> Tuple.first
+
+
 {-| This is an interpolator for lists. It is quite complex and should be used if these conditions hold:
 
 1.  You need to interpolate additions, removals and changes.
@@ -541,3 +563,46 @@ type ListCombiner
 combineParallel : ListCombiner
 combineParallel =
     CombineParallel
+
+
+pointAlongPath : Path -> Interpolator (Maybe ( Float, Float ))
+pointAlongPath path =
+    let
+        -- TODO: Estimate tolerance from data
+        tolerance =
+            0.1
+
+        alps =
+            List.map
+                (\subPath ->
+                    let
+                        alp =
+                            SubPath.arcLengthParameterized tolerance subPath
+                    in
+                    ( SubPath.arcLength alp, alp )
+                )
+                path
+
+        totalLength =
+            List.map Tuple.first alps |> List.sum
+
+        ( _, interp ) =
+            List.foldl
+                (\( len, alp ) ( soFar, fn ) ->
+                    let
+                        interpStart =
+                            soFar / totalLength
+                    in
+                    ( soFar + len
+                    , \t ->
+                        if soFar == 0 || t >= interpStart then
+                            SubPath.pointAlong alp (t * totalLength - soFar)
+
+                        else
+                            fn t
+                    )
+                )
+                ( 0, always Nothing )
+                alps
+    in
+    interp
