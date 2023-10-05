@@ -600,7 +600,7 @@ orangeRedInterpolator =
     mkPiecewiseInterpolator "fddcaffdcf9bfdc18afdad77fb9562f67d53ee6545e24932d32d1ebf130da70403"
 
 
-{-| ![purples-blues](https://code.gampleman.eu/elm-visualization/misc/purples-blues.png)
+{-| ![purple-blues](https://code.gampleman.eu/elm-visualization/misc/purple-blues.png)
 -}
 purpleBlueInterpolator : Float -> Color
 purpleBlueInterpolator =
