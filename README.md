@@ -1,6 +1,6 @@
 # ![Elm-visualization](https://code.gampleman.eu/elm-visualization/misc/Logo-600.png)
 
-[Docs](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.3.0/) | [Examples](https://elm-visualization.netlify.com/) | [GitHub](https://github.com/gampleman/elm-visualization) | [Changelog](https://github.com/gampleman/elm-visualization/releases) | `#visualization` on [Elm slack](https://elmlang.herokuapp.com)
+[Tutorial](https://github.com/gampleman/elm-visualization/blob/master/docs/INTRO.md) | [Docs](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.3.0/) | [Examples](https://elm-visualization.netlify.com/) | [GitHub](https://github.com/gampleman/elm-visualization) | [Changelog](https://github.com/gampleman/elm-visualization/releases) | `#visualization` on [Elm slack](https://elmlang.herokuapp.com)
 
 This project is designed to give you all the tools needed to build data visualizations.
 It is not a charting library in the sense that you have pre-bundled Excel-style
@@ -11,6 +11,8 @@ that uniquely suite your needs.
 ## Learn by [example](https://elm-visualization.netlify.com/)
 
 [![Examples](https://code.gampleman.eu/elm-visualization/misc/examples-600.png)](https://elm-visualization.netlify.com/)
+
+or [read the introduction](https://github.com/gampleman/elm-visualization/blob/master/docs/INTRO.md).
 
 ## Getting started
 
@@ -26,8 +28,9 @@ However, there are other packages that you will likely need to produce a visuali
 - [avh4/elm-color](https://package.elm-lang.org/packages/avh4/elm-color/latest) for the `Color` type
 - [elm-community/typed-svg](https://package.elm-lang.org/packages/elm-community/typed-svg/latest) for rendering
 - [folkertdev/one-true-path-experiment](https://package.elm-lang.org/packages/folkertdev/one-true-path-experiment/latest) for the `Path` type
+- [gampleman/elm-rosetree](https://package.elm-lang.org/packages/gampleman/elm-rosetree/latest) for the `Tree` type
 
-You can use [this Ellie](https://ellie-app.com/d6JBvDHFhRBa1) to run the examples, since it has all the dependencies already installed into it.
+You can use [this Ellie](https://ellie-app.com/p6X5hXxcdRCa1) to run the examples, since it has all the dependencies already installed into it.
 
 ## What's included?
 
@@ -51,6 +54,10 @@ as well as arcs (as in pie charts).
 ### [Force Layout](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.3.0/Force/)
 
 Use a simulation of physical forces to do layout. Suitable for i.e. network graphs.
+
+### [Hierarchy](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.3.0/Hierarchy/)
+
+Layout algorithms for dealing with trees.
 
 ### [Interpolation](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.3.0/Interpolation/)
 
