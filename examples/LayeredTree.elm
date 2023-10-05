@@ -8,9 +8,9 @@ module LayeredTree exposing (main)
 
 import Color
 import Hierarchy
-import Hierarchy.Tree as Tree exposing (Tree)
 import Path
 import Shape
+import Tree exposing (Tree)
 import TypedSvg exposing (g, rect, svg)
 import TypedSvg.Attributes exposing (dy, fill, pointerEvents, stroke, style, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (fontSize, height, rx, width, x, y)

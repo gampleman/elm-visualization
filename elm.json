@@ -29,6 +29,7 @@
         "elm/time": "1.0.0 <= v < 2.0.0",
         "elm-community/list-extra": "8.2.4 <= v < 9.0.0",
         "folkertdev/one-true-path-experiment": "5.0.0 <= v < 7.0.0",
+        "gampleman/elm-rosetree": "1.0.0 <= v < 2.0.0",
         "ianmackenzie/elm-geometry": "3.6.0 <= v < 4.0.0",
         "ianmackenzie/elm-units-prefixed": "2.0.0 <= v < 3.0.0",
         "justinmimbs/time-extra": "1.0.1 <= v < 2.0.0",

@@ -1,7 +1,7 @@
 module HierarchyTests exposing (fuzzTree)
 
 import Fuzz exposing (Fuzzer)
-import Hierarchy.Tree as Tree exposing (Tree)
+import Tree exposing (Tree)
 
 
 fuzzTree : Fuzzer child -> Fuzzer (Tree child)

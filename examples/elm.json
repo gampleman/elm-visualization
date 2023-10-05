@@ -28,6 +28,7 @@
             "elm-explorations/webgl": "1.1.3",
             "folkertdev/one-true-path-experiment": "6.0.0",
             "gampleman/elm-examples-helper": "2.0.0",
+            "gampleman/elm-rosetree": "1.0.0",
             "ianmackenzie/elm-geometry": "3.11.0",
             "ianmackenzie/elm-units-prefixed": "2.8.0",
             "justinmimbs/time-extra": "1.1.1",
