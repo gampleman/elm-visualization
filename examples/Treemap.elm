@@ -155,10 +155,19 @@ tree =
         }
         data
         |> Result.withDefault (Tree.singleton { name = "flare", size = 0 })
-        |> Tree.sumUp identity
-            (\node children ->
-                { node | size = List.sum (List.map .size children) }
+        |> Tree.depthFirstTraversal defaultTopDown
+            (\s _ l c ->
+                ( s
+                , case c of
+                    [] ->
+                        Tree.singleton l
+
+                    _ ->
+                        Tree.tree { l | size = List.sum (List.map (Tree.label >> .size) c) } c
+                )
             )
+            ()
+        |> Tuple.second
 
 
 data : List { name : String, size : Float }
