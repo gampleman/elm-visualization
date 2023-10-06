@@ -1,0 +1,8 @@
+{
+    "excludedPaths": [
+        "src/Scale",
+        "src/Axis.elm",
+        "src/Force.elm",
+        "test/Scale"
+    ]
+}
