@@ -3,11 +3,11 @@ module Hierarchy.TidyTests exposing (suite)
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer)
 import Hierarchy
-import Hierarchy.Tree as Tree exposing (Tree)
 import HierarchyTests exposing (fuzzTree)
 import LineSegment2d exposing (LineSegment2d)
 import Point2d
 import Test exposing (Test)
+import Tree exposing (Tree)
 
 
 suite : Test

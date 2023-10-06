@@ -49,8 +49,8 @@ profitably interpreted abstractly. For instance one may produce a horizontal dia
 
 import Hierarchy.Partition
 import Hierarchy.Tidy
-import Hierarchy.Tree as Tree exposing (Tree)
 import Hierarchy.Treemap
+import Tree exposing (Tree)
 
 
 {-| Used to indicate which attributes go with which layout functions.

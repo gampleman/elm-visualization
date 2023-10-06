@@ -1,7 +1,7 @@
 module Hierarchy.Partition exposing (layout)
 
-import Hierarchy.Tree as Tree exposing (Tree)
 import Hierarchy.Treemap as Treemap
+import Tree exposing (Tree)
 
 
 layout :

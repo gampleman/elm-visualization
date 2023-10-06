@@ -3,9 +3,9 @@ module Hierarchy.TreemapTests exposing (suite)
 import Expect
 import Fuzz
 import Hierarchy
-import Hierarchy.Tree as Tree
 import HierarchyTests exposing (fuzzTree)
 import Test exposing (Test)
+import Tree
 
 
 fuzzSettings =

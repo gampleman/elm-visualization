@@ -8,7 +8,7 @@ For a description, see <https://www.zxch3n.com/tidy/tidy/>.
 
 import Array exposing (Array)
 import Dict
-import Hierarchy.Tree as Tree exposing (Tree)
+import Tree exposing (Tree)
 
 
 

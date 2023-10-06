@@ -12,10 +12,10 @@ import Browser
 import Color
 import Curve
 import Hierarchy
-import Hierarchy.Tree as Tree exposing (Tree)
 import List.Extra
 import Path
 import Shape
+import Tree exposing (Tree)
 import TypedSvg exposing (g, rect, svg)
 import TypedSvg.Attributes exposing (dy, fill, href, id, pointerEvents, stroke, style, textAnchor, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (fontSize, height, width, x, y)

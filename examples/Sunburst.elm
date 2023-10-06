@@ -37,7 +37,6 @@ import Csv.Decode as Csv
 import Curve
 import Example
 import Hierarchy
-import Hierarchy.Tree as Tree exposing (Tree)
 import Html exposing (Html)
 import Http
 import List.Extra
@@ -47,6 +46,7 @@ import Scale.Color
 import Set
 import Shape
 import Svg.Lazy
+import Tree exposing (Tree)
 import TypedSvg exposing (g, rect, svg, text_)
 import TypedSvg.Attributes exposing (dy, fill, stroke, textAnchor, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, rx, strokeWidth, width, x, y)
