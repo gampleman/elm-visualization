@@ -15,10 +15,10 @@ The best way to understand elm-visualization is as a standard library for data v
 
 Given these properties, you should consider whether elm-visualization is the right tool for the job. I think it excels at building novel charts, at building charts for "production" where you understand the data being visualized and for data journalism/storytelling. In other words:
 
-- If you are trying to do **expoloratory** visualization (i.e. you don't know much about the data), I would recommend either using a tool (like Excel or Tablaux) or using a Grammar of Graphics style library like [gicentre/elm-vegalite](https://package.elm-lang.org/packages/gicentre/elm-vegalite/latest/).
+- If you are trying to do **exploratory** visualization (i.e. you don't know much about the data), I would recommend either using a tool (like Excel or Tablaux) or using a Grammar of Graphics style library like [gicentre/elm-vegalite](https://package.elm-lang.org/packages/gicentre/elm-vegalite/latest/).
 - If you need some specific **well known chart type**, you might have an easier time just using a pre-made package. See the [Elm Package Catalog Visualization Page](https://korban.net/elm/catalog/packages/data/visualisation) to see what's available.
 
-## Prerequsites
+## Prerequisites
 
 Elm-visualization uses a low-level approach. Unfortunately, that means there is quite a lot to learn.
 
@@ -84,12 +84,12 @@ Here we have two dimensions:
 
 There are many visual variables we can have on the screen. We can encode quantity, difference, similarity, grouping, hierarchy using size, color, position, animation, etc.
 
-In the following bar chart, we encode two abstract dimensions to two visual variables: the _nationality_ dimension is encoded as the bars vertical position, whereas the _count_ is encoded as the horizontal length of the bars.
+In the following bar chart, we encode two abstract dimensions to two visual variables: the _nationality_ dimension is encoded as the bars' vertical position, whereas the _count_ is encoded as the horizontal length of the bars.
 
 ![Bar chart example](./intro/bar1.svg)
 
 ```elm
-import Scale exposing (ContinuousScale, BandScale)
+import Scale exposing (ContinuousScale, BandScale, defaultBandConfig)
 
 
 maxCount : Float
@@ -112,7 +112,7 @@ yScale =
         |> Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( padding, h - padding )
 ```
 
-[Scales](https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Scale) come in many shapes and sizes depending on what kind of abstract dimensions you have and what kind of visual variables you want to encode your marks into. Most scales take 2 (or more) arguments: the visual variables you want to encode (the _range_) and the abstract dimension (the _domain_). For example the `xScale` is configured such that the count of 0 corresponds to the coordinate the charts left edge, and the `maxCount` corresponds to the charts right edge.
+[Scales](https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Scale) come in many shapes and sizes depending on what kind of abstract dimensions you have and what kind of visual variables you want to encode your marks into. Most scales take 2 (or more) arguments: the visual variables you want to encode (the _range_) and the abstract dimension (the _domain_). For example the `xScale` is configured such that the count of 0 corresponds to the coordinate the chart's left edge, and the `maxCount` corresponds to the chart's right edge.
 
 In the band scale the domain is a list of values (`[ "🇨🇳", "🇺🇸", "🇬🇧", "🇨🇿", "🇨🇾" ]`), while the range is a continous interval. The band scale figures out how to slice that interval into discrete padded bands.
 
@@ -161,7 +161,7 @@ view model =
 ![Bars example](./intro/bar3.svg)
 
 Another useful thing that scales provide is the [Axis](https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Axis) module,
-which provides built in axes, which show the encoding explicetely.
+which provides built in axes, which show the encoding explicitly.
 
 ```elm
 xAxis : Svg msg
