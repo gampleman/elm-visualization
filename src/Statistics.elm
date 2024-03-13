@@ -22,7 +22,7 @@ Methods for transforming list and for generating new lists.
 
 -}
 
-import Bitwise
+import Float.Extra
 import List.Extra
 
 
@@ -49,24 +49,8 @@ Differences from [List.range from the standard library](https://package.elm-lang
 
 -}
 range : Float -> Float -> Float -> List Float
-range start stop step =
-    let
-        n =
-            (stop - start)
-                / step
-                |> ceiling
-                -- get rid of NaN
-                |> Bitwise.or 0
-                |> max 0
-
-        helper i list =
-            if i >= 0 then
-                helper (i - 1) (start + step * toFloat i :: list)
-
-            else
-                list
-    in
-    helper (n - 1) []
+range =
+    Float.Extra.range
 
 
 {-| Returns a list of approximately n + 1 uniformly-spaced, nicely-rounded
