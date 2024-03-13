@@ -35,7 +35,7 @@
             "mpizenberg/elm-pointer-events": "5.0.0",
             "rtfeldman/elm-hex": "1.0.0",
             "rtfeldman/elm-iso8601-date-strings": "1.1.4",
-            "ryannhg/date-format": "2.3.0"
+            "ryan-haskell/date-format": "1.0.0"
         },
         "indirect": {
             "avh4/elm-fifo": "1.0.4",
