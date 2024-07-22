@@ -10,7 +10,7 @@ mass _m = 1_ for all particles. As a result, a force _F_ acting on a particle is
 acceleration _a_ over the time interval _Δt_, and can be simulated simply by adding to the particle’s velocity,
 which is then added to the particle’s position.
 
-[![force directed graph illustration](https://elm-visualization.netlify.com/ForceDirectedGraph/preview@2x.png)](https://elm-visualization.netlify.com/ForceDirectedGraph/)
+[![force directed graph illustration](https://elm-visualization.netlify.app/ForceDirectedGraph/preview@2x.png)](https://elm-visualization.netlify.app/ForceDirectedGraph/)
 
 In the domain of information visualization, physical simulations are useful for studying networks and hierarchies!
 
@@ -85,7 +85,7 @@ computeSimulation state entities =
 
 
 {-| This is a convenience function for wrapping data up as Entities. The initial position of entities is arranged
-in a [phylotaxic pattern](https://elm-visualization.netlify.com/Petals/). Goes well with `List.indexedMap`.
+in a [phylotaxic pattern](https://elm-visualization.netlify.app/Petals/). Goes well with `List.indexedMap`.
 -}
 entity : Int -> a -> Entity Int { value : a }
 entity index a =
