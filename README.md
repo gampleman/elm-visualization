@@ -1,6 +1,6 @@
 # ![Elm-visualization](https://code.gampleman.eu/elm-visualization/misc/Logo-600.png)
 
-[Tutorial](https://github.com/gampleman/elm-visualization/blob/master/docs/INTRO.md) | [Docs](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.1/) | [Examples](https://elm-visualization.netlify.app/) | [GitHub](https://github.com/gampleman/elm-visualization) | [Changelog](https://github.com/gampleman/elm-visualization/releases) | `#visualization` on [Elm slack](https://elmlang.herokuapp.com)
+[Tutorial](https://github.com/gampleman/elm-visualization/blob/master/docs/INTRO.md) | [Docs](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.2/) | [Examples](https://elm-visualization.netlify.app/) | [GitHub](https://github.com/gampleman/elm-visualization) | [Changelog](https://github.com/gampleman/elm-visualization/releases) | `#visualization` on [Elm slack](https://elmlang.herokuapp.com)
 
 This project is designed to give you all the tools needed to build data visualizations.
 It is not a charting library in the sense that you have pre-bundled Excel-style
@@ -34,52 +34,52 @@ You can use [this Ellie](https://ellie-app.com/p6X5hXxcdRCa1) to run the example
 
 ## What's included?
 
-### [Scales](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.1/Scale/)
+### [Scales](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.2/Scale/)
 
 Most of the time you have data that has properties that you want to display on the
 screen, however these properties typically aren't in pixels. Scales solve this
 fundamental problem by giving you convenient ways to transform raw data into positions,
 sizes, colors, labels and other ways to display data.
 
-### [Axis](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.1/Axis/)
+### [Axis](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.2/Axis/)
 
 A component that allows you to visualize a Scale. Those little ticks that describe
 the dimensions of a plot.
 
-### [Shapes](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.1/Shape/)
+### [Shapes](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.2/Shape/)
 
 This module gives you ways to draw some fundamental shapes used in data visualization, including lines (as in line or area charts),
 as well as arcs (as in pie charts).
 
-### [Force Layout](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.1/Force/)
+### [Force Layout](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.2/Force/)
 
 Use a simulation of physical forces to do layout. Suitable for i.e. network graphs.
 
-### [Hierarchy](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.1/Hierarchy/)
+### [Hierarchy](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.2/Hierarchy/)
 
 Layout algorithms for dealing with trees.
 
-### [Interpolation](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.1/Interpolation/)
+### [Interpolation](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.2/Interpolation/)
 
 Smoothly transition between pairs of values. Useful for animation, or generating gradients of values.
 
-### [Transition](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.1/Transition/)
+### [Transition](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.2/Transition/)
 
 Build complex animations using Interpolation.
 
-### [Histogram](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.1/Histogram/)
+### [Histogram](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.2/Histogram/)
 
 Compute histograms of data.
 
-### [Brush](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.1/Brush/)
+### [Brush](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.2/Brush/)
 
 Interactively select subregions of a dataset.
 
-### [Zoom](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.1/Zoom/)
+### [Zoom](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.2/Zoom/)
 
 Build pan and zoom user interactions.
 
-### [Statistics](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.1/Statistics/)
+### [Statistics](https://package.elm-lang.org/packages/gampleman/elm-visualization/2.4.2/Statistics/)
 
 Process data to extract useful insights for visualizations.
 
