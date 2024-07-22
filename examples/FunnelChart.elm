@@ -1,5 +1,14 @@
 module FunnelChart exposing (main)
 
+{-| Shows how to build a Funnel chart. It is quite similar to a bar chart, but with
+the addition of an extra shape connecting the bars.
+
+The design here follows [this great best practices guide](https://www.atlassian.com/data/charts/funnel-chart-complete-guide).
+
+@category Basics
+
+-}
+
 import Color exposing (Color)
 import Float.Extra
 import List.Extra
@@ -30,6 +39,31 @@ titleWidth =
 padding : Float
 padding =
     30
+
+
+type alias Datum =
+    { title : String
+    , value : Float
+    }
+
+
+type Shape
+    = Bar Int Datum
+    | Connector Datum Datum
+
+
+
+-- Here we preprocess the data to create the shapes we want to draw in an interleaved list
+-- [Datum "A" 1, Datum "B" 2, Datum "C" 3]
+--    -> [ Bar 0 (Datum "A" 1), Connector (Datum "A" 1) (Datum "B" 2),
+--        Bar 1 (Datum "B" 2), Connector (Datum "B" 2) (Datum "C" 3),
+--        Bar 2 (Datum "C" 3) ]
+
+
+preprocessed : List Shape
+preprocessed =
+    List.map2 Connector data (List.drop 1 data)
+        |> List.Extra.interweave (List.indexedMap Bar data)
 
 
 maxValue : Float
@@ -96,6 +130,10 @@ view =
                             , textAnchor AnchorMiddle
                             , fill
                                 (Paint
+                                    -- This is a simple way to make sure the text
+                                    -- is readable
+                                    -- However, you may want a more sophisticated
+                                    -- algorithm for other color scales
                                     (if (Color.toHsla color).lightness > 0.5 then
                                         Color.black
 
@@ -136,23 +174,6 @@ view =
         )
         preprocessed
         |> svg [ viewBox (-w / 2) 0 w h, fontFamily [ "sans-serif" ] ]
-
-
-type Shape
-    = Bar Int Datum
-    | Connector Datum Datum
-
-
-type alias Datum =
-    { title : String
-    , value : Float
-    }
-
-
-preprocessed : List Shape
-preprocessed =
-    List.map2 Connector data (List.drop 1 data)
-        |> List.Extra.interweave (List.indexedMap Bar data)
 
 
 data : List Datum
