@@ -3,7 +3,7 @@
     "name": "gampleman/elm-visualization",
     "summary": "A data visualization package for Elm",
     "license": "MIT",
-    "version": "2.4.1",
+    "version": "2.4.2",
     "exposed-modules": [
         "Scale",
         "Scale.Color",
