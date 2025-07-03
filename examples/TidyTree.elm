@@ -2,7 +2,7 @@ module TidyTree exposing (main)
 
 {-| Lays out a tree diagram using the Tidy algorithm. We scale the icons for the nodes proportionally to a quantitative dimension.
 
-Since the Tree is quite dense and complex, we add a zoom behavior to allow the use to explore the leaf nodes more easily. Clicking on a non-lead node zooms the tree to its subtree.
+Since the Tree is quite dense and complex, we add a zoom behavior to allow the use to explore the leaf nodes more easily. Clicking on a non-leaf node zooms the tree to its subtree.
 
 @category Advanced
 
