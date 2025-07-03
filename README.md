@@ -6,7 +6,7 @@ This project is designed to give you all the tools needed to build data visualiz
 It is not a charting library in the sense that you have pre-bundled Excel-style
 charts, but it should contain all the tools to make building such charts relatively
 easy. The advantage is that you are free to design and build data visualizations
-that uniquely suite your needs.
+that uniquely suit your needs.
 
 ## Learn by [example](https://elm-visualization.netlify.app/)
 
