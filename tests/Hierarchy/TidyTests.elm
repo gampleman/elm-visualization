@@ -33,11 +33,17 @@ suite =
                 tree
                     |> doLayout
                     |> expectNodesToBeOrdered
+        , Test.fuzz fuzzHierarchy "Rule 7: Laying out a mirrored tree gives the horizontal flip of the original layout" <|
+            \tree ->
+                Expect.equalLists (nodeCenters (mirror tree)) (flippedNodeCenters tree)
 
         -- sanity checks
         , test1
         , test2
         , test3
+
+        -- regression for https://github.com/gampleman/elm-visualization/issues/190
+        , test190
         ]
 
 
@@ -169,6 +175,39 @@ doLayout =
     Hierarchy.tidy [ Hierarchy.nodeSize (\( _, w, h ) -> ( w, h )), Hierarchy.parentChildMargin 1, Hierarchy.peerMargin 1 ]
 
 
+{-| Reverse the order of every node's children, top to bottom.
+-}
+mirror : Tree a -> Tree a
+mirror t =
+    Tree.tree (Tree.label t) (List.reverse (List.map mirror (Tree.children t)))
+
+
+{-| The sorted multiset of node-center positions. The layout reports left-edge
+x (center - width / 2), so we add width / 2 back to recover centers.
+-}
+nodeCenters : Tree ( Int, Float, Float ) -> List ( Float, Float )
+nodeCenters tree =
+    doLayout tree
+        |> Tree.toList
+        |> List.map (\n -> ( round3 (n.x + n.width / 2), round3 n.y ))
+        |> List.sort
+
+
+{-| The original layout's node centers, flipped horizontally about x = 0.
+-}
+flippedNodeCenters : Tree ( Int, Float, Float ) -> List ( Float, Float )
+flippedNodeCenters tree =
+    doLayout tree
+        |> Tree.toList
+        |> List.map (\n -> ( round3 -(n.x + n.width / 2), round3 n.y ))
+        |> List.sort
+
+
+round3 : Float -> Float
+round3 v =
+    toFloat (round (v * 1000)) / 1000
+
+
 formatTree : FinishedLayout -> String
 formatTree =
     let
@@ -210,3 +249,36 @@ test3 =
             Tree.tree ( 0, 1, 1 ) [ Tree.tree ( 0, 1, 1 ) [ Tree.tree ( 0, 1, 10 ) [ Tree.singleton ( 0, 1, 1 ), Tree.singleton ( 0, 1, 1 ) ], Tree.tree ( 0, 1, 1 ) [ Tree.singleton ( 0, 1, 1 ) ], Tree.tree ( 0, 1, 10 ) [ Tree.singleton ( 0, 10, 1 ) ] ] ]
                 |> doLayout
                 |> expectNoOverlapNodes
+
+
+
+{-
+   See <https://github.com/gampleman/elm-visualization/issues/190>.
+-}
+
+
+test190 : Test
+test190 =
+    Test.test "Issue 190: slack between a node's children is distributed evenly" <|
+        \() ->
+            let
+                leaf =
+                    Tree.singleton ( 0, 1, 1 )
+
+                xs =
+                    Tree.tree ( 0, 1, 1 )
+                        [ Tree.tree ( 0, 1, 1 ) [ leaf, leaf, leaf, leaf, leaf, leaf, Tree.tree ( 0, 1, 1 ) [ leaf ] ]
+                        , leaf
+                        , leaf
+                        , Tree.tree ( 0, 1, 1 ) [ leaf ]
+                        , leaf
+                        , Tree.tree ( 0, 1, 1 ) [ Tree.tree ( 0, 1, 1 ) [ leaf, leaf, leaf, leaf, leaf, leaf, leaf ] ]
+                        ]
+                        |> doLayout
+                        |> Tree.children
+                        |> List.map (\c -> (Tree.label c).x)
+
+                gaps =
+                    List.map2 (\p q -> q - p) xs (List.drop 1 xs)
+            in
+            Expect.equalLists (List.map round3 gaps) [ 3.067, 3.067, 3.067, 2.4, 2.4 ]
