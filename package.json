@@ -42,7 +42,7 @@
   "dependencies": {
     "elm": "0.19.1-5",
     "elm-doc-preview": "^5.0.5",
-    "elm-format": "^0.8.2",
+    "elm-format": "^0.8.8",
     "elm-review": "^2.10.2",
     "elm-test": "0.19.1-revision12",
     "elm-verify-examples": "^5.2.0",
