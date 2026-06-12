@@ -33,7 +33,11 @@
   },
   "homepage": "https://github.com/gampleman/elm-visualization#readme",
   "devDependencies": {
-    "elm-example-publisher": "1.1.0"
+    "elm-example-publisher": "^2.0.0",
+    "netlify-plugin-cache": "^1.0.3"
+  },
+  "overrides": {
+    "cross-spawn": "^7.0.6"
   },
   "dependencies": {
     "elm": "0.19.1-5",
