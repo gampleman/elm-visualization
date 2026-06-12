@@ -1,0 +1,23 @@
+# Netlify build configuration for the examples site.
+#
+# elm-example-publisher 2.x does incremental builds: it keeps a dependency-graph
+# cache (build/.borek-cache.json) and the previously built outputs, and only
+# redoes the work affected by what changed. To get that speedup on Netlify —
+# where each build otherwise starts from a clean checkout — we persist the build
+# directory between builds with netlify-plugin-cache.
+
+[build]
+  command = "npm run build-docs"
+  publish = "build"
+
+[build.environment]
+  # The publisher requires Node 22+ (it also reads .nvmrc).
+  NODE_VERSION = "22.20.0"
+
+# Restore build/ before the build and save it afterwards, so the incremental
+# cache and prior outputs survive across deploys.
+[[plugins]]
+  package = "netlify-plugin-cache"
+
+  [plugins.inputs]
+    paths = ["build"]
