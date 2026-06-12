@@ -275,14 +275,20 @@ type alias YList =
     List { index : Int, id : Int, y : Float }
 
 
-moveSubtree : Int -> Maybe { y : Float, id : Int, index : Int } -> Int -> Float -> TidyLayout a -> TidyLayout a
-moveSubtree currentIndex fromMaybe currentId dist lay =
+moveSubtree : Array Id -> Int -> Maybe { y : Float, id : Int, index : Int } -> Int -> Float -> TidyLayout a -> TidyLayout a
+moveSubtree nodeChildren currentIndex fromMaybe currentId dist lay =
     case fromMaybe of
         Just from ->
             if from.index /= currentIndex - 1 then
                 let
                     normDist =
                         dist / toFloat (currentIndex - from.index)
+
+                    -- The slack is distributed across the interior subtrees between
+                    -- `from` and `current`, so the positive acceleration is planted on
+                    -- the first interior sibling (children[from.index + 1])
+                    interiorStartId =
+                        Array.get (from.index + 1) nodeChildren |> Maybe.withDefault from.id
                 in
                 lay
                     |> updateTidyData
@@ -298,7 +304,7 @@ moveSubtree currentIndex fromMaybe currentId dist lay =
                         (\from_ ->
                             { from_ | shiftAcceleration = from_.shiftAcceleration + normDist }
                         )
-                        from.id
+                        interiorStartId
 
             else
                 lay
@@ -430,7 +436,7 @@ separate peerMargin childIndex nodeId lay_ ylist_ =
                             if dist > 0 then
                                 -- left and right are too close. move right part with distance of dist
                                 ( { rightContour | modifierSum = rightContour.modifierSum + dist }
-                                , moveSubtree childIndex (yList2 |> List.head) (nodeChildren |> Maybe.andThen (Array.get childIndex) |> Maybe.withDefault -1) dist lay
+                                , moveSubtree (nodeChildren |> Maybe.withDefault Array.empty) childIndex (yList2 |> List.head) (nodeChildren |> Maybe.andThen (Array.get childIndex) |> Maybe.withDefault -1) dist lay
                                 )
 
                             else
@@ -617,7 +623,7 @@ layout getters tree =
                                                                         update tail
 
                                                                     else
-                                                                        { index = index, y = maxY, id = id } :: tail
+                                                                        { index = index, y = maxY, id = id } :: lst
                                                     in
                                                     { yList = update yList1, layN = lay3, index = index + 1 }
                                                 )
