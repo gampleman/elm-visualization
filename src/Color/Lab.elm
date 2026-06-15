@@ -197,13 +197,19 @@ toHcl color =
             toLab color
     in
     if a == 0 && b == 0 then
+        -- A grey has an undefined hue (you cannot take the angle of a
+        -- zero-length vector). Midtone greys have a well-defined chroma of 0;
+        -- pure black and white have an undefined chroma as well. This matches
+        -- d3-color's `hclConvert`. (A previous version of this code had the
+        -- chroma condition inverted, which turned any gradient touching a grey
+        -- entirely grey — see issue #151.)
         { hue = nan
         , chroma =
             if 0 < l && l < 100 then
-                nan
+                0
 
             else
-                0
+                nan
         , luminance = l
         , alpha = alpha
         }

@@ -328,7 +328,7 @@ hcl =
 -}
 hclLong : Color -> Color -> Interpolator Color
 hclLong =
-    hclImpl float
+    hclImpl labChannel
 
 
 {-| We do not want negative values in an rgb color
@@ -354,25 +354,51 @@ hclImpl hueInt from to =
     in
     map4 (\h c l alpha -> Lab.fromHcl { hue = h, chroma = c, luminance = l, alpha = alpha })
         (hueInt start.hue end.hue)
-        (float start.chroma end.chroma)
-        (float start.luminance end.luminance)
-        (float start.alpha end.alpha)
+        (labChannel start.chroma end.chroma)
+        (labChannel start.luminance end.luminance)
+        (labChannel start.alpha end.alpha)
         >> forcePositive
+
+
+{-| Interpolates a single Lab/Hcl color channel. Mirrors d3-interpolate's
+color-channel interpolator (`nogamma`): if either endpoint is undefined (`NaN` —
+as happens for the hue of any grey, or the chroma of pure black/white), the
+channel holds the defined endpoint constant rather than letting the `NaN`
+propagate across the whole gradient. Without this, a single grey endpoint turns
+an entire HCL gradient grey (issue #151).
+-}
+labChannel : Float -> Float -> Interpolator Float
+labChannel from to =
+    if isNaN from then
+        always to
+
+    else if isNaN to then
+        always from
+
+    else
+        float from to
 
 
 hue : Float -> Float -> Interpolator Float
 hue from to =
-    let
-        d =
-            to - from
-    in
-    float from
-        (if d > 0.5 || d < -0.5 then
-            from + (d - toFloat (round d))
+    if isNaN from then
+        always to
 
-         else
-            to
-        )
+    else if isNaN to then
+        always from
+
+    else
+        let
+            d =
+                to - from
+        in
+        float from
+            (if d > 0.5 || d < -0.5 then
+                from + (d - toFloat (round d))
+
+             else
+                to
+            )
 
 
 hue360 : Float -> Float -> Interpolator Float
