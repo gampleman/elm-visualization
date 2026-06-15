@@ -191,7 +191,12 @@ float a to =
         b =
             to - a
     in
-    \t -> a + b * t
+    \t ->
+        if t == 1 then
+            to
+
+        else
+            a + b * t
 
 
 {-| Interpolates between ints.

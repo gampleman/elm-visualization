@@ -34,7 +34,9 @@ type alias Example =
 byCategory : List Example -> Dict String (List Example)
 byCategory =
     List.foldl (\item -> Dict.update item.tags.category (Maybe.map ((::) item) >> Maybe.withDefault [ item ] >> Just)) Dict.empty
-        >> Dict.map (\_ l -> List.reverse l)
+        -- Sort within each category by name, so the order is deterministic
+        -- regardless of how the build tool enumerates example files.
+        >> Dict.map (\_ l -> List.sortBy .basename l)
 
 
 categories : List ( String, String )
