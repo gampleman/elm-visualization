@@ -7,17 +7,28 @@
 # directory between builds with netlify-plugin-cache.
 
 [build]
-  command = "npm run build-docs"
+  # The publisher screenshots examples with puppeteer, which needs a Chrome
+  # binary. Puppeteer normally downloads it in a postinstall hook, but Netlify
+  # caches node_modules: when the lockfile is unchanged npm reports "up to date"
+  # and skips postinstall, so Chrome never lands. We install it explicitly here
+  # (a no-op once it's in the cached PUPPETEER_CACHE_DIR below) before building.
+  # The publisher launches with headless: "shell", so chrome-headless-shell is
+  # the binary it actually needs.
+  command = "npx puppeteer browsers install chrome-headless-shell && npm run build-docs"
   publish = "build"
 
 [build.environment]
   # The publisher requires Node 22+ (it also reads .nvmrc).
   NODE_VERSION = "22.20.0"
+  # Put puppeteer's browser download inside the repo so netlify-plugin-cache can
+  # persist it (the default ~/.cache/puppeteer is outside the cached paths).
+  PUPPETEER_CACHE_DIR = "/opt/build/repo/.puppeteer-cache"
 
-# Restore build/ before the build and save it afterwards, so the incremental
-# cache and prior outputs survive across deploys.
+# Restore build/ and the puppeteer browser cache before the build and save them
+# afterwards, so the incremental cache, prior outputs, and Chrome all survive
+# across deploys.
 [[plugins]]
   package = "netlify-plugin-cache"
 
   [plugins.inputs]
-    paths = ["build"]
+    paths = ["build", ".puppeteer-cache"]

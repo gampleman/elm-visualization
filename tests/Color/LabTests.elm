@@ -51,6 +51,21 @@ suite =
                     Color.rgb255 170 187 204
                         |> Lab.toHcl
                         |> expectHclEqual { hue = 252.37145234745182, chroma = 11.223567114593477, luminance = 74.96879980931759, alpha = 1 }
+            , test "a midtone grey has chroma 0 and an undefined (NaN) hue (#151)" <|
+                \() ->
+                    Color.rgb255 145 145 145
+                        |> Lab.toHcl
+                        |> expectHclEqual { hue = nan, chroma = 0, luminance = 60.17214765137845, alpha = 1 }
+            , test "pure black has an undefined chroma and hue" <|
+                \() ->
+                    Color.rgb255 0 0 0
+                        |> Lab.toHcl
+                        |> expectHclEqual { hue = nan, chroma = nan, luminance = 0, alpha = 1 }
+            , test "pure white has an undefined chroma and hue" <|
+                \() ->
+                    Color.rgb255 255 255 255
+                        |> Lab.toHcl
+                        |> expectHclEqual { hue = nan, chroma = nan, luminance = 100, alpha = 1 }
             , test "hcl converts to proper RGB" <|
                 \() ->
                     Lab.fromHcl { hue = 120, chroma = 30, luminance = 50, alpha = 0.4 }
@@ -105,3 +120,8 @@ areHclCoordsEqual expected actual =
 areRgbCoordsEqual : Float -> Float -> Bool
 areRgbCoordsEqual expected actual =
     round (expected * 255) == round (actual * 255)
+
+
+nan : Float
+nan =
+    0 / 0

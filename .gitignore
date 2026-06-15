@@ -4,5 +4,6 @@ tests/VerifyExamples
 .DS_Store
 node_modules/
 build/
+.puppeteer-cache/
 *.swp
 .idea

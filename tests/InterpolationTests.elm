@@ -116,6 +116,20 @@ suite =
                 \() ->
                     interpolateColorTest Interpolation.hcl
                         { red = 106, green = 121, blue = 206 }
+            , test "a grey endpoint fades chroma while holding the other hue, instead of greying out the whole gradient (#151)" <|
+                \() ->
+                    -- #00ff00 -> #919191. A grey has an undefined hue, so the
+                    -- green should smoothly desaturate to grey. Expected values
+                    -- are taken from d3-interpolate's interpolateHcl, which this
+                    -- module ports, and match it exactly.
+                    Interpolation.hcl (Color.rgb255 0 255 0) (Color.rgb255 145 145 145)
+                        |> equalsSamples equalsColor
+                            [ Color.rgb255 0 255 0
+                            , Color.rgb255 92 228 73
+                            , Color.rgb255 121 201 103
+                            , Color.rgb255 136 173 126
+                            , Color.rgb255 145 145 145
+                            ]
             ]
         , describe "hclLong" <|
             [ test "interpolates in hcl" <|
