@@ -16,7 +16,10 @@ diverging =
         [ fuzz Fuzz.niceFloat "default-ish values work like identity" <|
             \s ->
                 Scale.convert (Scale.diverging identity ( 0, 0.5, 1 )) s
-                    |> Expect.within (Absolute 0.00001) s
+                    -- A purely absolute tolerance can't hold for the whole range of
+                    -- niceFloat: around 2^52 one ULP is already larger than 0.00001,
+                    -- so the interpolation's rounding error cannot fit inside it.
+                    |> Expect.within (AbsoluteOrRelative 0.00001 0.00001) s
         , test "works with a custom zero center domain" <|
             \() ->
                 Scale.diverging identity ( -1.2, 0, 2.4 )
