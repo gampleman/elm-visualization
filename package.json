@@ -40,7 +40,7 @@
     "cross-spawn": "^7.0.6"
   },
   "dependencies": {
-    "elm": "0.19.1-5",
+    "elm": "0.19.3-0",
     "elm-doc-preview": "^5.0.5",
     "elm-format": "^0.8.8",
     "elm-review": "^2.10.2",
