@@ -339,8 +339,8 @@ sequential interpolator domain_ =
 {-| A sequential scale with a logarithmic transform.
 -}
 sequentialLog : Float -> (Float -> a) -> ( Float, Float ) -> SequentialScale a
-sequentialLog base interpolator domain_ =
-    Scale <| Sequential.log base interpolator domain_
+sequentialLog _ interpolator domain_ =
+    Scale <| Sequential.log interpolator domain_
 
 
 {-| A sequential scale with a syslog transform.
@@ -399,8 +399,8 @@ diverging interpolator domain_ =
 {-| A diverging scale with a logarithmic transform.
 -}
 divergingLog : Float -> (Float -> a) -> ( Float, Float, Float ) -> DivergingScale a
-divergingLog base interpolator domain_ =
-    Scale <| Diverging.log base interpolator domain_
+divergingLog _ interpolator domain_ =
+    Scale <| Diverging.log interpolator domain_
 
 
 {-| A diverging scale with a syslog transform.

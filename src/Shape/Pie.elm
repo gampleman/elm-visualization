@@ -402,22 +402,22 @@ arc arcData =
                 y00 =
                     r0 * sin a00
 
-                ( ocx, ocy ) =
-                    if da0 > epsilon then
-                        intersect x01 y01 x00 y00 x11 y11 x10 y10
-
-                    else
-                        ( x10, y10 )
-
-                ( ax, ay ) =
-                    ( x01 - ocx, y01 - ocy )
-
-                ( bx, by ) =
-                    ( x11 - ocx, y11 - ocy )
-
                 ( rc0, rc1 ) =
                     if rc > epsilon && da < pi then
                         let
+                            ( ocx, ocy ) =
+                                if da0 > epsilon then
+                                    intersect x01 y01 x00 y00 x11 y11 x10 y10
+
+                                else
+                                    ( x10, y10 )
+
+                            ( ax, ay ) =
+                                ( x01 - ocx, y01 - ocy )
+
+                            ( bx, by ) =
+                                ( x11 - ocx, y11 - ocy )
+
                             kc =
                                 1 / sin (acos ((ax * bx + ay * by) / (sqrt (ax ^ 2 + ay ^ 2) * sqrt (bx ^ 2 + by ^ 2))) / 2)
 

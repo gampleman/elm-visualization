@@ -59,7 +59,7 @@ scale =
     scaleWithTransform identity
 
 
-log _ interpolator (( x0, _, _ ) as domain) =
+log interpolator (( x0, _, _ ) as domain) =
     let
         transform x =
             if x0 < 0 then

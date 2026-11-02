@@ -30,7 +30,7 @@ band =
                 expectAll
                     [ Scale.convert scale "baz"
                         |> isNaN
-                        >> assert "isNan"
+                        |> assert "isNan"
                     ]
         , test "range values can be descending" <|
             \() ->

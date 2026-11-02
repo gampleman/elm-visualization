@@ -7,7 +7,6 @@ module Scatterplot exposing (main)
 -}
 
 import Axis
-import List
 import Scale exposing (ContinuousScale)
 import TypedSvg exposing (circle, defs, g, linearGradient, stop, svg)
 import TypedSvg.Attributes exposing (class, fill, id, offset, opacity, stopColor, stroke, transform, viewBox)

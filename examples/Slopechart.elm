@@ -110,7 +110,7 @@ main =
                                             ]
                                             [ text label ]
                                     )
-                                >> g []
+                                |> g []
                         )
                     |> g []
                 , years

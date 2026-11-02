@@ -38,7 +38,7 @@ scaleWithTransform transform interpolator domain =
     }
 
 
-log _ interpolator domain =
+log interpolator domain =
     let
         transform x =
             if Tuple.first domain < 0 then
