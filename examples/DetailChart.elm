@@ -1,4 +1,4 @@
-module DetailChart exposing (Model, Msg(..), main)
+module DetailChart exposing (Model, Msg, main)
 
 {-| Implements the Focus + Context pattern, where the user can zoom in on a place of interest while still seeing the overview.
 

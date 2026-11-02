@@ -72,7 +72,7 @@ config =
     , NoUnused.Parameters.rule
     , NoUnused.Patterns.rule
     , NoUnused.Variables.rule
-    , Simplify.rule Simplify.defaults
+    , Simplify.rule (Simplify.defaults |> Simplify.expectNaN)
         |> Rule.ignoreErrorsForFiles [ "tests/StatisticsTests.elm" ]
     ]
         |> List.map (Rule.ignoreErrorsForDirectories [ "tests/VerifyExamples" ])

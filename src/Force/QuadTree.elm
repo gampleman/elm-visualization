@@ -1,4 +1,4 @@
-module Force.QuadTree exposing (Config, QuadTree(..), Quadrant(..), UserCoords, fromList, performAggregate)
+module Force.QuadTree exposing (Config, QuadTree(..), Quadrant, UserCoords, fromList, performAggregate)
 
 {-| A quadtree that can store an aggregate in the nodes.
 Intended for use in n-body simulation, specifically Barnes-Hut

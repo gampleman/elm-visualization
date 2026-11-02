@@ -213,7 +213,7 @@ suite =
                 \() ->
                     Interpolation.float 0 1
                         |> Interpolation.samples 5
-                        |> Expect.equalLists [ 0 / 4, 1 / 4, 2 / 4, 3 / 4, 4 / 4 ]
+                        |> Expect.equalLists [ 0, 1 / 4, 2 / 4, 3 / 4, 4 / 4 ]
             ]
         , describe "staggeredWithParallelism"
             [ test "with n->Inf works just like inParallel" <|

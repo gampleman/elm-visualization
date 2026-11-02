@@ -2,7 +2,6 @@ module Scale.Continuous exposing (convertTransform, invertTransform, linear, nic
 
 import Interpolation
 import Statistics
-import String
 
 
 
@@ -311,7 +310,7 @@ toFixed : Int -> Float -> String
 toFixed precision value =
     let
         power_ =
-            toFloat 10 ^ toFloat precision
+            10 ^ toFloat precision
 
         pad num =
             case num of

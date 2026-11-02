@@ -22,7 +22,6 @@ import Color
 import Histogram
 import Html
 import Html.Attributes
-import List
 import Point2d
 import Polygon2d exposing (Polygon2d)
 import Random

@@ -79,12 +79,13 @@ linear =
 
                             ticks =
                                 Scale.ticks scale count
-
-                            ( d0, d1 ) =
-                                Scale.domain scale
                         in
                         case ( ticks, List.reverse ticks ) of
                             ( min :: _, max :: _ ) ->
+                                let
+                                    ( d0, d1 ) =
+                                        Scale.domain scale
+                                in
                                 expectAll
                                     [ min |> Expect.within (Absolute 0.0001) d0
                                     , max |> Expect.within (Absolute 0.0001) d1
